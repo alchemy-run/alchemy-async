@@ -194,28 +194,49 @@ const worker = await Worker("my-worker", {
 
 ## Remote Bindings
 
-By default, development mode emulates supported resources locally. To use the real resource from Cloudflare, set the `dev.remote` option:
+Some Cloudflare resources can be used as bindings in development mode. By default, resources that support local emulation run locally, but you can optionally set `dev.remote: true` to use the real deployed resource from Cloudflare instead.
 
-```ts
+```diff lang="ts"
+const api = await Worker("my-api", {
+  entrypoint: "api.ts",
+  dev: {
++    remote: true,  // Use deployed worker instead of local emulation
+  },
+});
 const kv = await KVNamespace("my-kv", {
   dev: {
-    remote: true,
++    remote: true,  // Use deployed KV instead of local emulation
   },
 });
 const worker = await Worker("my-worker", {
   entrypoint: "worker.ts",
   bindings: {
     KV: kv,
+    API: api
   },
 });
 ```
 
-:::note
-Some resources, such as [`AIGateway`](/providers/cloudflare/ai-gateway/), cannot be emulated locally. These do not support the `dev.remote` option because they are always run remotely.
-:::
+### Binding Support
 
-:::caution
-When using remote bindings, you may accrue costs or incur usage limits.
+| Resource | Local Emulation | Remote Binding | Documentation |
+|----------|----------------|----------------|---------------|
+| `Worker` | ✅ | ✅ | [Worker](/providers/cloudflare/worker/) |
+| `Container` | ✅ | ✅ | [Container](/providers/cloudflare/container/) |
+| `D1Database` | ✅ | ✅ | [D1Database](/providers/cloudflare/d1-database/) |
+| `R2Bucket` | ✅ | ✅ | [R2Bucket](/providers/cloudflare/bucket/) |
+| `KVNamespace` | ✅ | ✅ | [KVNamespace](/providers/cloudflare/kv-namespace/) |
+| `Queue` | ✅ | ✅ | [Queue](/providers/cloudflare/queue/) |
+| `Pipeline` | ✅ | ✅ | [Pipeline](/providers/cloudflare/pipeline/) |
+| `Workflow` | ✅ | ✅ | [Workflow](/providers/cloudflare/workflow/) |
+| `Images` | ✅ | ✅ | [Images](/providers/cloudflare/images/) |
+| `AIGateway` | ❌ | ✅ | [AIGateway](/providers/cloudflare/ai-gateway/) |
+| `AI` | ❌ | ✅ | [AI](/providers/cloudflare/ai/) |
+| `AnalyticsEngine` | ❌ | ✅ | [AnalyticsEngine](/providers/cloudflare/analytics-engine/) |
+| `VectorizeIndex` | ❌ | ✅ | [VectorizeIndex](/providers/cloudflare/vectorize-index/) |
+
+:::tip
+Resources that support local emulation can optionally set `dev.remote: true` to use the deployed resource instead. Resources without local emulation always use the deployed resource.
 :::
 
 ## Web Frameworks
