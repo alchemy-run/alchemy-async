@@ -268,6 +268,10 @@ export const buildWorkerOptions = async (
             type: "r2_bucket",
             name: key,
             bucket_name: binding.name,
+            jurisdiction:
+              binding.jurisdiction === "default"
+                ? undefined
+                : binding.jurisdiction,
             raw: true,
           });
         } else {
