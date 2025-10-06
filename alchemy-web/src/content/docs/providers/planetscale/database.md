@@ -14,7 +14,7 @@ import { Database } from "alchemy/planetscale";
 
 const database = await Database("my-app-db", {
   name: "my-app-db",
-  organizationId: "my-org",
+  organization: "my-org",
   clusterSize: "PS_10",
 });
 ```
@@ -28,7 +28,7 @@ import { Database } from "alchemy/planetscale";
 
 const pgDatabase = await Database("my-pg-db", {
   name: "my-pg-db",
-  organizationId: "my-org",
+  organization: "my-org",
   clusterSize: "PS_10",
   kind: "postgresql",
 });
@@ -43,7 +43,7 @@ import { Database } from "alchemy/planetscale";
 
 const database = await Database("eu-app-db", {
   name: "eu-app-db",
-  organizationId: "my-org",
+  organization: "my-org",
   region: {
     slug: "eu-west",
   },
@@ -63,7 +63,7 @@ import { Database } from "alchemy/planetscale";
 
 const prodDatabase = await Database("production-db", {
   name: "production-db",
-  organizationId: "my-org",
+  organization: "my-org",
   region: {
     slug: "us-east",
   },
@@ -89,7 +89,7 @@ import { Database } from "alchemy/planetscale";
 
 const database = await Database("custom-auth-db", {
   name: "custom-auth-db",
-  organizationId: "my-org",
+  organization: "my-org",
   clusterSize: "PS_10",
   apiKey: alchemy.secret(process.env.CUSTOM_PLANETSCALE_TOKEN),
 });
@@ -104,7 +104,7 @@ import { Database } from "alchemy/planetscale";
 
 const armDatabase = await Database("arm-pg-db", {
   name: "arm-pg-db",
-  organizationId: "my-org",
+  organization: "my-org",
   clusterSize: "PS_10",
   kind: "postgresql",
   arch: "arm",
@@ -120,7 +120,7 @@ import { Database } from "alchemy/planetscale";
 
 const existingDatabase = await Database("existing-db", {
   name: "existing-db",
-  organizationId: "my-org",
+  organization: "my-org",
   clusterSize: "PS_20",
   adopt: true,
   allowDataBranching: false,

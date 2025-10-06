@@ -4,9 +4,10 @@ import { Resource } from "../resource.ts";
 import type { Secret } from "../secret.ts";
 import { logger } from "../util/logger.ts";
 import { createPlanetScaleClient, type PlanetScaleProps } from "./api.ts";
-import type { CreateRoleData } from "./api/types.gen.ts";
+import type { CreateRoleData, Organization } from "./api/types.gen.ts";
 import type { Branch } from "./branch.ts";
 import type { Database } from "./database.ts";
+import { OrganizationRef } from "./organization.ts";
 import { waitForBranchReady } from "./utils.ts";
 
 /**
@@ -17,7 +18,7 @@ export interface RoleProps extends PlanetScaleProps {
    * The organization ID where the role will be created
    * Required when using string database name, optional when using Database resource
    */
-  organizationId?: string;
+  organization?: string | Organization;
 
   /**
    * The database where the role will be created
@@ -164,22 +165,34 @@ export const Role = Resource(
     props: RoleProps,
   ): Promise<Role> {
     const api = createPlanetScaleClient(props);
-    const organization =
-      typeof props.branch === "object"
-        ? props.branch.organizationId
-        : typeof props.database === "object"
-          ? props.database.organizationId
-          : props.organizationId;
+    if (!props.organization && typeof props.database === "string") {
+      throw new Error(
+        "Organization ID is required when using string database name",
+      );
+    }
+
+    const organizationName =
+      props.organization != null
+        ? typeof props.organization === "string"
+          ? props.organization
+          : await OrganizationRef(props.organization).then(
+              (organization) => organization.name!,
+            )
+        : await OrganizationRef((props.database as Database).organization).then(
+            (organization) => organization.name!,
+          );
+
     const database =
       typeof props.database === "string" ? props.database : props.database.name;
     const branch =
       typeof props.branch === "string"
         ? props.branch
         : (props.branch?.name ?? "main");
+
     const inheritedRoles = Array.isArray(props.inheritedRoles)
       ? props.inheritedRoles
       : props.inheritedRoles.inheritedRoles;
-    if (!organization) {
+    if (!organizationName) {
       throw new Error("Organization ID is required");
     }
 
@@ -188,7 +201,7 @@ export const Role = Resource(
         if (this.output?.id) {
           const res = await api.deleteRole({
             path: {
-              organization,
+              organization: organizationName,
               database,
               branch,
               id: this.output.id,
@@ -207,7 +220,7 @@ export const Role = Resource(
                     `Failed to delete role "${id}" (name: "${this.output.name}").`,
                     `Error: ${res.error.message}`,
                     `If you are deleting database "${database}" or branch "${branch}", the role will be deleted automatically.`,
-                    `Otherwise, consider manually deleting the role at: https://app.planetscale.com/${organization}/${database}/settings/roles`,
+                    `Otherwise, consider manually deleting the role at: https://app.planetscale.com/${organizationName}/${database}/settings/roles`,
                   ].join("\n"),
                 );
                 break;
@@ -225,7 +238,7 @@ export const Role = Resource(
           data: { kind, ready },
         } = await api.getBranch({
           path: {
-            organization,
+            organization: organizationName,
             database,
             name: branch,
           },
@@ -237,11 +250,11 @@ export const Role = Resource(
         }
         // Cannot create role until branch is ready
         if (!ready) {
-          await waitForBranchReady(api, organization, database, branch);
+          await waitForBranchReady(api, organizationName, database, branch);
         }
         const { data } = await api.createRole({
           path: {
-            organization,
+            organization: organizationName,
             database,
             branch,
           },

@@ -20,7 +20,7 @@ import { Password } from "alchemy/planetscale";
 
 const readerPassword = await Password("app-reader", {
   name: "app-reader",
-  organizationId: "my-org",
+  organization: "my-org",
   database: "my-app-db",
   branch: "main",
   role: "reader"
@@ -41,7 +41,7 @@ import { Password } from "alchemy/planetscale";
 
 const writerPassword = await Password("app-writer", {
   name: "app-writer",
-  organizationId: "my-org",
+  organization: "my-org",
   database: "my-app-db",
   branch: "development",
   role: "writer",
@@ -61,7 +61,7 @@ import { Password } from "alchemy/planetscale";
 
 const adminPassword = await Password("admin-access", {
   name: "admin-access",
-  organizationId: "my-org",
+  organization: "my-org",
   database: "my-app-db",
   branch: "main",
   role: "admin",
@@ -79,7 +79,7 @@ import { Password } from "alchemy/planetscale";
 
 const password = await Password("custom-auth", {
   name: "custom-auth",
-  organizationId: "my-org",
+  organization: "my-org",
   database: "my-app-db",
   branch: "main",
   role: "readwriter",
@@ -96,7 +96,7 @@ import { Password } from "alchemy/planetscale";
 
 const replicaPassword = await Password("replica-reader", {
   name: "replica-reader",
-  organizationId: "my-org",
+  organization: "my-org",
   database: "my-app-db",
   branch: "main",
   role: "reader",
@@ -114,14 +114,14 @@ import { Database, Branch, Password } from "alchemy/planetscale";
 // Create a database
 const database = await Database("my-app-db", {
   name: "my-app-db",
-  organizationId: "my-org",
+  organization: "my-org",
   clusterSize: "PS_10"
 });
 
 // Create a development branch
 const devBranch = await Branch("feature-123", {
   name: "feature-123",
-  organizationId: "my-org",
+  organization: "my-org",
   databaseName: database.name,
   parentBranch: "main",
   isProduction: false
@@ -154,7 +154,7 @@ import { Database, Password } from "alchemy/planetscale";
 // Create a database resource
 const database = await Database("my-app-db", {
   name: "my-app-db",
-  organizationId: "my-org",
+  organization: "my-org",
   clusterSize: "PS_10"
 });
 
@@ -196,7 +196,7 @@ import mysql from "mysql2/promise";
 
 const password = await Password("app-db-access", {
   name: "app-db-access",
-  organizationId: "my-org",
+  organization: "my-org",
   database: "my-app-db",
   branch: "main",
   role: "readwriter"

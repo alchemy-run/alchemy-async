@@ -5,8 +5,10 @@ import type { Secret } from "../secret.ts";
 import { diff } from "../util/diff.ts";
 import { lowercaseId } from "../util/nanoid.ts";
 import { createPlanetScaleClient, type PlanetScaleProps } from "./api.ts";
+import type { Organization } from "./api/types.gen.ts";
 import type { Branch } from "./branch.ts";
 import type { Database } from "./database.ts";
+import { OrganizationRef } from "./organization.ts";
 
 /**
  * Properties for creating or updating a PlanetScale Branch
@@ -23,7 +25,7 @@ export interface PasswordProps extends PlanetScaleProps {
    * The organization ID where the password will be created
    * Required when using string database name, optional when using Database or Branch resource
    */
-  organizationId?: string;
+  organization?: string | Organization;
 
   /**
    * The database where the password will be created
@@ -114,7 +116,7 @@ export interface Password extends PasswordProps {
  *
  * const readerPassword = await Password("app-reader", {
  *   name: "app-reader",
- *   organizationId: "my-org",
+ *   organization: "my-org",
  *   database: "my-app-db",
  *   branch: "main",
  *   role: "reader"
@@ -136,7 +138,7 @@ export interface Password extends PasswordProps {
  *
  * const writerPassword = await Password("app-writer", {
  *   name: "app-writer",
- *   organizationId: "my-org",
+ *   organization: "my-org",
  *   database: "my-app-db",
  *   branch: "development",
  *   role: "writer",
@@ -157,7 +159,7 @@ export interface Password extends PasswordProps {
  *
  * const adminPassword = await Password("admin-access", {
  *   name: "admin-access",
- *   organizationId: "my-org",
+ *   organization: "my-org",
  *   database: "my-app-db",
  *   branch: "main",
  *   role: "admin",
@@ -176,7 +178,7 @@ export interface Password extends PasswordProps {
  *
  * const password = await Password("custom-auth", {
  *   name: "custom-auth",
- *   organizationId: "my-org",
+ *   organization: "my-org",
  *   database: "my-app-db",
  *   branch: "main",
  *   role: "readwriter",
@@ -194,7 +196,7 @@ export interface Password extends PasswordProps {
  *
  * const replicaPassword = await Password("replica-reader", {
  *   name: "replica-reader",
- *   organizationId: "my-org",
+ *   organization: "my-org",
  *   database: "my-app-db",
  *   branch: "main",
  *   role: "reader",
@@ -211,7 +213,7 @@ export interface Password extends PasswordProps {
  *
  * const database = await Database("my-db", {
  *   name: "my-app-db",
- *   organizationId: "my-org",
+ *   organization: "my-org",
  *   clusterSize: "PS_10"
  * });
  *
@@ -232,13 +234,13 @@ export interface Password extends PasswordProps {
  *
  * const database = await Database("my-db", {
  *   name: "my-app-db",
- *   organizationId: "my-org",
+ *   organization: "my-org",
  *   clusterSize: "PS_10"
  * });
  *
  * const branch = await Branch("feature-branch", {
  *   name: "feature-branch",
- *   organizationId: "my-org",
+ *   organization: "my-org",
  *   databaseName: "my-app-db",
  *   parentBranch: "main",
  *   isProduction: false
@@ -266,26 +268,33 @@ export const Password = Resource(
     const name = `${(props.name ?? this.output?.name ?? this.scope.createPhysicalName(id)).toLowerCase()}-${nameSlug}`;
 
     const api = createPlanetScaleClient(props);
+    if (!props.organization && typeof props.database === "string") {
+      throw new Error(
+        "Organization ID is required when using string database name",
+      );
+    }
+    const organizationName =
+      props.organization != null
+        ? typeof props.organization === "string"
+          ? props.organization
+          : await OrganizationRef(props.organization).then(
+              (organization) => organization.name!,
+            )
+        : await OrganizationRef((props.database as Database).organization).then(
+            (organization) => organization.name!,
+          );
     const database =
       typeof props.database === "string" ? props.database : props.database.name;
     const branch =
       typeof props.branch === "string"
         ? props.branch
         : (props.branch?.name ?? "main");
-    const organization =
-      props.organizationId ??
-      ((typeof props.branch !== "string" && props.branch?.organizationId) ||
-        (typeof props.database !== "string" && props.database.organizationId));
-
-    if (!organization) {
-      throw new Error("Organization ID is required");
-    }
 
     if (this.phase === "delete") {
       if (this.output?.id) {
         const res = await api.deletePassword({
           path: {
-            organization,
+            organization: organizationName,
             database,
             branch,
             id: this.output.id,
@@ -312,7 +321,7 @@ export const Password = Resource(
       }
       await api.updatePassword({
         path: {
-          organization,
+          organization: organizationName,
           database,
           branch,
           id: this.output.id,
@@ -332,7 +341,7 @@ export const Password = Resource(
 
     const { data } = await api.createPassword({
       path: {
-        organization,
+        organization: organizationName,
         database,
         branch,
       },

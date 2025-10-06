@@ -14,8 +14,8 @@ import { Branch } from "alchemy/planetscale";
 
 const devBranch = await Branch("feature-123", {
   name: "feature-123",
-  organizationId: "my-org",
-  databaseName: "my-database",
+  organization: "my-org",
+  database: "my-database",
   parentBranch: "main",
   isProduction: false,
 });
@@ -30,8 +30,8 @@ import { Branch } from "alchemy/planetscale";
 
 const prodBranch = await Branch("production", {
   name: "production",
-  organizationId: "my-org",
-  databaseName: "my-database",
+  organization: "my-org",
+  database: "my-database",
   parentBranch: "main",
   isProduction: true,
   clusterSize: "PS_20",
@@ -47,16 +47,16 @@ import { Branch } from "alchemy/planetscale";
 
 const stagingBranch = await Branch("staging", {
   name: "staging",
-  organizationId: "my-org",
-  databaseName: "my-database",
+  organization: "my-org",
+  database: "my-database",
   parentBranch: "main",
   isProduction: false,
 });
 
 const featureBranch = await Branch("feature-456", {
   name: "feature-456",
-  organizationId: "my-org",
-  databaseName: "my-database",
+  organization: "my-org",
+  database: "my-database",
   parentBranch: stagingBranch, // Using Branch object
   isProduction: false,
 });
@@ -71,8 +71,8 @@ import { Branch } from "alchemy/planetscale";
 
 const restoredBranch = await Branch("restored-data", {
   name: "restored-data",
-  organizationId: "my-org",
-  databaseName: "my-database",
+  organization: "my-org",
+  database: "my-database",
   parentBranch: "main",
   isProduction: true,
   backupId: "backup-123",
@@ -89,8 +89,8 @@ import { Branch } from "alchemy/planetscale";
 
 const safeBranch = await Branch("safe-migrations", {
   name: "safe-migrations",
-  organizationId: "my-org",
-  databaseName: "my-database",
+  organization: "my-org",
+  database: "my-database",
   parentBranch: "main",
   isProduction: false,
   safeMigrations: true,
@@ -106,8 +106,8 @@ import { Branch } from "alchemy/planetscale";
 
 const existingBranch = await Branch("existing-feature", {
   name: "existing-feature",
-  organizationId: "my-org",
-  databaseName: "my-database",
+  organization: "my-org",
+  database: "my-database",
   parentBranch: "main",
   isProduction: false,
   adopt: true,
@@ -124,8 +124,8 @@ import { Branch } from "alchemy/planetscale";
 
 const seededBranch = await Branch("seeded-dev", {
   name: "seeded-dev",
-  organizationId: "my-org",
-  databaseName: "my-database",
+  organization: "my-org",
+  database: "my-database",
   parentBranch: "main",
   isProduction: false,
   seedData: "last_successful_backup",

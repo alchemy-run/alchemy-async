@@ -26,19 +26,19 @@ describe.skipIf(!process.env.PLANETSCALE_TEST).concurrent.each(kinds)(
     });
 
     const api = createPlanetScaleClient();
-    const organizationId = alchemy.env.PLANETSCALE_ORG_ID;
+    const organizationName = alchemy.env.PLANETSCALE_ORG_ID;
 
     let database: Database;
     let scope: Scope | undefined;
 
     test.beforeAll(async (_scope) => {
       const props = {
-        organizationId,
+        organization: organizationName,
         clusterSize: "PS_10",
         kind,
       } as DatabaseProps;
       database = await Database("branch-test", props);
-      await waitForDatabaseReady(api, organizationId, database.name);
+      await waitForDatabaseReady(api, organizationName, database.name);
       scope = _scope;
     }, 240_000); // postgres takes a while to initialize
 
@@ -54,16 +54,16 @@ describe.skipIf(!process.env.PLANETSCALE_TEST).concurrent.each(kinds)(
         // Create a branch first
         await Branch("branch-adopt-true", {
           name,
-          organizationId,
-          databaseName: database.name,
+          organization: organizationName,
+          database: database.name,
           isProduction: false,
         });
 
         // Try to create the same branch with adopt=true
         const branch = await Branch("branch-adopt-true", {
           name,
-          organizationId,
-          databaseName: database.name,
+          organization: organizationName,
+          database: database.name,
           adopt: true,
           isProduction: false,
         });
@@ -76,7 +76,7 @@ describe.skipIf(!process.env.PLANETSCALE_TEST).concurrent.each(kinds)(
         // Verify branch exists via API
         const { response } = await api.getBranch({
           path: {
-            organization: organizationId,
+            organization: organizationName,
             database: database.name,
             name,
           },
@@ -92,7 +92,7 @@ describe.skipIf(!process.env.PLANETSCALE_TEST).concurrent.each(kinds)(
         // Verify branch and all its resources were deleted
         const { response } = await api.getBranch({
           path: {
-            organization: organizationId,
+            organization: organizationName,
             database: database.name,
             name,
           },
@@ -109,8 +109,8 @@ describe.skipIf(!process.env.PLANETSCALE_TEST).concurrent.each(kinds)(
         // First create the branch
         await Branch("branch-adopt-false", {
           name,
-          organizationId,
-          databaseName: database.name,
+          organization: organizationName,
+          database: database.name,
           isProduction: false,
           parentBranch: "main",
         });
@@ -119,8 +119,8 @@ describe.skipIf(!process.env.PLANETSCALE_TEST).concurrent.each(kinds)(
         await expect(
           Branch("branch-adopt-false", {
             name,
-            organizationId,
-            databaseName: database.name,
+            organization: organizationName,
+            database: database.name,
             parentBranch: "main",
             isProduction: false,
             adopt: false,
@@ -130,7 +130,7 @@ describe.skipIf(!process.env.PLANETSCALE_TEST).concurrent.each(kinds)(
         // Verify original branch still exists
         const { response } = await api.getBranch({
           path: {
-            organization: organizationId,
+            organization: organizationName,
             database: database.name,
             name,
           },
@@ -146,7 +146,7 @@ describe.skipIf(!process.env.PLANETSCALE_TEST).concurrent.each(kinds)(
         // Verify branch and all its resources were deleted
         const { response } = await api.getBranch({
           path: {
-            organization: organizationId,
+            organization: organizationName,
             database: database.name,
             name,
           },
@@ -164,7 +164,7 @@ describe.skipIf(!process.env.PLANETSCALE_TEST).concurrent.each(kinds)(
         const backupName = `alchemy-test-backupReady-${crypto.randomUUID()}`;
         const { data: backup } = await api.createBackup({
           path: {
-            organization: organizationId,
+            organization: organizationName,
             database: database.name,
             branch: "main",
           },
@@ -179,7 +179,7 @@ describe.skipIf(!process.env.PLANETSCALE_TEST).concurrent.each(kinds)(
         for (let i = 0; i < 48; i++) {
           const { data: status } = await api.getBackup({
             path: {
-              organization: organizationId,
+              organization: organizationName,
               database: database.name,
               branch: "main",
               id: backup.id,
@@ -189,14 +189,14 @@ describe.skipIf(!process.env.PLANETSCALE_TEST).concurrent.each(kinds)(
             backupReady = true;
             break;
           }
-          await new Promise((resolve) => setTimeout(resolve, 5000));
+          await new Promise((resolve) => setTimeout(resolve, 50_000));
         }
         expect(backupReady).toEqual(true);
 
         const branch = await Branch("branch-backup", {
           name,
-          organizationId,
-          databaseName: database.name,
+          organization: organizationName,
+          database: database.name,
           parentBranch: "main",
           backupId: backup.id,
           clusterSize: "PS_10",
@@ -212,7 +212,7 @@ describe.skipIf(!process.env.PLANETSCALE_TEST).concurrent.each(kinds)(
         // Verify branch exists
         const { response } = await api.getBranch({
           path: {
-            organization: organizationId,
+            organization: organizationName,
             database: database.name,
             name,
           },
@@ -228,7 +228,7 @@ describe.skipIf(!process.env.PLANETSCALE_TEST).concurrent.each(kinds)(
         // Verify branch was deleted
         const { response } = await api.getBranch({
           path: {
-            organization: organizationId,
+            organization: organizationName,
             database: database.name,
             name,
           },
@@ -249,8 +249,8 @@ describe.skipIf(!process.env.PLANETSCALE_TEST).concurrent.each(kinds)(
           // Create branch with safe migrations enabled
           let branch = await Branch("branch-safe-migrations", {
             name,
-            organizationId,
-            databaseName: database.name,
+            organization: organizationName,
+            database: database.name,
             parentBranch: "main",
             safeMigrations: true,
             isProduction: true,
@@ -263,7 +263,7 @@ describe.skipIf(!process.env.PLANETSCALE_TEST).concurrent.each(kinds)(
           // Verify safe migrations were enabled
           let response = await api.getBranch({
             path: {
-              organization: organizationId,
+              organization: organizationName,
               database: database.name,
               name,
             },
@@ -273,8 +273,8 @@ describe.skipIf(!process.env.PLANETSCALE_TEST).concurrent.each(kinds)(
           // Update branch to disable safe migrations
           branch = await Branch("branch-safe-migrations", {
             name,
-            organizationId,
-            databaseName: database.name,
+            organization: organizationName,
+            database: database.name,
             parentBranch: "main",
             safeMigrations: false,
             adopt: true,
@@ -283,7 +283,7 @@ describe.skipIf(!process.env.PLANETSCALE_TEST).concurrent.each(kinds)(
 
           response = await api.getBranch({
             path: {
-              organization: organizationId,
+              organization: organizationName,
               database: database.name,
               name,
             },
@@ -305,8 +305,8 @@ describe.skipIf(!process.env.PLANETSCALE_TEST).concurrent.each(kinds)(
         // Create branch with initial cluster size
         let branch = await Branch("branch-cluster-size", {
           name,
-          organizationId,
-          databaseName: database.name,
+          organization: organizationName,
+          database: database.name,
           parentBranch: "main",
           isProduction: true,
           clusterSize: "PS_10",
@@ -318,7 +318,7 @@ describe.skipIf(!process.env.PLANETSCALE_TEST).concurrent.each(kinds)(
 
         const { data: data1 } = await api.getBranch({
           path: {
-            organization: organizationId,
+            organization: organizationName,
             database: database.name,
             name,
           },
@@ -328,8 +328,8 @@ describe.skipIf(!process.env.PLANETSCALE_TEST).concurrent.each(kinds)(
         // Update branch with new cluster size
         branch = await Branch("branch-cluster-size", {
           name,
-          organizationId,
-          databaseName: database.name,
+          organization: organizationName,
+          database: database.name,
           parentBranch: "main",
           clusterSize: "PS_20",
           isProduction: true,
@@ -339,7 +339,7 @@ describe.skipIf(!process.env.PLANETSCALE_TEST).concurrent.each(kinds)(
         // Verify cluster size was updated
         const { data: data2 } = await api.getBranch({
           path: {
-            organization: organizationId,
+            organization: organizationName,
             database: database.name,
             name,
           },
@@ -361,8 +361,8 @@ describe.skipIf(!process.env.PLANETSCALE_TEST).concurrent.each(kinds)(
         // Create a parent branch first
         const parentBranch = await Branch("parent-branch", {
           name: parentBranchName,
-          organizationId,
-          databaseName: database.name,
+          organization: organizationName,
+          database: database.name,
           parentBranch: "main",
           isProduction: false,
         });
@@ -375,8 +375,8 @@ describe.skipIf(!process.env.PLANETSCALE_TEST).concurrent.each(kinds)(
         // Create a child branch using the parent Branch object
         const childBranch = await Branch("test-child-branch", {
           name: childBranchName,
-          organizationId,
-          databaseName: database.name,
+          organization: organizationName,
+          database: database.name,
           parentBranch, // Using Branch object instead of string
           isProduction: false,
         });
@@ -389,7 +389,7 @@ describe.skipIf(!process.env.PLANETSCALE_TEST).concurrent.each(kinds)(
         // Verify both branches exist via API
         const { response: getParentResponse } = await api.getBranch({
           path: {
-            organization: organizationId,
+            organization: organizationName,
             database: database.name,
             name: parentBranchName,
           },
@@ -400,7 +400,7 @@ describe.skipIf(!process.env.PLANETSCALE_TEST).concurrent.each(kinds)(
         const { response: getChildResponse, data: getChildData } =
           await api.getBranch({
             path: {
-              organization: organizationId,
+              organization: organizationName,
               database: database.name,
               name: childBranchName,
             },
@@ -417,7 +417,7 @@ describe.skipIf(!process.env.PLANETSCALE_TEST).concurrent.each(kinds)(
         // Verify both branches were deleted
         const { response: getParentDeletedResponse } = await api.getBranch({
           path: {
-            organization: organizationId,
+            organization: organizationName,
             database: database.name,
             name: parentBranchName,
           },
@@ -427,7 +427,7 @@ describe.skipIf(!process.env.PLANETSCALE_TEST).concurrent.each(kinds)(
 
         const { response: getChildDeletedResponse } = await api.getBranch({
           path: {
-            organization: organizationId,
+            organization: organizationName,
             database: database.name,
             name: childBranchName,
           },
