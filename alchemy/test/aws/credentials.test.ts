@@ -6,7 +6,6 @@ import {
 } from "../../src/aws/credentials.ts";
 import { Scope } from "../../src/scope.ts";
 import { Secret } from "../../src/secret.ts";
-import { TelemetryClient } from "../../src/util/telemetry/client.ts";
 
 // Helper function to temporarily set environment variables for a test
 async function withEnv<T>(
@@ -147,17 +146,11 @@ describe("AWS Credential Resolution", () => {
           AWS_ROLE_SESSION_NAME: undefined,
         },
         async () => {
-          const telemetryClient = TelemetryClient.create({
-            phase: "up",
-            enabled: false,
-            quiet: true,
-          });
-
           const scope = new Scope({
             scopeName: "test-scope",
             parent: undefined,
             phase: "up",
-            telemetryClient,
+            noTrack: true,
             // Scope-level AWS credential overrides
             aws: {
               region: "eu-west-1", // Should override global
@@ -184,17 +177,11 @@ describe("AWS Credential Resolution", () => {
           AWS_SECRET_ACCESS_KEY: "wJalrXUtnFEMI/K7MDENG/bPxRfiCYGLOBAL",
         },
         async () => {
-          const telemetryClient = TelemetryClient.create({
-            phase: "up",
-            enabled: false,
-            quiet: true,
-          });
-
           const scope = new Scope({
             scopeName: "test-scope",
             parent: undefined,
             phase: "up",
-            telemetryClient,
+            noTrack: true,
             // Scope-level AWS credential overrides
             aws: {
               region: "eu-central-1",

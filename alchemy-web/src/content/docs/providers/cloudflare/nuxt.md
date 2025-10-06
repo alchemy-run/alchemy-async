@@ -1,9 +1,9 @@
 ---
 title: Nuxt
-description: Learn how to deploy Nuxt.js applications to Cloudflare Pages/Workers using Alchemy for a seamless experience.
+description: Learn how to deploy Nuxt.js applications to Cloudflare Workers using Alchemy for a seamless experience.
 ---
 
-Deploy a [Nuxt](https://nuxt.com) application to Cloudflare Pages with automatically configured defaults.
+Deploy a [Nuxt](https://nuxt.com) application to Cloudflare Workers with automatically configured defaults.
 
 ## Minimal Example
 

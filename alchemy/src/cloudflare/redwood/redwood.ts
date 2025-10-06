@@ -12,7 +12,7 @@ export type Redwood<B extends Bindings> = B extends { ASSETS: any }
   : Worker<B & { ASSETS: Assets }>;
 
 /**
- * Deploy a RedwoodJS application to Cloudflare Pages with automatically configured defaults.
+ * Deploy a RedwoodJS application to Cloudflare Workers with automatically configured defaults.
  *
  * This resource handles the deployment of RedwoodJS applications with optimized settings for
  * Cloudflare Workers, including proper build commands and compatibility flags.

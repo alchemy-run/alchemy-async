@@ -1,4 +1,5 @@
 import { Provider, type Credentials } from "../auth.ts";
+import { Scope } from "../scope.ts";
 import type { Secret } from "../secret.ts";
 import { isBinary } from "../serde.ts";
 import { memoize } from "../util/memoize.ts";
@@ -99,6 +100,7 @@ export const createCloudflareApi = memoize(
     try {
       const profile =
         options.profile ??
+        Scope.getScope()?.profile ??
         process.env.CLOUDFLARE_PROFILE ??
         process.env.ALCHEMY_PROFILE ??
         "default";

@@ -1,6 +1,8 @@
 import type { State, StateStore } from "../state.ts";
-import type { ITelemetryClient } from "../util/telemetry/client.ts";
-import type { Telemetry } from "../util/telemetry/types.ts";
+import {
+  createAndSendEvent,
+  type StateStoreTelemetryData,
+} from "../util/telemetry.ts";
 
 //todo(michael): we should also handle serde here
 export class InstrumentedStateStore<T extends StateStore>
@@ -9,17 +11,15 @@ export class InstrumentedStateStore<T extends StateStore>
   /** @internal */
   __phantom?: T;
   private readonly stateStore: StateStore;
-  private readonly telemetryClient: ITelemetryClient;
   private readonly stateStoreClass: string;
 
-  constructor(stateStore: StateStore, telemetryClient: ITelemetryClient) {
+  constructor(stateStore: StateStore) {
     this.stateStore = stateStore;
-    this.telemetryClient = telemetryClient;
     this.stateStoreClass = stateStore.constructor.name;
   }
 
   private async callWithTelemetry<T>(
-    event: Telemetry.StateStoreEvent["event"],
+    event: StateStoreTelemetryData["event"],
     fn: () => Promise<T>,
   ): Promise<T> {
     const start = performance.now();
@@ -30,17 +30,18 @@ export class InstrumentedStateStore<T extends StateStore>
       error = err;
       throw err;
     } finally {
-      this.telemetryClient.record({
-        event,
-        stateStoreClass: this.stateStoreClass,
-        elapsed: performance.now() - start,
-        error:
-          error instanceof Error
-            ? error
-            : error
-              ? new Error(String(error))
-              : undefined,
-      });
+      createAndSendEvent(
+        {
+          event,
+          stateStore: this.stateStoreClass,
+          duration: performance.now() - start,
+        },
+        error instanceof Error
+          ? error
+          : error
+            ? new Error(String(error))
+            : undefined,
+      );
     }
   }
 
@@ -49,7 +50,7 @@ export class InstrumentedStateStore<T extends StateStore>
       return;
     }
     await this.callWithTelemetry(
-      "stateStore.init",
+      "statestore.init",
       this.stateStore.init.bind(this.stateStore),
     );
   }
@@ -58,49 +59,49 @@ export class InstrumentedStateStore<T extends StateStore>
       return;
     }
     await this.callWithTelemetry(
-      "stateStore.deinit",
+      "statestore.deinit",
       this.stateStore.deinit.bind(this.stateStore),
     );
   }
   async list() {
     return await this.callWithTelemetry(
-      "stateStore.list",
+      "statestore.list",
       this.stateStore.list.bind(this.stateStore),
     );
   }
   async count() {
     return await this.callWithTelemetry(
-      "stateStore.count",
+      "statestore.count",
       this.stateStore.count.bind(this.stateStore),
     );
   }
   async get(key: string) {
     return await this.callWithTelemetry(
-      "stateStore.get",
+      "statestore.get",
       this.stateStore.get.bind(this.stateStore, key),
     );
   }
   async getBatch(ids: string[]) {
     return await this.callWithTelemetry(
-      "stateStore.getBatch",
+      "statestore.getBatch",
       this.stateStore.getBatch.bind(this.stateStore, ids),
     );
   }
   async all() {
     return await this.callWithTelemetry(
-      "stateStore.all",
+      "statestore.all",
       this.stateStore.all.bind(this.stateStore),
     );
   }
   async set(key: string, value: State) {
     await this.callWithTelemetry(
-      "stateStore.set",
+      "statestore.set",
       this.stateStore.set.bind(this.stateStore, key, value),
     );
   }
   async delete(key: string) {
     await this.callWithTelemetry(
-      "stateStore.delete",
+      "statestore.delete",
       this.stateStore.delete.bind(this.stateStore, key),
     );
   }

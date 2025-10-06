@@ -104,6 +104,8 @@ export class MiniflareController {
         // This is required to allow websites and other separate processes
         // to detect Alchemy-managed Durable Objects via the Wrangler dev registry.
         unsafeDevRegistryDurableObjectProxy: true,
+        // This exposes other handlers like `scheduled` and `email` via HTTP.
+        unsafeTriggerHandlers: true,
       };
       for (const worker of this.options.values()) {
         options.workers.push(worker);

@@ -3,7 +3,6 @@ import fs from "node:fs/promises";
 import path from "node:path";
 import { Exec } from "../os/index.ts";
 import { Scope } from "../scope.ts";
-import { isSecret } from "../secret.ts";
 import { dedent } from "../util/dedent.ts";
 import { logger } from "../util/logger.ts";
 import { Assets } from "./assets.ts";
@@ -11,6 +10,10 @@ import type { Bindings } from "./bindings.ts";
 import { DEFAULT_COMPATIBILITY_DATE } from "./compatibility-date.gen.ts";
 import { unionCompatibilityFlags } from "./compatibility-presets.ts";
 import { writeMiniflareSymlink } from "./miniflare/symlink-miniflare-state.ts";
+import {
+  extractStringAndSecretBindings,
+  unencryptSecrets,
+} from "./util/filter-env-bindings.ts";
 import { type AssetsConfig, Worker, type WorkerProps } from "./worker.ts";
 import { WranglerJson, type WranglerJsonSpec } from "./wrangler.json.ts";
 
@@ -67,7 +70,7 @@ export interface WebsiteProps<B extends Bindings>
         /**
          * The command to run to start the dev server
          */
-        command: string;
+        command?: string;
         /**
          * Additional environment variables to set when running the dev command
          */
@@ -226,14 +229,7 @@ export async function Website<B extends Bindings>(
   const env = {
     ...(process.env ?? {}),
     ...(props.env ?? {}),
-    ...Object.fromEntries(
-      Object.entries(props.bindings ?? {}).flatMap(([key, value]) => {
-        if (typeof value === "string" || (isSecret(value) && secrets)) {
-          return [[key, value]];
-        }
-        return [];
-      }),
-    ),
+    ...extractStringAndSecretBindings(props.bindings ?? {}, secrets),
   };
   const worker = {
     ...workerProps,
@@ -302,9 +298,10 @@ export async function Website<B extends Bindings>(
   }
 
   let url: string | undefined;
-  if (dev && scope.local) {
+  const devCommand = typeof dev === "string" ? dev : dev?.command;
+  if (devCommand && scope.local) {
     url = await scope.spawn(name, {
-      cmd: typeof dev === "string" ? dev : dev.command,
+      cmd: devCommand,
       cwd: paths.cwd,
       extract: (line) => {
         const URL_REGEX =
@@ -317,17 +314,7 @@ export async function Website<B extends Bindings>(
         }
       },
       env: {
-        ...Object.fromEntries(
-          Object.entries(env ?? {}).flatMap(([key, value]) => {
-            if (isSecret(value)) {
-              return [[key, value.unencrypted]];
-            }
-            if (typeof value === "string") {
-              return [[key, value]];
-            }
-            return [];
-          }),
-        ),
+        ...unencryptSecrets(env ?? {}),
         ...(typeof dev === "object" ? dev.env : {}),
         FORCE_COLOR: "1",
         ...process.env,
@@ -371,7 +358,7 @@ export const spreadBuildProps = (
 export const spreadDevProps = (
   props: { dev?: WebsiteProps<Bindings>["dev"] } | undefined,
   defaultCommand: string,
-): WebsiteProps<Bindings>["dev"] => {
+): Exclude<WebsiteProps<Bindings>["dev"], undefined> => {
   if (typeof props?.dev === "object") {
     return {
       ...props.dev,

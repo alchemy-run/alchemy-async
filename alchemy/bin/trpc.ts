@@ -1,7 +1,7 @@
 import { cancel, log } from "@clack/prompts";
 import pc from "picocolors";
 import { trpcServer, type TrpcCliMeta } from "trpc-cli";
-import { TelemetryClient } from "../src/util/telemetry/client.ts";
+import { createAndSendEvent } from "../src/util/telemetry.ts";
 
 export const t = trpcServer.initTRPC.meta<TrpcCliMeta>().create();
 
@@ -15,11 +15,7 @@ export class ExitSignal extends Error {
 export class CancelSignal extends Error {}
 
 const loggingMiddleware = t.middleware(async ({ path, next }) => {
-  const telemetry = TelemetryClient.create({
-    enabled: true,
-    quiet: true,
-  });
-  telemetry.record({
+  createAndSendEvent({
     event: "cli.start",
     command: path,
   });
@@ -27,13 +23,13 @@ const loggingMiddleware = t.middleware(async ({ path, next }) => {
 
   try {
     const result = await next();
-    telemetry.record({
+    createAndSendEvent({
       event: "cli.success",
       command: path,
     });
     return result;
   } catch (error) {
-    telemetry.record({
+    createAndSendEvent({
       event:
         error instanceof ExitSignal && error.code === 0
           ? "cli.success"
@@ -46,7 +42,6 @@ const loggingMiddleware = t.middleware(async ({ path, next }) => {
       throw error;
     }
   } finally {
-    await telemetry.finalize();
     //* this is a node issue https://github.com/nodejs/node/issues/56645
     await new Promise((resolve) => setTimeout(resolve, 100));
     process.exit(exitCode);

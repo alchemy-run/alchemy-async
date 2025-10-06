@@ -2,6 +2,7 @@ import { apply } from "./apply.ts";
 import type { Context } from "./context.ts";
 import { DestroyStrategy } from "./destroy.ts";
 import { Scope as _Scope, type Scope } from "./scope.ts";
+import { createAndSendEvent } from "./util/telemetry.ts";
 
 declare global {
   var ALCHEMY_PROVIDERS: Map<ResourceKind, Provider<string, any>>;
@@ -178,11 +179,17 @@ export function Resource<
         const error = new Error(
           `Resource ${resourceID} already exists in the stack and is of a different type: '${otherResource?.[ResourceKind]}' !== '${type}'`,
         );
-        scope.telemetryClient.record({
-          event: "resource.error",
-          resource: type,
+        createAndSendEvent(
+          {
+            event: "resource.error",
+            resource: type,
+            phase: scope.phase,
+            status: "unknown",
+            duration: 0,
+            replaced: false,
+          },
           error,
-        });
+        );
         throw error;
       }
     }

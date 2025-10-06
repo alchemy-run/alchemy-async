@@ -112,7 +112,7 @@ export async function idempotentSpawn({
     const child = spawn(cmd, {
       shell: true,
       cwd,
-      stdio: ["ignore", out.fd, out.fd], // stdout/stderr -> files (OS-level)
+      stdio: ["inherit", out.fd, out.fd], // stdout/stderr -> files (OS-level)
       env,
       detached: false,
     });

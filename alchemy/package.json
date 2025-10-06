@@ -1,6 +1,6 @@
 {
   "name": "alchemy",
-  "version": "0.69.1",
+  "version": "0.70.2",
   "license": "Apache-2.0",
   "author": "Sam Goodwin <sam@alchemy.run>",
   "homepage": "https://alchemy.run",
@@ -39,6 +39,14 @@
     "./llms": {
       "bun": "./src/llms.ts",
       "import": "./lib/llms.js"
+    },
+    "./coinbase": {
+      "bun": "./src/coinbase/index.ts",
+      "import": "./lib/coinbase/index.js"
+    },
+    "./coinbase/faucet": {
+      "bun": "./src/coinbase/faucet.ts",
+      "import": "./lib/coinbase/faucet.js"
     },
     "./aws": {
       "bun": "./src/aws/index.ts",
@@ -180,6 +188,7 @@
   "peerDependencies": {
     "@astrojs/cloudflare": "^12.6.4",
     "@aws-sdk/client-dynamodb": "^3.0.0",
+    "@coinbase/cdp-sdk": "^0.10.0",
     "@aws-sdk/client-iam": "^3.0.0",
     "@aws-sdk/client-lambda": "^3.0.0",
     "@aws-sdk/client-s3": "^3.0.0",
@@ -199,6 +208,9 @@
   },
   "peerDependenciesMeta": {
     "@astrojs/cloudflare": {
+      "optional": true
+    },
+    "@coinbase/cdp-sdk": {
       "optional": true
     },
     "@aws-sdk/client-dynamodb": {
@@ -269,6 +281,7 @@
     "@cloudflare/puppeteer": "^1.0.2",
     "@cloudflare/vite-plugin": "catalog:",
     "@cloudflare/workers-types": "catalog:",
+    "@coinbase/cdp-sdk": "^1.38.2",
     "@libsql/client": "^0.15.12",
     "@octokit/rest": "^21.1.1",
     "@sentry/cloudflare": "^9.43.0",

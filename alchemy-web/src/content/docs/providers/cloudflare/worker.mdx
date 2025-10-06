@@ -98,6 +98,7 @@ export const worker = await Worker("api", {
   }),                    
   noBundle: true,                         // Disable bundling (default: false)
   rules: [{ globs: ["**/*.wasm"] }],      // Additional bundle rules
+  logpush: true,                          // Enable Workers LogPush for trace event export.
 });
 ```
 
@@ -326,6 +327,56 @@ export default {
 For comprehensive Workflows documentation including cross-script bindings and advanced patterns, see the [Workflow guide](/guides/cloudflare-workflows) and [Workflows Provider API Reference](/providers/cloudflare/workflow).
 :::
 
+## Dynamic Worker Loaders
+
+Load and execute workers dynamically at runtime using WorkerLoader:
+
+```ts
+// alchemy.run.ts
+import { Worker, WorkerLoader } from "alchemy/cloudflare";
+
+export const worker = await Worker("dynamic-loader", {
+  entrypoint: "./src/worker.ts",
+  bindings: {
+    LOADER: WorkerLoader(),
+  }
+});
+```
+
+Then use the loader to create workers on-demand:
+
+```ts
+// ./src/worker.ts
+import type { worker } from "../alchemy.run.ts";
+
+export default {
+  async fetch(request: Request, env: typeof worker.Env) {
+    const dynamicWorker = env.LOADER.get(
+      'my-dynamic-worker',
+      async () => ({
+        compatibilityDate: "2025-06-01",
+        mainModule: "index.js",
+        modules: {
+          'index.js': `
+            export default {
+              async fetch(request) {
+                return new Response('Hello from dynamic worker!');
+              }
+            }
+          `,
+        },
+      }),
+    );
+
+    const entrypoint = dynamicWorker.getEntrypoint();
+    return entrypoint.fetch(new URL(request.url));
+  }
+};
+```
+
+:::tip
+See the Cloudflare [Dynamic Worker Loaders](https://developers.cloudflare.com/workers/runtime-apis/bindings/worker-loader/) documentation for advanced usage patterns.
+:::
 
 ## Queue Consumer
 
@@ -480,6 +531,41 @@ export default {
 - `"0 */12 * * *"` - Every 12 hours
 - `"0 9 * * MON-FRI"` - Weekdays at 9 AM UTC
 - `"*/15 * * * *"` - Every 15 minutes
+
+
+### LogPush Configuration
+
+Enable Workers LogPush to send trace events to configured destinations:
+
+```ts
+const worker = await Worker("api", {
+  entrypoint: "./src/api.ts",
+  logpush: true,
+});
+```
+
+**Important**: Setting `logpush: true` only enables trace event collection. You must separately create a LogPush job using the Cloudflare API to specify where logs should be sent.
+
+#### Creating a LogPush Job
+
+LogPush jobs are created via the Cloudflare API. Here's an example using R2:
+
+```bash
+curl -X POST "https://api.cloudflare.com/client/v4/accounts/{account_id}/logpush/jobs" \
+  -H "Authorization: Bearer {api_token}" \
+  -H "Content-Type: application/json" \
+  --data '{
+    "name": "workers-logpush",
+    "dataset": "workers_trace_events",
+    "destination_conf": "r2://{bucket}?account-id={account_id}&access-key-id={key}&secret-access-key={secret}",
+    "output_options": {
+      "field_names": ["Event", "EventTimestampMs", "Outcome", "ScriptName", "Logs"]
+    },
+    "enabled": true
+  }'
+```
+
+For more information, see the [Cloudflare LogPush documentation](https://developers.cloudflare.com/workers/observability/logging/logpush/).
 
 ## Preview Worker URLs
 

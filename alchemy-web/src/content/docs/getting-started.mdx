@@ -7,16 +7,40 @@ import { Tabs, TabItem, Steps } from '@astrojs/starlight/components';
 
 Alchemy is a simple TypeScript script that you run to deploy infrastructure. All you need is a Node.js runtime and a Cloudflare account to get started.
 
+:::tip
+This guide will walk through manually creating the project. 
+Alternatively, you can use the `alchemy create` command to generate a new project.
+
+<Tabs syncKey="pkgManager">
+  <TabItem label="bun">
+    ```sh
+    bunx alchemy@latest create --template typescript
+    ```
+  </TabItem>
+  <TabItem label="npm">
+    ```sh
+    npx alchemy@latest create --template typescript
+    ```
+  </TabItem>
+  <TabItem label="pnpm">
+    ```sh
+    pnpx alchemy@latest create --template typescript
+    ```
+  </TabItem>
+  <TabItem label="yarn">
+    ```sh
+    yarn dlx alchemy@latest create --template typescript
+    ```
+  </TabItem>
+</Tabs>
+:::
+
+
 <Steps>
 
 1. **Create your project**
 
    Start by creating a new project and installing Alchemy.
-
-   ```sh
-   mkdir my-alchemy-app
-   cd my-alchemy-app
-   ```
 
    <Tabs syncKey="pkgManager">
      <TabItem label="bun">
@@ -45,7 +69,38 @@ Alchemy is a simple TypeScript script that you run to deploy infrastructure. All
      </TabItem>
    </Tabs>
 
-2. **Login to Cloudflare**
+2. **Configure your profile**
+
+   Set up a profile to manage your cloud provider credentials.
+
+   <Tabs syncKey="pkgManager">
+     <TabItem label="bun">
+       ```sh
+       bun alchemy configure
+       ```
+     </TabItem>
+     <TabItem label="npm">
+       ```sh
+       npx alchemy configure
+       ```
+     </TabItem>
+     <TabItem label="pnpm">
+       ```sh
+       pnpm alchemy configure
+       ```
+     </TabItem>
+     <TabItem label="yarn">
+       ```sh
+       yarn alchemy configure
+       ```
+     </TabItem>
+   </Tabs>
+
+   :::note
+   Profiles help you manage credentials for cloud providers. Learn more about [profiles](/concepts/profiles) and how to configure multiple accounts.
+   :::
+
+3. **Login to Cloudflare**
 
    Authenticate with your Cloudflare account.
 
@@ -72,11 +127,13 @@ Alchemy is a simple TypeScript script that you run to deploy infrastructure. All
      </TabItem>
    </Tabs>
 
+
+
    :::tip
    Make sure you have a [Cloudflare account](https://dash.cloudflare.com/sign-up) (free tier works)
    :::
 
-3. **Create your infrastructure**
+4. **Create your infrastructure**
 
    Create `alchemy.run.ts` with a simple Worker:
 
@@ -94,7 +151,7 @@ Alchemy is a simple TypeScript script that you run to deploy infrastructure. All
    await app.finalize();
    ```
 
-4. **Create your worker code**
+5. **Create your worker code**
 
    Create `src/worker.ts`:
 
@@ -109,7 +166,7 @@ Alchemy is a simple TypeScript script that you run to deploy infrastructure. All
    };
    ```
 
-5. **Start development mode**
+6. **Start development mode**
 
    Use the Alchemy CLI to run in development mode with hot reloading:
 
@@ -138,7 +195,7 @@ Alchemy is a simple TypeScript script that you run to deploy infrastructure. All
 
    Your worker will be available locally with live updates as you edit your code.
 
-6. **Make a change**
+7. **Make a change**
 
    Update your worker message in `src/worker.ts`:
 
@@ -148,7 +205,7 @@ Alchemy is a simple TypeScript script that you run to deploy infrastructure. All
 
    Save the file and see the change reflected immediately.
 
-7. **Deploy to production**
+8. **Deploy to production**
 
    <Tabs syncKey="pkgManager">
      <TabItem label="bun">
@@ -175,7 +232,7 @@ Alchemy is a simple TypeScript script that you run to deploy infrastructure. All
 
    Visit the URL to see your worker live on Cloudflare's edge network.
 
-8. **(Optional) Tear down**
+9. **(Optional) Tear down**
 
    Use the Alchemy CLI to delete all of the resources:
 

@@ -1,6 +1,7 @@
 # Alchemy
 
-Alchemy is an Typescript-native Infrastructure-as-Code repository. Claude's job is to implement "Resource" providers for various cloud services by following a set up strict conventions and patterns.
+Alchemy is a Typescript-native Infrastructure-as-Code repository. 
+Your job is to implement "Resource" providers for various cloud services by following a set of strict conventions and patterns.
 
 Your job is to build and maintain resource providers following the following convention and structure:
 
@@ -35,16 +36,16 @@ examples/
 
 ## Convention
 
-> Each Resource ha one .ts file, one test suite and one documentation page
+> Each Resource has one .ts file, one test suite and one documentation page
 
 ## README
 
-Please provide a comprehensive document of all the Resources for this provider with relevant links to documentation. This is effectivel the design and internal documentation.
+Please provide a comprehensive document of all the Resources for this provider with relevant links to documentation. This is effectively the design and internal documentation.
 
 ## Resource File
 
 > [!NOTE]
-> Follow rules and conventions laid out in thge [cursorrules](./.cursorrules).
+> Follow rules and conventions laid out in the [cursorrules](./.cursorrules).
 
 ```ts
 // ./alchemy/src/{provider}/{resource}.ts
@@ -82,12 +83,12 @@ export const {Resource} = Resource(
 > [!CAUTION]
 > When designing input props, there is the common case of having a property that references another entity in the {provider} domain by Id, e.g. tableId, bucketArn, etc.
 >
-> In these cases, you should instead opt to represent this as `{resource}: string | {Resource}`, e.g. `table: string | Table`. This "lifts" the Resource into the alchemy abstraction without sacraficing support for referencing external entities by name.
+> In these cases, you should instead opt to represent this as `{resource}: string | {Resource}`, e.g. `table: string | Table`. This "lifts" the Resource into the Alchemy abstraction without sacrificing support for referencing external entities by name.
 
 ## Test Suite
 
 > [!NOTE]
-> Follow rules and conventions laid out in thge [cursorrules](./.cursorrules).
+> Follow rules and conventions laid out in the [cursorrules](./.cursorrules).
 
 ```ts
 // ./alchemy/test/{provider}/{resource}.test.ts
@@ -134,7 +135,7 @@ async function assert{Resource}DoesNotExist(api: {Provider}Client, resource: {Re
 }
 ```
 
-## Provider Overivew Docs (index.md)
+## Provider Overview Docs (index.md)
 
 Each provider folder should have an `index.md` that indexes and summarizes the provider and links to each resource.
 
@@ -161,7 +162,7 @@ Each provider folder should have an `index.md` that indexes and summarizes the p
 
 ## Example Project
 
-An example project is effectiveley a whole NPM package that demon
+An example project is effectively a whole NPM package that demonstrates
 
 ```
 examples/
@@ -172,12 +173,12 @@ examples/
     README.md
     src/
       # code
-tsconfig.json # is updated to reference examples/{provider}-{qualifer?}
+tsconfig.json # is updated to reference examples/{provider}-{qualifier?}
 ```
 
 ## Guide
 
-Each Provide has a getting started guide in ./alchemy-web/docs/guides/{provider}.md.
+Each Provider has a getting started guide in ./alchemy-web/docs/guides/{provider}.md.
 
 ```md
 ---
@@ -192,7 +193,7 @@ description: { concise description of the tutorial }
 
 ## Install
 
-{any installation pre-requisties}
+{any installation pre-requisites}
 
 ::: code-group
 
@@ -218,7 +219,7 @@ yarn ..
 
 {how to get credentials and store in .env}
 
-## Create a {Provider} applicaiton
+## Create a {Provider} application
 
 {code group with commands to run to init a new project}
 
@@ -281,10 +282,10 @@ yarn tsx ./alchemy.run --destroy
 ```
 
 > [!NOTE]
-> Claude, you should review all of the existing Cloudflare guides like [cloudflare-vitejs.md](./alchemy-web/docs/guides/cloudflare-vitejs.md) and follow the writing style and flow.
+> You should review all of the existing Cloudflare guides like [cloudflare-vitejs.md](./alchemy-web/docs/guides/cloudflare-vitejs.md) and follow the writing style and flow.
 
 > [!TIP]
-> If the Resource is mostly headless infrastructure like a database or some other service, you should use Cloudflare Workers as the runtime to "round off" the example package. E.g. for a Neon Provider, we would connect it into a Cloudlare Worker via Hyperdrive and provide a URL (via Worker) to hit that page. Ideally you'd also put ViteJS in front and hit that endpoint.
+> If the Resource is mostly headless infrastructure like a database or some other service, you should use Cloudflare Workers as the runtime to "round off" the example package e.g. for a Neon Provider, we would connect it into a Cloudflare Worker via Hyperdrive and provide a URL (via Worker) to hit that page. Ideally you'd also put ViteJS in front and hit that endpoint.
 
 # Coding Best Practices
 

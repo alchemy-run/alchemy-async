@@ -34,11 +34,11 @@ export const client = await Vite("client", {
 
 console.log("Client:", client.url);
 
-await app.finalize();
-
 if (process.env.ALCHEMY_E2E) {
   const { test } = await import("./test/e2e.ts");
   await test({
     url: server.url,
   });
 }
+
+await app.finalize();

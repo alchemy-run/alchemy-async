@@ -13,7 +13,7 @@ export interface MiniflareWorkerProxy {
 export async function createMiniflareWorkerProxy(options: {
   port: number;
   transformRequest?: (request: RequestInfo) => void;
-  getWorkerName: (request: miniflare.Request) => string;
+  getWorkerName: (request: RequestInfo) => string;
   miniflare: miniflare.Miniflare;
   mode: "local" | "remote";
 }) {
@@ -45,71 +45,50 @@ export async function createMiniflareWorkerProxy(options: {
   const handleFetch = async (
     req: http.IncomingMessage,
   ): Promise<miniflare.Response> => {
-    const { request, url } = toMiniflareRequest(req);
-    const name = options.getWorkerName(request);
-    const worker = await options.miniflare.getWorker(name);
-
-    // Handle scheduled events
-    // https://developers.cloudflare.com/workers/runtime-apis/handlers/scheduled/#background
-    // https://github.com/cloudflare/workers-sdk/blob/7d53b9ab6b370944b7934ad51ebef43160c3c775/packages/wrangler/templates/middleware/middleware-scheduled.ts#L6
-    if (url.pathname === "/__scheduled") {
-      await worker.scheduled({
-        scheduledTime: new Date(),
-        cron: url.searchParams.get("cron") ?? undefined,
-      });
-      return new miniflare.Response("Ran scheduled function");
-    }
-
-    const result = await worker
-      .fetch(request)
-      .then((response) => ({ success: true, response }) as const)
-      .catch((error) => ({ success: false, error }) as const);
-
-    // If you open the `/__scheduled` page in a browser, the browser will automatically make a request to `/favicon.ico`.
-    // For scheduled Workers _without_ a fetch handler, this will result in an unhelpful error that we don't need to log.
-    // To avoid this, inject a 404 response to favicon.ico loads on the `/__scheduled` page
-    if (
-      request.headers.get("referer")?.endsWith("/__scheduled") &&
-      url.pathname === "/favicon.ico" &&
-      !result.success
-    ) {
-      return new miniflare.Response(null, { status: 404 });
-    }
-
-    if (!result.success) {
-      throw result.error;
-    }
-
-    return result.response;
-  };
-
-  const toMiniflareRequest = (
-    req: http.IncomingMessage,
-  ): { request: miniflare.Request; url: URL } => {
     const info = parseIncomingMessage(req);
     options.transformRequest?.(info);
-    return {
-      request: new miniflare.Request(info.url, {
-        method: info.method,
-        headers: info.headers,
-        body: info.body,
-        redirect: info.redirect,
-        duplex: info.duplex,
-      }),
-      url: info.url,
-    };
+
+    const name = options.getWorkerName(info);
+    info.headers.set("MF-Route-Override", name);
+
+    // Handle scheduled events.
+    // Wrangler exposes this as /__scheduled, but Miniflare exposes it as /cdn-cgi/handler/scheduled.
+    // https://developers.cloudflare.com/workers/runtime-apis/handlers/scheduled/#background
+    // https://github.com/cloudflare/workers-sdk/blob/7d53b9ab6b370944b7934ad51ebef43160c3c775/packages/wrangler/templates/middleware/middleware-scheduled.ts#L6
+    if (info.url.pathname === "/__scheduled") {
+      info.url.pathname = "/cdn-cgi/handler/scheduled";
+    }
+
+    const request = new miniflare.Request(info.url, {
+      method: info.method,
+      headers: info.headers,
+      body: info.body,
+      redirect: info.redirect,
+      duplex: info.duplex,
+    });
+    return await options.miniflare.dispatchFetch(request);
   };
 
   const createServerWebSocket = async (req: http.IncomingMessage) => {
-    const { request } = toMiniflareRequest(req);
-    const name = options.getWorkerName(request);
-    const target = await options.miniflare.unsafeGetDirectURL(name);
+    // Rewrite to Miniflare entry URL
+    const target = await options.miniflare.ready;
     const url = new URL(req.url ?? "/", target);
     url.protocol = url.protocol.replace("http", "ws");
+
     const protocols = req.headers["sec-websocket-protocol"]
       ?.split(",")
       .map((p) => p.trim());
-    const server = new WebSocket(url, protocols);
+
+    // Get worker name to set MF-Route-Override header
+    const info = parseIncomingMessage(req);
+    options.transformRequest?.(info);
+    const name = options.getWorkerName(info);
+
+    const server = new WebSocket(url, protocols, {
+      headers: {
+        "MF-Route-Override": name,
+      },
+    });
     await once(server, "open");
     return server;
   };
@@ -121,10 +100,8 @@ export async function createMiniflareWorkerProxy(options: {
   return {
     url,
     close: async () => {
-      await Promise.all([
-        new Promise((resolve) => server.close(resolve)),
-        new Promise((resolve) => wss.close(resolve)),
-      ]);
+      // If we await this while the `wss` server is open, the server will hang.
+      server.close();
     },
   };
 }
@@ -172,7 +149,13 @@ const writeMiniflareResponseToNode = (
 ) => {
   out.statusCode = res.status;
   res.headers.forEach((value, key) => {
-    out.setHeader(key, value);
+    // The `transfer-encoding` header prevents Cloudflare Tunnels from working because of the following error:
+    // Request failed error="Unable to reach the origin service. The service may be down or it may not be
+    // responding to traffic from cloudflared: net/http: HTTP/1.x transport connection broken: too many
+    // transfer encodings: [\"chunked\" \"chunked\"]"
+    if (key !== "transfer-encoding") {
+      out.setHeader(key, value);
+    }
   });
 
   if (res.body) {

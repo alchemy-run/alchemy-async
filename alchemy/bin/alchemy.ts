@@ -8,6 +8,7 @@ import { init } from "./commands/init.ts";
 import { login } from "./commands/login.ts";
 import { logout } from "./commands/logout.ts";
 import { run } from "./commands/run.ts";
+import { telemetry } from "./commands/telemetry.ts";
 import { getPackageVersion } from "./services/get-package-version.ts";
 import { t } from "./trpc.ts";
 
@@ -21,6 +22,7 @@ const router = t.router({
   logout,
   configure,
   run,
+  telemetry,
 });
 
 export type AppRouter = typeof router;

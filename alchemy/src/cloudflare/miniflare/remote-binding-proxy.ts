@@ -82,6 +82,8 @@ export async function createRemoteProxyWorker(input: {
         headers,
         body: req.body,
         redirect: "manual",
+        // @ts-expect-error - caused by @cloudflare/workers-types
+        duplex: req.body ? "half" : undefined,
       });
 
       const responseHeaders = new Headers(res.headers);

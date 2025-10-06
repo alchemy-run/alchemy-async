@@ -4,6 +4,7 @@ import type { Context } from "../context.ts";
 import { Resource } from "../resource.ts";
 import { Scope } from "../scope.ts";
 import { isSecret } from "../secret.ts";
+import { unencryptSecrets } from "./util/filter-env-bindings.ts";
 import { assertNever } from "../util/assert-never.ts";
 import type { Bindings, WorkerBindingRateLimit } from "./bindings.ts";
 import type { R2BucketJurisdiction } from "./bucket.ts";
@@ -162,6 +163,7 @@ export async function WranglerJson(
       : undefined,
     placement: worker.placement,
     limits: worker.limits,
+    logpush: worker.logpush,
   };
 
   // Process bindings if they exist
@@ -210,14 +212,7 @@ export async function WranglerJson(
     // but do not modify `finalSpec` so that way secrets aren't written to state unencrypted.
     const withSecretsUnwrapped = {
       ...finalSpec,
-      vars: {
-        ...finalSpec.vars,
-        ...Object.fromEntries(
-          Object.entries(finalSpec.vars ?? {}).map(([key, value]) =>
-            isSecret(value) ? [key, value.unencrypted] : [key, value],
-          ),
-        ),
-      },
+      vars: unencryptSecrets(finalSpec.vars ?? {}),
     };
     await writeJSON(filePath, withSecretsUnwrapped);
   } else {
@@ -274,6 +269,15 @@ export interface WranglerJsonSpec {
   limits?: {
     cpu_ms?: number;
   };
+
+  /**
+   * Send Trace Events from this Worker to Workers Logpush.
+   *
+   * This will not configure a corresponding Logpush job automatically.
+   *
+   * @default false
+   */
+  logpush?: boolean;
 
   /**
    * Whether to enable a workers.dev URL for this worker
@@ -370,6 +374,10 @@ export interface WranglerJsonSpec {
     service: string;
     environment?: string;
     entrypoint?: string;
+  }[];
+
+  worker_loaders?: {
+    binding: string;
   }[];
 
   /**
@@ -623,6 +631,9 @@ function processBindings(
   const containers: {
     class_name: string;
   }[] = [];
+  const workerLoaders: {
+    binding: string;
+  }[] = [];
 
   for (const eventSource of eventSources ?? []) {
     if (isQueueEventSource(eventSource)) {
@@ -846,6 +857,10 @@ function processBindings(
       containers.push({
         class_name: binding.className,
       });
+    } else if (binding.type === "worker_loader") {
+      workerLoaders.push({
+        binding: bindingName,
+      });
     } else {
       console.log("binding", binding);
       // biome-ignore lint/correctness/noVoidTypeReturn: it returns never
@@ -925,5 +940,9 @@ function processBindings(
     spec.unsafe = {
       bindings: unsafeBindings,
     };
+  }
+
+  if (workerLoaders.length > 0) {
+    spec.worker_loaders = workerLoaders;
   }
 }

@@ -1,6 +1,6 @@
 /// <reference types="./env.d.ts" />
 
-import type { website } from "../alchemy.run.js";
+import type { website } from "../alchemy.run.ts";
 
 export type CloudFlareEnv = typeof website.Env;
 

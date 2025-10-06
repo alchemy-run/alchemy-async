@@ -67,6 +67,7 @@ export function createPlanetScaleClient(
       headers: {
         Authorization: token, // PlanetScale does not use the Bearer prefix
       },
+      throwOnError: true,
     }),
   );
   client.interceptors.error.use((error, response, request) => {

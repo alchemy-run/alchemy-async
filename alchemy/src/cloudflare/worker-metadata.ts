@@ -1,4 +1,5 @@
 import { assertNever } from "../util/assert-never.ts";
+import { camelToSnakeObjectDeep } from "../util/camel-to-snake.ts";
 import { logger } from "../util/logger.ts";
 import { memoize } from "../util/memoize.ts";
 import { extractCloudflareResult } from "./api-response.ts";
@@ -180,9 +181,22 @@ export interface WorkerMetadata {
   compatibility_date: string;
   compatibility_flags?: string[];
   bindings: WorkerBindingSpec[];
-  observability: {
-    enabled: boolean;
+  observability?: {
+    enabled?: boolean;
+    head_sampling_rate?: number;
+    logs?: {
+      enabled?: boolean;
+      head_sampling_rate?: number;
+      invocation_logs?: boolean;
+    };
+    traces?: {
+      enabled?: boolean;
+      head_sampling_rate?: number;
+      persist?: boolean;
+      destinations?: string[];
+    };
   };
+  logpush?: boolean;
   migrations?: SingleStepMigration;
   main_module?: string;
   body_part?: string;
@@ -234,6 +248,7 @@ export async function prepareWorkerMetadata(
       ...(oldSettings?.tags ?? []),
     ]),
   );
+
   const oldBindings = oldSettings?.bindings;
   // we use Cloudflare Worker tags to store a mapping between Alchemy's stable identifier and the binding name
   // e.g.
@@ -314,6 +329,8 @@ export async function prepareWorkerMetadata(
     return [];
   });
 
+  const observability = camelToSnakeObjectDeep(props.observability);
+
   // Prepare metadata with bindings
   const meta: WorkerMetadata = {
     compatibility_date: props.compatibilityDate,
@@ -323,8 +340,10 @@ export async function prepareWorkerMetadata(
     ),
     bindings: [],
     observability: {
-      enabled: props.observability?.enabled !== false,
+      ...observability,
+      enabled: observability?.enabled !== false,
     },
+    logpush: props.logpush ?? false,
     // TODO(sam): base64 encode instead? 0 collision risk vs readability.
     tags: [
       // encode a mapping table of Durable Object stable ID -> binding name
@@ -548,6 +567,11 @@ export async function prepareWorkerMetadata(
         type: "dispatch_namespace",
         name: bindingName,
         namespace: binding.namespaceName,
+      });
+    } else if (binding.type === "worker_loader") {
+      meta.bindings.push({
+        type: "worker_loader",
+        name: bindingName,
       });
     } else if (binding.type === "secret_key") {
       meta.bindings.push({

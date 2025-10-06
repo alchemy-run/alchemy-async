@@ -1,21 +1,14 @@
 import { describe, expect, test } from "vitest";
 import { alchemy } from "../src/alchemy.ts";
 import { Scope } from "../src/scope.ts";
-import { TelemetryClient } from "../src/util/telemetry/client.ts";
 
 describe("Scope Provider Credentials", () => {
   test("should support AWS credentials at scope level", () => {
-    const telemetryClient = TelemetryClient.create({
-      phase: "up",
-      enabled: false,
-      quiet: true,
-    });
-
     const scope = new Scope({
       scopeName: "test-scope",
       parent: undefined,
       phase: "up",
-      telemetryClient,
+      noTrack: true,
       // AWS credentials using the extensible pattern
       aws: {
         region: "us-west-2",
@@ -31,17 +24,11 @@ describe("Scope Provider Credentials", () => {
   });
 
   test("should support Cloudflare credentials at scope level", () => {
-    const telemetryClient = TelemetryClient.create({
-      phase: "up",
-      enabled: false,
-      quiet: true,
-    });
-
     const scope = new Scope({
       scopeName: "test-scope",
       parent: undefined,
       phase: "up",
-      telemetryClient,
+      noTrack: true,
       // Cloudflare credentials using the extensible pattern
       cloudflare: {
         accountId: "abc123",
@@ -56,17 +43,11 @@ describe("Scope Provider Credentials", () => {
   });
 
   test("should support both AWS and Cloudflare credentials at scope level", () => {
-    const telemetryClient = TelemetryClient.create({
-      phase: "up",
-      enabled: false,
-      quiet: true,
-    });
-
     const scope = new Scope({
       scopeName: "test-scope",
       parent: undefined,
       phase: "up",
-      telemetryClient,
+      noTrack: true,
       // Both providers can be configured simultaneously
       aws: {
         region: "us-west-2",
@@ -88,34 +69,22 @@ describe("Scope Provider Credentials", () => {
   });
 
   test("should handle scope with no provider credentials", () => {
-    const telemetryClient = TelemetryClient.create({
-      phase: "up",
-      enabled: false,
-      quiet: true,
-    });
-
     const scope = new Scope({
       scopeName: "test-scope",
       parent: undefined,
       phase: "up",
-      telemetryClient,
+      noTrack: true,
     });
 
     expect(scope.providerCredentials).toEqual({});
   });
 
   test("should ignore unknown provider credentials", () => {
-    const telemetryClient = TelemetryClient.create({
-      phase: "up",
-      enabled: false,
-      quiet: true,
-    });
-
     const scope = new Scope({
       scopeName: "test-scope",
       parent: undefined,
       phase: "up",
-      telemetryClient,
+      noTrack: true,
       aws: {
         region: "us-west-2",
       },

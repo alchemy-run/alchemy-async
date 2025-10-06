@@ -93,9 +93,28 @@ export interface ContainerProps
  * - `basic`: Basic production instances with standard resources
  * - `standard`: Standard production instances with enhanced resources
  *
+ * | Instance Type  | vCPU | Memory (Min) | Memory (Max) |
+ * |---------------|------|--------------|--------------|
+ * | lite          | 1/16 | 256 MiB      | 2 GB         |
+ * | basic         | 1/4  | 1 GiB        | 4 GB         |
+ * | standard-1    | 1/2  | 4 GiB        | 8 GB         |
+ * | standard-2    | 1    | 6 GiB        | 12 GB        |
+ * | standard-3    | 2    | 8 GiB        | 16 GB        |
+ * | standard-4    | 4    | 12 GiB       | 20 GB        |
+ *
  * @see https://developers.cloudflare.com/containers/pricing/
+ * @see https://developers.cloudflare.com/changelog/2025-10-01-new-container-instance-types/
  */
-export type InstanceType = "dev" | "basic" | "standard" | (string & {});
+export type InstanceType =
+  | "lite"
+  | "dev"
+  | "basic"
+  | "standard"
+  | "standard-1"
+  | "standard-2"
+  | "standard-3"
+  | "standard-4"
+  | (string & {});
 
 /**
  * Type guard to check if a binding is a Container binding.

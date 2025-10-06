@@ -282,10 +282,7 @@ export const AccountApiToken = Resource(
       return this.destroy();
     }
 
-    const permissionGroups = await PermissionGroups(
-      "cloudflare-permission-groups",
-      props,
-    );
+    const permissionGroups = await PermissionGroups();
 
     // Transform our properties to API format
     const apiPayload = {

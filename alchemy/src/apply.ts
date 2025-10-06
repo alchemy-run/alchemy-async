@@ -19,7 +19,7 @@ import { serialize } from "./serde.ts";
 import type { State } from "./state.ts";
 import { formatFQN } from "./util/cli.ts";
 import { logger } from "./util/logger.ts";
-import type { Telemetry } from "./util/telemetry/index.ts";
+import { createAndSendEvent } from "./util/telemetry.ts";
 
 export interface ApplyOptions {
   quiet?: boolean;
@@ -83,9 +83,13 @@ async function _apply<Out extends ResourceAttributes>(
         // we are running in a monorepo and are not the selected app, so we need to wait for the process to be consistent
         state = await waitForConsistentState();
       }
-      scope.telemetryClient.record({
+      createAndSendEvent({
         event: "resource.read",
+        phase: scope.phase,
+        duration: performance.now() - start,
+        status: state.status,
         resource: resource[ResourceKind],
+        replaced: false,
       });
       return state.output as Awaited<Out> & Resource;
 
@@ -179,10 +183,13 @@ async function _apply<Out extends ResourceAttributes>(
             status: "success",
           });
         }
-        scope.telemetryClient.record({
+        createAndSendEvent({
           event: "resource.skip",
           resource: resource[ResourceKind],
           status: state.status,
+          phase: scope.phase,
+          duration: performance.now() - start,
+          replaced: false,
         });
         return state.output as Awaited<Out> & Resource;
       }
@@ -202,10 +209,13 @@ async function _apply<Out extends ResourceAttributes>(
       });
     }
 
-    scope.telemetryClient.record({
+    createAndSendEvent({
       event: "resource.start",
       resource: resource[ResourceKind],
       status: state.status,
+      phase: scope.phase,
+      duration: performance.now() - start,
+      replaced: false,
     });
 
     await scope.state.set(resource[ResourceID], state);
@@ -326,11 +336,12 @@ async function _apply<Out extends ResourceAttributes>(
     }
 
     const status = phase === "create" ? "created" : "updated";
-    scope.telemetryClient.record({
+    createAndSendEvent({
       event: "resource.success",
       resource: resource[ResourceKind],
       status,
-      elapsed: performance.now() - start,
+      phase: scope.phase,
+      duration: performance.now() - start,
       replaced: isReplaced,
     });
 
@@ -347,12 +358,18 @@ async function _apply<Out extends ResourceAttributes>(
     });
     return output as Awaited<Out> & Resource;
   } catch (error) {
-    scope.telemetryClient.record({
-      event: "resource.error",
-      resource: resource[ResourceKind],
-      error: error as Telemetry.ErrorInput,
-      elapsed: performance.now() - start,
-    });
+    let errorToSend = error instanceof Error ? error : new Error(String(error));
+    createAndSendEvent(
+      {
+        event: "resource.error",
+        resource: resource[ResourceKind],
+        duration: performance.now() - start,
+        phase: scope.phase,
+        status: "unknown",
+        replaced: false,
+      },
+      errorToSend,
+    );
     scope.fail();
     throw error;
   }

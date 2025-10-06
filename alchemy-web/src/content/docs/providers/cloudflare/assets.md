@@ -3,7 +3,7 @@ title: Assets
 description: Learn how to deploy and manage static assets on Cloudflare using Alchemy for optimal performance and delivery.
 ---
 
-The Assets resource lets you add [static assets](https://developers.cloudflare.com/workers/configuration/sites/) to your Cloudflare Workers.
+The Assets resource lets you add [static assets](https://developers.cloudflare.com/workers/static-assets/) to your Cloudflare Workers.
 
 ## Minimal Example
 

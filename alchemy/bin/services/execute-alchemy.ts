@@ -72,6 +72,10 @@ export const execArgs = {
     .string()
     .optional()
     .describe("Path to the root directory of the project"),
+  profile: z
+    .string()
+    .optional()
+    .describe("Alchemy profile to use for authoriziing requests"),
 } as const;
 
 export async function execAlchemy(
@@ -92,6 +96,7 @@ export async function execAlchemy(
     adopt,
     app,
     rootDir,
+    profile,
   }: {
     cwd?: string;
     quiet?: boolean;
@@ -108,6 +113,7 @@ export async function execAlchemy(
     inspectWait?: boolean;
     app?: string;
     rootDir?: string;
+    profile?: string;
   },
 ) {
   const args: string[] = [];
@@ -132,6 +138,7 @@ export async function execAlchemy(
   if (inspectWait) execArgs.push("--inspect-wait");
   if (inspectBrk) execArgs.push("--inspect-brk");
   if (adopt) args.push("--adopt");
+  if (profile) args.push(`--profile ${profile}`);
   if (app) args.push(`--app ${app}`);
   if (rootDir) {
     args.push(`--root-dir ${rootDir}`);

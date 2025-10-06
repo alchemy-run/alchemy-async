@@ -27,6 +27,7 @@
       "./examples/*/test/**/*.ts",
       "./tests/*/**/*.ts",
       "./examples/*/*.ts",
+      "!.worktrees",
       "!**/node_modules",
       "examples/cloudflare-tanstack-start/src/**/*.{ts,tsx}",
       "!examples/cloudflare-tanstack-start/src/routeTree.gen.ts",

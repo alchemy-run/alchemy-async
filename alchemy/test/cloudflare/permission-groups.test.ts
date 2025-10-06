@@ -10,12 +10,10 @@ const test = alchemy.test(import.meta, {
 });
 
 describe("PermissionGroups Resource", () => {
-  const testId = `${BRANCH_PREFIX}-permission-groups`;
-
   test("fetch and verify well-known permission groups", async (scope) => {
     try {
       // Fetch all permission groups
-      const permissionGroups = await PermissionGroups(testId);
+      const permissionGroups = await PermissionGroups();
 
       // Verify the resource has expected properties
       expect(permissionGroups).toBeTruthy();

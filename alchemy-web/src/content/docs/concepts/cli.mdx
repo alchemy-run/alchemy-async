@@ -29,13 +29,14 @@ alchemy deploy [script] [options]
 Deploy an Alchemy project by running `alchemy deploy`. 
 
 - `script` (optional): Path to the entrypoint file. Defaults to `./alchemy.run.ts` or `./alchemy.run.js`
-- `--cwd` - Path to the project directory (defaults to current directory)
-- `--quiet` - Suppress Create/Update/Delete messages (default: `false`) 
 - `--stage` - Specify which stage/environment to target. Defaults to your username (`$USER`, or `$USERNAME` on Windows)
+- `--profile` - The Alchemy profile to use for authoriziing requests (default: `default`)
 - `--env-file` - Path to environment file to load
 - `--watch` - Watch for changes to infrastructure and redeploy automatically (default: false)
 - `--force` - Apply updates to resources even if there are no changes (default: false)
 - `--adopt` - Adopt existing resources that are not yet managed by your Alchemy app (default: false)
+- `--cwd` - Path to the project directory (defaults to current directory)
+- `--quiet` - Suppress Create/Update/Delete messages (default: `false`) 
 - `-h, --help` - Display help for command
 
 :::tip
@@ -48,6 +49,9 @@ alchemy deploy
 
 # specify a stage
 alchemy deploy --stage prod 
+
+# deploy the default stage
+alchemy deploy --profile prod
 
 # adopt existing resources
 alchemy deploy --adopt 
@@ -114,9 +118,10 @@ alchemy destroy [script] [options]
 Destroy all resources in an Alchemy project.
 
 - `script` (optional): Path to the entrypoint file. Defaults to `./alchemy.run.ts` or `./alchemy.run.js`
+- `--stage` - Specify which stage/environment to target. Defaults to your username (`$USER`, or `$USERNAME` on Windows)
+- `--profile` - The Alchemy profile to use for authoriziing requests (default: `default`)
 - `--cwd` - Path to the project directory (defaults to current directory)
 - `--quiet` - Suppress Create/Update/Delete messages (default: `false`) 
-- `--stage` - Specify which stage/environment to target. Defaults to your username (`$USER`, or `$USERNAME` on Windows)
 - `--env-file` - Path to environment file to load
 - `-h, --help` - Display help for command
 
@@ -182,12 +187,13 @@ alchemy dev [script] [options]
 Run an Alchemy program in dev-mode with local simulation and hot reloading.
 
 - `script` (optional): Path to the entrypoint file. Defaults to `./alchemy.run.ts` or `./alchemy.run.js`
-- `--cwd` - Path to the project directory (defaults to current directory)
-- `--quiet` - Suppress Create/Update/Delete messages (default: `false`) 
 - `--stage` - Specify which stage/environment to target. Defaults to your username (`$USER`, or `$USERNAME` on Windows)
+- `--profile` - The Alchemy profile to use for authoriziing requests (default: `default`)
 - `--env-file` - Path to environment file to load
 - `--force` - Apply updates to resources even if there are no changes (default: false)
 - `--adopt` - Adopt existing resources that are not yet managed by your Alchemy app (default: false)
+- `--cwd` - Path to the project directory (defaults to current directory)
+- `--quiet` - Suppress Create/Update/Delete messages (default: `false`) 
 - `-h, --help` - Display help for command
 
 :::tip
@@ -198,8 +204,11 @@ Here are some examples of how to use the `dev` command:
 # run dev mode with default settings
 alchemy dev
 
+# specify a profile
+alchemy dev --profile prod
+
 # specify a stage
-alchemy dev --stage dev
+alchemy dev --stage dev --profile dev
 
 # use a custom script
 alchemy dev ./my-infra.ts
@@ -258,11 +267,12 @@ alchemy run [script] [options]
 Run an Alchemy program with read-only access to your infrastructure. No changes will be applied to your resources.
 
 - `script` (optional): Path to the entrypoint file. Defaults to `./alchemy.run.ts` or `./alchemy.run.js`
-- `--cwd` - Path to the project directory (defaults to current directory)
-- `--quiet` - Suppress Create/Update/Delete messages (default: `false`) 
 - `--stage` - Specify which stage/environment to target. Defaults to your username (`$USER`, or `$USERNAME` on Windows)
+- `--profile` - The Alchemy profile to use for authoriziing requests (default: `default`)
 - `--env-file` - Path to environment file to load
 - `--watch` - Watch for changes to infrastructure and redeploy automatically (default: `false`)
+- `--cwd` - Path to the project directory (defaults to current directory)
+- `--quiet` - Suppress Create/Update/Delete messages (default: `false`) 
 - `-h, --help` - Display help for command
 
 :::tip
