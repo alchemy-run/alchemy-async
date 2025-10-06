@@ -294,6 +294,199 @@ yarn tsx ./alchemy.run --destroy
 
 ## Resource Implementation
 
+### Type Definition Patterns
+
+Alchemy resources follow a specific type definition pattern that ensures type safety and consistency. The key principle is that **the output interface name MUST match the exported resource name** to create a pseudo-class construct:
+
+```ts
+// ✅ CORRECT: Interface name matches exported resource name
+export interface Hyperdrive extends Resource<"cloudflare::Hyperdrive"> {
+  // ... properties
+}
+export const Hyperdrive = Resource(/* ... */);
+
+// ❌ INCORRECT: Interface name doesn't match
+export interface HyperdriveOutput extends Resource<"cloudflare::Hyperdrive"> {
+  // ... properties  
+}
+export const Hyperdrive = Resource(/* ... */);
+```
+
+```ts
+// 1. Define Props interface for input parameters
+export interface MyResourceProps extends CloudflareApiOptions {
+  /**
+   * Name of the resource
+   * @default ${app}-${stage}-${id}
+   */
+  name?: string;
+  
+  /**
+   * Configuration object
+   */
+  config: {
+    property: string;
+    secret?: string | Secret;
+  };
+  
+  /**
+   * Whether to adopt an existing resource
+   * @default false
+   */
+  adopt?: boolean;
+  
+  // Internal properties for lifecycle management
+  /** @internal */
+  resourceId?: string;
+}
+
+// 2. Define output type using Omit pattern
+// The Omit pattern removes input-only properties and adds computed/transformed properties
+export type MyResource = Omit<MyResourceProps, "config" | "adopt"> & {
+  /**
+   * The ID of the resource
+   */
+  id: string;
+  
+  /**
+   * Name of the resource (required in output)
+   */
+  name: string;
+  
+  /**
+   * The provider-generated ID
+   */
+  resourceId: string;
+  
+  /**
+   * Configuration (transformed for output)
+   */
+  config: {
+    property: string;
+    secret: Secret; // Always wrapped in Secret for output
+  };
+  
+  /**
+   * Resource type identifier for binding
+   * @internal
+   */
+  type: "my-resource";
+};
+```
+
+### Resource Implementation Pattern
+
+Resources are implemented using the pseudo-class pattern with proper lifecycle management:
+
+```ts
+export const MyResource = Resource(
+  "provider::MyResource",
+  async function (
+    this: Context<MyResource>,
+    id: string,
+    props: MyResourceProps,
+  ): Promise<MyResource> {
+    const resourceId = props.resourceId || this.output?.resourceId;
+    const adopt = props.adopt || this.scope.adopt;
+    const name = props.name ?? this.output?.name ?? this.scope.createPhysicalName(id);
+
+    if (this.scope.local) {
+      // Local development mode - return mock data
+      return {
+        id,
+        name,
+        resourceId: resourceId || "",
+        config: {
+          property: props.config.property,
+          secret: Secret.wrap(props.config.secret || ""),
+        },
+        type: "my-resource",
+      };
+    }
+
+    const api = await createProviderApi(props);
+
+    if (this.phase === "delete") {
+      if (!resourceId) {
+        logger.warn(`No resourceId found for ${id}, skipping delete`);
+        return this.destroy();
+      }
+
+      try {
+        const deleteResponse = await api.delete(`/resources/${resourceId}`);
+        if (!deleteResponse.ok && deleteResponse.status !== 404) {
+          await handleApiError(deleteResponse, "delete", "resource", id);
+        }
+      } catch (error) {
+        logger.error(`Error deleting resource ${id}:`, error);
+        throw error;
+      }
+      return this.destroy();
+    }
+
+    // Prepare request body with unwrapped secrets
+    const requestBody = {
+      name,
+      config: {
+        ...props.config,
+        secret: Secret.unwrap(props.config.secret),
+      },
+    };
+
+    let result: ApiResponse;
+    if (resourceId) {
+      // Update existing resource
+      result = await extractApiResult<ApiResponse>(
+        `update resource "${resourceId}"`,
+        api.put(`/resources/${resourceId}`, requestBody),
+      );
+    } else {
+      try {
+        // Create new resource
+        result = await extractApiResult<ApiResponse>(
+          `create resource "${name}"`,
+          api.post("/resources", requestBody),
+        );
+      } catch (error) {
+        if (error instanceof ApiError && error.code === "ALREADY_EXISTS") {
+          if (!adopt) {
+            throw new Error(
+              `Resource "${name}" already exists. Use adopt: true to adopt it.`,
+              { cause: error },
+            );
+          }
+          const existing = await findResourceByName(api, name);
+          if (!existing) {
+            throw new Error(
+              `Resource "${name}" failed to create due to name conflict and could not be found for adoption.`,
+              { cause: error },
+            );
+          }
+          result = await extractApiResult<ApiResponse>(
+            `adopt resource "${name}"`,
+            api.put(`/resources/${existing.id}`, requestBody),
+          );
+        } else {
+          throw error;
+        }
+      }
+    }
+
+    // Construct the output object from API response and props
+    return {
+      id,
+      name: result.name,
+      resourceId: result.id,
+      config: {
+        property: result.config.property,
+        secret: Secret.wrap(props.config.secret),
+      },
+      type: "my-resource",
+    };
+  },
+);
+```
+
 ### Runtime Bindings
 
 When adding a new resource type that can be used as a binding:
@@ -318,16 +511,59 @@ return {
 };
 ```
 
-### Resource Output Properties
+### Secret Handling
 
-Always include relevant metadata in resource outputs:
+Always use `alchemy.secret()` for sensitive values and properly handle them in the resource lifecycle:
 
 ```ts
-export interface MyResource extends Resource<"provider::my-resource"> {
-  // Include both human-readable names and system IDs
-  resourceName: string;
-  resourceId: string;
-  // Include any other metadata that callers might need
+// Input props can accept string | Secret
+export interface MyResourceProps {
+  password: string | Secret;
+}
+
+// Output always wraps secrets
+export type MyResource = {
+  password: Secret;
+};
+
+// In implementation, unwrap for API calls, wrap for output
+const requestBody = {
+  password: Secret.unwrap(props.password),
+};
+
+return {
+  password: Secret.wrap(props.password),
+};
+```
+
+### Adoption Pattern
+
+Resources should support adoption of existing resources when conflicts occur:
+
+```ts
+// Check for adoption scenarios
+if (error instanceof ApiError && error.code === "ALREADY_EXISTS") {
+  if (!adopt) {
+    throw new Error(
+      `Resource "${name}" already exists. Use adopt: true to adopt it.`,
+      { cause: error },
+    );
+  }
+  
+  // Find and adopt existing resource
+  const existing = await findResourceByName(api, name);
+  if (!existing) {
+    throw new Error(
+      `Resource "${name}" failed to create due to name conflict and could not be found for adoption.`,
+      { cause: error },
+    );
+  }
+  
+  // Update existing resource with new configuration
+  result = await extractApiResult<ApiResponse>(
+    `adopt resource "${name}"`,
+    api.put(`/resources/${existing.id}`, requestBody),
+  );
 }
 ```
 
@@ -341,6 +577,75 @@ if (currentResource.name !== props.name) {
   throw new Error(
     `Cannot change resource name from '${currentResource.name}' to '${props.name}'. Name is immutable after creation.`
   );
+}
+```
+
+### Context and Phase Handling
+
+Alchemy resources use a Context object that provides access to the current lifecycle phase and resource state:
+
+```ts
+export const MyResource = Resource(
+  "provider::MyResource",
+  async function (
+    this: Context<MyResource>, // Context provides type-safe access to current state
+    id: string,
+    props: MyResourceProps,
+  ): Promise<MyResource> {
+    // Access current phase: "create", "update", or "delete"
+    if (this.phase === "delete") {
+      // Handle deletion logic
+      return this.destroy();
+    }
+    
+    // Access current resource state
+    const currentState = this.output;
+    
+    // Access scope information
+    const isLocal = this.scope.local;
+    const adopt = props.adopt ?? this.scope.adopt;
+    
+    // Create physical names using scope
+    const name = props.name ?? this.scope.createPhysicalName(id);
+    
+    // Handle different phases
+    if (this.phase === "update" && currentState) {
+      // Update existing resource
+      // Validate immutable properties
+      if (currentState.name !== props.name) {
+        throw new Error("Cannot change immutable property 'name'");
+      }
+    }
+    
+    // Phase-specific logic
+    switch (this.phase) {
+      case "create":
+        // Handle creation
+        break;
+      case "update":
+        // Handle updates
+        break;
+      case "delete":
+        // Handle deletion
+        return this.destroy();
+    }
+  },
+);
+```
+
+### Local Development Support
+
+Resources should support local development mode by checking `this.scope.local`:
+
+```ts
+if (this.scope.local) {
+  // Return mock data for local development
+  return {
+    id,
+    name: props.name || id,
+    // ... other mock properties
+    type: "my-resource",
+  };
 }
 ```
 
@@ -404,6 +709,94 @@ test("end-to-end workflow", async (scope) => {
 
 - **Minimize cross-resource dependencies**: Resources should be as independent as possible
 - **Clear separation of concerns**: Keep API calls, validation, and business logic separate
+
+## Alchemy.run Patterns
+
+### Application Scoping
+
+Alchemy.run provides application-level scoping with automatic CLI argument parsing:
+
+```ts
+// Basic usage with automatic CLI argument parsing
+const app = await alchemy("my-app");
+// Now supports: --destroy, --read, --quiet, --stage my-stage
+
+// With explicit options (overrides CLI args)
+const app = await alchemy("my-app", {
+  stage: "prod",
+  password: process.env.SECRET_PASSPHRASE // Required for secrets
+});
+
+// Create resources within the scope
+const resource = await MyResource("my-resource", {
+  name: "my-resource",
+  apiKey: alchemy.secret(process.env.API_KEY)
+});
+
+await app.finalize(); // Always call finalize()
+```
+
+### Secret Management
+
+Alchemy provides secure secret handling with encryption:
+
+```ts
+// Create encrypted secrets
+const secret = alchemy.secret(process.env.API_KEY);
+
+// Use in resource props
+const resource = await MyResource("api", {
+  apiKey: secret,
+  database: alchemy.secret(process.env.DB_PASSWORD)
+});
+
+// Secrets are automatically encrypted in state files
+```
+
+### Resource Lifecycle
+
+Resources follow a consistent lifecycle pattern:
+
+```ts
+// 1. Resource creation/update
+const resource = await MyResource("id", props);
+
+// 2. Access resource properties
+console.log(resource.name);
+console.log(resource.url);
+
+// 3. Resources are automatically tracked in scope
+// 4. Cleanup happens automatically when scope is destroyed
+```
+
+### Concurrency and Batching
+
+Alchemy.run handles resource concurrency efficiently:
+
+```ts
+// Resources can be created concurrently
+const [worker, bucket, database] = await Promise.all([
+  Worker("api", { entrypoint: "./src/worker.ts" }),
+  R2Bucket("storage", { name: "my-bucket" }),
+  D1Database("db", { name: "my-db" })
+]);
+
+// Batch operations are optimized automatically
+// Keep batches under 50 resources for optimal performance
+```
+
+### Error Handling and Retries
+
+Alchemy implements robust error handling:
+
+```ts
+// Automatic retry with exponential backoff on failures
+// Not on client-side timeouts (reduces compute costs)
+const resource = await MyResource("id", props);
+
+// Error handling is built into the resource lifecycle
+// Resources handle their own cleanup on failure
+```
 
 # Test Workflow
 
