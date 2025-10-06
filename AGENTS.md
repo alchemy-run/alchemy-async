@@ -298,6 +298,36 @@ yarn tsx ./alchemy.run --destroy
 
 Alchemy resources follow a specific type definition pattern that ensures type safety and consistency. The key principle is that **the output interface name MUST match the exported resource name** to create a pseudo-class construct:
 
+#### Flat Properties vs Nested Objects
+
+Prefer flat properties over nested configuration objects for better developer experience and type safety:
+
+```ts
+// ✅ PREFERRED: Flat properties
+export interface MyResourceProps {
+  name?: string;
+  region: string;
+  secret?: string | Secret;
+  timeout?: number;
+}
+
+// ❌ AVOID: Nested configuration objects
+export interface MyResourceProps {
+  name?: string;
+  config: {
+    region: string;
+    secret?: string | Secret;
+    timeout?: number;
+  };
+}
+```
+
+Flat properties provide:
+- Better IDE autocomplete and type checking
+- Cleaner resource creation syntax
+- Easier validation and error handling
+- More intuitive API design
+
 ```ts
 // ✅ CORRECT: Interface name matches exported resource name
 export interface Hyperdrive extends Resource<"cloudflare::Hyperdrive"> {
@@ -314,7 +344,12 @@ export const Hyperdrive = Resource(/* ... */);
 
 ```ts
 // 1. Define Props interface for input parameters
-export interface MyResourceProps extends CloudflareApiOptions {
+// Note: Extend provider-specific credential interfaces when applicable:
+// - Cloudflare: extends CloudflareApiOptions
+// - AWS: extends AwsClientProps
+// - Other providers: define their own credential patterns
+
+export interface MyResourceProps {
   /**
    * Name of the resource
    * @default ${app}-${stage}-${id}
@@ -322,12 +357,15 @@ export interface MyResourceProps extends CloudflareApiOptions {
   name?: string;
   
   /**
-   * Configuration object
+   * Property description
    */
-  config: {
-    property: string;
-    secret?: string | Secret;
-  };
+  property: string;
+  
+  /**
+   * Secret value for authentication
+   * Use alchemy.secret() to securely store this value
+   */
+  secret?: string | Secret;
   
   /**
    * Whether to adopt an existing resource
@@ -342,7 +380,7 @@ export interface MyResourceProps extends CloudflareApiOptions {
 
 // 2. Define output type using Omit pattern
 // The Omit pattern removes input-only properties and adds computed/transformed properties
-export type MyResource = Omit<MyResourceProps, "config" | "adopt"> & {
+export type MyResource = Omit<MyResourceProps, "adopt"> & {
   /**
    * The ID of the resource
    */
@@ -359,12 +397,9 @@ export type MyResource = Omit<MyResourceProps, "config" | "adopt"> & {
   resourceId: string;
   
   /**
-   * Configuration (transformed for output)
+   * Secret value (always wrapped in Secret for output)
    */
-  config: {
-    property: string;
-    secret: Secret; // Always wrapped in Secret for output
-  };
+  secret: Secret;
   
   /**
    * Resource type identifier for binding
@@ -396,10 +431,8 @@ export const MyResource = Resource(
         id,
         name,
         resourceId: resourceId || "",
-        config: {
-          property: props.config.property,
-          secret: Secret.wrap(props.config.secret || ""),
-        },
+        property: props.property,
+        secret: Secret.wrap(props.secret || ""),
         type: "my-resource",
       };
     }
@@ -427,10 +460,8 @@ export const MyResource = Resource(
     // Prepare request body with unwrapped secrets
     const requestBody = {
       name,
-      config: {
-        ...props.config,
-        secret: Secret.unwrap(props.config.secret),
-      },
+      property: props.property,
+      secret: Secret.unwrap(props.secret),
     };
 
     let result: ApiResponse;
@@ -477,10 +508,8 @@ export const MyResource = Resource(
       id,
       name: result.name,
       resourceId: result.id,
-      config: {
-        property: result.config.property,
-        secret: Secret.wrap(props.config.secret),
-      },
+      property: result.property,
+      secret: Secret.wrap(props.secret),
       type: "my-resource",
     };
   },
@@ -514,6 +543,21 @@ return {
 ### Secret Handling
 
 Always use `alchemy.secret()` for sensitive values and properly handle them in the resource lifecycle:
+
+#### Secret Creation Patterns
+
+```ts
+// ✅ PREFERRED: alchemy.secret.env.X (better error messages)
+const secret = alchemy.secret.env.API_KEY;
+
+// ✅ ACCEPTABLE: alchemy.secret(process.env.X) (more familiar to LLMs)
+const secret = alchemy.secret(process.env.API_KEY);
+
+// ❌ AVOID: Plain environment variables without encryption
+const secret = process.env.API_KEY;
+```
+
+#### Resource Implementation
 
 ```ts
 // Input props can accept string | Secret
@@ -730,7 +774,7 @@ const app = await alchemy("my-app", {
 // Create resources within the scope
 const resource = await MyResource("my-resource", {
   name: "my-resource",
-  apiKey: alchemy.secret(process.env.API_KEY)
+  apiKey: alchemy.secret.env.API_KEY
 });
 
 await app.finalize(); // Always call finalize()
@@ -742,12 +786,12 @@ Alchemy provides secure secret handling with encryption:
 
 ```ts
 // Create encrypted secrets
-const secret = alchemy.secret(process.env.API_KEY);
+const secret = alchemy.secret.env.API_KEY;
 
 // Use in resource props
 const resource = await MyResource("api", {
   apiKey: secret,
-  database: alchemy.secret(process.env.DB_PASSWORD)
+  database: alchemy.secret.env.DB_PASSWORD
 });
 
 // Secrets are automatically encrypted in state files
