@@ -5,10 +5,8 @@ import type { Secret } from "../secret.ts";
 import { diff } from "../util/diff.ts";
 import { lowercaseId } from "../util/nanoid.ts";
 import { createPlanetScaleClient, type PlanetScaleProps } from "./api.ts";
-import type { Organization } from "./api/types.gen.ts";
 import type { Branch } from "./branch.ts";
 import type { Database } from "./database.ts";
-import { OrganizationRef } from "./organization.ts";
 
 /**
  * Properties for creating or updating a PlanetScale Branch
@@ -24,8 +22,9 @@ export interface PasswordProps extends PlanetScaleProps {
   /**
    * The organization ID where the password will be created
    * Required when using string database name, optional when using Database or Branch resource
+   * @default process.env.PLANETSCALE_ORGANIZATION
    */
-  organization?: string | Organization;
+  organization?: string;
 
   /**
    * The database where the password will be created
@@ -273,28 +272,32 @@ export const Password = Resource(
         "Organization ID is required when using string database name",
       );
     }
-    const organizationName =
-      props.organization != null
-        ? typeof props.organization === "string"
-          ? props.organization
-          : await OrganizationRef(props.organization).then(
-              (organization) => organization.name!,
-            )
-        : await OrganizationRef((props.database as Database).organization).then(
-            (organization) => organization.name!,
-          );
+
+    const organization =
+      props.organization ??
+      (typeof props.database !== "string"
+        ? props.database.organization
+        : typeof props.branch !== "string" && props.branch
+          ? props.branch.organization
+          : (process.env.PLANETSCALE_ORGANIZATION ??
+            process.env.PLANETSCALE_ORG_ID));
     const database =
       typeof props.database === "string" ? props.database : props.database.name;
     const branch =
       typeof props.branch === "string"
         ? props.branch
         : (props.branch?.name ?? "main");
+    if (!organization) {
+      throw new Error(
+        "PlanetScale organization is required. Please set the `organization` property or the `PLANETSCALE_ORGANIZATION` environment variable.",
+      );
+    }
 
     if (this.phase === "delete") {
       if (this.output?.id) {
         const res = await api.deletePassword({
           path: {
-            organization: organizationName,
+            organization,
             database,
             branch,
             id: this.output.id,
@@ -321,7 +324,7 @@ export const Password = Resource(
       }
       await api.updatePassword({
         path: {
-          organization: organizationName,
+          organization,
           database,
           branch,
           id: this.output.id,
@@ -341,7 +344,7 @@ export const Password = Resource(
 
     const { data } = await api.createPassword({
       path: {
-        organization: organizationName,
+        organization,
         database,
         branch,
       },

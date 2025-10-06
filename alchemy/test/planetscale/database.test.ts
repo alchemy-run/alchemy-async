@@ -27,7 +27,7 @@ describe.skipIf(!process.env.PLANETSCALE_TEST).concurrent.each(kinds)(
   "Database Resource ($kind)",
   ({ kind, ...expectedClusterSizes }) => {
     const api = createPlanetScaleClient();
-    const organizationName = alchemy.env.PLANETSCALE_ORG_ID;
+    const organization = alchemy.env.PLANETSCALE_ORG_ID;
 
     test(`create database with minimal settings (${kind})`, async (scope) => {
       const name = `${BRANCH_PREFIX}-${kind}-basic`;
@@ -35,7 +35,6 @@ describe.skipIf(!process.env.PLANETSCALE_TEST).concurrent.each(kinds)(
       try {
         const database = await Database("basic", {
           name,
-          organization: organizationName,
           clusterSize: "PS_10",
           kind,
         });
@@ -44,7 +43,7 @@ describe.skipIf(!process.env.PLANETSCALE_TEST).concurrent.each(kinds)(
           id: expect.any(String),
           name,
           defaultBranch: "main",
-          organization: organizationName,
+          organization,
           state: expect.any(String),
           plan: expect.any(String),
           createdAt: expect.any(String),
@@ -54,12 +53,12 @@ describe.skipIf(!process.env.PLANETSCALE_TEST).concurrent.each(kinds)(
         });
 
         // Branch won't exist until database is ready
-        await waitForDatabaseReady(api, organizationName, name);
+        await waitForDatabaseReady(api, organization, name);
 
         // Verify main branch cluster size
         const { data: mainBranchData } = await api.getBranch({
           path: {
-            organization: organizationName,
+            organization,
             database: name,
             name: "main",
           },
@@ -69,7 +68,7 @@ describe.skipIf(!process.env.PLANETSCALE_TEST).concurrent.each(kinds)(
       } finally {
         await destroy(scope);
         // Verify database was deleted by checking API directly
-        await assertDatabaseDeleted(api, organizationName, name);
+        await assertDatabaseDeleted(api, organization, name);
       }
     }, 5_000_000); // postgres takes forever
 
@@ -80,7 +79,6 @@ describe.skipIf(!process.env.PLANETSCALE_TEST).concurrent.each(kinds)(
         // Create test database with initial settings
         database = await Database("crud", {
           name,
-          organization: organizationName,
           region: {
             slug: "us-east",
           },
@@ -100,7 +98,7 @@ describe.skipIf(!process.env.PLANETSCALE_TEST).concurrent.each(kinds)(
         expect(database).toMatchObject({
           id: expect.any(String),
           name,
-          organization: organizationName,
+          organization,
           allowDataBranching: true,
           automaticMigrations: true,
           requireApprovalForDeploy: false,
@@ -121,7 +119,7 @@ describe.skipIf(!process.env.PLANETSCALE_TEST).concurrent.each(kinds)(
         // Update database settings
         database = await Database("crud", {
           name,
-          organization: organizationName,
+          organization,
           clusterSize: "PS_20", // Change cluster size
           allowDataBranching: false,
           automaticMigrations: false,
@@ -151,7 +149,7 @@ describe.skipIf(!process.env.PLANETSCALE_TEST).concurrent.each(kinds)(
         // Verify main branch cluster size was updated
         const { data: mainBranchData } = await api.getBranch({
           path: {
-            organization: organizationName,
+            organization,
             database: name,
             name: "main",
           },
@@ -165,7 +163,7 @@ describe.skipIf(!process.env.PLANETSCALE_TEST).concurrent.each(kinds)(
         await destroy(scope);
 
         // Verify database was deleted by checking API directly
-        await assertDatabaseDeleted(api, organizationName, name);
+        await assertDatabaseDeleted(api, organization, name);
       }
     }, 5_000_000);
 
@@ -176,7 +174,6 @@ describe.skipIf(!process.env.PLANETSCALE_TEST).concurrent.each(kinds)(
         // Create database with custom default branch
         const database = await Database("create-branch", {
           name,
-          organization: organizationName,
           clusterSize: "PS_10",
           defaultBranch,
           kind,
@@ -187,14 +184,14 @@ describe.skipIf(!process.env.PLANETSCALE_TEST).concurrent.each(kinds)(
         });
         await waitForBranchReady(
           api,
-          organizationName,
+          database.organization,
           database.name,
           defaultBranch,
         );
         // Verify branch was created
         const { data: branchData } = await api.getBranch({
           path: {
-            organization: organizationName,
+            organization,
             database: name,
             name: defaultBranch,
           },
@@ -205,7 +202,7 @@ describe.skipIf(!process.env.PLANETSCALE_TEST).concurrent.each(kinds)(
         // Update default branch on existing database
         await Database("create-branch", {
           name,
-          organization: organizationName,
+          organization,
           clusterSize: "PS_20",
           defaultBranch,
           kind,
@@ -214,13 +211,13 @@ describe.skipIf(!process.env.PLANETSCALE_TEST).concurrent.each(kinds)(
         // Verify branch cluster size was updated
         await waitForBranchReady(
           api,
-          organizationName,
+          organization,
           database.name,
           defaultBranch,
         );
         const { data: newBranchData } = await api.getBranch({
           path: {
-            organization: organizationName,
+            organization,
             database: name,
             name: defaultBranch,
           },
@@ -233,7 +230,7 @@ describe.skipIf(!process.env.PLANETSCALE_TEST).concurrent.each(kinds)(
         await destroy(scope);
 
         // Verify database was deleted
-        await assertDatabaseDeleted(api, organizationName, name);
+        await assertDatabaseDeleted(api, organization, name);
       }
     }, 1_500_000); // must wait on multiple resizes and branch creation
 
@@ -244,7 +241,7 @@ describe.skipIf(!process.env.PLANETSCALE_TEST).concurrent.each(kinds)(
         try {
           const database = await Database("arm", {
             name,
-            organization: organizationName,
+            organization,
             clusterSize: "PS_10",
             kind: "postgresql",
             arch: "arm",
@@ -255,10 +252,10 @@ describe.skipIf(!process.env.PLANETSCALE_TEST).concurrent.each(kinds)(
             arch: "arm",
             kind,
           });
-          await waitForDatabaseReady(api, organizationName, name);
+          await waitForDatabaseReady(api, organization, name);
           const { data: branchData } = await api.getBranch({
             path: {
-              organization: organizationName,
+              organization,
               database: name,
               name: "main",
             },
@@ -270,7 +267,7 @@ describe.skipIf(!process.env.PLANETSCALE_TEST).concurrent.each(kinds)(
           throw err;
         } finally {
           await destroy(scope);
-          await assertDatabaseDeleted(api, organizationName, name);
+          await assertDatabaseDeleted(api, organization, name);
         }
       },
       5_000_000,

@@ -9,7 +9,6 @@ const app = await alchemy("planetscale-drizzle");
 
 const database = await Database("Database", {
   name: "sample-database",
-  organizationId: alchemy.env.PLANETSCALE_ORG_ID,
   clusterSize: "PS_10",
   kind: "postgresql",
 });

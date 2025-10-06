@@ -10,7 +10,6 @@ const app = await alchemy("planetscale-drizzle");
 const database = await Database("Database", {
   adopt: true,
   name: "sample-database",
-  organizationId: process.env.PLANETSCALE_ORG_ID!,
   region: {
     slug: "us-east",
   },
@@ -26,8 +25,7 @@ const database = await Database("Database", {
 const branch = await Branch("Branch", {
   adopt: true,
   name: `${app.name}-${app.stage}-branch`,
-  organizationId: process.env.PLANETSCALE_ORG_ID!,
-  databaseName: database.name,
+  database,
   parentBranch: database.defaultBranch,
   isProduction: false,
   safeMigrations: !app.local,
@@ -35,9 +33,9 @@ const branch = await Branch("Branch", {
 
 const password = await Password("Password", {
   name: `${app.name}-${app.stage}-password`,
-  organizationId: process.env.PLANETSCALE_ORG_ID!,
-  database: database,
-  branch: branch,
+  organization: database.organization,
+  database,
+  branch,
   role: "admin",
 });
 

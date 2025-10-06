@@ -23,7 +23,6 @@ describe
   .concurrent("Role Resource (postgresql)", () => {
     let api: PlanetScaleClient;
     let database: Database;
-    let organizationName: string;
 
     let scope: Scope | undefined;
 
@@ -32,16 +31,11 @@ describe
 
       database = await Database("database", {
         name: "role-test-db",
-        organization: process.env.PLANETSCALE_ORG_ID ?? "",
         clusterSize: "PS_10",
         kind: "postgresql",
         arch: "arm", // slightly faster than x86
       });
-      organizationName =
-        typeof database.organization === "string"
-          ? database.organization
-          : database.organization.name!;
-      await waitForDatabaseReady(api, organizationName, database.name);
+      await waitForDatabaseReady(api, database.organization, database.name);
       scope = _scope;
     }, 240_000); // slow and steady wins the race
 
@@ -73,7 +67,7 @@ describe
         // Verify role was created by querying the API directly
         const { data } = await api.getRole({
           path: {
-            organization: organizationName,
+            organization: database.organization,
             database: database.name,
             branch: "main",
             id: role.id,
@@ -127,7 +121,7 @@ describe
         // Verify old password was deleted and new one created
         const { response: getOldResponse } = await api.getRole({
           path: {
-            organization: organizationName,
+            organization: database.organization,
             database: database.name,
             branch: "main",
             id: originalId,
@@ -138,7 +132,7 @@ describe
 
         const { data: newRole } = await api.getRole({
           path: {
-            organization: organizationName,
+            organization: database.organization,
             database: database.name,
             branch: "main",
             id: role.id,
