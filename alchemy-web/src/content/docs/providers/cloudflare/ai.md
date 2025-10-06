@@ -142,7 +142,7 @@ await Worker("gateway-ai-worker", {
   entrypoint: "./src/gateway.ts",
   bindings: {
     AI: ai,
-    GATEWAY: aiGateway,
+    GATEWAY_ID: aiGateway.id,
   },
 });
 ```
@@ -152,7 +152,7 @@ Worker implementation with gateway:
 ```ts
 // src/gateway.ts
 export default {
-  async fetch(request: Request, env: { AI: Ai }): Promise<Response> {
+  async fetch(request: Request, env: { AI: Ai, GATEWAY_ID: string }): Promise<Response> {
     const response = await env.AI.run(
       "@cf/meta/llama-3.1-8b-instruct",
       {
@@ -160,7 +160,7 @@ export default {
       },
       {
         gateway: {
-          id: "my-ai-gateway",
+          id: env.GATEWAY_ID,
           cacheKey: "quantum-explanation",
           cacheTtl: 3600,
         },
