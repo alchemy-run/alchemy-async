@@ -982,9 +982,11 @@ const _Worker = Resource(
           bundle,
           port: props.dev?.port,
           tunnel: props.dev?.tunnel ?? this.scope.tunnel,
+          cwd: props.cwd ?? process.cwd(),
         });
         this.onCleanup(() => controller.dispose());
       }
+
       await provisionResources(
         {
           ...props,
