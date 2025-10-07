@@ -330,7 +330,7 @@ Flat properties provide:
 
 ```ts
 // ✅ CORRECT: Interface name matches exported resource name
-export interface Hyperdrive extends Resource<"cloudflare::Hyperdrive"> {
+export type Hyperdrive = {
   // ... properties
 }
 export const Hyperdrive = Resource(/* ... */);
