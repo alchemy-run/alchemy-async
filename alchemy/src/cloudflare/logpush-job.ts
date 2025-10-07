@@ -1,11 +1,10 @@
 import type { Context } from "../context.ts";
 import { Resource, ResourceKind } from "../resource.ts";
-import { isSecret, secret, type Secret } from "../secret.ts";
-import { AccountApiToken } from "./account-api-token.ts";
+import { secret, type Secret } from "../secret.ts";
 import { handleApiError } from "./api-error.ts";
 import { extractCloudflareResult } from "./api-response.ts";
 import { createCloudflareApi, type CloudflareApiOptions } from "./api.ts";
-import type { R2Bucket } from "./bucket.ts";
+import { isBucket, type R2Bucket } from "./bucket.ts";
 
 /**
  * Properties for creating or updating a LogPush Job
@@ -29,6 +28,11 @@ export interface LogPushJobProps extends CloudflareApiOptions {
    * Uniquely identifies a resource (such as an s3 bucket) where data will be
    * pushed. Additional configuration parameters supported by the destination
    * may be included (format: uri, maxLength: 4096)
+   *
+   * Can be:
+   * - A full destination string (e.g., "s3://bucket/path" or "r2://bucket/path?account-id=...")
+   * - An R2Bucket resource (will use bucket.name and R2 credentials from environment)
+   * - A Secret containing a destination string
    */
   destination: string | R2Bucket | Secret<string>;
 
@@ -272,15 +276,15 @@ export function isLogPushJob(resource: any): resource is LogPushJob {
  * const httpLogs = await LogPushJob("http-logs", {
  *   zone: "example.com",
  *   dataset: "http_requests",
- *   destinationConf: "s3://my-bucket/logs?region=us-west-2",
+ *   destination: "s3://my-bucket/logs?region=us-west-2",
  *   name: "HTTP Request Logs"
  * });
  *
  * @example
- * // Account-level firewall events with filtering
+ * // Account-level firewall events with filtering using a string destination
  * const blockedRequests = await LogPushJob("blocked-requests", {
  *   dataset: "firewall_events",
- *   destinationConf: "r2://my-bucket/firewall-logs",
+ *   destination: "r2://my-bucket/firewall-logs?account-id=xxx&access-key-id=xxx&secret-access-key=xxx",
  *   filter:
  *     '{"where":{"and":[{"key":"Action","operator":"eq","value":"block"}]}}',
  *   maxUploadBytes: 100 * 1024 * 1024, // 100MB batches
@@ -288,11 +292,29 @@ export function isLogPushJob(resource: any): resource is LogPushJob {
  * });
  *
  * @example
+ * // Stream logs to R2 using R2Bucket resource (requires R2_ACCESS_KEY_ID and R2_SECRET_ACCESS_KEY env vars)
+ * const bucket = await R2Bucket("logs-bucket", {
+ *   name: "my-logs-bucket"
+ * });
+ *
+ * const logsToR2 = await LogPushJob("http-to-r2", {
+ *   dataset: "http_requests",
+ *   destination: bucket  // Automatically constructs R2 URL with env credentials
+ * });
+ *
+ * @example
+ * // Or use a direct destination string with embedded credentials
+ * const logsToR2 = await LogPushJob("http-to-r2", {
+ *   dataset: "http_requests",
+ *   destination: `r2://my-logs-bucket/logs/{DATE}?account-id=${accountId}&access-key-id=${R2_ACCESS_KEY_ID}&secret-access-key=${R2_SECRET_ACCESS_KEY}`
+ * });
+ *
+ * @example
  * // High-volume analytics with custom output format
  * const analyticsLogs = await LogPushJob("analytics-logs", {
  *   zone: myZone,
  *   dataset: "http_requests",
- *   destinationConf: "s3://analytics-bucket/logs?region=eu-west-1",
+ *   destination: "s3://analytics-bucket/logs?region=eu-west-1",
  *   sample: 0.01, // 1% sampling for high-volume sites
  *   maxUploadRecords: 100000, // 100k records per batch
  *   outputOptions: {
@@ -308,23 +330,6 @@ export function isLogPushJob(resource: any): resource is LogPushJob {
  *   }
  * });
  *
- * @example
- * // Security monitoring with multiple datasets
- * const securityLogs = await LogPushJob("security-monitoring", {
- *   dataset: "audit_logs_v2",
- *   destinationConf: "s3://security-bucket/audit-logs?region=us-east-1",
- *   filter:
- *     '{"where":{"or":[{"key":"Action","operator":"eq","value":"login"},' +
- *     '{"key":"Action","operator":"eq","value":"logout"}]}}',
- *   maxUploadIntervalSeconds: 60, // 1 minute batches for real-time monitoring
- *   outputOptions: {
- *     outputType: "csv",
- *     fieldDelimiter: ",",
- *     timestampFormat: "rfc3339",
- *     fieldNames: ["Action", "User", "IP", "Timestamp", "Result"]
- *   }
- * });
- *
  * @see https://developers.cloudflare.com/logs/get-started/enable-destinations/
  * @see https://developers.cloudflare.com/api/resources/logpush/
  */
@@ -337,7 +342,9 @@ export function LogPushJob(
     destination:
       typeof props.destination === "string"
         ? secret(props.destination)
-        : props.destination,
+        : isBucket(props.destination)
+          ? props.destination
+          : props.destination,
   });
 }
 
@@ -384,35 +391,27 @@ const _LogPushJob = Resource(
       return this.destroy();
     }
 
-    console.log("create api token");
-    const apiToken = isSecret(props.destination)
-      ? undefined
-      : await AccountApiToken("token", {
-          policies: [
-            {
-              effect: "allow",
-              permissionGroups: [
-                "Workers R2 Storage Write",
-                "Workers R2 Storage Read",
-                "Workers R2 Storage Bucket Item Read",
-                "Workers R2 Storage Bucket Item Write",
-              ],
-              resources: {
-                [`com.cloudflare.api.account.${api.accountId}`]: "*",
-              },
-            },
-          ],
-        });
+    let destination: string;
 
-    const destination = isSecret(props.destination)
-      ? props.destination.unencrypted
-      : `r2://${props.destination.name}/logs/{DATE}?${new URLSearchParams({
-          "account-id": api.accountId,
-          "access-key-id": apiToken!.accessKeyId.unencrypted,
-          "secret-access-key": apiToken!.secretAccessKey.unencrypted,
-        }).toString()}`;
+    if (isBucket(props.destination)) {
+      const bucket = props.destination;
+      const accessKeyId = process.env.R2_ACCESS_KEY_ID;
+      const secretAccessKey = process.env.R2_SECRET_ACCESS_KEY;
 
-    console.log({ destination });
+      if (!accessKeyId || !secretAccessKey) {
+        throw new Error(
+          "R2_ACCESS_KEY_ID and R2_SECRET_ACCESS_KEY environment variables are required when using R2Bucket as destination",
+        );
+      }
+
+      destination = `r2://${bucket.name}/logs/{DATE}?${new URLSearchParams({
+        "account-id": api.accountId,
+        "access-key-id": accessKeyId,
+        "secret-access-key": secretAccessKey,
+      }).toString()}`;
+    } else {
+      destination = props.destination.unencrypted;
+    }
 
     const jobConfig: LogPushJobConfig = {
       dataset: props.dataset,
@@ -479,8 +478,6 @@ const _LogPushJob = Resource(
     }
 
     let jobData: LogPushJobConfig;
-
-    console.log(jobConfig);
 
     if (this.phase === "update" && this.output?.id) {
       jobData = await extractCloudflareResult<LogPushJobConfig>(
