@@ -420,7 +420,7 @@ const _LogPushJob = Resource(
                   "Account API Tokens Read",
                 ],
                 resources: {
-                  [`com.cloudflare.edge.r2.bucket.${api.accountId}_default_${bucket.name}`]:
+                  [`com.cloudflare.edge.r2.bucket.${api.accountId}_${bucket.jurisdiction ?? "default"}_${bucket.name}`]:
                     "*",
                 },
               },
