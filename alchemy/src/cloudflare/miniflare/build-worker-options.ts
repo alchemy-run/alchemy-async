@@ -1,5 +1,5 @@
 import * as miniflare from "miniflare";
-import path from "node:path";
+import path from "pathe";
 import { assertNever } from "../../util/assert-never.ts";
 import type { HTTPServer } from "../../util/http.ts";
 import { logger } from "../../util/logger.ts";
