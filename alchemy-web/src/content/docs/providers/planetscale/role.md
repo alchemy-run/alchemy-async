@@ -76,7 +76,7 @@ const role = await Role("dev-role", {
 ```
 
 :::warning
-If both the database and branch are provided as strings, you must provide your organization Name as well.
+If both the database and branch are provided as strings, you must provide your organization name as well.
 :::
 
 ## Role with Inherited Permissions
