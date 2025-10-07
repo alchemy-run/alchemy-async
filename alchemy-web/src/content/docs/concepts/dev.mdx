@@ -1,11 +1,3 @@
----
-title: Local Development
-description: Learn how to use Alchemy's development mode to run your application locally.
-sidebar:
-  order: 1
----
-
-import { Tabs, TabItem } from '@astrojs/starlight/components';
 
 Alchemy's development mode provides a local development experience for Cloudflare Workers, featuring hot reloading, local resource emulation, and seamless integration with remote Cloudflare services.
 
@@ -236,7 +228,7 @@ const worker = await Worker("my-worker", {
 | `Pipeline` | ✅ | ❌ | [Pipeline](/providers/cloudflare/pipeline/) |
 | `RateLimit` | ✅ | ❌ | [RateLimit](/providers/cloudflare/rate-limit/) |
 | `R2Bucket` | ✅ | ✅ | [R2Bucket](/providers/cloudflare/bucket/) |
-| `VectorizeIndex` | ❌ | ✅ | [VectorizeIndex](/providers/cloudflare/vectorize-index/) |
+| `VectorizeIndex` | ❌ | ✅ | VectorizeIndex | [VectorizeIndex](https://developers.cloudflare.com/vectorize/best-practices/create-indexes/) |
 | `VersionMetadata` | ✅ | ❌ | [VersionMetadata](/providers/cloudflare/version-metadata/) |
 | `Worker` | ✅ | ✅ | [Worker](/providers/cloudflare/worker/) |
 | `Workflow` | ✅ | ❌ | [Workflow](/providers/cloudflare/workflow/) |
