@@ -1242,11 +1242,17 @@ async function provisionResources<B extends Bindings>(
     containers: options.containers,
     domains: props.domains?.map((domain) => {
       if (typeof domain === "string") {
+        if (domain === "") {
+          throw new Error("Domain names cannot be empty strings");
+        }
         return {
           name: domain,
           zoneId: undefined,
           adopt: props.adopt,
         };
+      }
+      if (domain.domainName === "") {
+        throw new Error("Domain names cannot be empty strings");
       }
       return {
         name: domain.domainName,
