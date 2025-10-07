@@ -16,10 +16,6 @@ const api = await createCloudflareApi();
 const ZONE_NAME = "alchemy-test.us";
 const zoneId = (await findZoneForHostname(api, ZONE_NAME)).zoneId;
 
-function hasR2Creds(): boolean {
-  return !!process.env.R2_ACCESS_KEY_ID && !!process.env.R2_SECRET_ACCESS_KEY;
-}
-
 describe("LogPushJob Resource Basic", () => {
   const testId = `${BRANCH_PREFIX}-logpush`;
 
@@ -216,8 +212,7 @@ describe("LogPushJob Resource Basic", () => {
       )}`;
 
       logPushJob = await LogPushJob(`${testId}-nodelete`, {
-        zone: zoneId,
-        dataset: "http_requests",
+        dataset: "workers_trace_events",
         destination,
         name: `nodelete-${testId}`,
         enabled: false,
@@ -250,11 +245,12 @@ describe("LogPushJob Resource Basic", () => {
       const bucket = await R2Bucket("logs-bucket", {
         name: `logpush-bucket-${BRANCH_PREFIX.toLowerCase()}`,
         adopt: true,
+        empty: true,
       });
 
       logPushJob = await LogPushJob(`${testId}-r2-bucket`, {
-        zone: zoneId,
-        dataset: "http_requests",
+        // zone: zoneId,
+        dataset: "workers_trace_events",
         destination: bucket,
         name: `r2-bucket-${testId}`,
         enabled: false,
@@ -273,10 +269,10 @@ describe("LogPushJob Resource Basic", () => {
       console.error("LogPush test error:", err);
       throw err;
     } finally {
-      // await destroy(scope);
-      // if (logPushJob?.id) {
-      //   await assertLogPushJobDeleted(api, zoneId, logPushJob.id);
-      // }
+      await destroy(scope);
+      if (logPushJob?.id) {
+        await assertLogPushJobDeleted(api, zoneId, logPushJob.id);
+      }
     }
   }, 120000);
 });

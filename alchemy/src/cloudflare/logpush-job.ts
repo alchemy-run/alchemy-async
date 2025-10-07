@@ -23,7 +23,7 @@ export interface LogPushJobProps extends CloudflareApiOptions {
    * @default "http_requests"
    * @see https://developers.cloudflare.com/logs/reference/log-fields/
    */
-  dataset: string;
+  dataset: LogPushJobDataset;
 
   /**
    * Uniquely identifies a resource (such as an s3 bucket) where data will be
@@ -400,7 +400,6 @@ const _LogPushJob = Resource(
       let secretAccessKey = process.env.R2_SECRET_ACCESS_KEY;
 
       if (!accessKeyId || !secretAccessKey) {
-        console.log("No R2 credentials found, creating API token");
         try {
           const apiToken = await AccountApiToken("token", {
             accountId: props.accountId,
@@ -417,9 +416,12 @@ const _LogPushJob = Resource(
                   "Workers R2 Storage Read",
                   "Workers R2 Storage Bucket Item Read",
                   "Workers R2 Storage Bucket Item Write",
+                  "Account API Tokens Write",
+                  "Account API Tokens Read",
                 ],
                 resources: {
-                  [`com.cloudflare.api.account.${api.accountId}`]: "*",
+                  [`com.cloudflare.edge.r2.bucket.${api.accountId}_default_${bucket.name}`]:
+                    "*",
                 },
               },
             ],
@@ -520,6 +522,7 @@ const _LogPushJob = Resource(
         api.put(`${basePath}/${this.output.id}`, jobConfig),
       );
     } else {
+      console.log(basePath, jobConfig);
       jobData = await extractCloudflareResult<LogPushJobConfig>(
         `create logpush job for dataset ${props.dataset}`,
         api.post(basePath, jobConfig),
@@ -584,8 +587,8 @@ export interface OutputOptions {
 
 export type LogPushJobDataset =
   | "access_requests"
-  | "audit_logs"
   | "audit_logs_v2"
+  | "audit_logs"
   | "biso_user_actions"
   | "casb_findings"
   | "device_posture_results"
