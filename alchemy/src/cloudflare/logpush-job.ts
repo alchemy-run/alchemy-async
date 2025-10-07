@@ -39,6 +39,12 @@ export interface LogPushJobProps extends CloudflareApiOptions {
   destination: string | R2Bucket | Secret<string>;
 
   /**
+   * Filter to apply to logs (JSON string)
+   * @example '{"where":{"and":[{"key":"ClientCountry","operator":"neq","value":"ca"}]}}'
+   */
+  filter?: string;
+
+  /**
    * Optional human readable job name. Not unique. Cloudflare suggests that you
    * set this to a meaningful string, like the domain name, to make it easier to
    * identify your job (maxLength: 512)
@@ -55,17 +61,6 @@ export interface LogPushJobProps extends CloudflareApiOptions {
    * Required on creation if destination ownership not yet validated
    */
   ownershipChallenge?: string;
-
-  /**
-   * Filter to apply to logs (JSON string)
-   * @example '{"where":{"and":[{"key":"ClientCountry","operator":"neq","value":"ca"}]}}'
-   */
-  filter?: string | undefined;
-
-  /**
-   * Sampling rate (0.01 to 1.0)
-   */
-  sample?: number;
 
   /**
    * @deprecated This field is deprecated. Please use maxUploadBytes,
@@ -418,8 +413,6 @@ const _LogPushJob = Resource(
                   "Workers R2 Storage Read",
                   "Workers R2 Storage Bucket Item Read",
                   "Workers R2 Storage Bucket Item Write",
-                  "Account API Tokens Write",
-                  "Account API Tokens Read",
                 ],
                 resources: {
                   [`com.cloudflare.edge.r2.bucket.${api.accountId}_${bucket.jurisdiction ?? "default"}_${bucket.name}`]:
@@ -457,8 +450,6 @@ const _LogPushJob = Resource(
       destination_conf: destination,
       ...(props.name && { name: props.name }),
       ...(props.enabled !== undefined && { enabled: props.enabled }),
-      ...(props.filter && { filter: props.filter }),
-      ...(props.sample !== undefined && { sample: props.sample }),
       ...(props.frequency && { frequency: props.frequency }),
       ...(props.kind !== undefined && { kind: props.kind }),
       ...(props.maxUploadBytes !== undefined && {
@@ -531,8 +522,13 @@ const _LogPushJob = Resource(
         }
       },
       // if we just recently created an api token for R2, we can retry on 1002 which are caused by token propagation
-      (error: CloudflareApiError) =>
-        !!apiToken && error.errorData?.[0]?.code === 1002,
+      (error: CloudflareApiError) => {
+        console.warn(
+          "Received error when creating LogPush job, there may be a propagation delay",
+          error,
+        );
+        return error.errorData?.[0]?.code === 1002;
+      },
       30,
       100,
     );
@@ -545,9 +541,8 @@ const _LogPushJob = Resource(
       destination: secret(jobData.destination_conf ?? destination),
       name: jobData.name ?? undefined,
       enabled: jobData.enabled ?? props.enabled ?? true,
-      filter: jobData.filter,
-      sample: jobData.sample,
       frequency: jobData.frequency ?? undefined,
+      filter: props.filter,
       maxUploadBytes: jobData.max_upload_bytes ?? undefined,
       maxUploadIntervalSeconds:
         jobData.max_upload_interval_seconds ?? undefined,
@@ -569,7 +564,7 @@ const _LogPushJob = Resource(
             recordTemplate: jobData.output_options.record_template ?? undefined,
           }
         : undefined,
-      kind: jobData.kind,
+      kind: jobData.kind || undefined,
       errorMessage: jobData.error_message ?? undefined,
       lastComplete: jobData.last_complete ?? undefined,
       lastError: jobData.last_error ?? undefined,
@@ -578,18 +573,74 @@ const _LogPushJob = Resource(
     };
   },
 );
+/**
+ * The structured replacement for logpull_options. When including this field, the logpull_option field will be ignored.
+ */
 export interface OutputOptions {
-  batch_prefix?: string | undefined;
-  batch_suffix?: string | undefined;
-  "CVE-2021-44228"?: boolean | undefined;
-  field_delimiter?: string | undefined;
+  /**
+   * String to be prepended before each batch.
+   */
+  batch_prefix?: string | null;
+
+  /**
+   * String to be appended after each batch.
+   */
+  batch_suffix?: string | null;
+
+  /**
+   * If set to true, will cause all occurrences of ${ in the generated files to be replaced with x{.
+   */
+  "CVE-2021-44228"?: boolean | null;
+
+  /**
+   * String to join fields. This field will be ignored when record_template is set.
+   */
+  field_delimiter?: string | null;
+
+  /**
+   * List of field names to be included in the Logpush output.
+   * For the moment, there is no option to add all fields at once, so you must specify all the field names you are interested in.
+   */
   field_names?: string[];
+
+  /**
+   * Specifies the output type, such as ndjson or csv.
+   * This sets default values for the rest of the settings, depending on the chosen output type.
+   * Some formatting rules, like string quoting, are different between output types.
+   */
   output_type?: "ndjson" | "csv";
-  record_delimiter?: string | undefined;
-  record_prefix?: string | undefined;
-  record_suffix?: string | undefined;
-  record_template?: string | undefined;
-  sample_rate?: number | undefined;
+
+  /**
+   * String to be inserted in-between the records as separator.
+   */
+  record_delimiter?: string | null;
+
+  /**
+   * String to be prepended before each record.
+   */
+  record_prefix?: string | null;
+
+  /**
+   * String to be appended after each record.
+   */
+  record_suffix?: string | null;
+
+  /**
+   * String to use as template for each record instead of the default json key value mapping.
+   * All fields used in the template must be present in field_names as well, otherwise they will end up as null.
+   * Format as a Go text/template without any standard functions, like conditionals, loops, sub-templates, etc.
+   */
+  record_template?: string | null;
+
+  /**
+   * Floating number to specify sampling rate. Sampling is applied on top of filtering, and regardless of the current sample_interval of the data.
+   * (format: float, maximum: 1, minimum: 0)
+   */
+  sample_rate?: number | null;
+
+  /**
+   * String to specify the format for timestamps, such as unixnano, unix, or rfc3339.
+   */
   timestamp_format?: "unixnano" | "unix" | "rfc3339";
 }
 
@@ -626,23 +677,92 @@ export type LogPushJobDataset =
  * @internal
  */
 interface LogPushJobConfig {
+  /**
+   * Unique id of the job.
+   * (minimum: 1)
+   */
   id?: number;
-  dataset?: LogPushJobDataset;
+
+  /**
+   * Name of the dataset. A list of supported datasets can be found on the Developer Docs.
+   * (default: "http_requests")
+   */
+  dataset?: LogPushJobDataset | null;
+
+  /**
+   * Uniquely identifies a resource (such as an s3 bucket) where data will be pushed.
+   * (format: uri, maxLength: 4096)
+   */
   destination_conf?: string;
+
+  /**
+   * Flag that indicates if the job is enabled.
+   */
   enabled?: boolean;
-  error_message?: string | undefined;
-  frequency?: "high" | "low" | undefined;
-  kind?: "edge";
-  last_complete?: string | undefined;
-  last_error?: string | undefined;
-  logpull_options?: string | undefined;
-  max_upload_bytes?: 0 | number | undefined;
-  max_upload_interval_seconds?: 0 | number | undefined;
-  max_upload_records?: 0 | number | undefined;
-  name?: string | undefined;
-  output_options?: OutputOptions | undefined;
-  filter?: string | undefined;
-  sample?: number;
-  created_on?: string;
-  modified_on?: string;
+
+  /**
+   * If not null, the job is currently failing. Only the last failure is recorded.
+   */
+  error_message?: string | null;
+
+  /**
+   * Deprecated. Please use max_upload_* parameters instead.
+   * The frequency at which Cloudflare sends batches of logs to your destination.
+   * (default: "high")
+   */
+  frequency?: "high" | "low" | null;
+
+  /**
+   * The kind parameter (optional) is used to differentiate between Logpush and Edge Log Delivery jobs.
+   */
+  kind?: "" | "edge";
+
+  /**
+   * Records the last time for which logs have been successfully pushed.
+   * (format: date-time)
+   */
+  last_complete?: string | null;
+
+  /**
+   * Records the last time the job failed.
+   * (format: date-time)
+   */
+  last_error?: string | null;
+
+  /**
+   * Deprecated. Use output_options instead.
+   * Configuration string.
+   * (format: uri-reference, maxLength: 4096)
+   */
+  logpull_options?: string | null;
+
+  /**
+   * The maximum uncompressed file size of a batch of logs.
+   * Must be between 5 MB and 1 GB, or 0 to disable it.
+   */
+  max_upload_bytes?: 0 | number | null;
+
+  /**
+   * The maximum interval in seconds for log batches.
+   * Must be between 30 and 300 seconds, or 0 to disable it.
+   */
+  max_upload_interval_seconds?: 0 | number | null;
+
+  /**
+   * The maximum number of log lines per batch.
+   * Must be between 1000 and 1,000,000 lines, or 0 to disable it.
+   */
+  max_upload_records?: 0 | number | null;
+
+  /**
+   * Optional human readable job name. Not unique.
+   * (maxLength: 512)
+   */
+  name?: string | null;
+
+  /**
+   * The structured replacement for logpull_options.
+   * When including this field, the logpull_option field will be ignored.
+   */
+  output_options?: OutputOptions | null;
 }

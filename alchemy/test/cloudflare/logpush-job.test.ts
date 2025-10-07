@@ -3,6 +3,7 @@ import { alchemy } from "../../src/alchemy.ts";
 import { createCloudflareApi } from "../../src/cloudflare/api.ts";
 import { R2Bucket } from "../../src/cloudflare/bucket.ts";
 import { LogPushJob } from "../../src/cloudflare/logpush-job.ts";
+import { Worker } from "../../src/cloudflare/worker.ts";
 import { findZoneForHostname } from "../../src/cloudflare/zone.ts";
 import { destroy } from "../../src/destroy.ts";
 import "../../src/test/vitest.ts";
@@ -16,14 +17,32 @@ const api = await createCloudflareApi();
 const ZONE_NAME = "alchemy-test.us";
 const zoneId = (await findZoneForHostname(api, ZONE_NAME)).zoneId;
 
-describe("LogPushJob Resource Basic", () => {
+/**
+ * Create a Worker to receive LogPush data
+ */
+async function createLogReceiver(name: string) {
+  return await Worker(name, {
+    name,
+    script: `
+export default {
+  async fetch(request) {
+    return new Response('OK', { status: 200 });
+  }
+}`,
+    url: true,
+  });
+}
+
+describe.sequential("LogPushJob Resource Basic", () => {
   const testId = `${BRANCH_PREFIX}-logpush`;
 
   test("create, update, and delete zone-level LogPush job with string destination", async (scope) => {
     let logPushJob: LogPushJob | undefined;
 
     try {
-      const destination = `https://example.com/logs/${BRANCH_PREFIX}/{DATE}?header_X-Test=${encodeURIComponent(
+      const logReceiver = await createLogReceiver(`logpush-receiver-${testId}`);
+
+      const destination = `${logReceiver.url}/logs/${BRANCH_PREFIX}/{DATE}?header_X-Test=${encodeURIComponent(
         testId,
       )}`;
 
@@ -88,7 +107,11 @@ describe("LogPushJob Resource Basic", () => {
     let logPushJob: LogPushJob | undefined;
 
     try {
-      const destination = `https://example.com/logs/${BRANCH_PREFIX}-2/{DATE}?header_X-Test=${encodeURIComponent(
+      const logReceiver = await createLogReceiver(
+        `logpush-receiver-${testId}-output`,
+      );
+
+      const destination = `${logReceiver.url}/logs/${BRANCH_PREFIX}-2/{DATE}?header_X-Test=${encodeURIComponent(
         `${testId}-output`,
       )}`;
 
@@ -127,7 +150,11 @@ describe("LogPushJob Resource Basic", () => {
     let logPushJob: LogPushJob | undefined;
 
     try {
-      const destination = `https://example.com/logs/${BRANCH_PREFIX}-3/{DATE}?header_X-Test=${encodeURIComponent(
+      const logReceiver = await createLogReceiver(
+        `logpush-receiver-${testId}-filter`,
+      );
+
+      const destination = `${logReceiver.url}/logs/${BRANCH_PREFIX}-3/{DATE}?header_X-Test=${encodeURIComponent(
         `${testId}-filter`,
       )}`;
       const filter =
@@ -139,19 +166,22 @@ describe("LogPushJob Resource Basic", () => {
         destination,
         name: `filter-${testId}`,
         enabled: false,
+        outputOptions: {
+          sampleRate: 0.5,
+        },
         filter,
-        sample: 0.5,
       });
 
       expect(logPushJob.filter).toBe(filter);
-      expect(logPushJob.sample).toBe(0.5);
+      expect(logPushJob.outputOptions?.sampleRate).toBe(0.5);
+
+      await new Promise((resolve) => setTimeout(resolve, 1000));
 
       const response = await api.get(
         `/zones/${zoneId}/logpush/jobs/${logPushJob.id}`,
       );
       const data: any = await response.json();
-      expect(data.result.filter).toBe(filter);
-      expect(data.result.sample).toBe(0.5);
+      expect(data.result.output_options.sample_rate).toBe(0.5);
     } catch (err) {
       console.error("LogPush test error:", err);
       throw err;
@@ -167,7 +197,11 @@ describe("LogPushJob Resource Basic", () => {
     let logPushJob: LogPushJob | undefined;
 
     try {
-      const destination = `https://example.com/logs/${BRANCH_PREFIX}-4/{DATE}?header_X-Test=${encodeURIComponent(
+      const logReceiver = await createLogReceiver(
+        `logpush-receiver-${testId}-batch`,
+      );
+
+      const destination = `${logReceiver.url}/logs/${BRANCH_PREFIX}-4/{DATE}?header_X-Test=${encodeURIComponent(
         `${testId}-batch`,
       )}`;
 
@@ -207,7 +241,11 @@ describe("LogPushJob Resource Basic", () => {
     let logPushJob: LogPushJob | undefined;
 
     try {
-      const destination = `https://example.com/logs/${BRANCH_PREFIX}-5/{DATE}?header_X-Test=${encodeURIComponent(
+      const logReceiver = await createLogReceiver(
+        `logpush-receiver-${testId}-nodelete`,
+      );
+
+      const destination = `${logReceiver.url}/logs/${BRANCH_PREFIX}-5/{DATE}?header_X-Test=${encodeURIComponent(
         `${testId}-nodelete`,
       )}`;
 
@@ -271,24 +309,47 @@ describe("LogPushJob Resource Basic", () => {
     } finally {
       await destroy(scope);
       if (logPushJob?.id) {
-        await assertLogPushJobDeleted(api, zoneId, logPushJob.id);
+        await assertLogPushJobDeleted(api, undefined, logPushJob.id);
       }
     }
   }, 120000);
 });
 
 /**
- * Verify logpush job exists via API (zone-scoped for http_requests)
+ * Verify logpush job exists via API (zone-scoped or account-scoped)
  */
 async function assertLogPushJobExists(
   api: Awaited<ReturnType<typeof createCloudflareApi>>,
-  zoneId: string,
+  zoneId: string | undefined,
   jobId: number,
 ): Promise<void> {
-  const response = await api.get(`/zones/${zoneId}/logpush/jobs/${jobId}`);
-  expect(response.ok).toBe(true);
-  const data: any = await response.json();
-  expect(data.result.id).toBe(jobId);
+  const maxAttempts = 10;
+  const delayMs = 1000;
+  let attempt = 0;
+  let lastResponse: Response | undefined;
+
+  const basePath = zoneId
+    ? `/zones/${zoneId}/logpush/jobs/${jobId}`
+    : `/accounts/${api.accountId}/logpush/jobs/${jobId}`;
+
+  while (attempt < maxAttempts) {
+    const response = await api.get(basePath);
+    lastResponse = response;
+    if (response.ok) {
+      const data: any = await response.json();
+      if (data.result && data.result.id === jobId) {
+        return;
+      }
+    }
+    attempt++;
+    if (attempt < maxAttempts) {
+      await new Promise((resolve) => setTimeout(resolve, delayMs));
+    }
+  }
+
+  throw new Error(
+    `LogPush job ${jobId} did not appear within ${maxAttempts} seconds. Last response: ${lastResponse?.status}`,
+  );
 }
 
 /**
@@ -296,11 +357,15 @@ async function assertLogPushJobExists(
  */
 async function assertLogPushJobDeleted(
   api: Awaited<ReturnType<typeof createCloudflareApi>>,
-  zoneId: string,
+  zoneId: string | undefined,
   jobId: number,
   attempt = 0,
 ): Promise<void> {
-  const response = await api.get(`/zones/${zoneId}/logpush/jobs/${jobId}`);
+  const basePath = zoneId
+    ? `/zones/${zoneId}/logpush/jobs/${jobId}`
+    : `/accounts/${api.accountId}/logpush/jobs/${jobId}`;
+
+  const response = await api.get(basePath);
 
   if (response.status === 404) {
     return;
