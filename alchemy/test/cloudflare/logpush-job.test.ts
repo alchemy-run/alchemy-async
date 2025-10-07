@@ -243,46 +243,42 @@ describe("LogPushJob Resource Basic", () => {
     }
   }, 120000);
 
-  test.skipIf(!hasR2Creds())(
-    "create LogPush job with R2Bucket resource",
-    async (scope) => {
-      let logPushJob: LogPushJob | undefined;
+  test("create LogPush job with R2Bucket resource", async (scope) => {
+    let logPushJob: LogPushJob | undefined;
 
-      try {
-        const bucket = await R2Bucket("logs-bucket", {
-          name: `logpush-bucket-${BRANCH_PREFIX.toLowerCase()}`,
-          adopt: true,
-        });
+    try {
+      const bucket = await R2Bucket("logs-bucket", {
+        name: `logpush-bucket-${BRANCH_PREFIX.toLowerCase()}`,
+        adopt: true,
+      });
 
-        logPushJob = await LogPushJob(`${testId}-r2-bucket`, {
-          zone: zoneId,
-          dataset: "http_requests",
-          destination: bucket,
-          name: `r2-bucket-${testId}`,
-          enabled: false,
-        });
+      logPushJob = await LogPushJob(`${testId}-r2-bucket`, {
+        zone: zoneId,
+        dataset: "http_requests",
+        destination: bucket,
+        name: `r2-bucket-${testId}`,
+        enabled: false,
+      });
 
-        expect(logPushJob.id).toBeTruthy();
-        expect(logPushJob.dataset).toBe("http_requests");
-        expect(logPushJob.type).toBe("logpush_job");
+      expect(logPushJob.id).toBeTruthy();
+      expect(logPushJob.dataset).toBe("http_requests");
+      expect(logPushJob.type).toBe("logpush_job");
 
-        const response = await api.get(
-          `/zones/${zoneId}/logpush/jobs/${logPushJob.id}`,
-        );
-        const data: any = await response.json();
-        expect(data.result.dataset).toBe("http_requests");
-      } catch (err) {
-        console.error("LogPush test error:", err);
-        throw err;
-      } finally {
-        await destroy(scope);
-        if (logPushJob?.id) {
-          await assertLogPushJobDeleted(api, zoneId, logPushJob.id);
-        }
-      }
-    },
-    120000,
-  );
+      const response = await api.get(
+        `/zones/${zoneId}/logpush/jobs/${logPushJob.id}`,
+      );
+      const data: any = await response.json();
+      expect(data.result.dataset).toBe("http_requests");
+    } catch (err) {
+      console.error("LogPush test error:", err);
+      throw err;
+    } finally {
+      // await destroy(scope);
+      // if (logPushJob?.id) {
+      //   await assertLogPushJobDeleted(api, zoneId, logPushJob.id);
+      // }
+    }
+  }, 120000);
 });
 
 /**

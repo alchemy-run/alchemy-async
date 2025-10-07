@@ -1,6 +1,7 @@
 import type { Context } from "../context.ts";
 import { Resource, ResourceKind } from "../resource.ts";
 import { secret, type Secret } from "../secret.ts";
+import { AccountApiToken } from "./account-api-token.ts";
 import { handleApiError } from "./api-error.ts";
 import { extractCloudflareResult } from "./api-response.ts";
 import { createCloudflareApi, type CloudflareApiOptions } from "./api.ts";
@@ -395,13 +396,47 @@ const _LogPushJob = Resource(
 
     if (isBucket(props.destination)) {
       const bucket = props.destination;
-      const accessKeyId = process.env.R2_ACCESS_KEY_ID;
-      const secretAccessKey = process.env.R2_SECRET_ACCESS_KEY;
+      let accessKeyId = process.env.R2_ACCESS_KEY_ID;
+      let secretAccessKey = process.env.R2_SECRET_ACCESS_KEY;
 
       if (!accessKeyId || !secretAccessKey) {
-        throw new Error(
-          "R2_ACCESS_KEY_ID and R2_SECRET_ACCESS_KEY environment variables are required when using R2Bucket as destination",
-        );
+        console.log("No R2 credentials found, creating API token");
+        try {
+          const apiToken = await AccountApiToken("token", {
+            accountId: props.accountId,
+            apiKey: props.apiKey,
+            apiToken: props.apiToken,
+            baseUrl: props.baseUrl,
+            profile: props.profile,
+            email: props.email,
+            policies: [
+              {
+                effect: "allow",
+                permissionGroups: [
+                  "Workers R2 Storage Write",
+                  "Workers R2 Storage Read",
+                  "Workers R2 Storage Bucket Item Read",
+                  "Workers R2 Storage Bucket Item Write",
+                ],
+                resources: {
+                  [`com.cloudflare.api.account.${api.accountId}`]: "*",
+                },
+              },
+            ],
+          });
+          accessKeyId = apiToken.accessKeyId.unencrypted;
+          secretAccessKey = apiToken.secretAccessKey.unencrypted;
+        } catch (err) {
+          console.error(err);
+          console.warn(
+            "[Cloudflare Logpush Job] Warning: Cloudflare currently only allows the use of a Global API Key or an API Token with permission to create other API Tokens in order to generate new API Tokens programmatically.\n" +
+              "Please use your Global API Key, or create an API Token with the necessary permissions. For more information, see: https://alchemy.run/guides/cloudflare/#api-token",
+          );
+          throw new Error(
+            "Unable to create an API Token: Cloudflare only allows Global API Key or an API Token with permission to create other API Tokens. " +
+              "See https://alchemy.run/guides/cloudflare/#api-token for more details.",
+          );
+        }
       }
 
       destination = `r2://${bucket.name}/logs/{DATE}?${new URLSearchParams({
@@ -532,7 +567,6 @@ const _LogPushJob = Resource(
     };
   },
 );
-
 export interface OutputOptions {
   batch_prefix?: string | undefined;
   batch_suffix?: string | undefined;
