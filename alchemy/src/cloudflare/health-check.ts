@@ -1,5 +1,7 @@
 import type { Context } from "../context.ts";
 import { Resource } from "../resource.ts";
+import type { Secret } from "../secret.ts";
+import { Secret as SecretClass } from "../secret.ts";
 import { logger } from "../util/logger.ts";
 import { CloudflareApiError, handleApiError } from "./api-error.ts";
 import {
@@ -11,6 +13,7 @@ import {
   type CloudflareApi,
   type CloudflareApiOptions,
 } from "./api.ts";
+import type { Zone } from "./zone.ts";
 
 export type CheckRegion =
   | "WNAM"
@@ -26,7 +29,8 @@ export type CheckRegion =
   | "IN"
   | "SEAS"
   | "NEAS"
-  | "ALL_REGIONS";
+  | "ALL_REGIONS"
+  | (string & {});
 
 export interface HTTPConfiguration {
   /**
@@ -38,11 +42,13 @@ export interface HTTPConfiguration {
   /**
    * A case-insensitive sub-string to look for in the response body
    * If this string is not found, the origin will be marked as unhealthy
+   * @default undefined
    */
   expectedBody?: string;
 
   /**
    * The expected HTTP response codes (e.g. "200") or code ranges (e.g. "2xx" for all codes starting with 2)
+   * @default undefined
    */
   expectedCodes?: string[];
 
@@ -56,8 +62,9 @@ export interface HTTPConfiguration {
    * The HTTP request headers to send in the health check
    * It is recommended you set a Host header by default
    * The User-Agent header cannot be overridden
+   * Supports secret values for sensitive headers
    */
-  header?: Record<string, string[]>;
+  header?: Record<string, (string | Secret<string>)[]>;
 
   /**
    * The HTTP method to use for the health check
@@ -73,6 +80,7 @@ export interface HTTPConfiguration {
 
   /**
    * Port number to connect to for the health check
+   * Defaults based on the health check type (specified via the `type` property):
    * @default 80 for HTTP
    * @default 443 for HTTPS
    */
@@ -95,9 +103,10 @@ export interface TCPConfiguration {
 
 export interface HealthCheckProps extends CloudflareApiOptions {
   /**
-   * Zone ID this health check belongs to
+   * Zone this health check belongs to
+   * Can be either a Zone resource or a zone ID string
    */
-  zoneId: string;
+  zone: string | Zone;
 
   /**
    * The hostname or IP address of the origin server to run health checks on
@@ -107,8 +116,10 @@ export interface HealthCheckProps extends CloudflareApiOptions {
   /**
    * A short name to identify the health check
    * Only alphanumeric characters, hyphens and underscores are allowed
+   *
+   * @default ${app}-${stage}-${id}
    */
-  name: string;
+  name?: string;
 
   /**
    * A list of regions from which to run health checks
@@ -182,19 +193,13 @@ export interface HealthCheckProps extends CloudflareApiOptions {
    * @default false
    */
   adopt?: boolean;
-
-  /**
-   * The Cloudflare-generated health check ID (used internally for updates)
-   * @internal
-   */
-  healthCheckId?: string;
 }
 
 /**
  * Output returned after Cloudflare Health Check creation/update
- * IMPORTANT: The interface name MUST match the exported resource name
+ * IMPORTANT: The type name MUST match the exported resource name
  */
-export interface HealthCheck extends HealthCheckProps {
+export type HealthCheck = HealthCheckProps & {
   /**
    * The resource ID
    */
@@ -204,6 +209,16 @@ export interface HealthCheck extends HealthCheckProps {
    * The Cloudflare-generated health check ID
    */
   healthCheckId: string;
+
+  /**
+   * The name of the health check
+   */
+  name: string;
+
+  /**
+   * The zone ID (extracted from zone prop)
+   */
+  zoneId: string;
 
   /**
    * Time at which the health check was created
@@ -224,6 +239,30 @@ export interface HealthCheck extends HealthCheckProps {
    * The current failure reason if status is unhealthy
    */
   failureReason?: string;
+};
+
+/**
+ * Delete a health check from Cloudflare
+ * @internal
+ */
+export async function deleteHealthCheck(
+  api: CloudflareApi,
+  zoneId: string,
+  healthCheckId: string,
+  id: string,
+): Promise<void> {
+  try {
+    const deleteResponse = await api.delete(
+      `/zones/${zoneId}/healthchecks/${healthCheckId}`,
+    );
+
+    if (!deleteResponse.ok && deleteResponse.status !== 404) {
+      await handleApiError(deleteResponse, "delete", "health check", id);
+    }
+  } catch (error) {
+    logger.error(`Error deleting Health Check ${id}:`, error);
+    throw error;
+  }
 }
 
 /**
@@ -235,7 +274,7 @@ export interface HealthCheck extends HealthCheckProps {
  * @example
  * // Create a basic HTTP health check
  * const basicHealthCheck = await HealthCheck("api-healthcheck", {
- *   zoneId: "023e105f4ecef8ad9ca31a8372d0c353",
+ *   zone: "023e105f4ecef8ad9ca31a8372d0c353",
  *   address: "api.example.com",
  *   name: "api-server-check"
  * });
@@ -243,7 +282,7 @@ export interface HealthCheck extends HealthCheckProps {
  * @example
  * // Create an HTTPS health check with custom path and expected response
  * const httpsHealthCheck = await HealthCheck("secure-api-check", {
- *   zoneId: "023e105f4ecef8ad9ca31a8372d0c353",
+ *   zone: "023e105f4ecef8ad9ca31a8372d0c353",
  *   address: "secure-api.example.com",
  *   name: "secure-api-check",
  *   type: "HTTPS",
@@ -258,7 +297,7 @@ export interface HealthCheck extends HealthCheckProps {
  * @example
  * // Create a health check with custom intervals and retry logic
  * const customHealthCheck = await HealthCheck("custom-check", {
- *   zoneId: "023e105f4ecef8ad9ca31a8372d0c353",
+ *   zone: "023e105f4ecef8ad9ca31a8372d0c353",
  *   address: "backend.example.com",
  *   name: "backend-check",
  *   interval: 30,
@@ -272,7 +311,7 @@ export interface HealthCheck extends HealthCheckProps {
  * @example
  * // Create a TCP health check
  * const tcpHealthCheck = await HealthCheck("tcp-check", {
- *   zoneId: "023e105f4ecef8ad9ca31a8372d0c353",
+ *   zone: "023e105f4ecef8ad9ca31a8372d0c353",
  *   address: "database.example.com",
  *   name: "database-check",
  *   type: "TCP",
@@ -285,7 +324,7 @@ export interface HealthCheck extends HealthCheckProps {
  * @example
  * // Create a health check with specific regions and custom headers
  * const regionalHealthCheck = await HealthCheck("regional-check", {
- *   zoneId: "023e105f4ecef8ad9ca31a8372d0c353",
+ *   zone: "023e105f4ecef8ad9ca31a8372d0c353",
  *   address: "api.example.com",
  *   name: "regional-api-check",
  *   checkRegions: ["WNAM", "ENAM", "WEU"],
@@ -306,48 +345,42 @@ export const HealthCheck = Resource(
     id: string,
     props: HealthCheckProps,
   ): Promise<HealthCheck> {
-    const healthCheckId = props.healthCheckId || this.output?.healthCheckId;
+    const zoneId = typeof props.zone === "string" ? props.zone : props.zone.id;
     const adopt = props.adopt ?? this.scope.adopt;
+    const name =
+      props.name ?? this.output?.name ?? this.scope.createPhysicalName(id);
 
     const api = await createCloudflareApi(props);
 
     if (this.phase === "delete") {
+      const healthCheckId = this.output?.healthCheckId;
       if (!healthCheckId) {
         logger.warn(`No healthCheckId found for ${id}, skipping delete`);
         return this.destroy();
       }
 
-      try {
-        const deleteResponse = await api.delete(
-          `/zones/${props.zoneId}/healthchecks/${healthCheckId}`,
-        );
-
-        if (!deleteResponse.ok && deleteResponse.status !== 404) {
-          await handleApiError(deleteResponse, "delete", "health check", id);
-        }
-      } catch (error) {
-        logger.error(`Error deleting Health Check ${id}:`, error);
-        throw error;
-      }
+      await deleteHealthCheck(api, zoneId, healthCheckId, id);
       return this.destroy();
     }
 
-    const requestBody = prepareRequestBody(props);
+    const requestBody = prepareRequestBody(props, name);
     let result: HealthCheckResponse;
 
-    if (healthCheckId) {
+    if (this.output?.healthCheckId) {
+      // Update existing health check
       result = await extractCloudflareResult<HealthCheckResponse>(
-        `update health check "${healthCheckId}"`,
+        `update health check "${name}"`,
         api.patch(
-          `/zones/${props.zoneId}/healthchecks/${healthCheckId}`,
+          `/zones/${zoneId}/healthchecks/${this.output.healthCheckId}`,
           requestBody,
         ),
       );
     } else {
+      // Create new health check
       try {
         result = await extractCloudflareResult<HealthCheckResponse>(
-          `create health check "${props.name}"`,
-          api.post(`/zones/${props.zoneId}/healthchecks`, requestBody),
+          `create health check "${name}"`,
+          api.post(`/zones/${zoneId}/healthchecks`, requestBody),
         );
       } catch (error) {
         if (
@@ -358,25 +391,21 @@ export const HealthCheck = Resource(
         ) {
           if (!adopt) {
             throw new Error(
-              `Health check "${props.name}" already exists. Use adopt: true to adopt it.`,
+              `Health check "${name}" already exists. Use adopt: true to adopt it.`,
               { cause: error },
             );
           }
-          const existing = await findHealthCheckByName(
-            api,
-            props.zoneId,
-            props.name,
-          );
+          const existing = await findHealthCheckByName(api, zoneId, name);
           if (!existing) {
             throw new Error(
-              `Health check "${props.name}" failed to create due to name conflict and could not be found for adoption.`,
+              `Health check "${name}" failed to create due to name conflict and could not be found for adoption.`,
               { cause: error },
             );
           }
           result = await extractCloudflareResult<HealthCheckResponse>(
-            `adopt health check "${props.name}"`,
+            `adopt health check "${name}"`,
             api.patch(
-              `/zones/${props.zoneId}/healthchecks/${existing.id}`,
+              `/zones/${zoneId}/healthchecks/${existing.id}`,
               requestBody,
             ),
           );
@@ -389,7 +418,8 @@ export const HealthCheck = Resource(
     return {
       id,
       healthCheckId: result.id!,
-      zoneId: props.zoneId,
+      zone: props.zone,
+      zoneId,
       address: result.address!,
       name: result.name!,
       checkRegions: result.check_regions,
@@ -485,10 +515,10 @@ async function findHealthCheckByName(
  * Prepare the request body by converting to snake_case
  * @internal
  */
-function prepareRequestBody(props: HealthCheckProps): any {
+function prepareRequestBody(props: HealthCheckProps, name: string): any {
   const body: any = {
     address: props.address,
-    name: props.name,
+    name: name,
   };
 
   if (props.checkRegions !== undefined) {
@@ -510,7 +540,14 @@ function prepareRequestBody(props: HealthCheckProps): any {
           expected_body: props.httpConfig.expectedBody,
           expected_codes: props.httpConfig.expectedCodes,
           follow_redirects: props.httpConfig.followRedirects,
-          header: props.httpConfig.header,
+          header: props.httpConfig.header
+            ? Object.fromEntries(
+                Object.entries(props.httpConfig.header).map(([key, values]) => [
+                  key,
+                  values.map((v) => SecretClass.unwrap(v)),
+                ]),
+              )
+            : undefined,
           method: props.httpConfig.method,
           path: props.httpConfig.path,
           port: props.httpConfig.port,

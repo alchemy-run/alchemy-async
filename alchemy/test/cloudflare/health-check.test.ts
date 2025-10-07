@@ -151,7 +151,7 @@ describe("HealthCheck Resource", () => {
 
     const healthCheckId = createHealthCheckId("basic");
     const basicProps = createBasicHealthCheckProps("basic", {
-      zoneId: testZone.id,
+      zone: testZone.id,
     });
     testHealthCheck = await createHealthCheckWithErrorHandling(
       healthCheckId,
@@ -182,7 +182,7 @@ describe("HealthCheck Resource", () => {
       address: basicProps.address,
     });
     const updatedProps = createBasicHealthCheckProps("basic", {
-      zoneId: testZone.id,
+      zone: testZone.id,
       address: "api.example.com",
       description: "Updated test health check",
       interval: 30,
@@ -257,7 +257,7 @@ describe("HealthCheck Resource", () => {
     const zone = await Zone(zoneData.id, { name: zoneData.name });
 
     const healthCheckId = createHealthCheckId(config.suffix);
-    const props = config.propsFactory(config.suffix, { zoneId: zone.id });
+    const props = config.propsFactory(config.suffix, { zone: zone.id });
     const healthCheck = await createHealthCheckWithErrorHandling(
       healthCheckId,
       props,
@@ -285,7 +285,7 @@ describe("HealthCheck Resource", () => {
     const zone = await Zone(zoneData.id, { name: zoneData.name });
 
     const healthCheckId = createHealthCheckId(config.suffix);
-    const props = config.propsFactory(config.suffix, { zoneId: zone.id });
+    const props = config.propsFactory(config.suffix, { zone: zone.id });
     const healthCheck = await createHealthCheckWithErrorHandling(
       healthCheckId,
       props,
@@ -313,7 +313,7 @@ describe("HealthCheck Resource", () => {
 
     const healthCheckId = createHealthCheckId("regions");
     const props = createBasicHealthCheckProps("regions", {
-      zoneId: zone.id,
+      zone: zone.id,
       address: "api.example.com",
       checkRegions: ["WNAM", "ENAM", "WEU"],
       consecutiveFails: 2,
@@ -353,7 +353,7 @@ describe("HealthCheck Resource", () => {
 
     const healthCheckId = createHealthCheckId("suspended");
     const suspendedProps = createBasicHealthCheckProps("suspended", {
-      zoneId: zone.id,
+      zone: zone.id,
       address: "suspended.example.com",
       suspended: true,
     });
@@ -377,7 +377,7 @@ describe("HealthCheck Resource", () => {
     expect(responseData.result.suspended).toEqual(true);
 
     const activeProps = createBasicHealthCheckProps("suspended", {
-      zoneId: zone.id,
+      zone: zone.id,
       address: "suspended.example.com",
       suspended: false,
     });
