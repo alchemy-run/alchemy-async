@@ -250,7 +250,8 @@ describe.sequential("LogPushJob Resource Basic", () => {
       )}`;
 
       logPushJob = await LogPushJob(`${testId}-nodelete`, {
-        dataset: "workers_trace_events",
+        zone: zoneId,
+        dataset: "http_requests",
         destination,
         name: `nodelete-${testId}`,
         enabled: false,

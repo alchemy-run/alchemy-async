@@ -525,7 +525,7 @@ const _LogPushJob = Resource(
       (error: CloudflareApiError) => {
         console.warn(
           "Received error when creating LogPush job, there may be a propagation delay",
-          error,
+          error.message,
         );
         return error.errorData?.[0]?.code === 1002;
       },
