@@ -257,14 +257,14 @@ describe("LogPushJob Resource Basic", () => {
       });
 
       expect(logPushJob.id).toBeTruthy();
-      expect(logPushJob.dataset).toBe("http_requests");
+      expect(logPushJob.dataset).toBe("workers_trace_events");
       expect(logPushJob.type).toBe("logpush_job");
 
       const response = await api.get(
-        `/zones/${zoneId}/logpush/jobs/${logPushJob.id}`,
+        `/accounts/${api.accountId}/logpush/jobs/${logPushJob.id}`,
       );
       const data: any = await response.json();
-      expect(data.result.dataset).toBe("http_requests");
+      expect(data.result.dataset).toBe("workers_trace_events");
     } catch (err) {
       console.error("LogPush test error:", err);
       throw err;

@@ -1,8 +1,9 @@
 import type { Context } from "../context.ts";
 import { Resource, ResourceKind } from "../resource.ts";
 import { secret, type Secret } from "../secret.ts";
+import { withExponentialBackoff } from "../util/retry.ts";
 import { AccountApiToken } from "./account-api-token.ts";
-import { handleApiError } from "./api-error.ts";
+import { handleApiError, type CloudflareApiError } from "./api-error.ts";
 import { extractCloudflareResult } from "./api-response.ts";
 import { createCloudflareApi, type CloudflareApiOptions } from "./api.ts";
 import { isBucket, type R2Bucket } from "./bucket.ts";
@@ -393,6 +394,7 @@ const _LogPushJob = Resource(
     }
 
     let destination: string;
+    let apiToken: AccountApiToken | undefined;
 
     if (isBucket(props.destination)) {
       const bucket = props.destination;
@@ -401,7 +403,7 @@ const _LogPushJob = Resource(
 
       if (!accessKeyId || !secretAccessKey) {
         try {
-          const apiToken = await AccountApiToken("token", {
+          apiToken = await AccountApiToken("token", {
             accountId: props.accountId,
             apiKey: props.apiKey,
             apiToken: props.apiToken,
@@ -514,20 +516,26 @@ const _LogPushJob = Resource(
       };
     }
 
-    let jobData: LogPushJobConfig;
-
-    if (this.phase === "update" && this.output?.id) {
-      jobData = await extractCloudflareResult<LogPushJobConfig>(
-        `update logpush job ${this.output.id}`,
-        api.put(`${basePath}/${this.output.id}`, jobConfig),
-      );
-    } else {
-      console.log(basePath, jobConfig);
-      jobData = await extractCloudflareResult<LogPushJobConfig>(
-        `create logpush job for dataset ${props.dataset}`,
-        api.post(basePath, jobConfig),
-      );
-    }
+    const jobData = await withExponentialBackoff(
+      async () => {
+        if (this.phase === "update" && this.output?.id) {
+          return await extractCloudflareResult<LogPushJobConfig>(
+            `update logpush job ${this.output.id}`,
+            api.put(`${basePath}/${this.output.id}`, jobConfig),
+          );
+        } else {
+          return await extractCloudflareResult<LogPushJobConfig>(
+            `create logpush job for dataset ${props.dataset}`,
+            api.post(basePath, jobConfig),
+          );
+        }
+      },
+      // if we just recently created an api token for R2, we can retry on 1002 which are caused by token propagation
+      (error: CloudflareApiError) =>
+        !!apiToken && error.errorData?.[0]?.code === 1002,
+      30,
+      100,
+    );
 
     return {
       type: "logpush_job",
