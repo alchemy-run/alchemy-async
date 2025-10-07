@@ -270,7 +270,7 @@ export class Scope {
     this.profile = profile ?? this.parent?.profile;
     this.parent?.children.set(this.scopeName!, this);
     this.quiet = quiet ?? this.parent?.quiet ?? false;
-    if (this.parent && !this.scopeName) {
+    if (this.parent) {
       if (!this.scopeName) {
         throw new Error("Scope name is required when creating a child scope");
       }
