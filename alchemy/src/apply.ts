@@ -20,6 +20,7 @@ import type { State } from "./state.ts";
 import { formatFQN } from "./util/cli.ts";
 import { logger } from "./util/logger.ts";
 import { createAndSendEvent } from "./util/telemetry.ts";
+import { validateResourceID } from "./util/validate-resource-id.ts";
 
 export interface ApplyOptions {
   quiet?: boolean;
@@ -56,6 +57,7 @@ async function _apply<Out extends ResourceAttributes>(
 ): Promise<Awaited<Out> & Resource> {
   const scope = resource[ResourceScope];
   const start = performance.now();
+  validateResourceID(resource[ResourceID], "Resource");
   try {
     const quiet = props?.quiet ?? scope.quiet;
     await scope.init();
