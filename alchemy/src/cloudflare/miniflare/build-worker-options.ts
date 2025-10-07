@@ -1,4 +1,5 @@
 import * as miniflare from "miniflare";
+import path from "pathe";
 import { assertNever } from "../../util/assert-never.ts";
 import type { HTTPServer } from "../../util/http.ts";
 import { logger } from "../../util/logger.ts";
@@ -26,6 +27,7 @@ export interface MiniflareWorkerInput {
   bundle: WorkerBundleSource;
   port: number | undefined;
   tunnel: boolean | undefined;
+  cwd: string;
 }
 
 type RemoteOnlyBindingType =
@@ -78,11 +80,6 @@ export const buildWorkerOptions = async (
         proxy: true,
       },
     ],
-    containerEngine: {
-      localDocker: {
-        socketPath: await getDockerSocketPath(),
-      },
-    },
     // This exposes the worker as a route that can be accessed by setting the MF-Route-Override header.
     routes: [input.name],
   };
@@ -119,7 +116,7 @@ export const buildWorkerOptions = async (
       case "assets": {
         options.assets = {
           binding: key,
-          directory: binding.path,
+          directory: path.resolve(input.cwd, binding.path),
           assetConfig: {
             html_handling: input.assets?.html_handling,
             not_found_handling: input.assets?.not_found_handling,
@@ -142,6 +139,11 @@ export const buildWorkerOptions = async (
           useSQLite: binding.sqlite,
           container: {
             imageName: binding.image.imageRef,
+          },
+        };
+        options.containerEngine = {
+          localDocker: {
+            socketPath: await getDockerSocketPath(),
           },
         };
         break;
