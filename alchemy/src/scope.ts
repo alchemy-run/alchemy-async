@@ -318,6 +318,12 @@ export class Scope {
       ((scope) => new FileSystemStateStore(scope));
     this.state = new InstrumentedStateStore(this.stateStore(this));
     this.dataMutex = new AsyncMutex();
+    if (this.parent == null) {
+      createAndSendEvent({
+        event: "alchemy.start",
+        duration: performance.now() - this.startedAt,
+      });
+    }
   }
 
   public async has(id: string, type?: string): Promise<boolean> {
@@ -421,6 +427,15 @@ export class Scope {
   public async deinit() {
     await this.parent?.state.delete(this.scopeName!);
     await this.state.deinit?.();
+    if (this.parent?.parent == null) {
+      await createAndSendEvent(
+        {
+          event: this.isErrored ? "alchemy.error" : "alchemy.success",
+          duration: performance.now() - this.startedAt,
+        },
+        this.isErrored ? new Error("Scope failed") : undefined,
+      );
+    }
   }
 
   public fqn(resourceID: ResourceID): string {
@@ -518,10 +533,15 @@ export class Scope {
       this.parent === undefined ||
       this?.parent?.scopeName === this.root.scopeName;
     if (this.phase === "read") {
-      await createAndSendEvent({
-        event: "alchemy.success",
-        duration: performance.now() - this.startedAt,
-      });
+      if (this.parent == null) {
+        await createAndSendEvent(
+          {
+            event: this.isErrored ? "alchemy.error" : "alchemy.success",
+            duration: performance.now() - this.startedAt,
+          },
+          this.isErrored ? new Error("Scope failed") : undefined,
+        );
+      }
       return;
     }
     if (this.finalized && !shouldForce) {
@@ -569,18 +589,17 @@ export class Scope {
         force: shouldForce,
         noop: options?.noop,
       });
-      await createAndSendEvent({
-        event: "alchemy.success",
-        duration: performance.now() - this.startedAt,
-      });
     } else if (this.isErrored) {
       this.logger.warn("Scope is in error, skipping finalize");
+    }
+
+    if (this.parent == null) {
       await createAndSendEvent(
         {
-          event: "alchemy.error",
+          event: this.isErrored ? "alchemy.error" : "alchemy.success",
           duration: performance.now() - this.startedAt,
         },
-        new Error("Scope failed"),
+        this.isErrored ? new Error("Scope failed") : undefined,
       );
     }
 
