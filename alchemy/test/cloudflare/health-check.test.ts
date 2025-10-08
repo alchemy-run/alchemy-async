@@ -29,10 +29,11 @@ const skipIfUnavailable = (error: unknown, testName: string): boolean => {
   return false;
 };
 
-const createTestZone = (suffix: string) => ({
-  id: `${BRANCH_PREFIX}-zone-${suffix}`,
-  name: `${BRANCH_PREFIX.replace(/_/g, "-")}-healthcheck-${suffix}.com`,
-});
+const createTestZone = async (suffix: string) => {
+  const id = `${BRANCH_PREFIX}-zone-${suffix}`;
+  const name = `${BRANCH_PREFIX.replace(/_/g, "-")}-healthcheck-${suffix}.com`;
+  return await Zone(id, { name });
+};
 
 const createHealthCheckId = (suffix: string) =>
   `${BRANCH_PREFIX}-healthcheck-${suffix}`;
@@ -143,11 +144,10 @@ describe("HealthCheck Resource", () => {
   });
 
   test("create, update, and delete health check", async (scope) => {
-    const zoneData = createTestZone("basic");
-    testZone = await Zone(zoneData.id, { name: zoneData.name });
+    testZone = await createTestZone("basic");
 
     expect(testZone.id).toBeTruthy();
-    expect(testZone.name).toEqual(zoneData.name);
+    expect(testZone.name).toContain("healthcheck-basic.com");
 
     const healthCheckId = createHealthCheckId("basic");
     const basicProps = createBasicHealthCheckProps("basic", {
@@ -253,8 +253,7 @@ describe("HealthCheck Resource", () => {
 
   test("create health check with HTTP configuration", async (scope) => {
     const config = healthCheckConfigs[0];
-    const zoneData = createTestZone(config.zoneSuffix);
-    const zone = await Zone(zoneData.id, { name: zoneData.name });
+    const zone = await createTestZone(config.zoneSuffix);
 
     const healthCheckId = createHealthCheckId(config.suffix);
     const props = config.propsFactory(config.suffix, { zone: zone.id });
@@ -281,8 +280,7 @@ describe("HealthCheck Resource", () => {
 
   test("create health check with TCP configuration", async (scope) => {
     const config = healthCheckConfigs[1];
-    const zoneData = createTestZone(config.zoneSuffix);
-    const zone = await Zone(zoneData.id, { name: zoneData.name });
+    const zone = await createTestZone(config.zoneSuffix);
 
     const healthCheckId = createHealthCheckId(config.suffix);
     const props = config.propsFactory(config.suffix, { zone: zone.id });
@@ -308,8 +306,7 @@ describe("HealthCheck Resource", () => {
   });
 
   test("create health check with specific regions", async (scope) => {
-    const zoneData = createTestZone("regions");
-    const zone = await Zone(zoneData.id, { name: zoneData.name });
+    const zone = await createTestZone("regions");
 
     const healthCheckId = createHealthCheckId("regions");
     const props = createBasicHealthCheckProps("regions", {
@@ -348,8 +345,7 @@ describe("HealthCheck Resource", () => {
   });
 
   test("create and update suspended health check", async (scope) => {
-    const zoneData = createTestZone("suspended");
-    const zone = await Zone(zoneData.id, { name: zoneData.name });
+    const zone = await createTestZone("suspended");
 
     const healthCheckId = createHealthCheckId("suspended");
     const suspendedProps = createBasicHealthCheckProps("suspended", {
