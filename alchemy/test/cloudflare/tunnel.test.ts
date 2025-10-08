@@ -20,7 +20,7 @@ const test = alchemy.test(import.meta, {
   prefix: BRANCH_PREFIX,
 });
 
-const TEST_DOMAIN = process.env.TEST_DOMAIN ?? "alchemy-test.us";
+const TEST_DOMAIN = process.env.TEST_DOMAIN ?? process.env.ALCHEMY_TEST_DOMAIN!;
 
 describe("Tunnel Resource", () => {
   // Use BRANCH_PREFIX for deterministic, non-colliding resource names

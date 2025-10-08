@@ -376,6 +376,10 @@ export interface WranglerJsonSpec {
     entrypoint?: string;
   }[];
 
+  worker_loaders?: {
+    binding: string;
+  }[];
+
   /**
    * Workflow bindings
    */
@@ -627,6 +631,9 @@ function processBindings(
   const containers: {
     class_name: string;
   }[] = [];
+  const workerLoaders: {
+    binding: string;
+  }[] = [];
 
   for (const eventSource of eventSources ?? []) {
     if (isQueueEventSource(eventSource)) {
@@ -850,6 +857,10 @@ function processBindings(
       containers.push({
         class_name: binding.className,
       });
+    } else if (binding.type === "worker_loader") {
+      workerLoaders.push({
+        binding: bindingName,
+      });
     } else {
       console.log("binding", binding);
       // biome-ignore lint/correctness/noVoidTypeReturn: it returns never
@@ -929,5 +940,9 @@ function processBindings(
     spec.unsafe = {
       bindings: unsafeBindings,
     };
+  }
+
+  if (workerLoaders.length > 0) {
+    spec.worker_loaders = workerLoaders;
   }
 }

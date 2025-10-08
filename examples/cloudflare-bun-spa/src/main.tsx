@@ -1,7 +1,7 @@
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
-import "./index.css";
 import App from "./App.tsx";
+import "./index.css";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
@@ -9,6 +9,8 @@ createRoot(document.getElementById("root")!).render(
   </StrictMode>,
 );
 
+// @ts-expect-error this is a dev only feature
 if (import.meta.hot) {
+  // @ts-expect-error this is a dev only feature
   import.meta.hot.accept();
 }

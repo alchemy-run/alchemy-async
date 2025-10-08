@@ -568,6 +568,11 @@ export async function prepareWorkerMetadata(
         name: bindingName,
         namespace: binding.namespaceName,
       });
+    } else if (binding.type === "worker_loader") {
+      meta.bindings.push({
+        type: "worker_loader",
+        name: bindingName,
+      });
     } else if (binding.type === "secret_key") {
       meta.bindings.push({
         type: "secret_key",

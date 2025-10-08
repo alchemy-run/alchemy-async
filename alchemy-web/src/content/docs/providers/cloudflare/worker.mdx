@@ -327,6 +327,56 @@ export default {
 For comprehensive Workflows documentation including cross-script bindings and advanced patterns, see the [Workflow guide](/guides/cloudflare-workflows) and [Workflows Provider API Reference](/providers/cloudflare/workflow).
 :::
 
+## Dynamic Worker Loaders
+
+Load and execute workers dynamically at runtime using WorkerLoader:
+
+```ts
+// alchemy.run.ts
+import { Worker, WorkerLoader } from "alchemy/cloudflare";
+
+export const worker = await Worker("dynamic-loader", {
+  entrypoint: "./src/worker.ts",
+  bindings: {
+    LOADER: WorkerLoader(),
+  }
+});
+```
+
+Then use the loader to create workers on-demand:
+
+```ts
+// ./src/worker.ts
+import type { worker } from "../alchemy.run.ts";
+
+export default {
+  async fetch(request: Request, env: typeof worker.Env) {
+    const dynamicWorker = env.LOADER.get(
+      'my-dynamic-worker',
+      async () => ({
+        compatibilityDate: "2025-06-01",
+        mainModule: "index.js",
+        modules: {
+          'index.js': `
+            export default {
+              async fetch(request) {
+                return new Response('Hello from dynamic worker!');
+              }
+            }
+          `,
+        },
+      }),
+    );
+
+    const entrypoint = dynamicWorker.getEntrypoint();
+    return entrypoint.fetch(new URL(request.url));
+  }
+};
+```
+
+:::tip
+See the Cloudflare [Dynamic Worker Loaders](https://developers.cloudflare.com/workers/runtime-apis/bindings/worker-loader/) documentation for advanced usage patterns.
+:::
 
 ## Queue Consumer
 

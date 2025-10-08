@@ -194,28 +194,55 @@ const worker = await Worker("my-worker", {
 
 ## Remote Bindings
 
-By default, development mode emulates supported resources locally. To use the real resource from Cloudflare, set the `dev.remote` option:
+Some Cloudflare resources can be used as bindings in development mode. By default, resources that support local emulation run locally, but you can optionally set `dev.remote: true` to use the real deployed resource from Cloudflare instead.
 
-```ts
+```diff lang="ts"
+const api = await Worker("my-api", {
+  entrypoint: "api.ts",
+  dev: {
++    remote: true,  // Use deployed worker instead of local emulation
+  },
+});
 const kv = await KVNamespace("my-kv", {
   dev: {
-    remote: true,
++    remote: true,  // Use deployed KV instead of local emulation
   },
 });
 const worker = await Worker("my-worker", {
   entrypoint: "worker.ts",
   bindings: {
     KV: kv,
+    API: api
   },
 });
 ```
 
-:::note
-Some resources, such as [`AIGateway`](/providers/cloudflare/ai-gateway/), cannot be emulated locally. These do not support the `dev.remote` option because they are always run remotely.
-:::
+### Binding Support
 
-:::caution
-When using remote bindings, you may accrue costs or incur usage limits.
+| Resource | Local Emulation | Remote Binding | Documentation |
+|----------|----------------|----------------|---------------|
+| `Ai` | ❌ | ✅ | [Ai](/providers/cloudflare/ai/) |
+| `AnalyticsEngine` | ✅ | ❌ | [AnalyticsEngine](/providers/cloudflare/analytics-engine/) |
+| `Assets` | ✅ | ❌ | [Assets](/providers/cloudflare/assets/) |
+| `BrowserRendering` | ❌ | ✅ | [BrowserRendering](/providers/cloudflare/browser-rendering/) |
+| `Container` | ✅ | ✅ | [Container](/providers/cloudflare/container/) |
+| `DispatchNamespace` | ❌ | ✅ | [DispatchNamespace](/providers/cloudflare/dispatch-namespace/) |
+| `D1Database` | ✅ | ✅ | [D1Database](/providers/cloudflare/d1-database/) |
+| `DurableObjectNamespace` | ❌ | ✅ | [DurableObjectNamespace](/providers/cloudflare/durable-object-namespace/) |
+| `Hyperdrive` | ✅ | ❌ | [Hyperdrive](/providers/cloudflare/hyperdrive/) |
+| `Images` | ✅ | ✅ | [Images](/providers/cloudflare/images/) |
+| `KVNamespace` | ✅ | ✅ | [KVNamespace](/providers/cloudflare/kv-namespace/) |
+| `Queue` | ✅ | ✅ | [Queue](/providers/cloudflare/queue/) |
+| `Pipeline` | ✅ | ❌ | [Pipeline](/providers/cloudflare/pipeline/) |
+| `RateLimit` | ✅ | ❌ | [RateLimit](/providers/cloudflare/rate-limit/) |
+| `R2Bucket` | ✅ | ✅ | [R2Bucket](/providers/cloudflare/bucket/) |
+| `VectorizeIndex` | ❌ | ✅ | VectorizeIndex | [VectorizeIndex](https://developers.cloudflare.com/vectorize/best-practices/create-indexes/) |
+| `VersionMetadata` | ✅ | ❌ | [VersionMetadata](/providers/cloudflare/version-metadata/) |
+| `Worker` | ✅ | ✅ | [Worker](/providers/cloudflare/worker/) |
+| `Workflow` | ✅ | ❌ | [Workflow](/providers/cloudflare/workflow/) |
+
+:::tip
+Local emulation is enabled by default for resources that support it. Resources that can run in both local and remote modes can optionally set `dev.remote: true` to use the deployed resource instead.
 :::
 
 ## Web Frameworks

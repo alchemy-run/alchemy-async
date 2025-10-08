@@ -2,6 +2,7 @@
 
 import alchemy from "alchemy";
 import {
+  Assets,
   D1Database,
   DurableObjectNamespace,
   KVNamespace,
@@ -44,6 +45,9 @@ export const worker1 = await Worker("worker1", {
     D1: d1,
     R2: r2,
     DO: doNamespace,
+    ASSETS: await Assets({
+      path: "./assets",
+    }),
   },
   compatibilityFlags: ["nodejs_compat"],
 });

@@ -1,12 +1,8 @@
 import alchemy from "alchemy";
-import { Astro, Zone } from "alchemy/cloudflare";
+import { Astro, Worker, Zone } from "alchemy/cloudflare";
 import { GitHubComment } from "alchemy/github";
 import { CloudflareStateStore } from "alchemy/state";
 
-const POSTHOG_DESTINATION_HOST =
-  process.env.POSTHOG_DESTINATION_HOST ?? "us.i.posthog.com";
-const POSTHOT_ASSET_DESTINATION_HOST =
-  process.env.POSTHOG_ASSET_DESTINATION_HOST ?? "us.i.posthog.com";
 //* this is not a secret, its public
 const POSTHOG_PROJECT_ID =
   process.env.POSTHOG_PROJECT_ID ??
@@ -24,12 +20,6 @@ const app = await alchemy("alchemy:website", {
 const domain =
   stage === "prod" ? ZONE : stage === "dev" ? `dev.${ZONE}` : undefined;
 
-const proxyBindings = {
-  POSTHOG_DESTINATION_HOST: POSTHOG_DESTINATION_HOST,
-  POSTHOT_ASSET_DESTINATION_HOST: POSTHOT_ASSET_DESTINATION_HOST,
-};
-export type PosthogProxy = Worker<typeof proxyBindings>;
-
 if (stage === "prod") {
   await Zone("alchemy-run", {
     name: "alchemy.run",
@@ -40,15 +30,39 @@ export const website = await Astro("website", {
   name: "alchemy-website",
   adopt: true,
   version: stage === "prod" ? undefined : stage,
-  domains: domain ? [domain] : undefined,
   env: {
     POSTHOG_CLIENT_API_HOST: `https://${POSTHOG_PROXY_HOST}`,
     POSTHOG_PROJECT_ID: POSTHOG_PROJECT_ID,
     ENABLE_POSTHOG: stage === "prod" ? "true" : "false",
   },
+  assets: {
+    _headers: [
+      "/advanced*",
+      "/blog*",
+      "/concepts*",
+      "/guides*",
+      "/providers*",
+      "/telemetry*",
+      "/getting-started*",
+      "/what-is-alchemy*",
+    ]
+      .flatMap((route) => [route, "  Vary: accept"])
+      .join("\n"),
+  },
 });
 
-const url = domain ? `https://${domain}` : website.url;
+export const router = await Worker("router", {
+  name: "alchemy-website-router",
+  adopt: true,
+  entrypoint: "src/router.ts",
+  version: stage === "prod" ? undefined : stage,
+  domains: domain ? [domain] : undefined,
+  bindings: {
+    WEBSITE: website,
+  },
+});
+
+const url = domain ? `https://${domain}` : router.url;
 
 console.log(url);
 

@@ -22,7 +22,7 @@ const test = alchemy.test(import.meta, {
   prefix: BRANCH_PREFIX,
   quiet: false,
 });
-const testDomain = "alchemy-test.us";
+const testDomain = process.env.ALCHEMY_TEST_DOMAIN!;
 
 const isEnabled = !!process.env.ALL_TESTS;
 

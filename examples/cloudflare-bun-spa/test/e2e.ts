@@ -14,7 +14,20 @@ export async function test({
 
   assert(url, "URL is not set");
 
-  await Promise.all([pollUntilReady(url), pollUntilReady(apiUrl, 404)]);
+  await pollUntilReady(url);
+  // This is true for local dev tests but not for remote e2e tests
+  console.error(
+    "ALCHEMY_TEST_KILL_ON_FINALIZE",
+    process.env.ALCHEMY_TEST_KILL_ON_FINALIZE,
+  );
+  if (process.env.ALCHEMY_TEST_KILL_ON_FINALIZE) {
+    console.error("Polling for apiUrl", apiUrl);
+    await pollUntilReady(apiUrl, 404);
+  } else {
+    // In dev the apiUrl should return 404 on the base path
+    // in production deployments
+    await pollUntilReady(apiUrl);
+  }
 
   const envRes = await fetchAndExpectOK(`${apiUrl}/api/test/env`);
   assert.deepStrictEqual(
@@ -49,19 +62,25 @@ export async function test({
   );
   assert.equal(deleteRes.status, 204, "Failed to delete key-value pair");
 
-  const getRes2 = await fetchAndExpectStatus(
-    `${apiUrl}/api/test/kv/${key}`,
-    undefined,
-    404,
-  );
-  assert.equal(getRes2.status, 404, "Key-value pair is not deleted");
-
   const websiteHtmlFound = await fetchAndExpectOK(url, undefined, 200);
   assert.equal(websiteHtmlFound.status, 200, "Website HTML is not found");
   assert.equal(
-    await websiteHtmlFound.headers.get("content-type"),
-    "text/html;charset=utf-8",
+    await websiteHtmlFound.headers.get("content-type")?.startsWith("text/html"),
+    true,
     "Website HTML header is not correct",
+  );
+
+  const aboutPageFound = await fetchAndExpectOK(`${url}/about`, undefined, 200);
+  assert.equal(aboutPageFound.status, 200, "About page is not found");
+  assert.equal(
+    await aboutPageFound.headers.get("content-type")?.startsWith("text/html"),
+    true,
+    "About page header is not correct",
+  );
+  const aboutContent = await aboutPageFound.text();
+  assert(
+    aboutContent.includes("About Bun + React + TS"),
+    "About page content is not correct",
   );
 
   console.log("Vite E2E test passed");

@@ -30,6 +30,7 @@ import { logger } from "./util/logger.ts";
 import { AsyncMutex } from "./util/mutex.ts";
 import { ALCHEMY_ROOT } from "./util/root-dir.ts";
 import { createAndSendEvent } from "./util/telemetry.ts";
+import { validateResourceID } from "./util/validate-resource-id.ts";
 
 export class RootScopeStateAttemptError extends Error {
   constructor() {
@@ -265,21 +266,17 @@ export class Scope {
     // Store provider credentials (TypeScript ensures no conflicts with core options)
     this.providerCredentials = providerCredentials as ProviderCredentials;
 
-    const isChild = this.parent !== undefined;
-    if (this.scopeName?.includes(":") && isChild) {
-      // TODO(sam): relax this constraint once we move to SQLite3 store
-      throw new Error(
-        `Scope name "${this.scopeName}" cannot contain double colons`,
-      );
-    }
-
     this.stage = stage ?? this.parent?.stage ?? DEFAULT_STAGE;
     this.profile = profile ?? this.parent?.profile;
     this.parent?.children.set(this.scopeName!, this);
     this.quiet = quiet ?? this.parent?.quiet ?? false;
-    if (this.parent && !this.scopeName) {
-      throw new Error("Scope name is required when creating a child scope");
+    if (this.parent) {
+      if (!this.scopeName) {
+        throw new Error("Scope name is required when creating a child scope");
+      }
+      validateResourceID(this.scopeName, "Scope");
     }
+
     this.password = password ?? this.parent?.password;
     this.noTrack = noTrack ?? this.parent?.noTrack ?? false;
     const resolvedPhase = phase ?? this.parent?.phase;

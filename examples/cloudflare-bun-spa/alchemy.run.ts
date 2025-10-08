@@ -12,7 +12,7 @@ export const kv = await KVNamespace("kv", {
 
 export const bunsite = await BunSPA("website", {
   entrypoint: "src/server.ts",
-  frontend: "index.html",
+  frontend: ["index.html", "about.html"],
   noBundle: false,
   adopt: true,
   bindings: {

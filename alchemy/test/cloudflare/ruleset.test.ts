@@ -15,7 +15,7 @@ import "../../src/test/vitest.ts";
 const api = await createCloudflareApi();
 const test = alchemy.test(import.meta, { prefix: BRANCH_PREFIX });
 
-const ZONE_NAME = process.env.TEST_ZONE ?? "alchemy-test.us";
+const ZONE_NAME = process.env.TEST_ZONE ?? process.env.ALCHEMY_TEST_DOMAIN!;
 
 const zoneId = (await findZoneForHostname(api, ZONE_NAME)).zoneId;
 
