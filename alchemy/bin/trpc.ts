@@ -6,7 +6,7 @@ import { createAndSendEvent } from "../src/util/telemetry.ts";
 export const t = trpcServer.initTRPC.meta<TrpcCliMeta>().create();
 
 export class ExitSignal extends Error {
-  constructor(public code: 0 | 1 = 0) {
+  constructor(public code = 0) {
     super(`Process exit with code ${code}`);
     this.name = "ExitSignal";
   }
@@ -22,20 +22,20 @@ const loggingMiddleware = t.middleware(async ({ path, next }) => {
   let exitCode = 0;
 
   try {
-    const result = await next();
+    await next();
     await createAndSendEvent({
       event: "cli.success",
       command: path,
     });
-    return result;
   } catch (error) {
-    await createAndSendEvent({
-      event:
-        error instanceof ExitSignal && error.code === 0
-          ? "cli.success"
-          : "cli.error",
-      command: path,
-    });
+    const isSafeExit = error instanceof ExitSignal && error.code === 0;
+    await createAndSendEvent(
+      {
+        event: isSafeExit ? "cli.success" : "cli.error",
+        command: path,
+      },
+      isSafeExit ? undefined : error,
+    );
     if (error instanceof ExitSignal) {
       exitCode = error.code;
     } else {

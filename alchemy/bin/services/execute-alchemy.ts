@@ -238,7 +238,7 @@ export async function execAlchemy(
 
   process.on("SIGINT", async () => {
     await exitPromise;
-    process.exit(sanitizeExitCode(child.exitCode));
+    throw new ExitSignal(sanitizeExitCode(child.exitCode));
   });
 
   const child = spawn(command, {
@@ -298,7 +298,8 @@ export async function execAlchemy(
 
   const exitPromise = once(child, "exit");
   await exitPromise.catch(() => {});
-  process.exit(sanitizeExitCode(child.exitCode));
+
+  throw new ExitSignal(sanitizeExitCode(child.exitCode));
 }
 
 /**
