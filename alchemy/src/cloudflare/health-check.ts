@@ -199,7 +199,7 @@ export interface HealthCheckProps extends CloudflareApiOptions {
  * Output returned after Cloudflare Health Check creation/update
  * IMPORTANT: The type name MUST match the exported resource name
  */
-export type HealthCheck = HealthCheckProps & {
+export type HealthCheck = Omit<HealthCheckProps, "zone" | "adopt"> & {
   /**
    * The resource ID
    */
@@ -386,7 +386,11 @@ export const HealthCheck = Resource(
         if (
           error instanceof CloudflareApiError &&
           (error.errorData as CloudflareApiErrorPayload[]).some(
-            (e) => e.code === 1004 || e.message?.includes("already exists"),
+            (e) =>
+              e.code === 1003 ||
+              e.code === 1004 ||
+              e.message?.includes("already exists") ||
+              e.message?.includes("value not unique"),
           )
         ) {
           if (!adopt) {
@@ -418,7 +422,6 @@ export const HealthCheck = Resource(
     return {
       id,
       healthCheckId: result.id!,
-      zone: props.zone,
       zoneId,
       address: result.address!,
       name: result.name!,
