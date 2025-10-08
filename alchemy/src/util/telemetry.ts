@@ -175,7 +175,6 @@ export const collectData = memoize(async (): Promise<GenericTelemetryData> => {
     getEnvironment(),
   ]);
 
-  // Get session ID from environment variable or generate a new one
   const sessionId =
     parseOption("--telemetry-session-id") ??
     process.env.ALCHEMY_TELEMETRY_SESSION_ID ??
@@ -183,7 +182,6 @@ export const collectData = memoize(async (): Promise<GenericTelemetryData> => {
     globalThis.ALCHEMY_TELEMETRY_SESSION_ID ??
     crypto.randomUUID();
 
-  // Get telemetry ref from environment variable (e.g., "cli")
   const referrer =
     parseOption("--telemetry-ref") ??
     process.env.ALCHEMY_TELEMETRY_REF ??
