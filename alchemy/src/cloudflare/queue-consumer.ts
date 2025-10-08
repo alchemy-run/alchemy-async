@@ -229,6 +229,14 @@ export const QueueConsumer = Resource(
       );
     }
 
+    const deadLetterQueue =
+      consumerData.result.settings?.dead_letter_queue ??
+      (props.settings?.deadLetterQueue
+        ? typeof props.settings.deadLetterQueue === "string"
+          ? props.settings.deadLetterQueue
+          : props.settings.deadLetterQueue.name
+        : undefined);
+
     return {
       id: consumerData.result.consumer_id,
       queueId,
@@ -242,9 +250,14 @@ export const QueueConsumer = Resource(
             maxRetries: consumerData.result.settings.max_retries,
             maxWaitTimeMs: consumerData.result.settings.max_wait_time_ms,
             retryDelay: consumerData.result.settings.retry_delay,
-            deadLetterQueue: consumerData.result.settings.dead_letter_queue,
+            deadLetterQueue,
           }
-        : undefined,
+        : props.settings
+          ? {
+              ...props.settings,
+              deadLetterQueue,
+            }
+          : undefined,
       createdOn: consumerData.result.created_on,
       accountId: api.accountId,
     };

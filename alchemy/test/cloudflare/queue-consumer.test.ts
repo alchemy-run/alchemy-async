@@ -133,4 +133,280 @@ describe("QueueConsumer Resource", () => {
       await destroy(scope);
     }
   });
+
+  test("create queue consumer with dead letter queue (string)", async (scope) => {
+    let queue: Queue | undefined;
+    let dlq: Queue | undefined;
+    let worker: Worker | undefined;
+    let consumer: any;
+
+    try {
+      queue = await Queue(`${testId}-dlq-main`, {
+        name: `${testId}-dlq-main`,
+        adopt: true,
+      });
+
+      dlq = await Queue(`${testId}-dlq-dead`, {
+        name: `${testId}-dlq-dead`,
+        adopt: true,
+      });
+
+      expect(queue.id).toBeTruthy();
+      expect(dlq.id).toBeTruthy();
+
+      worker = await Worker(`${testId}-dlq-worker`, {
+        name: `${testId}-dlq-worker`,
+        script: `
+          export default {
+            async fetch(request, env, ctx) {
+              return new Response("Hello DLQ");
+            },
+            async queue(batch, env, ctx) {
+              // Simulate failures to test DLQ
+              return batch.messages.map(() => ({ status: "retry" }));
+            }
+          }
+        `,
+        adopt: true,
+      });
+
+      consumer = await QueueConsumer(`${testId}-dlq-consumer`, {
+        queue: queue.id,
+        scriptName: worker.name,
+        settings: {
+          batchSize: 10,
+          maxRetries: 3,
+          maxWaitTimeMs: 500,
+          retryDelay: 10,
+          deadLetterQueue: dlq.name,
+        },
+        adopt: true,
+      });
+
+      expect(consumer.id).toBeTruthy();
+      expect(consumer.settings?.deadLetterQueue).toEqual(dlq.name);
+      expect(worker).toBeTruthy();
+
+      let foundConsumer;
+      for (let i = 0; i < 10; i++) {
+        const consumers = await listQueueConsumers(api, queue.id);
+        foundConsumer = consumers.find((c) => c.scriptName === worker!.name);
+        if (foundConsumer) {
+          break;
+        }
+        await new Promise((resolve) => setTimeout(resolve, 1000));
+      }
+
+      expect(foundConsumer).toBeTruthy();
+    } finally {
+      await destroy(scope);
+    }
+  });
+
+  test("create queue consumer with dead letter queue (Queue object)", async (scope) => {
+    let queue: Queue | undefined;
+    let dlq: Queue | undefined;
+    let worker: Worker | undefined;
+    let consumer: any;
+
+    try {
+      queue = await Queue(`${testId}-dlq-obj-main`, {
+        name: `${testId}-dlq-obj-main`,
+        adopt: true,
+      });
+
+      dlq = await Queue(`${testId}-dlq-obj-dead`, {
+        name: `${testId}-dlq-obj-dead`,
+        adopt: true,
+      });
+
+      expect(queue.id).toBeTruthy();
+      expect(dlq.id).toBeTruthy();
+
+      worker = await Worker(`${testId}-dlq-obj-worker`, {
+        name: `${testId}-dlq-obj-worker`,
+        script: `
+          export default {
+            async fetch(request, env, ctx) {
+              return new Response("Hello DLQ Object");
+            },
+            async queue(batch, env, ctx) {
+              return batch.messages.map(() => ({ status: "retry" }));
+            }
+          }
+        `,
+        adopt: true,
+      });
+
+      consumer = await QueueConsumer(`${testId}-dlq-obj-consumer`, {
+        queue: queue.id,
+        scriptName: worker.name,
+        settings: {
+          batchSize: 10,
+          maxRetries: 3,
+          maxWaitTimeMs: 500,
+          retryDelay: 10,
+          deadLetterQueue: dlq,
+        },
+        adopt: true,
+      });
+
+      expect(consumer.id).toBeTruthy();
+      expect(consumer.settings?.deadLetterQueue).toEqual(dlq.name);
+      expect(worker).toBeTruthy();
+
+      let foundConsumer;
+      for (let i = 0; i < 10; i++) {
+        const consumers = await listQueueConsumers(api, queue.id);
+        foundConsumer = consumers.find((c) => c.scriptName === worker!.name);
+        if (foundConsumer) {
+          break;
+        }
+        await new Promise((resolve) => setTimeout(resolve, 1000));
+      }
+
+      expect(foundConsumer).toBeTruthy();
+    } finally {
+      await destroy(scope);
+    }
+  });
+
+  test("update queue consumer to add dead letter queue", async (scope) => {
+    let queue: Queue | undefined;
+    let dlq: Queue | undefined;
+    let worker: Worker | undefined;
+    let consumer: any;
+
+    try {
+      queue = await Queue(`${testId}-dlq-update-main`, {
+        name: `${testId}-dlq-update-main`,
+        adopt: true,
+      });
+
+      dlq = await Queue(`${testId}-dlq-update-dead`, {
+        name: `${testId}-dlq-update-dead`,
+        adopt: true,
+      });
+
+      worker = await Worker(`${testId}-dlq-update-worker`, {
+        name: `${testId}-dlq-update-worker`,
+        script: `
+          export default {
+            async fetch(request, env, ctx) {
+              return new Response("Hello DLQ Update");
+            },
+            async queue(batch, env, ctx) {
+              return batch.messages.map(() => ({ status: "ack" }));
+            }
+          }
+        `,
+        adopt: true,
+      });
+
+      consumer = await QueueConsumer(`${testId}-dlq-update-consumer`, {
+        queue: queue.id,
+        scriptName: worker.name,
+        settings: {
+          batchSize: 10,
+          maxRetries: 2,
+        },
+        adopt: true,
+      });
+
+      expect(consumer.id).toBeTruthy();
+      expect(consumer.settings?.deadLetterQueue).toBeUndefined();
+
+      consumer = await QueueConsumer(`${testId}-dlq-update-consumer`, {
+        queue: queue.id,
+        scriptName: worker.name,
+        settings: {
+          batchSize: 10,
+          maxRetries: 3,
+          deadLetterQueue: dlq.name,
+        },
+        adopt: true,
+      });
+
+      expect(consumer.settings?.deadLetterQueue).toEqual(dlq.name);
+
+      expect(worker).toBeTruthy();
+      let foundConsumer;
+      for (let i = 0; i < 10; i++) {
+        const consumers = await listQueueConsumers(api, queue.id);
+        foundConsumer = consumers.find((c) => c.scriptName === worker!.name);
+        if (foundConsumer) {
+          break;
+        }
+        await new Promise((resolve) => setTimeout(resolve, 1000));
+      }
+
+      expect(foundConsumer).toBeTruthy();
+    } finally {
+      await destroy(scope);
+    }
+  });
+
+  test("worker with queue event source including dead letter queue", async (scope) => {
+    let queue: Queue | undefined;
+    let dlq: Queue | undefined;
+    let worker: Worker | undefined;
+
+    try {
+      queue = await Queue(`${testId}-worker-dlq-main`, {
+        name: `${testId}-worker-dlq-main`,
+        adopt: true,
+      });
+
+      dlq = await Queue(`${testId}-worker-dlq-dead`, {
+        name: `${testId}-worker-dlq-dead`,
+        adopt: true,
+      });
+
+      worker = await Worker(`${testId}-worker-dlq`, {
+        name: `${testId}-worker-dlq`,
+        script: `
+          export default {
+            async fetch(request, env, ctx) {
+              return new Response("Hello Worker DLQ");
+            },
+            async queue(batch, env, ctx) {
+              return batch.messages.map(() => ({ status: "retry" }));
+            }
+          }
+        `,
+        eventSources: [
+          {
+            queue,
+            settings: {
+              batchSize: 25,
+              maxRetries: 5,
+              maxWaitTimeMs: 1000,
+              retryDelay: 30,
+              deadLetterQueue: dlq,
+            },
+          },
+        ],
+        adopt: true,
+      });
+
+      expect(worker.id).toBeTruthy();
+      expect(worker.name).toBeTruthy();
+
+      let foundConsumer;
+      for (let i = 0; i < 10; i++) {
+        const consumers = await listQueueConsumers(api, queue.id);
+        foundConsumer = consumers.find((c) => c.scriptName === worker!.name);
+        if (foundConsumer) {
+          break;
+        }
+        await new Promise((resolve) => setTimeout(resolve, 1000));
+      }
+
+      expect(foundConsumer).toBeTruthy();
+      expect(foundConsumer?.settings?.maxRetries).toEqual(5);
+      expect(foundConsumer?.settings?.batchSize).toEqual(25);
+    } finally {
+      await destroy(scope);
+    }
+  });
 });
