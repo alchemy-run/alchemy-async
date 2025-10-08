@@ -9,6 +9,7 @@ import path from "pathe";
 import pkg from "../../package.json" with { type: "json" };
 import type { Phase } from "../alchemy.ts";
 import { Scope } from "../scope.ts";
+import { parseOption } from "./cli-args.ts";
 import { logger } from "./logger.ts";
 import { memoize } from "./memoize.ts";
 
@@ -173,9 +174,27 @@ export const collectData = memoize(async (): Promise<GenericTelemetryData> => {
     getRuntime(),
     getEnvironment(),
   ]);
+
+  // Get session ID from environment variable or generate a new one
+  const sessionId =
+    parseOption("--telemetry-session-id") ??
+    process.env.ALCHEMY_TELEMETRY_SESSION_ID ??
+    //@ts-expect-error
+    globalThis.ALCHEMY_TELEMETRY_SESSION_ID ??
+    crypto.randomUUID();
+
+  // Get telemetry ref from environment variable (e.g., "cli")
+  const referrer =
+    parseOption("--telemetry-ref") ??
+    process.env.ALCHEMY_TELEMETRY_REF ??
+    //@ts-expect-error
+    globalThis.ALCHEMY_TELEMETRY_REF ??
+    "";
+
   return {
     userId: userId ?? "",
-    sessionId: crypto.randomUUID(),
+    sessionId,
+    referrer,
     platform: os.platform(),
     osVersion: os.release(),
     arch: os.arch(),
@@ -195,6 +214,7 @@ export const collectData = memoize(async (): Promise<GenericTelemetryData> => {
 export type GenericTelemetryData = {
   userId: string;
   sessionId: string;
+  referrer: string;
   platform: string;
   osVersion: string;
   arch: string;

@@ -15,6 +15,7 @@ import {
 import { DEFAULT_STAGE, Scope, type ProviderCredentials } from "./scope.ts";
 import { secret } from "./secret.ts";
 import type { StateStoreType } from "./state.ts";
+import { cliArgs, parseOption } from "./util/cli-args.ts";
 import type { LoggerApi } from "./util/cli.ts";
 import { ALCHEMY_ROOT } from "./util/root-dir.ts";
 
@@ -101,18 +102,9 @@ async function _alchemy(
   appName: string,
   options?: Omit<AlchemyOptions, "appName">,
 ): Promise<Scope> {
-  const cliArgs = process.argv.slice(2);
   // user may select a specific app to auto-enable read mode for any other app
   const app = parseOption("--app");
-  function parseOption<D extends string | undefined>(
-    option: string,
-    defaultValue?: D,
-  ): D {
-    const i = cliArgs.indexOf(option);
-    return (
-      i !== -1 && i + 1 < cliArgs.length ? cliArgs[i + 1] : defaultValue
-    ) as D;
-  }
+
   const cliOptions = {
     phase:
       app && app !== appName
