@@ -347,6 +347,13 @@ type _R2Bucket = Omit<BucketProps, "delete" | "dev"> & {
      * Whether the bucket is running remotely
      */
     remote: boolean;
+
+    /**
+     * Whether the bucket has only been created locally
+     *
+     * @internal
+     */
+    onlyLocal?: boolean;
   };
 
   /**
@@ -587,13 +594,15 @@ const _R2Bucket = Resource(
     }
 
     const allowPublicAccess = props.allowPublicAccess === true;
+    const isLocal = this.scope.local && !props.dev?.remote;
     const dev = {
       id: this.output?.dev?.id ?? bucketName,
       remote: props.dev?.remote ?? false,
-    };
+      onlyLocal: this.output?.dev?.onlyLocal ?? isLocal,
+    } satisfies _R2Bucket["dev"];
     const adopt = props.adopt ?? this.scope.adopt;
 
-    if (this.scope.local && !props.dev?.remote) {
+    if (isLocal) {
       return {
         name: bucketName,
         location: this.output?.location ?? "",
@@ -626,7 +635,7 @@ const _R2Bucket = Resource(
       return this.destroy();
     }
 
-    if (this.phase === "create" || !this.output?.name) {
+    if (this.phase === "create" || this.output?.dev?.onlyLocal) {
       const bucket = await createBucket(api, bucketName, props).catch(
         async (err) => {
           if (
