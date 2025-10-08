@@ -595,7 +595,8 @@ const _R2Bucket = Resource(
 
     if (this.scope.local && !props.dev?.remote) {
       return {
-        name: this.output?.name ?? "",
+        // name: this.output?.name ?? "",
+        name: bucketName,
         location: this.output?.location ?? "",
         creationDate: this.output?.creationDate ?? new Date(),
         jurisdiction: this.output?.jurisdiction ?? "default",
