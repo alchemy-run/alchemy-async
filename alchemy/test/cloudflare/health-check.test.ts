@@ -2,13 +2,19 @@ import { beforeEach, describe, expect } from "vitest";
 import { alchemy } from "../../src/alchemy.ts";
 import { CloudflareApiError } from "../../src/cloudflare/api-error.ts";
 import { createCloudflareApi } from "../../src/cloudflare/api.ts";
-import { HealthCheck } from "../../src/cloudflare/health-check.ts";
-import { Zone } from "../../src/cloudflare/zone.ts";
+import {
+  HealthCheck,
+  type HealthCheckProps,
+} from "../../src/cloudflare/health-check.ts";
+import { findZoneForHostname, type Zone } from "../../src/cloudflare/zone.ts";
 import { destroy } from "../../src/destroy.ts";
 import "../../src/test/vitest.ts";
 import { BRANCH_PREFIX } from "../util.ts";
 
+const ZONE_NAME = process.env.ALCHEMY_TEST_DOMAIN!;
+
 const api = await createCloudflareApi();
+const zoneId = (await findZoneForHostname(api, ZONE_NAME)).zoneId;
 
 const test = alchemy.test(import.meta, {
   prefix: BRANCH_PREFIX,
@@ -29,12 +35,6 @@ const skipIfUnavailable = (error: unknown, testName: string): boolean => {
   return false;
 };
 
-const createTestZone = async (suffix: string) => {
-  const id = `${BRANCH_PREFIX}-zone-${suffix}`;
-  const name = `${BRANCH_PREFIX.replace(/_/g, "-")}-healthcheck-${suffix}.com`;
-  return await Zone(id, { name });
-};
-
 const createHealthCheckId = (suffix: string) =>
   `${BRANCH_PREFIX}-healthcheck-${suffix}`;
 
@@ -45,6 +45,7 @@ const createBasicHealthCheckProps = (suffix: string, overrides: any = {}) => ({
   interval: 60,
   timeout: 5,
   retries: 2,
+  zone: zoneId,
   ...overrides,
 });
 
@@ -99,7 +100,7 @@ const expectApiResponseToMatch = (
 
 const createHealthCheckWithErrorHandling = async (
   id: string,
-  props: any,
+  props: HealthCheckProps,
   testName: string,
 ): Promise<HealthCheck | undefined> => {
   try {
@@ -133,7 +134,7 @@ const verifyHealthCheckDeleted = async (
   expect(response.status).toBe(404);
 };
 
-describe("HealthCheck Resource", () => {
+describe.sequential("HealthCheck Resource", () => {
   let testZone: Zone | undefined;
   let testHealthCheck: HealthCheck | undefined;
 
@@ -145,14 +146,9 @@ describe("HealthCheck Resource", () => {
 
   test("create, update, and delete health check", async (scope) => {
     try {
-      testZone = await createTestZone("basic");
-
-      expect(testZone.id).toBeTruthy();
-      expect(testZone.name).toContain("healthcheck-basic.com");
-
       const healthCheckId = createHealthCheckId("basic");
       const basicProps = createBasicHealthCheckProps("basic", {
-        zone: testZone.id,
+        zoneId,
       });
       testHealthCheck = await createHealthCheckWithErrorHandling(
         healthCheckId,
@@ -175,7 +171,7 @@ describe("HealthCheck Resource", () => {
       });
 
       const responseData = await verifyHealthCheckExists(
-        testZone.id,
+        zoneId,
         testHealthCheck.healthCheckId,
       );
       expectApiResponseToMatch(responseData, {
@@ -183,7 +179,7 @@ describe("HealthCheck Resource", () => {
         address: basicProps.address,
       });
       const updatedProps = createBasicHealthCheckProps("basic", {
-        zone: testZone.id,
+        zoneId,
         address: "api.example.com",
         description: "Updated test health check",
         interval: 30,
@@ -202,7 +198,7 @@ describe("HealthCheck Resource", () => {
       });
 
       const updatedResponseData = await verifyHealthCheckExists(
-        testZone.id,
+        zoneId,
         testHealthCheck.healthCheckId,
       );
       expectApiResponseToMatch(updatedResponseData, {
@@ -261,10 +257,9 @@ describe("HealthCheck Resource", () => {
   test("create health check with HTTP configuration", async (scope) => {
     try {
       const config = healthCheckConfigs[0];
-      const zone = await createTestZone(config.zoneSuffix);
 
       const healthCheckId = createHealthCheckId(config.suffix);
-      const props = config.propsFactory(config.suffix, { zone: zone.id });
+      const props = config.propsFactory(config.suffix, { zone: zoneId });
       const healthCheck = await createHealthCheckWithErrorHandling(
         healthCheckId,
         props,
@@ -278,7 +273,7 @@ describe("HealthCheck Resource", () => {
       config.assertions(healthCheck);
 
       const responseData = await verifyHealthCheckExists(
-        zone.id,
+        zoneId,
         healthCheck.healthCheckId,
       );
       config.apiAssertions(responseData);
@@ -290,10 +285,8 @@ describe("HealthCheck Resource", () => {
   test("create health check with TCP configuration", async (scope) => {
     const config = healthCheckConfigs[1];
     try {
-      const zone = await createTestZone(config.zoneSuffix);
-
       const healthCheckId = createHealthCheckId(config.suffix);
-      const props = config.propsFactory(config.suffix, { zone: zone.id });
+      const props = config.propsFactory(config.suffix, { zone: zoneId });
       const healthCheck = await createHealthCheckWithErrorHandling(
         healthCheckId,
         props,
@@ -307,7 +300,7 @@ describe("HealthCheck Resource", () => {
       config.assertions(healthCheck);
 
       const responseData = await verifyHealthCheckExists(
-        zone.id,
+        zoneId,
         healthCheck.healthCheckId,
       );
       config.apiAssertions(responseData);
@@ -318,11 +311,9 @@ describe("HealthCheck Resource", () => {
 
   test("create health check with specific regions", async (scope) => {
     try {
-      const zone = await createTestZone("regions");
-
       const healthCheckId = createHealthCheckId("regions");
       const props = createBasicHealthCheckProps("regions", {
-        zone: zone.id,
+        zone: zoneId,
         address: "api.example.com",
         checkRegions: ["WNAM", "ENAM", "WEU"],
         consecutiveFails: 2,
@@ -346,7 +337,7 @@ describe("HealthCheck Resource", () => {
       expect(healthCheck.consecutiveSuccesses).toEqual(2);
 
       const responseData: any = await verifyHealthCheckExists(
-        zone.id,
+        zoneId,
         healthCheck.healthCheckId,
       );
       expect(responseData.result.check_regions).toContain("WNAM");
@@ -359,11 +350,9 @@ describe("HealthCheck Resource", () => {
 
   test("create and update suspended health check", async (scope) => {
     try {
-      const zone = await createTestZone("suspended");
-
       const healthCheckId = createHealthCheckId("suspended");
       const suspendedProps = createBasicHealthCheckProps("suspended", {
-        zone: zone.id,
+        zone: zoneId,
         address: "suspended.example.com",
         suspended: true,
       });
@@ -381,13 +370,13 @@ describe("HealthCheck Resource", () => {
       expect(healthCheck.suspended).toEqual(true);
 
       let responseData: any = await verifyHealthCheckExists(
-        zone.id,
+        zoneId,
         healthCheck.healthCheckId,
       );
       expect(responseData.result.suspended).toEqual(true);
 
       const activeProps = createBasicHealthCheckProps("suspended", {
-        zone: zone.id,
+        zone: zoneId,
         address: "suspended.example.com",
         suspended: false,
       });
