@@ -115,6 +115,11 @@ export interface ScopeOptions extends ProviderCredentials {
    * `undefined` if the program was not run with `--app`
    */
   isSelected?: boolean;
+  /**
+   * @internal
+   * The timestamp when the scope was started.
+   */
+  startedAt?: DOMHighResTimeStamp;
 }
 
 /**
@@ -208,6 +213,7 @@ export class Scope {
   public readonly dotAlchemy: string;
   public readonly isSelected: boolean | undefined;
   public readonly profile: string | undefined;
+  public readonly startedAt: DOMHighResTimeStamp;
 
   // Provider credentials for scope-level credential overrides
   public readonly providerCredentials: ProviderCredentials;
@@ -215,7 +221,6 @@ export class Scope {
   private isErrored = false;
   private isSkipped = false;
   private finalized = false;
-  private startedAt = performance.now();
   private deferred: (() => Promise<any>)[] = [];
   private cleanups: (() => Promise<void>)[] = [];
 
@@ -248,6 +253,7 @@ export class Scope {
       isSelected,
       noTrack,
       profile,
+      startedAt,
       ...providerCredentials
     } = options;
 
@@ -256,7 +262,7 @@ export class Scope {
     this.parent = parent ?? Scope.getScope();
     this.rootDir = rootDir ?? this.parent?.rootDir ?? ALCHEMY_ROOT;
     this.isSelected = isSelected ?? this.parent?.isSelected;
-
+    this.startedAt = startedAt ?? this.parent?.startedAt ?? performance.now();
     this.dotAlchemy =
       dotAlchemy ??
       this.parent?.dotAlchemy ??
@@ -318,12 +324,6 @@ export class Scope {
       ((scope) => new FileSystemStateStore(scope));
     this.state = new InstrumentedStateStore(this.stateStore(this));
     this.dataMutex = new AsyncMutex();
-    if (this.parent == null) {
-      createAndSendEvent({
-        event: "alchemy.start",
-        duration: performance.now() - this.startedAt,
-      });
-    }
   }
 
   public async has(id: string, type?: string): Promise<boolean> {
@@ -427,15 +427,6 @@ export class Scope {
   public async deinit() {
     await this.parent?.state.delete(this.scopeName!);
     await this.state.deinit?.();
-    if (this.parent?.parent == null) {
-      await createAndSendEvent(
-        {
-          event: this.isErrored ? "alchemy.error" : "alchemy.success",
-          duration: performance.now() - this.startedAt,
-        },
-        this.isErrored ? new Error("Scope failed") : undefined,
-      );
-    }
   }
 
   public fqn(resourceID: ResourceID): string {
