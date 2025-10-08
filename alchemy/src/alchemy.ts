@@ -104,10 +104,13 @@ async function _alchemy(
   options?: Omit<AlchemyOptions, "appName">,
 ): Promise<Scope> {
   const startedAt = performance.now();
-  await createAndSendEvent({
-    event: "alchemy.start",
-    duration: performance.now() - startedAt,
-  });
+  let firstAnalyticsPromise: Promise<void> | undefined;
+  if (!options?.noTrack) {
+    firstAnalyticsPromise = createAndSendEvent({
+      event: "alchemy.start",
+      duration: performance.now() - startedAt,
+    });
+  }
   // user may select a specific app to auto-enable read mode for any other app
   const app = parseOption("--app");
 
@@ -168,6 +171,7 @@ If this is a mistake, you can disable this check by setting the ALCHEMY_CI_STATE
     password: mergedOptions?.password ?? process.env.ALCHEMY_PASSWORD,
     noTrack: mergedOptions?.noTrack ?? false,
     isSelected: app === undefined ? undefined : app === appName,
+    startedAt,
   });
   onExit((code) => {
     root.cleanup().then(() => {
@@ -187,14 +191,19 @@ If this is a mistake, you can disable this check by setting the ALCHEMY_CI_STATE
   Scope.storage.enterWith(stage);
   if (mergedOptions?.phase === "destroy") {
     const err = await destroy(stage).catch((e) => e);
-    await createAndSendEvent(
-      {
-        event: err instanceof Error ? "alchemy.error" : "alchemy.success",
-        duration: performance.now() - root.startedAt,
-      },
-      err instanceof Error ? err : undefined,
-    );
+    if (!options?.noTrack) {
+      await createAndSendEvent(
+        {
+          event: err instanceof Error ? "alchemy.error" : "alchemy.success",
+          duration: performance.now() - root.startedAt,
+        },
+        err instanceof Error ? err : undefined,
+      );
+    }
     return process.exit(0);
+  }
+  if (firstAnalyticsPromise) {
+    await firstAnalyticsPromise;
   }
   return root;
 }
