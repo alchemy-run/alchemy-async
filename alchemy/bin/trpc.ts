@@ -15,7 +15,7 @@ export class ExitSignal extends Error {
 export class CancelSignal extends Error {}
 
 const loggingMiddleware = t.middleware(async ({ path, next }) => {
-  createAndSendEvent({
+  await createAndSendEvent({
     event: "cli.start",
     command: path,
   });
@@ -23,13 +23,13 @@ const loggingMiddleware = t.middleware(async ({ path, next }) => {
 
   try {
     const result = await next();
-    createAndSendEvent({
+    await createAndSendEvent({
       event: "cli.success",
       command: path,
     });
     return result;
   } catch (error) {
-    createAndSendEvent({
+    await createAndSendEvent({
       event:
         error instanceof ExitSignal && error.code === 0
           ? "cli.success"

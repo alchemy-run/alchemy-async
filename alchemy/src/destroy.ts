@@ -14,6 +14,7 @@ import { isScope, type PendingDeletions, Scope } from "./scope.ts";
 import type { State } from "./state.ts";
 import { formatFQN } from "./util/cli.ts";
 import { logger } from "./util/logger.ts";
+import { createAndSendEvent } from "./util/telemetry.ts";
 
 export function isDestroyedSignal(error: any): error is DestroyedSignal {
   return error instanceof Error && (error as any).kind === "DestroyedSignal";
@@ -109,6 +110,7 @@ export async function destroy(
     logger.warn(`Resource "${instance[ResourceFQN]}" has no scope`);
   }
   const quiet = options?.quiet ?? scope.quiet;
+  const start = performance.now();
 
   try {
     if (!quiet && !options?.noop) {
@@ -121,6 +123,15 @@ export async function destroy(
           : "Deleting Resource...",
       });
     }
+
+    await createAndSendEvent({
+      event: "resource.start",
+      resource: instance[ResourceKind],
+      status: "deleting",
+      phase: "destroy",
+      duration: performance.now() - start,
+      replaced: !!options?.replace,
+    });
 
     let state: State;
     let props: ResourceProps | undefined;
@@ -224,7 +235,28 @@ export async function destroy(
         status: "success",
       });
     }
+
+    await createAndSendEvent({
+      event: "resource.success",
+      resource: instance[ResourceKind],
+      status: "deleted",
+      phase: "destroy",
+      duration: performance.now() - start,
+      replaced: !!options?.replace,
+    });
   } catch (error) {
+    let errorToSend = error instanceof Error ? error : new Error(String(error));
+    await createAndSendEvent(
+      {
+        event: "resource.error",
+        resource: instance[ResourceKind],
+        duration: performance.now() - start,
+        phase: "destroy",
+        status: "deleting",
+        replaced: !!options?.replace,
+      },
+      errorToSend,
+    );
     logger.error(error);
     throw error;
   }

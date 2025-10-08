@@ -518,7 +518,7 @@ export class Scope {
       this.parent === undefined ||
       this?.parent?.scopeName === this.root.scopeName;
     if (this.phase === "read") {
-      createAndSendEvent({
+      await createAndSendEvent({
         event: "alchemy.success",
         duration: performance.now() - this.startedAt,
       });
@@ -569,13 +569,13 @@ export class Scope {
         force: shouldForce,
         noop: options?.noop,
       });
-      createAndSendEvent({
+      await createAndSendEvent({
         event: "alchemy.success",
         duration: performance.now() - this.startedAt,
       });
     } else if (this.isErrored) {
       this.logger.warn("Scope is in error, skipping finalize");
-      createAndSendEvent(
+      await createAndSendEvent(
         {
           event: "alchemy.error",
           duration: performance.now() - this.startedAt,
