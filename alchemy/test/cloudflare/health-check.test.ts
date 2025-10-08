@@ -144,74 +144,81 @@ describe("HealthCheck Resource", () => {
   });
 
   test("create, update, and delete health check", async (scope) => {
-    testZone = await createTestZone("basic");
+    try {
+      testZone = await createTestZone("basic");
 
-    expect(testZone.id).toBeTruthy();
-    expect(testZone.name).toContain("healthcheck-basic.com");
+      expect(testZone.id).toBeTruthy();
+      expect(testZone.name).toContain("healthcheck-basic.com");
 
-    const healthCheckId = createHealthCheckId("basic");
-    const basicProps = createBasicHealthCheckProps("basic", {
-      zone: testZone.id,
-    });
-    testHealthCheck = await createHealthCheckWithErrorHandling(
-      healthCheckId,
-      basicProps,
-      "basic health check",
-    );
+      const healthCheckId = createHealthCheckId("basic");
+      const basicProps = createBasicHealthCheckProps("basic", {
+        zone: testZone.id,
+      });
+      testHealthCheck = await createHealthCheckWithErrorHandling(
+        healthCheckId,
+        basicProps,
+        "basic health check",
+      );
 
-    if (!testHealthCheck) {
-      return;
+      if (!testHealthCheck) {
+        return;
+      }
+
+      expectHealthCheckToMatch(testHealthCheck, {
+        id: healthCheckId,
+        name: basicProps.name,
+        address: basicProps.address,
+        description: basicProps.description,
+        interval: basicProps.interval,
+        timeout: basicProps.timeout,
+        retries: basicProps.retries,
+      });
+
+      const responseData = await verifyHealthCheckExists(
+        testZone.id,
+        testHealthCheck.healthCheckId,
+      );
+      expectApiResponseToMatch(responseData, {
+        name: basicProps.name,
+        address: basicProps.address,
+      });
+      const updatedProps = createBasicHealthCheckProps("basic", {
+        zone: testZone.id,
+        address: "api.example.com",
+        description: "Updated test health check",
+        interval: 30,
+        timeout: 10,
+        retries: 3,
+      });
+
+      testHealthCheck = await HealthCheck(healthCheckId, updatedProps);
+      expectHealthCheckToMatch(testHealthCheck, {
+        id: healthCheckId,
+        address: updatedProps.address,
+        description: updatedProps.description,
+        interval: updatedProps.interval,
+        timeout: updatedProps.timeout,
+        retries: updatedProps.retries,
+      });
+
+      const updatedResponseData = await verifyHealthCheckExists(
+        testZone.id,
+        testHealthCheck.healthCheckId,
+      );
+      expectApiResponseToMatch(updatedResponseData, {
+        address: updatedProps.address,
+        description: updatedProps.description,
+        interval: updatedProps.interval,
+      });
+    } finally {
+      await destroy(scope);
+      if (testZone && testHealthCheck) {
+        await verifyHealthCheckDeleted(
+          testZone?.id,
+          testHealthCheck?.healthCheckId,
+        );
+      }
     }
-
-    expectHealthCheckToMatch(testHealthCheck, {
-      id: healthCheckId,
-      name: basicProps.name,
-      address: basicProps.address,
-      description: basicProps.description,
-      interval: basicProps.interval,
-      timeout: basicProps.timeout,
-      retries: basicProps.retries,
-    });
-
-    const responseData = await verifyHealthCheckExists(
-      testZone.id,
-      testHealthCheck.healthCheckId,
-    );
-    expectApiResponseToMatch(responseData, {
-      name: basicProps.name,
-      address: basicProps.address,
-    });
-    const updatedProps = createBasicHealthCheckProps("basic", {
-      zone: testZone.id,
-      address: "api.example.com",
-      description: "Updated test health check",
-      interval: 30,
-      timeout: 10,
-      retries: 3,
-    });
-
-    testHealthCheck = await HealthCheck(healthCheckId, updatedProps);
-    expectHealthCheckToMatch(testHealthCheck, {
-      id: healthCheckId,
-      address: updatedProps.address,
-      description: updatedProps.description,
-      interval: updatedProps.interval,
-      timeout: updatedProps.timeout,
-      retries: updatedProps.retries,
-    });
-
-    const updatedResponseData = await verifyHealthCheckExists(
-      testZone.id,
-      testHealthCheck.healthCheckId,
-    );
-    expectApiResponseToMatch(updatedResponseData, {
-      address: updatedProps.address,
-      description: updatedProps.description,
-      interval: updatedProps.interval,
-    });
-
-    await destroy(scope);
-    await verifyHealthCheckDeleted(testZone.id, testHealthCheck.healthCheckId);
   });
 
   const healthCheckConfigs = [
@@ -252,135 +259,143 @@ describe("HealthCheck Resource", () => {
   ];
 
   test("create health check with HTTP configuration", async (scope) => {
-    const config = healthCheckConfigs[0];
-    const zone = await createTestZone(config.zoneSuffix);
+    try {
+      const config = healthCheckConfigs[0];
+      const zone = await createTestZone(config.zoneSuffix);
 
-    const healthCheckId = createHealthCheckId(config.suffix);
-    const props = config.propsFactory(config.suffix, { zone: zone.id });
-    const healthCheck = await createHealthCheckWithErrorHandling(
-      healthCheckId,
-      props,
-      `${config.name} test`,
-    );
+      const healthCheckId = createHealthCheckId(config.suffix);
+      const props = config.propsFactory(config.suffix, { zone: zone.id });
+      const healthCheck = await createHealthCheckWithErrorHandling(
+        healthCheckId,
+        props,
+        `${config.name} test`,
+      );
 
-    if (!healthCheck) {
-      return;
+      if (!healthCheck) {
+        return;
+      }
+
+      config.assertions(healthCheck);
+
+      const responseData = await verifyHealthCheckExists(
+        zone.id,
+        healthCheck.healthCheckId,
+      );
+      config.apiAssertions(responseData);
+    } finally {
+      await destroy(scope);
     }
-
-    config.assertions(healthCheck);
-
-    const responseData = await verifyHealthCheckExists(
-      zone.id,
-      healthCheck.healthCheckId,
-    );
-    config.apiAssertions(responseData);
-
-    await destroy(scope);
   });
 
   test("create health check with TCP configuration", async (scope) => {
     const config = healthCheckConfigs[1];
-    const zone = await createTestZone(config.zoneSuffix);
+    try {
+      const zone = await createTestZone(config.zoneSuffix);
 
-    const healthCheckId = createHealthCheckId(config.suffix);
-    const props = config.propsFactory(config.suffix, { zone: zone.id });
-    const healthCheck = await createHealthCheckWithErrorHandling(
-      healthCheckId,
-      props,
-      `${config.name} test`,
-    );
+      const healthCheckId = createHealthCheckId(config.suffix);
+      const props = config.propsFactory(config.suffix, { zone: zone.id });
+      const healthCheck = await createHealthCheckWithErrorHandling(
+        healthCheckId,
+        props,
+        `${config.name} test`,
+      );
 
-    if (!healthCheck) {
-      return;
+      if (!healthCheck) {
+        return;
+      }
+
+      config.assertions(healthCheck);
+
+      const responseData = await verifyHealthCheckExists(
+        zone.id,
+        healthCheck.healthCheckId,
+      );
+      config.apiAssertions(responseData);
+    } finally {
+      await destroy(scope);
     }
-
-    config.assertions(healthCheck);
-
-    const responseData = await verifyHealthCheckExists(
-      zone.id,
-      healthCheck.healthCheckId,
-    );
-    config.apiAssertions(responseData);
-
-    await destroy(scope);
   });
 
   test("create health check with specific regions", async (scope) => {
-    const zone = await createTestZone("regions");
+    try {
+      const zone = await createTestZone("regions");
 
-    const healthCheckId = createHealthCheckId("regions");
-    const props = createBasicHealthCheckProps("regions", {
-      zone: zone.id,
-      address: "api.example.com",
-      checkRegions: ["WNAM", "ENAM", "WEU"],
-      consecutiveFails: 2,
-      consecutiveSuccesses: 2,
-    });
+      const healthCheckId = createHealthCheckId("regions");
+      const props = createBasicHealthCheckProps("regions", {
+        zone: zone.id,
+        address: "api.example.com",
+        checkRegions: ["WNAM", "ENAM", "WEU"],
+        consecutiveFails: 2,
+        consecutiveSuccesses: 2,
+      });
 
-    const healthCheck = await createHealthCheckWithErrorHandling(
-      healthCheckId,
-      props,
-      "regional test",
-    );
+      const healthCheck = await createHealthCheckWithErrorHandling(
+        healthCheckId,
+        props,
+        "regional test",
+      );
 
-    if (!healthCheck) {
-      return;
+      if (!healthCheck) {
+        return;
+      }
+
+      expect(healthCheck.checkRegions).toContain("WNAM");
+      expect(healthCheck.checkRegions).toContain("ENAM");
+      expect(healthCheck.checkRegions).toContain("WEU");
+      expect(healthCheck.consecutiveFails).toEqual(2);
+      expect(healthCheck.consecutiveSuccesses).toEqual(2);
+
+      const responseData: any = await verifyHealthCheckExists(
+        zone.id,
+        healthCheck.healthCheckId,
+      );
+      expect(responseData.result.check_regions).toContain("WNAM");
+      expect(responseData.result.consecutive_fails).toEqual(2);
+      expect(responseData.result.consecutive_successes).toEqual(2);
+    } finally {
+      await destroy(scope);
     }
-
-    expect(healthCheck.checkRegions).toContain("WNAM");
-    expect(healthCheck.checkRegions).toContain("ENAM");
-    expect(healthCheck.checkRegions).toContain("WEU");
-    expect(healthCheck.consecutiveFails).toEqual(2);
-    expect(healthCheck.consecutiveSuccesses).toEqual(2);
-
-    const responseData: any = await verifyHealthCheckExists(
-      zone.id,
-      healthCheck.healthCheckId,
-    );
-    expect(responseData.result.check_regions).toContain("WNAM");
-    expect(responseData.result.consecutive_fails).toEqual(2);
-    expect(responseData.result.consecutive_successes).toEqual(2);
-
-    await destroy(scope);
   });
 
   test("create and update suspended health check", async (scope) => {
-    const zone = await createTestZone("suspended");
+    try {
+      const zone = await createTestZone("suspended");
 
-    const healthCheckId = createHealthCheckId("suspended");
-    const suspendedProps = createBasicHealthCheckProps("suspended", {
-      zone: zone.id,
-      address: "suspended.example.com",
-      suspended: true,
-    });
+      const healthCheckId = createHealthCheckId("suspended");
+      const suspendedProps = createBasicHealthCheckProps("suspended", {
+        zone: zone.id,
+        address: "suspended.example.com",
+        suspended: true,
+      });
 
-    let healthCheck = await createHealthCheckWithErrorHandling(
-      healthCheckId,
-      suspendedProps,
-      "suspended test",
-    );
+      let healthCheck = await createHealthCheckWithErrorHandling(
+        healthCheckId,
+        suspendedProps,
+        "suspended test",
+      );
 
-    if (!healthCheck) {
-      return;
+      if (!healthCheck) {
+        return;
+      }
+
+      expect(healthCheck.suspended).toEqual(true);
+
+      let responseData: any = await verifyHealthCheckExists(
+        zone.id,
+        healthCheck.healthCheckId,
+      );
+      expect(responseData.result.suspended).toEqual(true);
+
+      const activeProps = createBasicHealthCheckProps("suspended", {
+        zone: zone.id,
+        address: "suspended.example.com",
+        suspended: false,
+      });
+
+      healthCheck = await HealthCheck(healthCheckId, activeProps);
+      expect(healthCheck.suspended).toEqual(false);
+    } finally {
+      await destroy(scope);
     }
-
-    expect(healthCheck.suspended).toEqual(true);
-
-    let responseData: any = await verifyHealthCheckExists(
-      zone.id,
-      healthCheck.healthCheckId,
-    );
-    expect(responseData.result.suspended).toEqual(true);
-
-    const activeProps = createBasicHealthCheckProps("suspended", {
-      zone: zone.id,
-      address: "suspended.example.com",
-      suspended: false,
-    });
-
-    healthCheck = await HealthCheck(healthCheckId, activeProps);
-    expect(healthCheck.suspended).toEqual(false);
-
-    await destroy(scope);
   });
 });
