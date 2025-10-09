@@ -53,7 +53,7 @@ export default defineConfig({
         {
           icon: "github",
           label: "GitHub",
-          href: "https://github.com/sam-goodwin/alchemy",
+          href: "https://github.com/alchemy-run/alchemy",
         },
         {
           icon: "twitter",
@@ -67,7 +67,7 @@ export default defineConfig({
         },
       ],
       editLink: {
-        baseUrl: "https://github.com/sam-goodwin/alchemy/edit/main/alchemy-web",
+        baseUrl: "https://github.com/alchemy-run/alchemy/edit/main/alchemy-web",
       },
       components: {
         Hero: "./src/components/Hero.astro",

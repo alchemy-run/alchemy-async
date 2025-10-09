@@ -7,7 +7,7 @@
   "license": "Apache-2.0",
   "repository": {
     "type": "git",
-    "url": "https://github.com/sam-goodwin/alchemy"
+    "url": "https://github.com/alchemy-run/alchemy"
   },
   "scripts": {
     "build:clean": "git clean -fqdx . && bun i && bun run build && bun i && bun build:monorepo",
