@@ -230,12 +230,14 @@ export const QueueConsumer = Resource(
     }
 
     const deadLetterQueue =
-      consumerData.result.settings?.dead_letter_queue ??
-      (props.settings?.deadLetterQueue
-        ? typeof props.settings.deadLetterQueue === "string"
-          ? props.settings.deadLetterQueue
-          : props.settings.deadLetterQueue.name
-        : undefined);
+      consumerData.result.dead_letter_queue &&
+      consumerData.result.dead_letter_queue !== ""
+        ? consumerData.result.dead_letter_queue
+        : props.settings?.deadLetterQueue
+          ? typeof props.settings.deadLetterQueue === "string"
+            ? props.settings.deadLetterQueue
+            : props.settings.deadLetterQueue.name
+          : undefined;
 
     return {
       id: consumerData.result.consumer_id,
@@ -271,13 +273,13 @@ interface CloudflareQueueConsumerResponse {
   result: {
     consumer_id: string;
     script_name: string;
+    dead_letter_queue?: string;
     settings?: {
       batch_size?: number;
       max_concurrency?: number;
       max_retries?: number;
       max_wait_time_ms?: number;
       retry_delay?: number;
-      dead_letter_queue?: string;
     };
     type: "worker";
     queue_id?: string;
@@ -475,13 +477,13 @@ export async function listQueueConsumers(
       queue_id: string;
       queue_name: string;
       created_on: string;
+      dead_letter_queue?: string;
       settings?: {
         batch_size?: number;
         max_concurrency?: number;
         max_retries?: number;
         max_wait_time_ms?: number;
         retry_delay?: number;
-        dead_letter_queue?: string;
       };
     }>;
   };
@@ -505,7 +507,10 @@ export async function listQueueConsumers(
           maxRetries: consumer.settings.max_retries,
           maxWaitTimeMs: consumer.settings.max_wait_time_ms,
           retryDelay: consumer.settings.retry_delay,
-          deadLetterQueue: consumer.settings.dead_letter_queue,
+          deadLetterQueue:
+            consumer.dead_letter_queue && consumer.dead_letter_queue !== ""
+              ? consumer.dead_letter_queue
+              : undefined,
         }
       : undefined,
   }));
@@ -545,12 +550,12 @@ export async function listQueueConsumersForWorker(
   const data = (await response.json()) as {
     result: Array<{
       script: string;
+      dead_letter_queue?: string;
       settings?: {
         batch_size?: number;
         max_retries?: number;
         max_wait_time_ms?: number;
         retry_delay?: number;
-        dead_letter_queue?: string;
       };
       type: string;
       queue_name: string;
@@ -575,6 +580,13 @@ export async function listQueueConsumersForWorker(
     queueId: consumer.queue_id,
     consumerId: consumer.consumer_id,
     createdOn: consumer.created_on,
-    settings: consumer.settings,
+    settings: consumer.settings
+      ? {
+          ...consumer.settings,
+          deadLetterQueue: consumer.dead_letter_queue,
+        }
+      : consumer.dead_letter_queue
+        ? { deadLetterQueue: consumer.dead_letter_queue }
+        : undefined,
   }));
 }
