@@ -1,7 +1,7 @@
 import { once } from "node:events";
 import http from "node:http";
 import type { AddressInfo } from "node:net";
-import { Readable, type Duplex } from "node:stream";
+import { type Duplex, Readable } from "node:stream";
 import { WebSocket, WebSocketServer } from "ws";
 
 export class HTTPServer {
@@ -14,12 +14,15 @@ export class HTTPServer {
   }) {
     const websocket = options.websocket;
     if (websocket) {
-      const webSocketServer = new WebSocketServer({ noServer: true });
-      this.webSocketServer = webSocketServer;
-      this.httpServer.on("upgrade", async (req, socket, head) => {
-        const ws = await websocket(toWebRequest(req));
-        await coupleWebSocket(webSocketServer, req, socket, head, ws);
-      });
+      const wss = new WebSocketServer({ noServer: true });
+      this.webSocketServer = wss;
+      this.httpServer.on(
+        "upgrade",
+        createUpgradeHandler({
+          wss,
+          createServerWebSocket: (req) => websocket(toWebRequest(req)),
+        }),
+      );
     }
     this.httpServer.on("request", async (req, res) => {
       const response = await options.fetch(toWebRequest(req));
@@ -61,32 +64,34 @@ export class HTTPServer {
   }
 }
 
-export async function coupleWebSocket(
-  wss: WebSocketServer,
-  req: http.IncomingMessage,
-  socket: Duplex,
-  head: Buffer,
-  server: WebSocket,
-) {
-  if (server.readyState === WebSocket.CONNECTING) {
-    // Wait for client to be open before accepting worker pair (which would
-    // release buffered messages). Note this will throw if an "error" event is
-    // dispatched (https://github.com/cloudflare/miniflare/issues/229).
-    await once(server, "open");
-  } else if (server.readyState >= WebSocket.CLOSING) {
-    throw new TypeError("Incoming WebSocket connection already closed.");
+export function createUpgradeHandler(props: {
+  wss: WebSocketServer;
+  createServerWebSocket: (req: http.IncomingMessage) => Promise<WebSocket>;
+}) {
+  async function waitForWebSocketOpen(server: WebSocket) {
+    if (server.readyState === WebSocket.CONNECTING) {
+      // Wait for client to be open before accepting worker pair (which would
+      // release buffered messages). Note this will throw if an "error" event is
+      // dispatched (https://github.com/cloudflare/miniflare/issues/229).
+      await once(server, "open");
+    } else if (server.readyState >= WebSocket.CLOSING) {
+      throw new TypeError("Incoming WebSocket connection already closed.");
+    }
   }
-  wss.handleUpgrade(req, socket, head, async (client) => {
-    forwardEvents(server, client);
-    forwardEvents(client, server);
-    wss.emit("connection", client, req);
-  });
 
-  function forwardEvents(from: WebSocket, to: WebSocket) {
-    from.on("message", (event, binary) => to.send(event, { binary }));
+  function forwardWebSocketEvents(from: WebSocket, to: WebSocket) {
+    const ready = waitForWebSocketOpen(to);
+    from.on("message", (event, binary) => {
+      // Wait for target to be open before sending message;
+      // Silently discard messages received after close:
+      // https://www.rfc-editor.org/rfc/rfc6455#section-1.4
+      void ready.then(() => {
+        to.send(event, { binary });
+      });
+    });
     from.on("close", (code, reason) => {
       // Handle close events similar to Miniflare:
-      // @see https://github.com/cloudflare/miniflare/blob/88f081f4e2bd299e715d18bcfe181971f534ff76/packages/miniflare/src/http/websocket.ts#L276-L282
+      // https://github.com/cloudflare/workers-sdk/blob/88f081f4e2bd299e715d18bcfe181971f534ff76/packages/miniflare/src/http/websocket.ts#L276-L282
 
       if (code === 1005 /* No Status Received */) {
         to.close();
@@ -97,6 +102,17 @@ export async function coupleWebSocket(
       }
     });
   }
+
+  return async (req: http.IncomingMessage, socket: Duplex, head: Buffer) => {
+    console.log("upgrading websocket");
+    const server = await props.createServerWebSocket(req);
+    props.wss.handleUpgrade(req, socket, head, async (client) => {
+      console.log("forwarding websocket events");
+      forwardWebSocketEvents(server, client);
+      forwardWebSocketEvents(client, server);
+      props.wss.emit("connection", client, req);
+    });
+  };
 }
 
 export function toWebRequest(
