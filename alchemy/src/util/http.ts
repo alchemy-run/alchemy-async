@@ -12,19 +12,19 @@ export class HTTPServer {
     websocket?: (request: Request) => Promise<WebSocket>;
     fetch: (request: Request) => Promise<Response>;
   }) {
-    this.httpServer.on("request", async (req, res) => {
-      const response = await options.fetch(toWebRequest(req));
-      await writeNodeResponse(res, response);
-    });
     const websocket = options.websocket;
     if (websocket) {
       const webSocketServer = new WebSocketServer({ noServer: true });
       this.webSocketServer = webSocketServer;
       this.httpServer.on("upgrade", async (req, socket, head) => {
         const ws = await websocket(toWebRequest(req));
-        coupleWebSocket(webSocketServer, req, socket, head, ws);
+        await coupleWebSocket(webSocketServer, req, socket, head, ws);
       });
     }
+    this.httpServer.on("request", async (req, res) => {
+      const response = await options.fetch(toWebRequest(req));
+      await writeNodeResponse(res, response);
+    });
   }
 
   listen(port?: number) {
@@ -61,22 +61,22 @@ export class HTTPServer {
   }
 }
 
-export function coupleWebSocket(
+export async function coupleWebSocket(
   wss: WebSocketServer,
   req: http.IncomingMessage,
   socket: Duplex,
   head: Buffer,
   server: WebSocket,
 ) {
+  if (server.readyState === WebSocket.CONNECTING) {
+    // Wait for client to be open before accepting worker pair (which would
+    // release buffered messages). Note this will throw if an "error" event is
+    // dispatched (https://github.com/cloudflare/miniflare/issues/229).
+    await once(server, "open");
+  } else if (server.readyState >= WebSocket.CLOSING) {
+    throw new TypeError("Incoming WebSocket connection already closed.");
+  }
   wss.handleUpgrade(req, socket, head, async (client) => {
-    if (server.readyState === WebSocket.CONNECTING) {
-      // Wait for client to be open before accepting worker pair (which would
-      // release buffered messages). Note this will throw if an "error" event is
-      // dispatched (https://github.com/cloudflare/miniflare/issues/229).
-      await once(server, "open");
-    } else if (server.readyState >= WebSocket.CLOSING) {
-      throw new TypeError("Incoming WebSocket connection already closed.");
-    }
     forwardEvents(server, client);
     forwardEvents(client, server);
     wss.emit("connection", client, req);

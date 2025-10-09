@@ -23,7 +23,7 @@ export async function createMiniflareWorkerProxy(options: {
   server.on("upgrade", async (req, socket, head) => {
     try {
       const server = await createServerWebSocket(req);
-      coupleWebSocket(wss, req, socket, head, server);
+      await coupleWebSocket(wss, req, socket, head, server);
     } catch (error) {
       console.error(error);
       socket.destroy();
