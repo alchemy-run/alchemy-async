@@ -3,6 +3,7 @@ dist/
 lib/
 .out/
 .test/
+.DS_Store
 .env
 *.tsbuildinfo
 
