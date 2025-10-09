@@ -167,6 +167,8 @@ export const Role = Resource(
     const api = createPlanetScaleClient(props);
 
     const organization =
+      // @ts-expect-error - organizationId is a legacy thing, we keep this so we can destroy
+      this.output?.organizationId ??
       props.organization ??
       (typeof props.database !== "string"
         ? props.database.organization
@@ -184,7 +186,6 @@ export const Role = Resource(
       typeof props.branch === "string"
         ? props.branch
         : (props.branch?.name ?? "main");
-
     const inheritedRoles = Array.isArray(props.inheritedRoles)
       ? props.inheritedRoles
       : props.inheritedRoles.inheritedRoles;

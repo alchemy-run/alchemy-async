@@ -166,13 +166,19 @@ export const Branch = Resource(
         ? props.parentBranch
         : props.parentBranch.name;
     const organization =
+      // @ts-expect-error - organizationId is a legacy thing, we keep this so we can destroy
+      this.output?.organizationId ??
       props.organization ??
       (typeof props.database !== "string"
         ? props.database.organization
         : (process.env.PLANETSCALE_ORGANIZATION ??
           process.env.PLANETSCALE_ORG_ID));
     const database =
-      typeof props.database === "string" ? props.database : props.database.name;
+      // @ts-expect-error - databaseName is a legacy thing, we keep this so we can destroy
+      this.output?.databaseName ??
+      (typeof props.database === "string"
+        ? props.database
+        : props.database.name);
 
     if (!organization) {
       throw new Error(

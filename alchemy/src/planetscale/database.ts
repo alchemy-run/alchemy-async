@@ -217,6 +217,8 @@ export const Database = Resource(
       region: props.region?.slug,
     });
     const organization =
+      // @ts-expect-error - organizationId is a legacy thing, we keep this so we can destroy
+      this.output?.organizationId ??
       props.organization ??
       process.env.PLANETSCALE_ORGANIZATION ??
       process.env.PLANETSCALE_ORG_ID;
