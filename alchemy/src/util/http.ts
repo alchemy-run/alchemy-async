@@ -104,10 +104,8 @@ export function createUpgradeHandler(props: {
   }
 
   return async (req: http.IncomingMessage, socket: Duplex, head: Buffer) => {
-    console.log("upgrading websocket");
     const server = await props.createServerWebSocket(req);
     props.wss.handleUpgrade(req, socket, head, async (client) => {
-      console.log("forwarding websocket events");
       forwardWebSocketEvents(server, client);
       forwardWebSocketEvents(client, server);
       props.wss.emit("connection", client, req);
