@@ -204,7 +204,8 @@
     "astro": "^5.13.2",
     "drizzle-orm": "^0.44.2",
     "rwsdk": "^0.1.36",
-    "stripe": "^18.5.0"
+    "stripe": "^18.5.0",
+    "wrangler": "^4.42.2"
   },
   "peerDependenciesMeta": {
     "@astrojs/cloudflare": {
@@ -244,9 +245,6 @@
       "optional": true
     },
     "@opennextjs/cloudflare": {
-      "optional": true
-    },
-    "@octokit/rest": {
       "optional": true
     },
     "@libsql/client": {
@@ -317,7 +315,7 @@
     "tsdown": "^0.14.2",
     "typescript": "catalog:",
     "undici": "^7.14.0",
-    "wrangler": "^4.27.0",
+    "wrangler": "^4.42.2",
     "zod": "^4.0.10"
   }
 }
