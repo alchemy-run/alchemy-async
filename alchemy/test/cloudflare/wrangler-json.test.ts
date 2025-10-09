@@ -211,7 +211,7 @@ describe("WranglerJson Resource", () => {
           name,
           browser: {
             binding: "browser",
-            experimental_remote: true,
+            remote: true,
           },
         });
       } finally {
@@ -247,7 +247,7 @@ describe("WranglerJson Resource", () => {
           name,
           ai: {
             binding: "AI",
-            experimental_remote: true,
+            remote: true,
           },
         });
       } finally {
@@ -620,7 +620,7 @@ describe("WranglerJson Resource", () => {
     });
   });
 
-  test("with recommended remote bindings should automatically set experimental_remote to true", async (scope) => {
+  test("with recommended remote bindings should automatically set remote to true", async (scope) => {
     const name = `${BRANCH_PREFIX}-test-worker-recommended-remote`;
     const tempDir = path.join(".out", "alchemy-recommended-remote-test");
     const entrypoint = path.join(tempDir, "worker.ts");
@@ -656,13 +656,11 @@ describe("WranglerJson Resource", () => {
 
       expect(spec).toMatchObject({
         name,
-        ai: { binding: "AI", experimental_remote: true },
-        browser: { binding: "BROWSER", experimental_remote: true },
-        dispatch_namespaces: [
-          { binding: "DISPATCH", experimental_remote: true },
-        ],
-        images: { binding: "IMAGES", experimental_remote: true },
-        vectorize: [{ binding: "VECTORIZE", experimental_remote: true }],
+        ai: { binding: "AI", remote: true },
+        browser: { binding: "BROWSER", remote: true },
+        dispatch_namespaces: [{ binding: "DISPATCH", remote: true }],
+        images: { binding: "IMAGES", remote: true },
+        vectorize: [{ binding: "VECTORIZE", remote: true }],
       });
     } finally {
       await fs.rm(tempDir, { recursive: true, force: true });
@@ -670,7 +668,7 @@ describe("WranglerJson Resource", () => {
     }
   });
 
-  test("with dev.remote enabled should set experimental_remote to true", async (scope) => {
+  test("with dev.remote enabled should set remote to true", async (scope) => {
     const name = `${BRANCH_PREFIX}-test-worker-dev-remote`;
     const tempDir = path.join(".out", "alchemy-dev-remote-test");
     const entrypoint = path.join(tempDir, "worker.ts");
@@ -709,9 +707,9 @@ describe("WranglerJson Resource", () => {
 
       expect(spec).toMatchObject({
         name,
-        d1_databases: [{ binding: "D1", experimental_remote: true }],
-        kv_namespaces: [{ binding: "KV", experimental_remote: true }],
-        r2_buckets: [{ binding: "R2", experimental_remote: true }],
+        d1_databases: [{ binding: "D1", remote: true }],
+        kv_namespaces: [{ binding: "KV", remote: true }],
+        r2_buckets: [{ binding: "R2", remote: true }],
       });
     } finally {
       await fs.rm(tempDir, { recursive: true, force: true });
