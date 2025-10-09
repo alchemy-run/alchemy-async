@@ -29,6 +29,7 @@ alchemy deploy [script] [options]
 Deploy an Alchemy project by running `alchemy deploy`. 
 
 - `script` (optional): Path to the entrypoint file. Defaults to `./alchemy.run.ts` or `./alchemy.run.js`
+- `--app` - (optional) Specify which application to deploy. Defaults to all apps.
 - `--stage` - Specify which stage/environment to target. Defaults to your username (`$USER`, or `$USERNAME` on Windows)
 - `--profile` - The Alchemy profile to use for authoriziing requests (default: `default`)
 - `--env-file` - Path to environment file to load
@@ -118,6 +119,7 @@ alchemy destroy [script] [options]
 Destroy all resources in an Alchemy project.
 
 - `script` (optional): Path to the entrypoint file. Defaults to `./alchemy.run.ts` or `./alchemy.run.js`
+- `--app` - (optional) Specify which application to deploy. Defaults to all apps.
 - `--stage` - Specify which stage/environment to target. Defaults to your username (`$USER`, or `$USERNAME` on Windows)
 - `--profile` - The Alchemy profile to use for authoriziing requests (default: `default`)
 - `--cwd` - Path to the project directory (defaults to current directory)
@@ -187,6 +189,7 @@ alchemy dev [script] [options]
 Run an Alchemy program in dev-mode with local simulation and hot reloading.
 
 - `script` (optional): Path to the entrypoint file. Defaults to `./alchemy.run.ts` or `./alchemy.run.js`
+- `--app` - (optional) Specify which application to deploy. Defaults to all apps.
 - `--stage` - Specify which stage/environment to target. Defaults to your username (`$USER`, or `$USERNAME` on Windows)
 - `--profile` - The Alchemy profile to use for authoriziing requests (default: `default`)
 - `--env-file` - Path to environment file to load
@@ -267,6 +270,7 @@ alchemy run [script] [options]
 Run an Alchemy program with read-only access to your infrastructure. No changes will be applied to your resources.
 
 - `script` (optional): Path to the entrypoint file. Defaults to `./alchemy.run.ts` or `./alchemy.run.js`
+- `--app` - (optional) Specify which application to deploy. Defaults to all apps.
 - `--stage` - Specify which stage/environment to target. Defaults to your username (`$USER`, or `$USERNAME` on Windows)
 - `--profile` - The Alchemy profile to use for authoriziing requests (default: `default`)
 - `--env-file` - Path to environment file to load

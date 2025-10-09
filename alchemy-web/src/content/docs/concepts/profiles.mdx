@@ -82,6 +82,13 @@ const worker = await Worker("my-worker", {
 });
 ```
 
+You can also set the profile globally (for all resources in the App):
+```ts
+await alchemy("my-app", {
+  profile: "prod",
+})
+```
+
 ## Configuration and Credential Files
 
 The profile configuration and credential files are stored in your `~/.alchemy` directory:

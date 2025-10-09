@@ -32,6 +32,7 @@ export * from "./email-address.ts";
 export * from "./email-catch-all.ts";
 export * from "./email-routing.ts";
 export * from "./email-rule.ts";
+export * from "./health-check.ts";
 export * from "./hyperdrive-ref.ts";
 export * from "./hyperdrive.ts";
 export * from "./images.ts";

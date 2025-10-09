@@ -4,4 +4,4 @@
 /**
  * The default Cloudflare Workers compatibility date, set based on the latest workerd release at the time of build.
  */
-export const DEFAULT_COMPATIBILITY_DATE = "2025-10-01";
+export const DEFAULT_COMPATIBILITY_DATE = "2025-10-08";

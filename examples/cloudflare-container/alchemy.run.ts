@@ -16,6 +16,9 @@ const container = await Container<MyContainer>("container", {
   build: {
     context: import.meta.dirname,
     dockerfile: "Dockerfile",
+    args: {
+      IMAGE_VERSION: "1.24-alpine",
+    },
   },
 });
 

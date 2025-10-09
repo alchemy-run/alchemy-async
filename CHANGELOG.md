@@ -1,3 +1,35 @@
+## v0.71.0
+
+### &nbsp;&nbsp;&nbsp;🚀 Features
+
+- **cloudflare**:
+  - Add WorkerLoader binding type &nbsp;-&nbsp; by **Gareth Andrew** in https://github.com/sam-goodwin/alchemy/issues/1067 [<samp>(e3d6b)</samp>](https://github.com/sam-goodwin/alchemy/commit/e3d6bb69)
+  - LogPushJob Resource &nbsp;-&nbsp; by **Jacob M-G Evans** in https://github.com/sam-goodwin/alchemy/issues/1049 [<samp>(627ea)</samp>](https://github.com/sam-goodwin/alchemy/commit/627eab9a)
+  - Cloudflare-bun-spa resource now handles multiple frontend entrypoints &nbsp;-&nbsp; by **Andrew Jefferson** in https://github.com/sam-goodwin/alchemy/issues/1082 [<samp>(88db8)</samp>](https://github.com/sam-goodwin/alchemy/commit/88db87b1)
+
+### &nbsp;&nbsp;&nbsp;🐞 Bug Fixes
+
+- Move octokit from peer to dep &nbsp;-&nbsp; by **Sam Goodwin** [<samp>(bddf0)</samp>](https://github.com/sam-goodwin/alchemy/commit/bddf0f68)
+- **cli**:
+  - Remove hard-coded names from init template &nbsp;-&nbsp; by **Sam Goodwin** in https://github.com/sam-goodwin/alchemy/issues/1090 [<samp>(80cf3)</samp>](https://github.com/sam-goodwin/alchemy/commit/80cf3787)
+- **cloudflare**:
+  - Set duplex property on remote binding proxy requests &nbsp;-&nbsp; by **John Royal** in https://github.com/sam-goodwin/alchemy/issues/1071 [<samp>(25684)</samp>](https://github.com/sam-goodwin/alchemy/commit/25684b8b)
+  - Set r2 bucket jurisdiction for remote bindings &nbsp;-&nbsp; by **John Royal** in https://github.com/sam-goodwin/alchemy/issues/1074 [<samp>(f1b40)</samp>](https://github.com/sam-goodwin/alchemy/commit/f1b407df)
+  - Resolve assets relative to cwd in dev mode &nbsp;-&nbsp; by **Sam Goodwin** in https://github.com/sam-goodwin/alchemy/issues/1079 [<samp>(1dcbb)</samp>](https://github.com/sam-goodwin/alchemy/commit/1dcbbc26)
+  - Only set up container engine if containers are being used &nbsp;-&nbsp; by **Michael K** in https://github.com/sam-goodwin/alchemy/issues/1080 [<samp>(67595)</samp>](https://github.com/sam-goodwin/alchemy/commit/675954dc)
+  - Better error if an empty string is passed as a domain &nbsp;-&nbsp; by **Michael K** in https://github.com/sam-goodwin/alchemy/issues/1081 [<samp>(f4271)</samp>](https://github.com/sam-goodwin/alchemy/commit/f4271bfa)
+  - Return bucketName in dev mode &nbsp;-&nbsp; by **Sam Goodwin** in https://github.com/sam-goodwin/alchemy/issues/1087 [<samp>(ea196)</samp>](https://github.com/sam-goodwin/alchemy/commit/ea196468)
+  - R2 bucket tracks dev before deploy &nbsp;-&nbsp; by **Sam Goodwin** in https://github.com/sam-goodwin/alchemy/issues/1091 [<samp>(9944d)</samp>](https://github.com/sam-goodwin/alchemy/commit/9944defb)
+  - Correct dead letter queue handling &nbsp;-&nbsp; by **John Royal** in https://github.com/sam-goodwin/alchemy/issues/1092 [<samp>(ef454)</samp>](https://github.com/sam-goodwin/alchemy/commit/ef454df1)
+- **core**:
+  - Validate Resource and Scope IDs are non-empty &nbsp;-&nbsp; by **Sam Goodwin** in https://github.com/sam-goodwin/alchemy/issues/1083 [<samp>(1e35c)</samp>](https://github.com/sam-goodwin/alchemy/commit/1e35c7e0)
+- **github**:
+  - Don't auth with github during deletion unless required &nbsp;-&nbsp; by **Sam Goodwin** in https://github.com/sam-goodwin/alchemy/issues/1085 [<samp>(716a5)</samp>](https://github.com/sam-goodwin/alchemy/commit/716a57cd)
+
+##### &nbsp;&nbsp;&nbsp;&nbsp;[View changes on GitHub](https://github.com/sam-goodwin/alchemy/compare/v0.70.2...v0.71.0)
+
+---
+
 ## v0.70.2
 
 ### &nbsp;&nbsp;&nbsp;🚀 Features

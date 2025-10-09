@@ -331,7 +331,7 @@ export async function createQueueConsumer(
         typeof props.settings.deadLetterQueue === "string"
           ? props.settings.deadLetterQueue
           : props.settings.deadLetterQueue.name;
-      createPayload.settings.dead_letter_queue = dlqName;
+      createPayload.dead_letter_queue = dlqName;
     }
   }
 
@@ -418,7 +418,7 @@ async function updateQueueConsumer(
         typeof props.settings.deadLetterQueue === "string"
           ? props.settings.deadLetterQueue
           : props.settings.deadLetterQueue.name;
-      updatePayload.settings.dead_letter_queue = dlqName;
+      updatePayload.dead_letter_queue = dlqName;
     }
   }
 

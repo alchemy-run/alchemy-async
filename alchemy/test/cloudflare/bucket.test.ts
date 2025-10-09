@@ -184,6 +184,7 @@ describe("R2 Bucket Resource", async () => {
 
       expect(changedBucket.name).toEqual(`${nameChangeTestId}-changed`);
 
+      await scope.finalize();
       // should be replaced
       await assertBucketDeleted(originalBucket);
     } finally {
