@@ -22,7 +22,7 @@ export class HTTPServer {
       this.webSocketServer = webSocketServer;
       this.httpServer.on("upgrade", async (req, socket, head) => {
         const ws = await websocket(toWebRequest(req));
-        await coupleWebSocket(webSocketServer, req, socket, head, ws);
+        coupleWebSocket(webSocketServer, req, socket, head, ws);
       });
     }
   }
@@ -61,22 +61,22 @@ export class HTTPServer {
   }
 }
 
-export async function coupleWebSocket(
+export function coupleWebSocket(
   wss: WebSocketServer,
   req: http.IncomingMessage,
   socket: Duplex,
   head: Buffer,
   server: WebSocket,
 ) {
-  if (server.readyState === WebSocket.CONNECTING) {
-    // Wait for client to be open before accepting worker pair (which would
-    // release buffered messages). Note this will throw if an "error" event is
-    // dispatched (https://github.com/cloudflare/miniflare/issues/229).
-    await once(server, "open");
-  } else if (server.readyState >= WebSocket.CLOSING) {
-    throw new TypeError("Incoming WebSocket connection already closed.");
-  }
-  wss.handleUpgrade(req, socket, head, (client) => {
+  wss.handleUpgrade(req, socket, head, async (client) => {
+    if (server.readyState === WebSocket.CONNECTING) {
+      // Wait for client to be open before accepting worker pair (which would
+      // release buffered messages). Note this will throw if an "error" event is
+      // dispatched (https://github.com/cloudflare/miniflare/issues/229).
+      await once(server, "open");
+    } else if (server.readyState >= WebSocket.CLOSING) {
+      throw new TypeError("Incoming WebSocket connection already closed.");
+    }
     forwardEvents(server, client);
     forwardEvents(client, server);
     wss.emit("connection", client, req);
