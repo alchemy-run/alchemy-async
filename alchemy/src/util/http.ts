@@ -2,7 +2,7 @@ import { once } from "node:events";
 import http from "node:http";
 import type { AddressInfo } from "node:net";
 import { Readable, type Duplex } from "node:stream";
-import { WebSocketServer, type WebSocket } from "ws";
+import { WebSocket, WebSocketServer } from "ws";
 
 export class HTTPServer {
   httpServer = http.createServer();
@@ -68,10 +68,28 @@ export async function coupleWebSocket(
   head: Buffer,
   server: WebSocket,
 ) {
-  await once(server, "open");
+  if (server.readyState === WebSocket.CONNECTING) {
+    // Wait for client to be open before accepting worker pair (which would
+    // release buffered messages). Note this will throw if an "error" event is
+    // dispatched (https://github.com/cloudflare/miniflare/issues/229).
+    await once(server, "open");
+  } else if (server.readyState >= WebSocket.CLOSING) {
+    throw new TypeError("Incoming WebSocket connection already closed.");
+  }
   wss.handleUpgrade(req, socket, head, (client) => {
     client.on("message", (event, binary) => server.send(event, { binary }));
-    client.on("close", (code, reason) => server.close(code, reason));
+    client.on("close", (code, reason) => {
+      // Handle close codes similar to how Miniflare does it:
+      // https://github.com/cloudflare/workers-sdk/blob/88f081f4e2bd299e715d18bcfe181971f534ff76/packages/miniflare/src/http/websocket.ts#L276-L282
+
+      if (code === 1005 /* No Status Received */) {
+        server.close();
+      } else if (code === 1006 /* Abnormal Closure */) {
+        server.terminate();
+      } else {
+        server.close(code, reason);
+      }
+    });
     server.on("message", (event, binary) => client.send(event, { binary }));
     server.on("close", (code, reason) => client.close(code, reason));
     wss.emit("connection", client, req);
