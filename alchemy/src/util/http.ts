@@ -77,23 +77,26 @@ export async function coupleWebSocket(
     throw new TypeError("Incoming WebSocket connection already closed.");
   }
   wss.handleUpgrade(req, socket, head, (client) => {
-    client.on("message", (event, binary) => server.send(event, { binary }));
-    client.on("close", (code, reason) => {
-      // Handle close codes similar to how Miniflare does it:
-      // https://github.com/cloudflare/workers-sdk/blob/88f081f4e2bd299e715d18bcfe181971f534ff76/packages/miniflare/src/http/websocket.ts#L276-L282
-
-      if (code === 1005 /* No Status Received */) {
-        server.close();
-      } else if (code === 1006 /* Abnormal Closure */) {
-        server.terminate();
-      } else {
-        server.close(code, reason);
-      }
-    });
-    server.on("message", (event, binary) => client.send(event, { binary }));
-    server.on("close", (code, reason) => client.close(code, reason));
+    forwardEvents(server, client);
+    forwardEvents(client, server);
     wss.emit("connection", client, req);
   });
+
+  function forwardEvents(from: WebSocket, to: WebSocket) {
+    from.on("message", (event, binary) => to.send(event, { binary }));
+    from.on("close", (code, reason) => {
+      // Handle close events similar to Miniflare:
+      // @see https://github.com/cloudflare/miniflare/blob/88f081f4e2bd299e715d18bcfe181971f534ff76/packages/miniflare/src/http/websocket.ts#L276-L282
+
+      if (code === 1005 /* No Status Received */) {
+        to.close();
+      } else if (code === 1006 /* Abnormal Closure */) {
+        to.terminate();
+      } else {
+        to.close(code, reason);
+      }
+    });
+  }
 }
 
 export function toWebRequest(
