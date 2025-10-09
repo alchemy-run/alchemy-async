@@ -62,6 +62,7 @@ export async function createRemoteProxyWorker(input: {
       const input = new URL(req.url);
       const proxied = new URL(input.pathname + input.search, `https://${host}`);
       return new WebSocket(proxied, {
+        // Note to Eric: we might need to pass through more headers here?
         headers: {
           "cf-workers-preview-token": token,
           host,
