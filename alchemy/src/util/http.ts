@@ -1,3 +1,4 @@
+import { once } from "node:events";
 import http from "node:http";
 import type { AddressInfo } from "node:net";
 import { Readable, type Duplex } from "node:stream";
@@ -21,7 +22,7 @@ export class HTTPServer {
       this.webSocketServer = webSocketServer;
       this.httpServer.on("upgrade", async (req, socket, head) => {
         const ws = await websocket(toWebRequest(req));
-        coupleWebSocket(webSocketServer, req, socket, head, ws);
+        await coupleWebSocket(webSocketServer, req, socket, head, ws);
       });
     }
   }
@@ -60,13 +61,14 @@ export class HTTPServer {
   }
 }
 
-export function coupleWebSocket(
+export async function coupleWebSocket(
   wss: WebSocketServer,
   req: http.IncomingMessage,
   socket: Duplex,
   head: Buffer,
   server: WebSocket,
 ) {
+  await once(server, "open");
   wss.handleUpgrade(req, socket, head, (client) => {
     client.on("message", (event, binary) => server.send(event, { binary }));
     client.on("close", (code, reason) => server.close(code, reason));

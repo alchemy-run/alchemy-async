@@ -23,7 +23,7 @@ export async function createMiniflareWorkerProxy(options: {
   server.on("upgrade", async (req, socket, head) => {
     try {
       const server = await createServerWebSocket(req);
-      coupleWebSocket(wss, req, socket, head, server);
+      await coupleWebSocket(wss, req, socket, head, server);
     } catch (error) {
       console.error(error);
       socket.destroy();
@@ -84,13 +84,11 @@ export async function createMiniflareWorkerProxy(options: {
     options.transformRequest?.(info);
     const name = options.getWorkerName(info);
 
-    const server = new WebSocket(url, protocols, {
+    return new WebSocket(url, protocols, {
       headers: {
         "MF-Route-Override": name,
       },
     });
-    await once(server, "open");
-    return server;
   };
 
   server.listen(options.port);
