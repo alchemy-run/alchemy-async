@@ -56,9 +56,9 @@ export default defineConfig({
           href: "https://github.com/alchemy-run/alchemy",
         },
         {
-          icon: "twitter",
+          icon: "x.com",
           label: "X",
-          href: "https://twitter.com/samgoodwin89",
+          href: "https://x.com/alchemy_run",
         },
         {
           icon: "discord",
