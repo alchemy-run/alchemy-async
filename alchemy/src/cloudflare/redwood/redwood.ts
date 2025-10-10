@@ -50,9 +50,9 @@ export async function Redwood<B extends Bindings>(
       },
     },
     noBundle: props?.noBundle ?? true,
-    entrypoint: props?.entrypoint ?? path.join("dist", "worker", "worker.js"),
+    entrypoint: props?.entrypoint ?? path.join("dist", "worker", "index.js"),
     compatibilityFlags: ["nodejs_compat", ...(props?.compatibilityFlags ?? [])],
-    compatibilityDate: props?.compatibilityDate ?? "2025-04-02",
+    compatibilityDate: props?.compatibilityDate ?? "2025-08-21",
     wrangler: {
       main: props?.wrangler?.main ?? "src/worker.tsx",
       transform: props?.wrangler?.transform,
