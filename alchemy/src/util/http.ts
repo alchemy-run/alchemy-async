@@ -75,11 +75,13 @@ export function createUpgradeHandler(props: {
   function forwardWebSocketEvents(from: WebSocket, to: WebSocket) {
     const ready = waitForWebSocketOpen(to);
     from.on("message", (event, binary) => {
-      // Wait for target to be open before sending message;
-      // Silently discard messages received after close:
-      // https://www.rfc-editor.org/rfc/rfc6455#section-1.4
+      // Wait for target to be open before sending message
       void ready.then(() => {
-        to.send(event, { binary });
+        // Silently discard messages received after close:
+        // https://www.rfc-editor.org/rfc/rfc6455#section-1.4
+        if (to.readyState === WebSocket.OPEN) {
+          to.send(event, { binary });
+        }
       });
     });
     from.on("close", (code, reason) => {
