@@ -103,6 +103,7 @@ const app = new Hono<{ Bindings: typeof worker1.Env }>()
     if (!object) {
       throw new HTTPException(404, { message: "Not found" });
     }
+    // @ts-expect-error - type of headers is not correct
     object.writeHttpMetadata(c.res.headers);
     // @ts-expect-error - type of body is not correct
     return c.newResponse(object.body, 200);
