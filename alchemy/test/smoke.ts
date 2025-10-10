@@ -487,7 +487,6 @@ async function run(
         ALCHEMY_E2E: "1",
         DO_NOT_TRACK: "true",
       },
-      stdio: ["inherit", "pipe", "pipe"],
     });
 
     if (noCaptureFlag || !options.exampleName) {
