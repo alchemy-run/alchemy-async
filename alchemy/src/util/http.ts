@@ -52,15 +52,8 @@ export class HTTPServer {
   }
 
   async close() {
-    const webSocketServer = this.webSocketServer;
-    if (webSocketServer) {
-      await new Promise<void>((resolve, reject) => {
-        webSocketServer.close((err) => (err ? reject(err) : resolve()));
-      });
-    }
-    await new Promise<void>((resolve, reject) => {
-      this.httpServer.close((err) => (err ? reject(err) : resolve()));
-    });
+    this.webSocketServer?.close();
+    this.httpServer.close();
   }
 }
 
