@@ -85,7 +85,10 @@ export const configure = authProcedure
     outro(pc.green(`✅ Configured profile ${pc.bold(name)}`));
   });
 
-const promptForProfileName = async (input: { profile?: string }) => {
+/**
+ * Prompts the user to enter a profile name.
+ */
+export const promptForProfileName = async (input: { profile?: string }) => {
   input.profile = input.profile?.trim();
   if (input.profile) {
     return input.profile;
