@@ -66,7 +66,7 @@ export async function createRemoteProxyWorker(input: {
         host,
       };
       // We don't want to include all headers because some can mess with websocket connections.
-      // However, it's important to include `mf-` prefixed headers to configure bindings.
+      // However, it's important to include `mf-` prefixed headers to configure bindings for miniflare to work.
       req.headers.forEach((value, key) => {
         if (key.startsWith("mf-")) {
           headers[key] = value;
