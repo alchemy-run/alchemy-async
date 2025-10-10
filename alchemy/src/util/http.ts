@@ -96,6 +96,10 @@ export function createUpgradeHandler(props: {
         to.close(code, reason);
       }
     });
+    from.on("error", (error) => {
+      console.error("Websocket error:", error);
+      to.terminate();
+    });
   }
 
   return async (req: http.IncomingMessage, socket: Duplex, head: Buffer) => {
