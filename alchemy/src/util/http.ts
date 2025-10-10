@@ -74,31 +74,41 @@ export function createUpgradeHandler(props: {
 
   function forwardWebSocketEvents(from: WebSocket, to: WebSocket) {
     const ready = waitForWebSocketOpen(to);
-    from.on("message", (event, binary) => {
+    const ifOpen = (fn: () => void) => {
       // Wait for target to be open before sending message
       void ready.then(() => {
         // Silently discard messages received after close:
         // https://www.rfc-editor.org/rfc/rfc6455#section-1.4
-        if (to.readyState === WebSocket.OPEN) {
-          to.send(event, { binary });
-        }
+        if (to.readyState !== WebSocket.OPEN) return;
+
+        fn();
+      });
+    };
+    from.on("message", (event, binary) => {
+      ifOpen(() => {
+        to.send(event, { binary });
       });
     });
     from.on("close", (code, reason) => {
       // Handle close events similar to Miniflare:
       // https://github.com/cloudflare/workers-sdk/blob/88f081f4e2bd299e715d18bcfe181971f534ff76/packages/miniflare/src/http/websocket.ts#L276-L282
 
-      if (code === 1005 /* No Status Received */) {
-        to.close();
-      } else if (code === 1006 /* Abnormal Closure */) {
-        to.terminate();
-      } else {
-        to.close(code, reason);
-      }
+      ifOpen(() => {
+        if (code === 1005 /* No Status Received */) {
+          to.close();
+        } else if (code === 1006 /* Abnormal Closure */) {
+          to.terminate();
+        } else {
+          to.close(code, reason);
+        }
+      });
     });
     from.on("error", (error) => {
       console.error("Websocket error:", error);
-      to.terminate();
+
+      ifOpen(() => {
+        to.terminate();
+      });
     });
   }
 
