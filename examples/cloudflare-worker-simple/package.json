@@ -14,5 +14,8 @@
     "@types/node": "^24.0.1",
     "alchemy": "workspace:*",
     "typescript": "catalog:"
+  },
+  "dependencies": {
+    "hono": "^4.9.10"
   }
 }
