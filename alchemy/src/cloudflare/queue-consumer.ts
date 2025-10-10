@@ -229,15 +229,11 @@ export const QueueConsumer = Resource(
       );
     }
 
-    const deadLetterQueue =
-      consumerData.result.dead_letter_queue &&
-      consumerData.result.dead_letter_queue !== ""
-        ? consumerData.result.dead_letter_queue
-        : props.settings?.deadLetterQueue
-          ? typeof props.settings.deadLetterQueue === "string"
-            ? props.settings.deadLetterQueue
-            : props.settings.deadLetterQueue.name
-          : undefined;
+    const deadLetterQueue = props.settings?.deadLetterQueue
+      ? typeof props.settings.deadLetterQueue === "string"
+        ? props.settings.deadLetterQueue
+        : props.settings.deadLetterQueue.name
+      : undefined;
 
     return {
       id: consumerData.result.consumer_id,
