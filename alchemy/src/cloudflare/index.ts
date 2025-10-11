@@ -1,3 +1,5 @@
+/// <reference types="@cloudflare/workers-types" />
+
 export * from "./account-api-token.ts";
 export * from "./account-id.ts";
 export * from "./ai-gateway.ts";
