@@ -164,6 +164,7 @@
   "dependencies": {
     "@aws-sdk/credential-providers": "^3.0.0",
     "@cloudflare/unenv-preset": "^2.6.3",
+    "@cloudflare/workers-types": "catalog:",
     "@iarna/toml": "^2.2.5",
     "@octokit/rest": "^21.1.1",
     "@smithy/node-config-provider": "^4.0.0",
@@ -202,7 +203,6 @@
     "@aws-sdk/client-ssm": "^3.0.0",
     "@aws-sdk/client-sts": "^3.0.0",
     "@cloudflare/vite-plugin": "^1.10.1",
-    "@cloudflare/workers-types": "catalog:",
     "@libsql/client": "^0.15.12",
     "@opennextjs/cloudflare": "^1.6.5",
     "astro": "^5.13.2",
@@ -245,9 +245,6 @@
     "@cloudflare/vite-plugin": {
       "optional": true
     },
-    "@cloudflare/workers-types": {
-      "optional": true
-    },
     "@opennextjs/cloudflare": {
       "optional": true
     },
@@ -282,7 +279,6 @@
     "@cloudflare/containers": "^0.0.13",
     "@cloudflare/puppeteer": "^1.0.2",
     "@cloudflare/vite-plugin": "catalog:",
-    "@cloudflare/workers-types": "catalog:",
     "@coinbase/cdp-sdk": "^1.38.2",
     "@libsql/client": "^0.15.12",
     "@octokit/rest": "^21.1.1",
