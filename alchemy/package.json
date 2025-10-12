@@ -209,6 +209,7 @@
     "drizzle-orm": "^0.44.2",
     "rwsdk": "^0.1.36",
     "stripe": "^18.5.0",
+    "vite": ">=6.0.0",
     "wrangler": "catalog:"
   },
   "peerDependenciesMeta": {
@@ -261,6 +262,9 @@
       "optional": true
     },
     "stripe": {
+      "optional": true
+    },
+    "vite": {
       "optional": true
     }
   },
