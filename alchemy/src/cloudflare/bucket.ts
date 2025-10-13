@@ -286,6 +286,43 @@ export type R2Objects = {
     }
 );
 
+export interface R2HTTPMetadata {
+  contentType?: string;
+  contentLanguage?: string;
+  contentDisposition?: string;
+  contentEncoding?: string;
+  cacheControl?: string;
+  cacheExpiry?: Date;
+}
+
+export interface R2MultipartOptions {
+  httpMetadata?: R2HTTPMetadata | Headers;
+  customMetadata?: Record<string, string>;
+  storageClass?: string;
+  ssecKey?: ArrayBuffer | string;
+}
+
+export interface R2UploadPartOptions {
+  ssecKey?: ArrayBuffer | string;
+}
+
+export interface R2UploadedPart {
+  partNumber: number;
+  etag: string;
+}
+
+export interface R2MultipartUpload {
+  readonly key: string;
+  readonly uploadId: string;
+  uploadPart(
+    partNumber: number,
+    value: ReadableStream | ArrayBuffer | ArrayBufferView | string | Blob,
+    options?: R2UploadPartOptions,
+  ): Promise<R2UploadedPart>;
+  abort(): Promise<void>;
+  complete(uploadedParts: R2UploadedPart[]): Promise<R2Object>;
+}
+
 export type R2Bucket = _R2Bucket & {
   head(key: string): Promise<R2ObjectMetadata | null>;
   get(key: string): Promise<R2ObjectContent | null>;
@@ -302,6 +339,11 @@ export type R2Bucket = _R2Bucket & {
   ): Promise<PutR2ObjectResponse>;
   delete(key: string): Promise<Response>;
   list(options?: R2ListOptions): Promise<R2Objects>;
+  createMultipartUpload(
+    key: string,
+    options?: R2MultipartOptions,
+  ): Promise<R2MultipartUpload>;
+  resumeMultipartUpload(key: string, uploadId: string): R2MultipartUpload;
 };
 
 /**
@@ -455,6 +497,40 @@ export async function R2Bucket(
   };
   const localBucket = () => miniflare().getR2Bucket(bucket.dev.id);
 
+  const createMultipartUploadObject = (
+    key: string,
+    uploadId: string,
+  ): R2MultipartUpload => ({
+    key,
+    uploadId,
+    uploadPart: async (
+      partNumber: number,
+      value: ReadableStream | ArrayBuffer | ArrayBufferView | string | Blob,
+      options?: R2UploadPartOptions,
+    ) =>
+      uploadPartApi(api, {
+        bucketName: bucket.name,
+        key,
+        uploadId,
+        partNumber,
+        value,
+        options,
+      }),
+    abort: async () =>
+      abortMultipartUploadApi(api, {
+        bucketName: bucket.name,
+        key,
+        uploadId,
+      }),
+    complete: async (parts: R2UploadedPart[]) =>
+      completeMultipartUploadApi(api, {
+        bucketName: bucket.name,
+        key,
+        uploadId,
+        parts,
+      }),
+  });
+
   return {
     ...bucket,
     head: async (key: string) => {
@@ -560,6 +636,19 @@ export async function R2Bucket(
         key: key,
       });
     },
+    createMultipartUpload: async (
+      key: string,
+      options?: R2MultipartOptions,
+    ): Promise<R2MultipartUpload> => {
+      const result = await createMultipartUploadApi(api, {
+        bucketName: bucket.name,
+        key,
+        options,
+      });
+      return createMultipartUploadObject(result.key, result.uploadId);
+    },
+    resumeMultipartUpload: (key: string, uploadId: string): R2MultipartUpload =>
+      createMultipartUploadObject(key, uploadId),
   };
 }
 
@@ -1312,6 +1401,237 @@ export async function deleteObject(
 
     return response;
   });
+}
+
+export async function createMultipartUploadApi(
+  api: CloudflareApi,
+  {
+    bucketName,
+    key,
+    options = {},
+  }: {
+    bucketName: string;
+    key: string;
+    options?: R2MultipartOptions;
+  },
+): Promise<{ key: string; uploadId: string }> {
+  return await withExponentialBackoff(
+    async () => {
+      const headers: Record<string, string> = {
+        "Content-Type": "application/json",
+      };
+
+      if (options.httpMetadata) {
+        if (options.httpMetadata instanceof Headers) {
+          options.httpMetadata.forEach((value, key) => {
+            headers[key] = value;
+          });
+        } else {
+          if (options.httpMetadata.contentType) {
+            headers["Content-Type"] = options.httpMetadata.contentType;
+          }
+          if (options.httpMetadata.contentLanguage) {
+            headers["Content-Language"] = options.httpMetadata.contentLanguage;
+          }
+          if (options.httpMetadata.contentDisposition) {
+            headers["Content-Disposition"] =
+              options.httpMetadata.contentDisposition;
+          }
+          if (options.httpMetadata.contentEncoding) {
+            headers["Content-Encoding"] = options.httpMetadata.contentEncoding;
+          }
+          if (options.httpMetadata.cacheControl) {
+            headers["Cache-Control"] = options.httpMetadata.cacheControl;
+          }
+        }
+      }
+
+      if (options.customMetadata) {
+        for (const [key, value] of Object.entries(options.customMetadata)) {
+          headers[`x-amz-meta-${key}`] = value;
+        }
+      }
+
+      if (options.storageClass) {
+        headers["x-amz-storage-class"] = options.storageClass;
+      }
+
+      if (options.ssecKey) {
+        headers["x-amz-server-side-encryption-customer-algorithm"] = "AES256";
+      }
+
+      const response = await api.post(
+        `/accounts/${api.accountId}/r2/buckets/${bucketName}/objects/${key}/multipart`,
+        {},
+        { headers },
+      );
+
+      if (!response.ok) {
+        throw await handleApiError(
+          response,
+          "create multipart upload",
+          "object",
+          key,
+        );
+      }
+
+      const result = await extractCloudflareResult<{
+        key: string;
+        uploadId: string;
+      }>(`create multipart upload for "${key}"`, Promise.resolve(response));
+
+      return result;
+    },
+    isRetryableError,
+    5,
+    1000,
+  );
+}
+
+export async function uploadPartApi(
+  api: CloudflareApi,
+  {
+    bucketName,
+    key,
+    uploadId,
+    partNumber,
+    value,
+    options = {},
+  }: {
+    bucketName: string;
+    key: string;
+    uploadId: string;
+    partNumber: number;
+    value: ReadableStream | ArrayBuffer | ArrayBufferView | string | Blob;
+    options?: R2UploadPartOptions;
+  },
+): Promise<R2UploadedPart> {
+  if (partNumber < 1 || partNumber > 10000) {
+    throw new Error(
+      `Part number must be between 1 and 10000, got ${partNumber}`,
+    );
+  }
+
+  return await withExponentialBackoff(
+    async () => {
+      const headers: Record<string, string> = {
+        "Content-Type": "application/octet-stream",
+      };
+
+      if (options.ssecKey) {
+        headers["x-amz-server-side-encryption-customer-algorithm"] = "AES256";
+      }
+
+      const response = await api.put(
+        `/accounts/${api.accountId}/r2/buckets/${bucketName}/objects/${key}/multipart/${uploadId}/${partNumber}`,
+        value,
+        { headers },
+      );
+
+      if (!response.ok) {
+        throw await handleApiError(
+          response,
+          "upload part",
+          `object ${key} part ${partNumber}`,
+          key,
+        );
+      }
+
+      const etag = response.headers.get("ETag")?.replace(/"/g, "");
+      if (!etag) {
+        throw new Error(`No ETag returned for part ${partNumber}`);
+      }
+
+      return {
+        partNumber,
+        etag,
+      };
+    },
+    isRetryableError,
+    5,
+    1000,
+  );
+}
+
+export async function completeMultipartUploadApi(
+  api: CloudflareApi,
+  {
+    bucketName,
+    key,
+    uploadId,
+    parts,
+  }: {
+    bucketName: string;
+    key: string;
+    uploadId: string;
+    parts: R2UploadedPart[];
+  },
+): Promise<R2ObjectContent> {
+  return await withExponentialBackoff(
+    async () => {
+      const response = await api.post(
+        `/accounts/${api.accountId}/r2/buckets/${bucketName}/objects/${key}/multipart/${uploadId}/complete`,
+        {
+          parts: parts.map((p) => ({
+            partNumber: p.partNumber,
+            etag: p.etag,
+          })),
+        },
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+        },
+      );
+
+      if (!response.ok) {
+        throw await handleApiError(
+          response,
+          "complete multipart upload",
+          "object",
+          key,
+        );
+      }
+
+      return parseR2Object(key, response);
+    },
+    isRetryableError,
+    5,
+    1000,
+  );
+}
+
+export async function abortMultipartUploadApi(
+  api: CloudflareApi,
+  {
+    bucketName,
+    key,
+    uploadId,
+  }: {
+    bucketName: string;
+    key: string;
+    uploadId: string;
+  },
+): Promise<void> {
+  await withExponentialBackoff(
+    async () => {
+      const response = await api.delete(
+        `/accounts/${api.accountId}/r2/buckets/${bucketName}/objects/${key}/multipart/${uploadId}`,
+      );
+
+      if (!response.ok && response.status !== 404) {
+        throw await handleApiError(
+          response,
+          "abort multipart upload",
+          "object",
+          key,
+        );
+      }
+    },
+    isRetryableError,
+    5,
+    1000,
+  );
 }
 
 export async function enableDataCatalog(

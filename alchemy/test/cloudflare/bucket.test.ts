@@ -566,6 +566,242 @@ describe("R2 Bucket Resource", async () => {
       await scope.finalize();
     }
   });
+
+  test("multipart upload - create, upload parts, and complete", async (scope) => {
+    const bucketName = `${BRANCH_PREFIX.toLowerCase()}-multipart-basic`;
+    let bucket: R2Bucket | undefined;
+
+    try {
+      bucket = await R2Bucket(bucketName, {
+        name: bucketName,
+        adopt: true,
+        empty: true,
+      });
+
+      const key = "large-file.bin";
+      const part1Data = "Part 1 data - first chunk of the file\n";
+      const part2Data = "Part 2 data - second chunk of the file\n";
+      const part3Data = "Part 3 data - final chunk of the file\n";
+
+      const upload = await bucket.createMultipartUpload(key, {
+        httpMetadata: {
+          contentType: "application/octet-stream",
+        },
+        customMetadata: {
+          uploadedBy: "alchemy-test",
+          testCase: "multipart-basic",
+        },
+      });
+
+      expect(upload.key).toBe(key);
+      expect(upload.uploadId).toBeTruthy();
+
+      const part1 = await upload.uploadPart(1, part1Data);
+      expect(part1.partNumber).toBe(1);
+      expect(part1.etag).toBeTruthy();
+
+      const part2 = await upload.uploadPart(2, part2Data);
+      expect(part2.partNumber).toBe(2);
+      expect(part2.etag).toBeTruthy();
+
+      const part3 = await upload.uploadPart(3, part3Data);
+      expect(part3.partNumber).toBe(3);
+      expect(part3.etag).toBeTruthy();
+
+      const obj = await upload.complete([part1, part2, part3]);
+      expect(obj.key).toBe(key);
+      expect(obj.etag).toBeTruthy();
+
+      const retrievedObj = await bucket.get(key);
+      expect(retrievedObj).toBeTruthy();
+      const text = await retrievedObj!.text();
+      expect(text).toBe(part1Data + part2Data + part3Data);
+    } finally {
+      await destroy(scope);
+    }
+  });
+
+  test("multipart upload - resume existing upload", async (scope) => {
+    const bucketName = `${BRANCH_PREFIX.toLowerCase()}-multipart-resume`;
+    let bucket: R2Bucket | undefined;
+
+    try {
+      bucket = await R2Bucket(bucketName, {
+        name: bucketName,
+        adopt: true,
+        empty: true,
+      });
+
+      const key = "resumable-file.bin";
+      const part1Data = "First part uploaded initially\n";
+      const part2Data = "Second part uploaded after resume\n";
+
+      const initialUpload = await bucket.createMultipartUpload(key);
+      const uploadId = initialUpload.uploadId;
+      const part1 = await initialUpload.uploadPart(1, part1Data);
+
+      const resumedUpload = bucket.resumeMultipartUpload(key, uploadId);
+      expect(resumedUpload.uploadId).toBe(uploadId);
+
+      const part2 = await resumedUpload.uploadPart(2, part2Data);
+
+      const obj = await resumedUpload.complete([part1, part2]);
+      expect(obj.key).toBe(key);
+
+      const retrievedObj = await bucket.get(key);
+      const text = await retrievedObj!.text();
+      expect(text).toBe(part1Data + part2Data);
+    } finally {
+      await destroy(scope);
+    }
+  });
+
+  test("multipart upload - abort upload", async (scope) => {
+    const bucketName = `${BRANCH_PREFIX.toLowerCase()}-multipart-abort`;
+    let bucket: R2Bucket | undefined;
+
+    try {
+      bucket = await R2Bucket(bucketName, {
+        name: bucketName,
+        adopt: true,
+        empty: true,
+      });
+
+      const key = "aborted-file.bin";
+
+      const upload = await bucket.createMultipartUpload(key);
+      await upload.uploadPart(1, "Part 1 data");
+      await upload.uploadPart(2, "Part 2 data");
+
+      await upload.abort();
+
+      const obj = await bucket.get(key);
+      expect(obj).toBeNull();
+
+      await expect(
+        upload.complete([
+          { partNumber: 1, etag: "dummy" },
+          { partNumber: 2, etag: "dummy" },
+        ]),
+      ).rejects.toThrow();
+    } finally {
+      await destroy(scope);
+    }
+  });
+
+  test("multipart upload - error handling", async (scope) => {
+    const bucketName = `${BRANCH_PREFIX.toLowerCase()}-multipart-errors`;
+    let bucket: R2Bucket | undefined;
+
+    try {
+      bucket = await R2Bucket(bucketName, {
+        name: bucketName,
+        adopt: true,
+        empty: true,
+      });
+
+      const key = "error-test.bin";
+      const upload = await bucket.createMultipartUpload(key);
+
+      await expect(upload.uploadPart(0, "data")).rejects.toThrow(
+        /Part number must be between 1 and 10000/,
+      );
+      await expect(upload.uploadPart(10001, "data")).rejects.toThrow(
+        /Part number must be between 1 and 10000/,
+      );
+
+      const part1 = await upload.uploadPart(1, "Part 1");
+
+      await expect(
+        upload.complete([part1, { partNumber: 2, etag: "invalid-etag" }]),
+      ).rejects.toThrow();
+
+      await expect(
+        upload.complete([{ partNumber: 1, etag: "wrong-etag" }]),
+      ).rejects.toThrow();
+
+      await upload.abort();
+    } finally {
+      await destroy(scope);
+    }
+  });
+
+  test("multipart upload - large file with multiple parts", async (scope) => {
+    const bucketName = `${BRANCH_PREFIX.toLowerCase()}-multipart-large`;
+    let bucket: R2Bucket | undefined;
+
+    try {
+      bucket = await R2Bucket(bucketName, {
+        name: bucketName,
+        adopt: true,
+        empty: true,
+      });
+
+      const key = "large-file.bin";
+      const partSize = 5 * 1024 * 1024;
+      const numParts = 3;
+
+      const upload = await bucket.createMultipartUpload(key);
+      const parts: import("../../src/cloudflare/bucket.ts").R2UploadedPart[] =
+        [];
+
+      for (let i = 1; i <= numParts; i++) {
+        const data = new Uint8Array(partSize);
+        data.fill(i);
+
+        const part = await upload.uploadPart(i, data);
+        parts.push(part);
+        expect(part.partNumber).toBe(i);
+      }
+
+      const obj = await upload.complete(parts);
+      expect(obj.key).toBe(key);
+      expect(obj.size).toBe(partSize * numParts);
+
+      const metadata = await bucket.head(key);
+      expect(metadata).toBeTruthy();
+      expect(metadata!.size).toBe(partSize * numParts);
+    } finally {
+      await destroy(scope);
+    }
+  });
+
+  test("multipart upload - with custom metadata and http headers", async (scope) => {
+    const bucketName = `${BRANCH_PREFIX.toLowerCase()}-multipart-metadata`;
+    let bucket: R2Bucket | undefined;
+
+    try {
+      bucket = await R2Bucket(bucketName, {
+        name: bucketName,
+        adopt: true,
+        empty: true,
+      });
+
+      const key = "metadata-file.txt";
+      const upload = await bucket.createMultipartUpload(key, {
+        httpMetadata: {
+          contentType: "text/plain",
+          contentLanguage: "en-US",
+          contentDisposition: 'attachment; filename="download.txt"',
+          cacheControl: "max-age=3600",
+        },
+        customMetadata: {
+          author: "alchemy-test",
+          version: "1.0.0",
+          environment: "test",
+        },
+      });
+
+      const part1 = await upload.uploadPart(1, "Custom metadata test content");
+      await upload.complete([part1]);
+
+      const obj = await bucket.get(key);
+      expect(obj).toBeTruthy();
+      expect(obj!.key).toBe(key);
+    } finally {
+      await destroy(scope);
+    }
+  });
 });
 
 /**
