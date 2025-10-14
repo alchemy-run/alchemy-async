@@ -44,6 +44,21 @@ export interface RoleProps extends PlanetScaleProps {
    * You can also inherit from another Role resource.
    */
   inheritedRoles: InheritedRole[] | Role;
+
+  /**
+   * Whether to adopt an existing role if it exists.
+   * If false and a role with similar permissions exists, an error will be thrown.
+   * If true and a role with similar permissions exists, it will be updated with the provided properties.
+   * @default false
+   */
+  adopt?: boolean;
+
+  /**
+   * Whether to delete the role when the resource is destroyed.
+   * When false, the role will only be removed from the state but not deleted via API.
+   * @default true
+   */
+  delete?: boolean;
 }
 
 /**
@@ -192,7 +207,7 @@ export const Role = Resource(
 
     switch (this.phase) {
       case "delete": {
-        if (this.output?.id) {
+        if (props.delete !== false && this.output?.id) {
           const res = await api.deleteRole({
             path: {
               organization,

@@ -2,13 +2,13 @@ import { describe, expect } from "vitest";
 import { alchemy } from "../../src/alchemy.ts";
 import { destroy } from "../../src/destroy.ts";
 import {
-  createPlanetScaleClient,
-  type PlanetScaleClient,
+    createPlanetScaleClient,
+    type PlanetScaleClient,
 } from "../../src/planetscale/api.ts";
 import { Database } from "../../src/planetscale/database.ts";
 import {
-  waitForBranchReady,
-  waitForDatabaseReady,
+    waitForBranchReady,
+    waitForDatabaseReady,
 } from "../../src/planetscale/utils.ts";
 import { BRANCH_PREFIX } from "../util.ts";
 // must import this or else alchemy.test won't exist
@@ -272,6 +272,63 @@ describe.skipIf(!process.env.PLANETSCALE_TEST).concurrent.each(kinds)(
       },
       5_000_000,
     );
+
+    test(`database with delete=false should not be deleted via API (${kind})`, async (scope) => {
+      const name = `${BRANCH_PREFIX}-${kind}-nodelete`;
+
+      try {
+        const database = await Database("nodelete", {
+          name,
+          clusterSize: "PS_10",
+          kind,
+          delete: false,
+        });
+
+        expect(database).toMatchObject({
+          id: expect.any(String),
+          name,
+          delete: false,
+        });
+
+        // Verify database exists
+        await waitForDatabaseReady(api, organization, name);
+        const { data } = await api.getDatabase({
+          path: {
+            organization,
+            name,
+          },
+        });
+        expect(data.name).toBe(name);
+      } catch (err) {
+        console.error("Test error:", err);
+        throw err;
+      } finally {
+        // When we call destroy, the database should NOT be deleted via API
+        await destroy(scope);
+
+        // Verify database still exists (was not deleted via API)
+        const { response } = await api.getDatabase({
+          path: {
+            organization,
+            name,
+          },
+          throwOnError: false,
+        });
+        expect(response.status).toBe(200); // Database should still exist
+
+        // Clean up manually for the test
+        await api.deleteDatabase({
+          path: {
+            organization,
+            name,
+          },
+          throwOnError: false,
+        });
+
+        // Wait for manual cleanup to complete
+        await assertDatabaseDeleted(api, organization, name);
+      }
+    }, 5_000_000);
   },
 );
 

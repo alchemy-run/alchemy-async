@@ -29,6 +29,13 @@ interface BaseDatabaseProps extends PlanetScaleProps {
   adopt?: boolean;
 
   /**
+   * Whether to delete the database when the resource is destroyed.
+   * When false, the database will only be removed from the state but not deleted via API.
+   * @default true
+   */
+  delete?: boolean;
+
+  /**
    * The region where the database will be created (create only)
    */
   region?: {
@@ -239,7 +246,7 @@ export const Database = Resource(
     }
 
     if (this.phase === "delete") {
-      if (this.output?.name) {
+      if (props.delete !== false && this.output?.name) {
         const response = await api.deleteDatabase({
           path: {
             organization,

@@ -3,10 +3,10 @@ import { Resource } from "../resource.ts";
 import { createPlanetScaleClient, type PlanetScaleProps } from "./api.ts";
 import type { Database } from "./database.ts";
 import {
-  ensureProductionBranchClusterSize,
-  sanitizeClusterSize,
-  waitForBranchReady,
-  type PlanetScaleClusterSize,
+    ensureProductionBranchClusterSize,
+    sanitizeClusterSize,
+    waitForBranchReady,
+    type PlanetScaleClusterSize,
 } from "./utils.ts";
 
 /**
@@ -42,6 +42,13 @@ export interface BranchProps extends PlanetScaleProps {
    * If true and the branch exists, it will be updated with the provided properties.
    */
   adopt?: boolean;
+
+  /**
+   * Whether to delete the branch when the resource is destroyed.
+   * When false, the branch will only be removed from the state but not deleted via API.
+   * @default true
+   */
+  delete?: boolean;
 
   /**
    * The parent branch name or Branch object
@@ -192,7 +199,7 @@ export const Branch = Resource(
     }
 
     if (this.phase === "delete") {
-      if (this.output?.name) {
+      if (props.delete !== false && this.output?.name) {
         const response = await api.deleteBranch({
           path: {
             organization,

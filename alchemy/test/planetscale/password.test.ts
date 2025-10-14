@@ -163,4 +163,80 @@ describe.skipIf(!process.env.PLANETSCALE_TEST)("Password Resource", () => {
       await destroy(scope);
     }
   });
+
+  test("password with delete=false should not be deleted via API", async (scope) => {
+    const passwordName = `${BRANCH_PREFIX}-nodelete-password`;
+    let passwordId: string | null = null;
+
+    try {
+      const password = await Password("nodelete-password", {
+        name: passwordName,
+        database: database.name,
+        branch: branch.name,
+        role: "reader",
+        delete: false,
+      });
+
+      passwordId = password.id; // Store ID before destroy
+
+      expect(password).toMatchObject({
+        role: "reader",
+        delete: false,
+      });
+
+      // Verify password exists
+      const { data } = await api.getPassword({
+        path: {
+          organization: database.organization,
+          database: database.name,
+          branch: branch.name,
+          id: password.id,
+        },
+      });
+      expect(data.id).toBe(password.id);
+    } catch (err) {
+      console.error("Test error:", err);
+      throw err;
+    } finally {
+      // When we call destroy, the password should NOT be deleted via API
+      await destroy(scope);
+
+      expect(passwordId).not.toBeNull();
+
+      // Verify password still exists (was not deleted via API)
+      const { response } = await api.getPassword({
+        path: {
+          organization: database.organization,
+          database: database.name,
+          branch: branch.name,
+          id: passwordId!,
+        },
+        throwOnError: false,
+      });
+      expect(response.status).toBe(200); // Password should still exist
+
+      // Clean up manually for the test
+      await api.deletePassword({
+        path: {
+          organization: database.organization,
+          database: database.name,
+          branch: branch.name,
+          id: passwordId!,
+        },
+        throwOnError: false,
+      });
+
+      // Verify manual cleanup worked
+      const { response: deletedResponse } = await api.getPassword({
+        path: {
+          organization: database.organization,
+          database: database.name,
+          branch: branch.name,
+          id: passwordId!,
+        },
+        throwOnError: false,
+      });
+      expect(deletedResponse.status).toBe(404);
+    }
+  });
 });

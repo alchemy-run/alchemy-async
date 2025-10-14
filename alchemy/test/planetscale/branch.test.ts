@@ -4,8 +4,8 @@ import { destroy } from "../../src/destroy.ts";
 import { createPlanetScaleClient } from "../../src/planetscale/api.ts";
 import { Branch } from "../../src/planetscale/branch.ts";
 import {
-  Database,
-  type DatabaseProps,
+    Database,
+    type DatabaseProps,
 } from "../../src/planetscale/database.ts";
 import { waitForDatabaseReady } from "../../src/planetscale/utils.ts";
 import { BRANCH_PREFIX } from "../util.ts";
@@ -434,6 +434,74 @@ describe.skipIf(!process.env.PLANETSCALE_TEST).concurrent.each(kinds)(
           throwOnError: false,
         });
         expect(getChildDeletedResponse.status).toEqual(404);
+      }
+    }, 600_000);
+
+    test(`branch with delete=false should not be deleted via API (${kind})`, async (scope) => {
+      const name = `${BRANCH_PREFIX}-${kind}-nodelete-branch`;
+
+      try {
+        const branch = await Branch("nodelete-branch", {
+          name,
+          organization: organizationName,
+          database: database.name,
+          parentBranch: "main",
+          isProduction: false,
+          delete: false,
+        });
+
+        expect(branch).toMatchObject({
+          name,
+          delete: false,
+        });
+
+        // Verify branch exists
+        const { data } = await api.getBranch({
+          path: {
+            organization: organizationName,
+            database: database.name,
+            name,
+          },
+        });
+        expect(data.name).toBe(name);
+      } catch (err) {
+        console.error("Test error:", err);
+        throw err;
+      } finally {
+        // When we call destroy, the branch should NOT be deleted via API
+        await destroy(scope);
+
+        // Verify branch still exists (was not deleted via API)
+        const { response } = await api.getBranch({
+          path: {
+            organization: organizationName,
+            database: database.name,
+            name,
+          },
+          throwOnError: false,
+        });
+        expect(response.status).toBe(200); // Branch should still exist
+
+        // Clean up manually for the test
+        await api.deleteBranch({
+          path: {
+            organization: organizationName,
+            database: database.name,
+            name,
+          },
+          throwOnError: false,
+        });
+
+        // Verify manual cleanup worked
+        const { response: deletedResponse } = await api.getBranch({
+          path: {
+            organization: organizationName,
+            database: database.name,
+            name,
+          },
+          throwOnError: false,
+        });
+        expect(deletedResponse.status).toBe(404);
       }
     }, 600_000);
   },
