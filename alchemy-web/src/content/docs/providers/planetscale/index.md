@@ -18,14 +18,14 @@ PlanetScale is a serverless database platform that supports both MySQL and Postg
 
 PlanetScale authentication is handled via environment variables.
 
-### Setting the token id and secret
-The token id and secret can be set by setting the `PLANETSCALE_SERVICE_TOKEN_ID` and `PLANETSCALE_SERVICE_TOKEN` environment variables. Alchemy will use those to generate the correct header for the planetscale api.
+### Setting the Token id and Secret
+The token ID and secret can be set by setting the `PLANETSCALE_SERVICE_TOKEN_ID` and `PLANETSCALE_SERVICE_TOKEN` environment variables. Alchemy will use those to generate the correct header for the planetscale API.
 
-### Directly setting the api token
+### Directly Setting the API Token
 
-The api token can be set directly by setting the `PLANETSCALE_API_TOKEN` environment variable. This must follow the format outlined by planetscale here: [Authentication](https://planetscale.com/docs/concepts/authentication).
+The API token can be set directly by setting the `PLANETSCALE_API_TOKEN` environment variable. This must follow the format outlined by planetscale here: [Authentication](https://planetscale.com/docs/concepts/authentication).
 
-### Overriding per resource
+### Overriding per Resource
 
 To support multiple accouns, alchemy allows you to override the authentication token for a resource by setting the `serviceTokenId` and `serviceToken` properties on planetscale resources.
 

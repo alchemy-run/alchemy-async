@@ -7,7 +7,7 @@ For ease of use we expose `OrganizationRef` to allow you to reference an organiz
 
 ## Minimal Example
 
-An organization can be referenced by name or by id, then passed to other planetscale resources.
+An organization can be referenced by name or by ID, then passed to other planetscale resources.
 
 ```diff lang="ts"
  import { OrganizationRef, Service, Database } from "alchemy/planetscale";
