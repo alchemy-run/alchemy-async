@@ -1,8 +1,7 @@
 import type { Context } from "../../context.ts";
 import { Resource } from "../../resource.ts";
-import type { PrismaDatabase, PrismaPostgresRegion } from "./types.ts";
 import { PrismaPostgresApi } from "./api.ts";
-import type { PrismaPostgresAuthProps, PrismaProject } from "./types.ts";
+import type { PrismaDatabase, PrismaPostgresAuthProps, PrismaPostgresRegion, PrismaProject } from "./types.ts";
 
 /**
  * Properties for managing a Prisma Postgres project
