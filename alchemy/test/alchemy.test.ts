@@ -2,6 +2,7 @@ import { describe, expect } from "vitest";
 import { alchemy } from "../src/alchemy.ts";
 import { BRANCH_PREFIX } from "./util.ts";
 
+import { destroy } from "../src/destroy.ts";
 import "../src/test/vitest.ts";
 
 const test = alchemy.test(import.meta, {
@@ -20,5 +21,58 @@ describe("alchemy.run", async () => {
         expect(child.parent).toBe(scope);
       });
     });
+  });
+});
+
+describe("simulating CLI behavior via programmatic options", () => {
+  test("should error when CLI passes local=true and stage=up (alchemy dev --stage up)", async () => {
+    await expect(async () => {
+      const app = await alchemy(`${BRANCH_PREFIX}-cli-dev-stage-up`, {
+        local: true,
+        stage: "up",
+      });
+      await app.finalize();
+    }).rejects.toThrow(/Cannot use stage "up" in dev\/local mode/);
+  });
+
+  test("should work when CLI passes local=true and stage=dev (alchemy dev --stage dev)", async () => {
+    const app = await alchemy(`${BRANCH_PREFIX}-cli-dev-stage-dev`, {
+      local: true,
+      stage: "dev",
+    });
+
+    expect(app).toBeDefined();
+    expect(app.local).toBe(true);
+    expect(app.stage).toBe("dev");
+
+    await app.finalize();
+    await destroy(app);
+  });
+
+  test("should work when CLI passes only stage=up (alchemy deploy --stage up)", async () => {
+    const app = await alchemy(`${BRANCH_PREFIX}-cli-only-stage-up`, {
+      stage: "up",
+    });
+
+    expect(app).toBeDefined();
+    expect(app.local).toBe(false);
+    expect(app.stage).toBe("up");
+
+    await app.finalize();
+    await destroy(app);
+  });
+
+  test("should work when CLI passes local=false and stage=up (alchemy deploy --stage up)", async () => {
+    const app = await alchemy(`${BRANCH_PREFIX}-cli-deploy-stage-up`, {
+      local: false,
+      stage: "up",
+    });
+
+    expect(app).toBeDefined();
+    expect(app.local).toBe(false);
+    expect(app.stage).toBe("up");
+
+    await app.finalize();
+    await destroy(app);
   });
 });
