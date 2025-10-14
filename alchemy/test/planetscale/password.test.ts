@@ -24,7 +24,7 @@ describe.skipIf(!process.env.PLANETSCALE_TEST)("Password Resource", () => {
 
   test.beforeAll(async (_scope) => {
     database = await Database("password-test-db", {
-      organization: database.organization,
+      organization: alchemy.env.PLANETSCALE_ORG_ID,
       clusterSize: "PS_10",
     });
     await waitForDatabaseReady(api, database.organization, database.name);
@@ -171,8 +171,8 @@ describe.skipIf(!process.env.PLANETSCALE_TEST)("Password Resource", () => {
     try {
       const password = await Password("nodelete-password", {
         name: passwordName,
-        database: database.name,
-        branch: branch.name,
+        database: database,
+        branch: branch,
         role: "reader",
         delete: false,
       });
