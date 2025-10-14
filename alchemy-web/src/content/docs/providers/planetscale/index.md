@@ -18,7 +18,7 @@ PlanetScale is a serverless database platform that supports both MySQL and Postg
 
 PlanetScale authentication is handled via environment variables.
 
-### Setting the Token id and Secret
+### Setting the Token ID and Secret
 The token ID and secret can be set by setting the `PLANETSCALE_SERVICE_TOKEN_ID` and `PLANETSCALE_SERVICE_TOKEN` environment variables. Alchemy will use those to generate the correct header for the planetscale API.
 
 ### Directly Setting the API Token
