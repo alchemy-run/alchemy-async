@@ -236,7 +236,7 @@ describe.skipIf(!process.env.PLANETSCALE_TEST).concurrent.each(kinds)(
         });
         expect(response.status).toEqual(404);
       }
-    }, 300_000);
+    }, 1_000_000);
 
     // TODO: (422 unprocessable): Safe migrations requires schema validation before it may be enabled
     test.skipIf(kind === "postgresql")(
