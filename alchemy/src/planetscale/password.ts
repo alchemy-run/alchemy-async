@@ -58,7 +58,7 @@ export interface PasswordProps extends PlanetScaleProps {
    * The CIDRs of the password
    */
   cidrs?: string[];
-  
+
   /**
    * Whether to delete the password when the resource is destroyed.
    * When false, the password will only be removed from the state but not deleted via API.
@@ -272,7 +272,7 @@ export const Password = Resource(
       ? lowercaseId()
       : (this.output?.nameSlug ?? lowercaseId());
     const name = `${(props.name ?? this.output?.name ?? this.scope.createPhysicalName(id)).toLowerCase()}-${nameSlug}`;
-    
+
     const api = createPlanetScaleClient(props);
     if (!props.organization && typeof props.database === "string") {
       throw new Error(

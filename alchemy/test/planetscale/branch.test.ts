@@ -4,8 +4,8 @@ import { destroy } from "../../src/destroy.ts";
 import { createPlanetScaleClient } from "../../src/planetscale/api.ts";
 import { Branch } from "../../src/planetscale/branch.ts";
 import {
-    Database,
-    type DatabaseProps,
+  Database,
+  type DatabaseProps,
 } from "../../src/planetscale/database.ts";
 import { waitForDatabaseReady } from "../../src/planetscale/utils.ts";
 import { BRANCH_PREFIX } from "../util.ts";

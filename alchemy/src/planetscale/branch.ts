@@ -3,10 +3,10 @@ import { Resource } from "../resource.ts";
 import { createPlanetScaleClient, type PlanetScaleProps } from "./api.ts";
 import type { Database } from "./database.ts";
 import {
-    ensureProductionBranchClusterSize,
-    sanitizeClusterSize,
-    waitForBranchReady,
-    type PlanetScaleClusterSize,
+  ensureProductionBranchClusterSize,
+  sanitizeClusterSize,
+  waitForBranchReady,
+  type PlanetScaleClusterSize,
 } from "./utils.ts";
 
 /**

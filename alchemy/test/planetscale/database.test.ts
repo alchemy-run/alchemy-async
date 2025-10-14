@@ -2,13 +2,13 @@ import { describe, expect } from "vitest";
 import { alchemy } from "../../src/alchemy.ts";
 import { destroy } from "../../src/destroy.ts";
 import {
-    createPlanetScaleClient,
-    type PlanetScaleClient,
+  createPlanetScaleClient,
+  type PlanetScaleClient,
 } from "../../src/planetscale/api.ts";
 import { Database } from "../../src/planetscale/database.ts";
 import {
-    waitForBranchReady,
-    waitForDatabaseReady,
+  waitForBranchReady,
+  waitForDatabaseReady,
 } from "../../src/planetscale/utils.ts";
 import { BRANCH_PREFIX } from "../util.ts";
 // must import this or else alchemy.test won't exist
