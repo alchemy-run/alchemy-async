@@ -14,6 +14,21 @@ PlanetScale is a serverless database platform that supports both MySQL and Postg
 - [Password](/providers/planetscale/password) - Create and manage database passwords with specific roles and permissions (MySQL only)
 - [Role](/providers/planetscale/role) - Create and manage database roles with inherited permissions (PostgreSQL only)
 
+## Authentication
+
+PlanetScale authentication is handled via environment variables.
+
+### Setting the token id and secret
+The token id and secret can be set by setting the `PLANETSCALE_SERVICE_TOKEN_ID` and `PLANETSCALE_SERVICE_TOKEN` environment variables. Alchemy will use those to generate the correct header for the planetscale api.
+
+### Directly setting the api token
+
+The api token can be set directly by setting the `PLANETSCALE_API_TOKEN` environment variable. This must follow the format outlined by planetscale here: [Authentication](https://planetscale.com/docs/concepts/authentication).
+
+### Overriding per resource
+
+To support multiple accouns, alchemy allows you to override the authentication token for a resource by setting the `serviceTokenId` and `serviceToken` properties on planetscale resources.
+
 ## MySQL Example
 
 ```ts

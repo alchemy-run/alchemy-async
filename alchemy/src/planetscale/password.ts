@@ -300,6 +300,7 @@ export const Password = Resource(
       typeof props.branch === "string"
         ? props.branch
         : (props.branch?.name ?? "main");
+    const shouldDelete = props.delete ?? false;
     if (!organization) {
       throw new Error(
         "PlanetScale organization is required. Please set the `organization` property or the `PLANETSCALE_ORGANIZATION` environment variable.",
@@ -307,7 +308,7 @@ export const Password = Resource(
     }
 
     if (this.phase === "delete") {
-      if (props.delete !== false && this.output?.id) {
+      if (shouldDelete && this.output?.id) {
         const res = await api.deletePassword({
           path: {
             organization,

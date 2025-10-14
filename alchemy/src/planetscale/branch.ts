@@ -186,6 +186,7 @@ export const Branch = Resource(
       (typeof props.database === "string"
         ? props.database
         : props.database.name);
+    const shouldDelete = props.delete ?? false;
 
     if (!organization) {
       throw new Error(
@@ -199,7 +200,7 @@ export const Branch = Resource(
     }
 
     if (this.phase === "delete") {
-      if (props.delete !== false && this.output?.name) {
+      if (shouldDelete && this.output?.name) {
         const response = await api.deleteBranch({
           path: {
             organization,

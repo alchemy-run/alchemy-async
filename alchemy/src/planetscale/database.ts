@@ -234,6 +234,7 @@ export const Database = Resource(
         "PlanetScale organization is required. Please set the `organization` property or the `PLANETSCALE_ORGANIZATION` environment variable.",
       );
     }
+    const shouldDelete = props.delete ?? false;
 
     if (this.phase === "update" && this.output.name !== databaseName) {
       await api.updateDatabaseSettings({
@@ -246,7 +247,7 @@ export const Database = Resource(
     }
 
     if (this.phase === "delete") {
-      if (props.delete !== false && this.output?.name) {
+      if (shouldDelete && this.output?.name) {
         const response = await api.deleteDatabase({
           path: {
             organization,

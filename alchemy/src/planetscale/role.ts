@@ -196,10 +196,11 @@ export const Role = Resource(
     const inheritedRoles = Array.isArray(props.inheritedRoles)
       ? props.inheritedRoles
       : props.inheritedRoles.inheritedRoles;
+    const shouldDelete = props.delete ?? false;
 
     switch (this.phase) {
       case "delete": {
-        if (props.delete !== false && this.output?.id) {
+        if (shouldDelete && this.output?.id) {
           const res = await api.deleteRole({
             path: {
               organization,
