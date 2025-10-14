@@ -1,0 +1,25 @@
+---
+import Default from "@astrojs/starlight/components/PageTitle.astro";
+import { Icon } from 'astro-icon/components';
+---
+
+<header class="@container">
+  <div class="grid gap-y-4 gap-x-8 @lg:grid-cols-[1fr_auto] items-baseline">
+    <div class="">
+      <Default {...Astro.props} />
+    </div>
+
+    <div class="order-last col-span-full">
+      <p class="opacity-80">{Astro.locals.starlightRoute.entry.data.description}</p>
+    </div>
+
+    <div class="">
+      <a class="no-underline hover:underline focus:underline" href={`/${Astro.locals.starlightRoute.entry.id}.md`}>
+        <span class="flex items-center gap-[.35em]">
+          <Icon class="" name="bx:bxl-markdown" size="1.5em" />
+          <span class="leading-snug">View as Markdown</span>
+        </span>
+      </a>
+    </div>
+  </div>
+</header>
