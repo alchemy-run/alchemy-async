@@ -23,7 +23,7 @@ const devBranch = await Branch("feature-123", {
 
 ## Deletion
 
-By default, when a branch is deleted, the branch will be removed from the state but not deleted via API. This is to prevent accidental loss of data. This setting can be changed by setting the `delete` property to `false`.
+By default, when a branch is deleted, the branch will be removed from the state but not deleted via API. This is to prevent accidental loss of data. This setting can be changed by setting the `delete` property to `true`.
 
 ```ts
 import { Branch } from "alchemy/planetscale";
@@ -34,7 +34,7 @@ const devBranch = await Branch("feature-123", {
   database: "my-database",
   parentBranch: "main",
   isProduction: false,
-  delete: false,
+  delete: true,
 });
 ```
 

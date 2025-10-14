@@ -50,7 +50,7 @@ const database = await Database("my-app-db", {
 
 ## Deletion
 
-By default, when a database is deleted, the database will be removed from the state but not deleted via API. This is to prevent accidental loss of data. This setting can be changed by setting the `delete` property to `false`.
+By default, when a database is deleted, the database will be removed from the state but not deleted via API. This is to prevent accidental loss of data. This setting can be changed by setting the `delete` property to `true`.
 
 ```ts
 import { Database } from "alchemy/planetscale";
@@ -59,7 +59,7 @@ const database = await Database("my-app-db", {
   name: "my-app-db",
   organization: alchemy.env.PLANETSCALE_ORGANIZATION,
   clusterSize: "PS_10",
-  delete: false,
+  delete: true,
 });
 ```
 

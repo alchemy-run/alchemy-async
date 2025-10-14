@@ -34,7 +34,7 @@ The `"postgres"` role provides full administrator access to the database. While 
 
 ## Deletion
 
-By default, when a role is deleted, the role will be removed from the state but not deleted via API. This is to prevent accidental loss of data. This setting can be changed by setting the `delete` property to `false`.
+By default, when a role is deleted, the role will be removed from the state but not deleted via API. This is to prevent accidental loss of data. This setting can be changed by setting the `delete` property to `true`.
 
 ```ts
 import { Role } from "alchemy/planetscale";
@@ -42,7 +42,7 @@ import { Role } from "alchemy/planetscale";
 const role = await Role("app-role", {
   database,
   inheritedRoles: ["postgres"],
-  delete: false,
+  delete: true,
 });
 ```
 
