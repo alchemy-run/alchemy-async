@@ -45,13 +45,6 @@ export interface RoleProps extends PlanetScaleProps {
    */
   inheritedRoles: InheritedRole[] | Role;
 
-  /**
-   * Whether to adopt an existing role if it exists.
-   * If false and a role with similar permissions exists, an error will be thrown.
-   * If true and a role with similar permissions exists, it will be updated with the provided properties.
-   * @default false
-   */
-  adopt?: boolean;
 
   /**
    * Whether to delete the role when the resource is destroyed.
