@@ -45,7 +45,6 @@ export interface RoleProps extends PlanetScaleProps {
    */
   inheritedRoles: InheritedRole[] | Role;
 
-
   /**
    * Whether to delete the role when the resource is destroyed.
    * When false, the role will only be removed from the state but not deleted via API.
