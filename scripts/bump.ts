@@ -9,7 +9,7 @@ export async function generateReleaseNotes(tag: string) {
     to: tag,
     emoji: true,
     contributors: true,
-    repo: "sam-goodwin/alchemy",
+    repo: "alchemy-run/alchemy",
   });
   const fileContents = await readFile(
     join(process.cwd(), "CHANGELOG.md"),
@@ -42,7 +42,7 @@ async function checkNpmVersion(
 async function checkGithubTag(version: string): Promise<boolean> {
   try {
     const response = await fetch(
-      `https://api.github.com/repos/sam-goodwin/alchemy/git/refs/tags/v${version}`,
+      `https://api.github.com/repos/alchemy-run/alchemy/git/refs/tags/v${version}`,
     );
     return response.ok;
   } catch {
@@ -53,7 +53,7 @@ async function checkGithubTag(version: string): Promise<boolean> {
 async function checkGithubRelease(version: string): Promise<boolean> {
   try {
     const response = await fetch(
-      `https://api.github.com/repos/sam-goodwin/alchemy/releases/tags/v${version}`,
+      `https://api.github.com/repos/alchemy-run/alchemy/releases/tags/v${version}`,
     );
     return response.ok;
   } catch {

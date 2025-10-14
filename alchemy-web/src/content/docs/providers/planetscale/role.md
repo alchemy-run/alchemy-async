@@ -18,7 +18,7 @@ import { Database, Role } from "alchemy/planetscale";
 
 const database = await Database("my-db", {
   name: "my-database",
-  organizationId: "my-org",
+  organization: "my-org",
   clusterSize: "PS_10",
   kind: "postgresql",
 });
@@ -41,14 +41,14 @@ import { Role, Database, Branch } from "alchemy/planetscale";
 
 const database = await Database("my-db", {
   name: "my-database",
-  organizationId: "my-org",
+  organization: "my-org",
   clusterSize: "PS_10",
   kind: "postgresql",
 });
 
 const branch = await Branch("dev-branch", {
   name: "development",
-  organizationId: "my-org",
+  organization: "my-org",
   database,
   parentBranch: "main",
 });
@@ -68,7 +68,7 @@ You can pass in the database and branch names as strings instead of using the Da
 import { Role } from "alchemy/planetscale";
 
 const role = await Role("dev-role", {
-  organizationId: "my-org", // Required when using string database and branch names
+  organization: "my-org", // Required when using string database and branch names
   database: "my-database",
   branch: "main",
   inheritedRoles: ["pg_read_all_data", "pg_write_all_data"],
@@ -76,7 +76,7 @@ const role = await Role("dev-role", {
 ```
 
 :::warning
-If both the database and branch are provided as strings, you must provide your organization ID as well.
+If both the database and branch are provided as strings, you must provide your organization name as well.
 :::
 
 ## Role with Inherited Permissions
@@ -140,7 +140,7 @@ import { Role } from "alchemy/planetscale";
 
 const monitorRole = await Role("monitor", {
   database: "my-database",
-  organizationId: "my-org",
+  organization: "my-org",
   inheritedRoles: [
     "pg_monitor",
     "pg_read_all_settings",
@@ -159,7 +159,7 @@ import { Role } from "alchemy/planetscale";
 
 const role = await Role("app-role", {
   database: "my-database",
-  organizationId: "my-org",
+  organization: "my-org",
   inheritedRoles: ["postgres"],
 });
 
@@ -184,7 +184,7 @@ import { Hyperdrive } from "alchemy/cloudflare";
 
 const database = await Database("my-db", {
   name: "my-database",
-  organizationId: "my-org",
+  organization: "my-org",
   clusterSize: "PS_10",
   kind: "postgresql",
 });

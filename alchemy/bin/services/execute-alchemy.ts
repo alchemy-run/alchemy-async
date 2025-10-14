@@ -126,7 +126,7 @@ export async function execAlchemy(
 
   args.push(`--telemetry-session-id ${telemetryData.sessionId}`);
   args.push(
-    `--telemetry-ref ${telemetryData.ref ? `${telemetryData.ref}+cli` : "cli"}`,
+    `--telemetry-ref ${telemetryData.referrer ? `${telemetryData.referrer}+cli` : "cli"}`,
   );
 
   if (quiet) args.push("--quiet");
@@ -245,8 +245,9 @@ export async function execAlchemy(
     promiseWithResolvers<string>();
 
   process.on("SIGINT", async () => {
+    // hold the parent process open until the child process exits,
+    // then the trpc middleware will handle the SIGINT after sending the event
     await exitPromise;
-    throw new ExitSignal(sanitizeExitCode(child.exitCode));
   });
 
   const child = spawn(command, {

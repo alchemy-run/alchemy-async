@@ -414,7 +414,7 @@ export const Zone = Resource(
 
     // Add a small delay to ensure settings are propagated
     // TODO(michael): do we need this?
-    // https://github.com/sam-goodwin/alchemy/issues/681
+    // https://github.com/alchemy-run/alchemy/issues/681
     await new Promise((resolve) => setTimeout(resolve, 2000));
 
     // Update Bot Management configuration if provided

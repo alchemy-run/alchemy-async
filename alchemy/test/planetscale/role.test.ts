@@ -31,12 +31,11 @@ describe
 
       database = await Database("database", {
         name: "role-test-db",
-        organizationId: process.env.PLANETSCALE_ORG_ID ?? "",
         clusterSize: "PS_10",
         kind: "postgresql",
         arch: "arm", // slightly faster than x86
       });
-      await waitForDatabaseReady(api, database.organizationId, database.name);
+      await waitForDatabaseReady(api, database.organization, database.name);
       scope = _scope;
     }, 240_000); // slow and steady wins the race
 
@@ -68,7 +67,7 @@ describe
         // Verify role was created by querying the API directly
         const { data } = await api.getRole({
           path: {
-            organization: database.organizationId,
+            organization: database.organization,
             database: database.name,
             branch: "main",
             id: role.id,
@@ -122,7 +121,7 @@ describe
         // Verify old password was deleted and new one created
         const { response: getOldResponse } = await api.getRole({
           path: {
-            organization: database.organizationId,
+            organization: database.organization,
             database: database.name,
             branch: "main",
             id: originalId,
@@ -133,7 +132,7 @@ describe
 
         const { data: newRole } = await api.getRole({
           path: {
-            organization: database.organizationId,
+            organization: database.organization,
             database: database.name,
             branch: "main",
             id: role.id,

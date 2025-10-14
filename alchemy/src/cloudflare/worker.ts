@@ -1313,15 +1313,10 @@ async function provisionResources<B extends Bindings>(
         ? Promise.all(
             input.containers.map(async (container) => {
               return await ContainerApplication(container.id, {
-                image: container.image,
-                name: container.name,
-                instanceType: container.instanceType,
-                observability: container.observability,
+                ...container,
                 durableObjects: {
                   namespaceId: await getContainerNamespaceId(container),
                 },
-                schedulingPolicy: container.schedulingPolicy,
-                adopt: container.adopt,
                 dev: options.local,
                 ...input.api,
               });

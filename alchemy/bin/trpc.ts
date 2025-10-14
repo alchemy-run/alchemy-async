@@ -22,24 +22,30 @@ const loggingMiddleware = t.middleware(async ({ path, next }) => {
   let exitCode = 0;
 
   try {
-    await next();
-    await createAndSendEvent({
-      event: "cli.success",
-      command: path,
-    });
-  } catch (error) {
-    const isSafeExit = error instanceof ExitSignal && error.code === 0;
-    await createAndSendEvent(
-      {
-        event: isSafeExit ? "cli.success" : "cli.error",
+    const result = await next();
+    if (result.ok || result.error.cause instanceof CancelSignal) {
+      await createAndSendEvent({
+        event: "cli.success",
         command: path,
-      },
-      isSafeExit ? undefined : error,
-    );
-    if (error instanceof ExitSignal) {
-      exitCode = error.code;
+      });
+    } else if (result.error.cause instanceof ExitSignal) {
+      exitCode = result.error.cause.code;
+      await createAndSendEvent(
+        {
+          event: exitCode === 0 ? "cli.success" : "cli.error",
+          command: path,
+        },
+        result.error.cause,
+      );
     } else {
-      throw error;
+      await createAndSendEvent(
+        {
+          event: "cli.error",
+          command: path,
+        },
+        result.error.cause,
+      );
+      exitCode = 1;
     }
   } finally {
     //* this is a node issue https://github.com/nodejs/node/issues/56645

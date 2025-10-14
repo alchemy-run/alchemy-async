@@ -311,7 +311,7 @@ export class Scope {
       destroyStrategy ?? this.parent?.destroyStrategy ?? "sequential";
     if (this.local) {
       this.logger.warnOnce(
-        "Development mode is in beta. Please report any issues to https://github.com/sam-goodwin/alchemy/issues.",
+        "Development mode is in beta. Please report any issues to https://github.com/alchemy-run/alchemy/issues.",
       );
     }
 
@@ -606,7 +606,7 @@ export class Scope {
         throw e;
       })) ?? [];
 
-    //todo(michael): remove once we deprecate doss; see: https://github.com/sam-goodwin/alchemy/issues/585
+    //todo(michael): remove once we deprecate doss; see: https://github.com/alchemy-run/alchemy/issues/585
     let hasCorruptedResources = false;
     if (pendingDeletions) {
       for (const { resource, oldProps } of pendingDeletions) {

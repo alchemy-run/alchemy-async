@@ -1,3 +1,5 @@
+/// <reference types="@cloudflare/workers-types" />
+
 export * from "./account-api-token.ts";
 export * from "./account-id.ts";
 export * from "./ai-gateway.ts";
@@ -66,11 +68,11 @@ export * from "./vectorize-metadata-index.ts";
 export * from "./version-metadata.ts";
 export * from "./vite/vite.ts";
 export * from "./website.ts";
+export { WorkerLoader } from "./worker-loader.ts";
 export * from "./worker-ref.ts";
 export * from "./worker-stub.ts";
 export * from "./worker-subdomain.ts";
 export * from "./worker.ts";
 export { Workflow } from "./workflow.ts";
-export { WorkerLoader } from "./worker-loader.ts";
 export * from "./wrangler.json.ts";
 export * from "./zone.ts";

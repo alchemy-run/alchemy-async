@@ -1,6 +1,7 @@
 import type { Context } from "../context.ts";
 import { Resource } from "../resource.ts";
 import { createPlanetScaleClient, type PlanetScaleProps } from "./api.ts";
+import type { Database } from "./database.ts";
 import {
   ensureProductionBranchClusterSize,
   sanitizeClusterSize,
@@ -20,14 +21,14 @@ export interface BranchProps extends PlanetScaleProps {
   name?: string;
 
   /**
-   * The organization ID
+   * The organization name. Automatically inferred from the database if the database is provided as an object.
    */
-  organizationId: string;
+  organization?: string;
 
   /**
    * The database name
    */
-  databaseName: string;
+  database: string | Database;
 
   /**
    * Whether or not the branch should be set to a production branch or not.
@@ -114,8 +115,8 @@ export interface Branch extends BranchProps {
  * // Create a branch from 'main'
  * const branch = await Branch("feature-123", {
  *   name: "feature-123",
- *   organizationId: "my-org",
- *   databaseName: "my-database",
+ *   organization: "my-org",
+ *   database: "my-database",
  *   parentBranch: "main"
  * });
  *
@@ -123,15 +124,15 @@ export interface Branch extends BranchProps {
  * // Create a branch from another branch object
  * const parentBranch = await Branch("staging", {
  *   name: "staging",
- *   organizationId: "my-org",
- *   databaseName: "my-database",
+ *   organization: "my-org",
+ *   database: "my-database",
  *   parentBranch: "main"
  * });
  *
  * const featureBranch = await Branch("feature-456", {
  *   name: "feature-456",
- *   organizationId: "my-org",
- *   databaseName: "my-database",
+ *   organization: "my-org",
+ *   database: "my-database",
  *   parentBranch: parentBranch // Using Branch object instead of string
  * });
  *
@@ -139,8 +140,8 @@ export interface Branch extends BranchProps {
  * // Create a branch from a backup
  * const branch = await Branch("restored-branch", {
  *   name: "restored-branch",
- *   organizationId: "my-org",
- *   databaseName: "my-database",
+ *   organization: "my-org",
+ *   database: "my-database",
  *   parentBranch: "main",
  *   backupId: "backup-123",
  *   clusterSize: "PS_10"
@@ -164,6 +165,26 @@ export const Branch = Resource(
       : typeof props.parentBranch === "string"
         ? props.parentBranch
         : props.parentBranch.name;
+    const organization =
+      // @ts-expect-error - organizationId is a legacy thing, we keep this so we can destroy
+      this.output?.organizationId ??
+      props.organization ??
+      (typeof props.database !== "string"
+        ? props.database.organization
+        : (process.env.PLANETSCALE_ORGANIZATION ??
+          process.env.PLANETSCALE_ORG_ID));
+    const database =
+      // @ts-expect-error - databaseName is a legacy thing, we keep this so we can destroy
+      this.output?.databaseName ??
+      (typeof props.database === "string"
+        ? props.database
+        : props.database.name);
+
+    if (!organization) {
+      throw new Error(
+        "PlanetScale organization is required. Please set the `organization` property or the `PLANETSCALE_ORGANIZATION` environment variable.",
+      );
+    }
 
     if (this.phase === "update" && this.output.name !== branchName) {
       // TODO(sam): maybe we don't need to replace? just branch again? or rename?
@@ -174,8 +195,8 @@ export const Branch = Resource(
       if (this.output?.name) {
         const response = await api.deleteBranch({
           path: {
-            organization: props.organizationId,
-            database: props.databaseName,
+            organization,
+            database,
             name: this.output.name,
           },
           throwOnError: false,
@@ -196,8 +217,8 @@ export const Branch = Resource(
     if (typeof props.parentBranch !== "string" && props.parentBranch) {
       await waitForBranchReady(
         api,
-        props.organizationId,
-        props.databaseName,
+        organization,
+        database,
         props.parentBranch.name,
       );
     }
@@ -205,8 +226,8 @@ export const Branch = Resource(
     // Check if branch exists
     const getResponse = await api.getBranch({
       path: {
-        organization: props.organizationId,
-        database: props.databaseName,
+        organization,
+        database,
         name: branchName,
       },
       throwOnError: false,
@@ -256,8 +277,8 @@ export const Branch = Resource(
             : "disableSafeMigrations"
         ]({
           path: {
-            organization: props.organizationId,
-            database: props.databaseName,
+            organization,
+            database,
             name: branchName,
           },
         });
@@ -279,8 +300,8 @@ export const Branch = Resource(
         }
         await ensureProductionBranchClusterSize(
           api,
-          props.organizationId,
-          props.databaseName,
+          organization,
+          database,
           branchName,
           data.kind,
           clusterSize,
@@ -299,8 +320,8 @@ export const Branch = Resource(
     let clusterSize: string | undefined;
     const parent = await waitForBranchReady(
       api,
-      props.organizationId,
-      props.databaseName,
+      organization,
+      database,
       parentBranchName,
     );
     if (props.clusterSize) {
@@ -315,8 +336,8 @@ export const Branch = Resource(
     // Branch doesn't exist, create it
     const { data } = await api.createBranch({
       path: {
-        organization: props.organizationId,
-        database: props.databaseName,
+        organization,
+        database,
       },
       body: {
         name: branchName,
@@ -331,18 +352,13 @@ export const Branch = Resource(
     // Handle safe migrations if specified
     if (props.safeMigrations !== undefined) {
       // We can't change the migrations mode if the branch is not ready
-      await waitForBranchReady(
-        api,
-        props.organizationId,
-        props.databaseName,
-        branchName,
-      );
+      await waitForBranchReady(api, organization, database, branchName);
       await api[
         props.safeMigrations ? "enableSafeMigrations" : "disableSafeMigrations"
       ]({
         path: {
-          organization: props.organizationId,
-          database: props.databaseName,
+          organization,
+          database,
           name: branchName,
         },
       });
@@ -352,8 +368,8 @@ export const Branch = Resource(
     if (clusterSize) {
       await ensureProductionBranchClusterSize(
         api,
-        props.organizationId,
-        props.databaseName,
+        organization,
+        database,
         branchName,
         data.kind,
         clusterSize,

@@ -16,8 +16,9 @@ export interface RoleProps extends PlanetScaleProps {
   /**
    * The organization ID where the role will be created
    * Required when using string database name, optional when using Database resource
+   * @default process.env.PLANETSCALE_ORGANIZATION
    */
-  organizationId?: string;
+  organization?: string;
 
   /**
    * The database where the role will be created
@@ -164,12 +165,21 @@ export const Role = Resource(
     props: RoleProps,
   ): Promise<Role> {
     const api = createPlanetScaleClient(props);
+
     const organization =
-      typeof props.branch === "object"
-        ? props.branch.organizationId
-        : typeof props.database === "object"
-          ? props.database.organizationId
-          : props.organizationId;
+      // @ts-expect-error - organizationId is a legacy thing, we keep this so we can destroy
+      this.output?.organizationId ??
+      props.organization ??
+      (typeof props.database !== "string"
+        ? props.database.organization
+        : (process.env.PLANETSCALE_ORGANIZATION ??
+          process.env.PLANETSCALE_ORG_ID));
+    if (!organization) {
+      throw new Error(
+        "PlanetScale organization is required. Please set the `organization` property or the `PLANETSCALE_ORGANIZATION` environment variable.",
+      );
+    }
+
     const database =
       typeof props.database === "string" ? props.database : props.database.name;
     const branch =
@@ -179,9 +189,6 @@ export const Role = Resource(
     const inheritedRoles = Array.isArray(props.inheritedRoles)
       ? props.inheritedRoles
       : props.inheritedRoles.inheritedRoles;
-    if (!organization) {
-      throw new Error("Organization ID is required");
-    }
 
     switch (this.phase) {
       case "delete": {

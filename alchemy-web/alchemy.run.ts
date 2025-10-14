@@ -68,7 +68,7 @@ console.log(url);
 
 if (process.env.PULL_REQUEST) {
   await GitHubComment("comment", {
-    owner: "sam-goodwin",
+    owner: "alchemy-run",
     repository: "alchemy",
     issueNumber: Number(process.env.PULL_REQUEST),
     body: `

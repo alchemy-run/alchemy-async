@@ -22,7 +22,7 @@ import { Database, Branch, Password } from "alchemy/planetscale";
 // Create a MySQL database
 const database = await Database("my-app-db", {
   name: "my-app-db",
-  organizationId: "my-org",
+  organization: "my-org",
   clusterSize: "PS_10",
   allowDataBranching: true,
   automaticMigrations: true,
@@ -31,8 +31,8 @@ const database = await Database("my-app-db", {
 // Create a development branch
 const devBranch = await Branch("feature-123", {
   name: "feature-123",
-  organizationId: "my-org",
-  databaseName: database.name,
+  organization: "my-org",
+  database: database,
   parentBranch: "main",
   isProduction: false,
 });
@@ -40,17 +40,17 @@ const devBranch = await Branch("feature-123", {
 // Create passwords for database access (MySQL only)
 const readerPassword = await Password("app-reader", {
   name: "app-reader",
-  organizationId: "my-org",
-  databaseName: database.name,
+  organization: "my-org",
+  database: database,
   branchName: "main",
   role: "reader"
 });
 
 const writerPassword = await Password("app-writer", {
   name: "app-writer",
-  organizationId: "my-org",
-  databaseName: database.name,
-  branchName: devBranch.name,
+  organization: "my-org",
+  database: database,
+  branchName: devBranch,
   role: "writer",
   ttl: 86400 // 24 hours
 });
@@ -64,7 +64,7 @@ import { Database, Branch, Role } from "alchemy/planetscale";
 // Create a PostgreSQL database
 const pgDatabase = await Database("my-pg-db", {
   name: "my-pg-db",
-  organizationId: "my-org",
+  organization: "my-org",
   clusterSize: "PS_10",
   kind: "postgresql",
   allowDataBranching: true,
@@ -74,7 +74,7 @@ const pgDatabase = await Database("my-pg-db", {
 // Create a development branch
 const devBranch = await Branch("dev-branch", {
   name: "development",
-  organizationId: "my-org",
+  organization: "my-org",
   database: pgDatabase,
   parentBranch: "main",
   isProduction: false,

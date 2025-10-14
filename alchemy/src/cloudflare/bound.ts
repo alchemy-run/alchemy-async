@@ -1,24 +1,3 @@
-import type {
-  Ai,
-  AnalyticsEngineDataset,
-  D1Database,
-  DispatchNamespace,
-  DurableObjectNamespace,
-  WorkerLoader,
-  Fetcher,
-  Hyperdrive,
-  ImagesBinding,
-  KVNamespace,
-  Queue,
-  R2Bucket,
-  RateLimit,
-  Rpc,
-  SecretsStoreSecret,
-  Service,
-  VectorizeIndex,
-  WorkerVersionMetadata,
-  Workflow,
-} from "@cloudflare/workers-types";
 import type { Pipeline } from "cloudflare:pipelines";
 import type { Secret } from "../secret.ts";
 import type { Ai as _Ai } from "./ai.ts";
@@ -41,10 +20,10 @@ import type { SecretRef as CloudflareSecretRef } from "./secret-ref.ts";
 import type { Secret as CloudflareSecret } from "./secret.ts";
 import type { VectorizeIndex as _VectorizeIndex } from "./vectorize-index.ts";
 import type { VersionMetadata as _VersionMetadata } from "./version-metadata.ts";
+import type { WorkerLoader as _WorkerLoader } from "./worker-loader.ts";
 import type { WorkerRef } from "./worker-ref.ts";
 import type { WorkerStub } from "./worker-stub.ts";
 import type { Worker as _Worker } from "./worker.ts";
-import type { WorkerLoader as _WorkerLoader } from "./worker-loader.ts";
 import type { Workflow as _Workflow } from "./workflow.ts";
 
 type BoundWorker<

@@ -22,8 +22,9 @@ export interface PasswordProps extends PlanetScaleProps {
   /**
    * The organization ID where the password will be created
    * Required when using string database name, optional when using Database or Branch resource
+   * @default process.env.PLANETSCALE_ORGANIZATION
    */
-  organizationId?: string;
+  organization?: string;
 
   /**
    * The database where the password will be created
@@ -114,7 +115,7 @@ export interface Password extends PasswordProps {
  *
  * const readerPassword = await Password("app-reader", {
  *   name: "app-reader",
- *   organizationId: "my-org",
+ *   organization: "my-org",
  *   database: "my-app-db",
  *   branch: "main",
  *   role: "reader"
@@ -136,7 +137,7 @@ export interface Password extends PasswordProps {
  *
  * const writerPassword = await Password("app-writer", {
  *   name: "app-writer",
- *   organizationId: "my-org",
+ *   organization: "my-org",
  *   database: "my-app-db",
  *   branch: "development",
  *   role: "writer",
@@ -157,7 +158,7 @@ export interface Password extends PasswordProps {
  *
  * const adminPassword = await Password("admin-access", {
  *   name: "admin-access",
- *   organizationId: "my-org",
+ *   organization: "my-org",
  *   database: "my-app-db",
  *   branch: "main",
  *   role: "admin",
@@ -176,7 +177,7 @@ export interface Password extends PasswordProps {
  *
  * const password = await Password("custom-auth", {
  *   name: "custom-auth",
- *   organizationId: "my-org",
+ *   organization: "my-org",
  *   database: "my-app-db",
  *   branch: "main",
  *   role: "readwriter",
@@ -194,7 +195,7 @@ export interface Password extends PasswordProps {
  *
  * const replicaPassword = await Password("replica-reader", {
  *   name: "replica-reader",
- *   organizationId: "my-org",
+ *   organization: "my-org",
  *   database: "my-app-db",
  *   branch: "main",
  *   role: "reader",
@@ -211,7 +212,7 @@ export interface Password extends PasswordProps {
  *
  * const database = await Database("my-db", {
  *   name: "my-app-db",
- *   organizationId: "my-org",
+ *   organization: "my-org",
  *   clusterSize: "PS_10"
  * });
  *
@@ -232,13 +233,13 @@ export interface Password extends PasswordProps {
  *
  * const database = await Database("my-db", {
  *   name: "my-app-db",
- *   organizationId: "my-org",
+ *   organization: "my-org",
  *   clusterSize: "PS_10"
  * });
  *
  * const branch = await Branch("feature-branch", {
  *   name: "feature-branch",
- *   organizationId: "my-org",
+ *   organization: "my-org",
  *   databaseName: "my-app-db",
  *   parentBranch: "main",
  *   isProduction: false
@@ -266,19 +267,36 @@ export const Password = Resource(
     const name = `${(props.name ?? this.output?.name ?? this.scope.createPhysicalName(id)).toLowerCase()}-${nameSlug}`;
 
     const api = createPlanetScaleClient(props);
+    if (!props.organization && typeof props.database === "string") {
+      throw new Error(
+        "Organization ID is required when using string database name",
+      );
+    }
+
+    const organization =
+      // @ts-expect-error - organizationId is a legacy thing, we keep this so we can destroy
+      this.output?.organizationId ??
+      props.organization ??
+      (typeof props.database !== "string"
+        ? props.database.organization
+        : typeof props.branch !== "string" && props.branch
+          ? props.branch.organization
+          : (process.env.PLANETSCALE_ORGANIZATION ??
+            process.env.PLANETSCALE_ORG_ID));
     const database =
-      typeof props.database === "string" ? props.database : props.database.name;
+      // @ts-expect-error - databaseName is a legacy thing, we keep this so we can destroy
+      this.output?.databaseName ??
+      (typeof props.database === "string"
+        ? props.database
+        : props.database.name);
     const branch =
       typeof props.branch === "string"
         ? props.branch
         : (props.branch?.name ?? "main");
-    const organization =
-      props.organizationId ??
-      ((typeof props.branch !== "string" && props.branch?.organizationId) ||
-        (typeof props.database !== "string" && props.database.organizationId));
-
     if (!organization) {
-      throw new Error("Organization ID is required");
+      throw new Error(
+        "PlanetScale organization is required. Please set the `organization` property or the `PLANETSCALE_ORGANIZATION` environment variable.",
+      );
     }
 
     if (this.phase === "delete") {
