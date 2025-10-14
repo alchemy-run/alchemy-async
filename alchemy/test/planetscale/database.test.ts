@@ -232,7 +232,7 @@ describe.skipIf(!process.env.PLANETSCALE_TEST).concurrent.each(kinds)(
         // Verify database was deleted
         await assertDatabaseDeleted(api, organization, name);
       }
-    }, 1_500_000); // must wait on multiple resizes and branch creation
+    }, 5_000_000); // must wait on multiple resizes and branch creation
 
     test.skipIf(kind !== "postgresql")(
       `create database with arm arch (${kind})`,
