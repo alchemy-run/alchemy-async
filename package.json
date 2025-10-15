@@ -42,7 +42,7 @@
     "catalog": {
       "@cloudflare/workers-types": "^4.20250805.0",
       "@cloudflare/vite-plugin": "^1.13.12",
-      "vite": "^6.3.5",
+      "vite": "^7.1.9",
       "typescript": "^5.8.3",
       "wrangler": "^4.42.2"
     },
@@ -71,7 +71,7 @@
     "jsonc-parser": "^3.3.1",
     "openai": "^4.103.0",
     "typescript": "catalog:",
-    "vite": "^7.1.9",
+    "vite": "catalog:",
     "vitest": "^3.1.4",
     "yaml": "^2.7.1"
   }
