@@ -15,7 +15,7 @@ const test = alchemy.test(import.meta, {
   quiet: false,
 });
 
-const testDomain = "alchemy-test.us";
+const testDomain = process.env.ALCHEMY_TEST_DOMAIN!;
 
 const api = await createCloudflareApi();
 

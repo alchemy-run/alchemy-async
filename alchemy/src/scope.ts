@@ -30,6 +30,7 @@ import { logger } from "./util/logger.ts";
 import { AsyncMutex } from "./util/mutex.ts";
 import { ALCHEMY_ROOT } from "./util/root-dir.ts";
 import { createAndSendEvent } from "./util/telemetry.ts";
+import { validateResourceID } from "./util/validate-resource-id.ts";
 
 export class RootScopeStateAttemptError extends Error {
   constructor() {
@@ -115,6 +116,11 @@ export interface ScopeOptions extends ProviderCredentials {
    * `undefined` if the program was not run with `--app`
    */
   isSelected?: boolean;
+  /**
+   * @internal
+   * The timestamp when the scope was started.
+   */
+  startedAt?: DOMHighResTimeStamp;
 }
 
 /**
@@ -208,6 +214,7 @@ export class Scope {
   public readonly dotAlchemy: string;
   public readonly isSelected: boolean | undefined;
   public readonly profile: string | undefined;
+  public readonly startedAt: DOMHighResTimeStamp;
 
   // Provider credentials for scope-level credential overrides
   public readonly providerCredentials: ProviderCredentials;
@@ -215,7 +222,6 @@ export class Scope {
   private isErrored = false;
   private isSkipped = false;
   private finalized = false;
-  private startedAt = performance.now();
   private deferred: (() => Promise<any>)[] = [];
   private cleanups: (() => Promise<void>)[] = [];
 
@@ -248,6 +254,7 @@ export class Scope {
       isSelected,
       noTrack,
       profile,
+      startedAt,
       ...providerCredentials
     } = options;
 
@@ -256,7 +263,7 @@ export class Scope {
     this.parent = parent ?? Scope.getScope();
     this.rootDir = rootDir ?? this.parent?.rootDir ?? ALCHEMY_ROOT;
     this.isSelected = isSelected ?? this.parent?.isSelected;
-
+    this.startedAt = startedAt ?? this.parent?.startedAt ?? performance.now();
     this.dotAlchemy =
       dotAlchemy ??
       this.parent?.dotAlchemy ??
@@ -265,21 +272,17 @@ export class Scope {
     // Store provider credentials (TypeScript ensures no conflicts with core options)
     this.providerCredentials = providerCredentials as ProviderCredentials;
 
-    const isChild = this.parent !== undefined;
-    if (this.scopeName?.includes(":") && isChild) {
-      // TODO(sam): relax this constraint once we move to SQLite3 store
-      throw new Error(
-        `Scope name "${this.scopeName}" cannot contain double colons`,
-      );
-    }
-
     this.stage = stage ?? this.parent?.stage ?? DEFAULT_STAGE;
     this.profile = profile ?? this.parent?.profile;
     this.parent?.children.set(this.scopeName!, this);
     this.quiet = quiet ?? this.parent?.quiet ?? false;
-    if (this.parent && !this.scopeName) {
-      throw new Error("Scope name is required when creating a child scope");
+    if (this.parent) {
+      if (!this.scopeName) {
+        throw new Error("Scope name is required when creating a child scope");
+      }
+      validateResourceID(this.scopeName, "Scope");
     }
+
     this.password = password ?? this.parent?.password;
     this.noTrack = noTrack ?? this.parent?.noTrack ?? false;
     const resolvedPhase = phase ?? this.parent?.phase;
@@ -308,7 +311,7 @@ export class Scope {
       destroyStrategy ?? this.parent?.destroyStrategy ?? "sequential";
     if (this.local) {
       this.logger.warnOnce(
-        "Development mode is in beta. Please report any issues to https://github.com/sam-goodwin/alchemy/issues.",
+        "Development mode is in beta. Please report any issues to https://github.com/alchemy-run/alchemy/issues.",
       );
     }
 
@@ -518,10 +521,15 @@ export class Scope {
       this.parent === undefined ||
       this?.parent?.scopeName === this.root.scopeName;
     if (this.phase === "read") {
-      createAndSendEvent({
-        event: "alchemy.success",
-        duration: performance.now() - this.startedAt,
-      });
+      if (this.parent == null) {
+        await createAndSendEvent(
+          {
+            event: this.isErrored ? "alchemy.error" : "alchemy.success",
+            duration: performance.now() - this.startedAt,
+          },
+          this.isErrored ? new Error("Scope failed") : undefined,
+        );
+      }
       return;
     }
     if (this.finalized && !shouldForce) {
@@ -569,18 +577,17 @@ export class Scope {
         force: shouldForce,
         noop: options?.noop,
       });
-      createAndSendEvent({
-        event: "alchemy.success",
-        duration: performance.now() - this.startedAt,
-      });
     } else if (this.isErrored) {
       this.logger.warn("Scope is in error, skipping finalize");
-      createAndSendEvent(
+    }
+
+    if (this.parent == null) {
+      await createAndSendEvent(
         {
-          event: "alchemy.error",
+          event: this.isErrored ? "alchemy.error" : "alchemy.success",
           duration: performance.now() - this.startedAt,
         },
-        new Error("Scope failed"),
+        this.isErrored ? new Error("Scope failed") : undefined,
       );
     }
 
@@ -599,7 +606,7 @@ export class Scope {
         throw e;
       })) ?? [];
 
-    //todo(michael): remove once we deprecate doss; see: https://github.com/sam-goodwin/alchemy/issues/585
+    //todo(michael): remove once we deprecate doss; see: https://github.com/alchemy-run/alchemy/issues/585
     let hasCorruptedResources = false;
     if (pendingDeletions) {
       for (const { resource, oldProps } of pendingDeletions) {

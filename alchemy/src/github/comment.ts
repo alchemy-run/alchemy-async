@@ -173,17 +173,17 @@ export const GitHubComment = Resource(
     props: GitHubCommentProps,
   ): Promise<GitHubComment> {
     // Create authenticated Octokit client - will automatically handle token resolution
-    const octokit = await createGitHubClient({
-      token: props.token?.unencrypted,
-    });
-
-    // Verify authentication and permissions
-    if (!this.quiet) {
-      await verifyGitHubAuth(octokit, props.owner, props.repository);
-    }
 
     if (this.phase === "delete") {
       if (this.output?.commentId && props.allowDelete) {
+        const octokit = await createGitHubClient({
+          token: props.token?.unencrypted,
+        });
+
+        // Verify authentication and permissions
+        if (!this.quiet) {
+          await verifyGitHubAuth(octokit, props.owner, props.repository);
+        }
         try {
           // Delete the comment
           await octokit.rest.issues.deleteComment({
@@ -207,6 +207,15 @@ export const GitHubComment = Resource(
 
       // Return void (a deleted resource has no content)
       return this.destroy();
+    }
+
+    const octokit = await createGitHubClient({
+      token: props.token?.unencrypted,
+    });
+
+    // Verify authentication and permissions
+    if (!this.quiet) {
+      await verifyGitHubAuth(octokit, props.owner, props.repository);
     }
 
     try {

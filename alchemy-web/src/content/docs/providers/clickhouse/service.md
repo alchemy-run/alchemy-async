@@ -5,18 +5,46 @@ description: Learn how to create, configure, and manage Clickhouse databases usi
 
 The Service resource lets you create and manage [Clickhouse Services](https://clickhouse.com) using Alchemy.
 
-:::warning
-This resource is a work in progress and is not feature complete or fully tested.
-:::
+## Basic Example
 
-## Minimal Example
-
-Create a basic Clickhouse Service with default settings.
+Pass your organization name directly as a string.
 
 ```ts
-import { Service, getOrganizationByName } from "alchemy/clickhouse";
+import { Service } from "alchemy/clickhouse";
 
-const organization = await getOrganizationByName("MK's Organization");
+const service = await Service("clickhouse", {
+	organization: "my-organization",
+	provider: "aws",
+	region: "us-east-1",
+	minReplicaMemoryGb: 8,
+	maxReplicaMemoryGb: 356,
+	numReplicas: 3,
+});
+```
+
+## Using Organization ID
+
+Pass an organization ID directly instead of a name.
+
+```ts
+const service = await Service("clickhouse", {
+	organization: "org_abc123def456",
+	provider: "aws",
+	region: "us-east-1",
+	minReplicaMemoryGb: 8,
+	maxReplicaMemoryGb: 356,
+	numReplicas: 3,
+});
+```
+
+## Using OrganizationRef
+
+Look up an organization by name to get additional metadata.
+
+```ts
+import { Service, OrganizationRef } from "alchemy/clickhouse";
+
+const organization = await OrganizationRef("my-organization");
 
 const service = await Service("clickhouse", {
 	organization,
@@ -32,17 +60,13 @@ const service = await Service("clickhouse", {
 ```ts
 // alchemy.run.ts
 import alchemy from "alchemy";
-import { Service, getOrganizationByName } from "alchemy/clickhouse";
+import { Service } from "alchemy/clickhouse";
 import { Worker } from "alchemy/cloudflare";
 
-export const app = await alchemy("alchemy-test-clickhouse", {
-	telemetry: false,
-});
-
-const organization = await getOrganizationByName("MK's Organization");
+export const app = await alchemy("alchemy-test-clickhouse");
 
 const service = await Service("clickhouse", {
-	organization,
+	organization: "my-organization",
 	provider: "aws",
 	region: "us-east-1",
 	minReplicaMemoryGb: 8,
@@ -71,7 +95,7 @@ import type { worker } from "../alchemy.run";
 import { createClient } from "@clickhouse/client-web";
 
 export default {
-	async fetch(req: Request, env: typeof patpat.Env): Promise<Response> {
+	async fetch(req: Request, env: typeof worker.Env): Promise<Response> {
 		const url = new URL(req.url);
 		const clickhouseClient = createClient({
 			url: env.CLICKHOUSE_URL,

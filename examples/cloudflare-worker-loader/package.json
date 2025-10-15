@@ -1,0 +1,14 @@
+{
+  "name": "cloudflare-worker-loader",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "tsc -b",
+    "deploy": "alchemy deploy --env-file ../../.env",
+    "destroy": "alchemy destroy --env-file ../../.env",
+    "dev": "alchemy dev --env-file ../../.env"
+  },
+  "dependencies": {
+    "alchemy": "workspace:*"
+  }
+}

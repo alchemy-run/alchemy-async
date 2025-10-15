@@ -2,7 +2,7 @@
 title: Binding
 description: Connect your infrastructure resources with type-safe bindings.
 sidebar:
-  order: 4.1
+  order: 0.2
 ---
 
 Bindings allow resources to connect to each other in a type-safe way. In Alchemy, bindings are most commonly used with Cloudflare Workers to give them access to other resources.

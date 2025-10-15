@@ -28,10 +28,6 @@ export interface PlanetScaleProps {
    * @deprecated Use serviceTokenId and serviceToken instead.
    */
   apiKey?: Secret;
-  /**
-   * The organization to use for authentication. Defaults to the value of the PLANETSCALE_ORGANIZATION or PLANETSCALE_ORG_ID environment variable.
-   */
-  organizationId?: string;
 }
 
 export class PlanetScaleError extends Error {

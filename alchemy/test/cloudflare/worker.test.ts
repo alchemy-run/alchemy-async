@@ -10,7 +10,12 @@ import { DurableObjectNamespace } from "../../src/cloudflare/durable-object-name
 import { KVNamespace } from "../../src/cloudflare/kv-namespace.ts";
 import type { SingleStepMigration } from "../../src/cloudflare/worker-migration.ts";
 import { WorkerRef } from "../../src/cloudflare/worker-ref.ts";
-import { deleteWorker, Worker } from "../../src/cloudflare/worker.ts";
+import {
+  deleteWorker,
+  getScriptMetadata,
+  Worker,
+  type WorkerObservability,
+} from "../../src/cloudflare/worker.ts";
 import { destroy } from "../../src/destroy.ts";
 import {
   fetchAndExpectOK,
@@ -22,7 +27,7 @@ import { assertWorkerDoesNotExist } from "./test-helpers.ts";
 
 import { Container } from "../../src/cloudflare/container.ts";
 import { listWorkersInNamespace } from "../../src/cloudflare/dispatch-namespace.ts";
-import { DispatchNamespace } from "../../src/cloudflare/index.ts";
+import { DispatchNamespace, Queue } from "../../src/cloudflare/index.ts";
 import "../../src/test/vitest.ts";
 
 const ENABLE_WFP_TESTS = process.env.CLOUDFLARE_ACCOUNT_ENABLE_WFP !== "false";
@@ -935,8 +940,6 @@ describe("Worker Resource", () => {
         url: true, // Enable workers.dev URL to test the worker
       });
 
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-
       // Verify the worker was created correctly
       expect(worker.id).toBeTruthy();
       expect(worker.name).toEqual(workerName);
@@ -944,9 +947,13 @@ describe("Worker Resource", () => {
       expect(worker.url).toBeTruthy();
 
       // Test that the worker is running correctly
-      const response = await fetchAndExpectOK(worker.url!);
-      const text = await response.text();
-      expect(text).toEqual("Hello from entrypoint file!");
+      await waitFor(
+        async () => {
+          const response = await fetchAndExpectOK(worker.url!);
+          return await response.text();
+        },
+        (text) => text === "Hello from entrypoint file!",
+      );
 
       // Test the JSON endpoint
       const jsonResponse = await fetchAndExpectOK(`${worker.url}/data`);
@@ -996,8 +1003,14 @@ describe("Worker Resource", () => {
         expect(text).toEqual("Hello from updated entrypoint file!");
 
         // Test the updated JSON endpoint
-        const jsonResponse = await fetchAndExpectOK(`${worker.url}/data`);
-        const data: any = await jsonResponse.json();
+        const data = await waitFor(
+          async () => {
+            return (await fetchAndExpectOK(`${worker.url}/data`)).json() as any;
+          },
+          (response) =>
+            response.message === "Hello from updated bundled worker!",
+        );
+
         expect(data.message).toEqual("Hello from updated bundled worker!");
         expect(data.version).toEqual("2.0.0");
       }
@@ -2108,7 +2121,7 @@ describe("Worker Resource", () => {
         originalWorkerName,
       );
     } finally {
-      // await destroy(scope);
+      await destroy(scope);
     }
   });
 
@@ -2167,7 +2180,7 @@ describe("Worker Resource", () => {
 
     let worker: Worker | undefined;
     try {
-      // Create a worker with smart placement
+      // Create a worker with cpu_ms limit
       worker = await Worker(workerName, {
         name: workerName,
         adopt: true,
@@ -2188,7 +2201,7 @@ describe("Worker Resource", () => {
         cpu_ms: 300_000,
       });
 
-      // Update the worker to disable smart placement by omitting placement
+      // Update the worker to remove cpu_ms limit
       worker = await Worker(workerName, {
         name: workerName,
         adopt: true,
@@ -2207,6 +2220,139 @@ describe("Worker Resource", () => {
     } finally {
       await destroy(scope);
       await assertWorkerDoesNotExist(api, workerName);
+    }
+  });
+
+  test("create worker with observability", async (scope) => {
+    const workerName = `${BRANCH_PREFIX}-test-worker-observability`;
+
+    let worker: Worker | undefined;
+    try {
+      const baseObservability = {
+        enabled: true,
+        headSamplingRate: 0.5,
+      } satisfies WorkerObservability;
+
+      worker = await Worker(workerName, {
+        name: workerName,
+        adopt: true,
+        script: `
+          export default {
+            async fetch(request, env, ctx) {
+              console.log('Hellog from observability (see what I did there?)');
+              return new Response('Hello observability!', { status: 200 });
+            }
+          };
+        `,
+        observability: baseObservability,
+      });
+
+      let metadata: any = await getScriptMetadata(api, workerName);
+
+      expect(metadata.default_environment.script.observability).toEqual({
+        enabled: true,
+        head_sampling_rate: 0.5,
+      });
+
+      expect(worker.observability).toEqual(baseObservability);
+      expect(worker.observability?.logs).toBeUndefined();
+
+      const newObservability = {
+        enabled: true,
+        headSamplingRate: 0.5,
+        logs: {
+          enabled: true,
+          invocationLogs: false,
+          persist: true,
+          destinations: [],
+        },
+        // TODO(sam): i don't have permission to set this in my account
+        // traces: {
+        //   enabled: true,
+        //   headSamplingRate: 0.1,
+        //   persist: true,
+        //   destinations: [],
+        // },
+      } satisfies WorkerObservability;
+
+      worker = await Worker(workerName, {
+        name: workerName,
+        adopt: true,
+        script: `
+          export default {
+            async fetch(request, env, ctx) {
+              return new Response('Hello observability!', { status: 200 });
+            }
+          };
+        `,
+        observability: newObservability,
+      });
+
+      metadata = await getScriptMetadata(api, workerName);
+
+      expect(metadata.default_environment.script.observability).toEqual({
+        enabled: true,
+        head_sampling_rate: 0.5,
+        logs: {
+          head_sampling_rate: null,
+          enabled: true,
+          invocation_logs: false,
+          persist: true,
+          destinations: [],
+        },
+      });
+
+      expect(worker.observability).toEqual(newObservability);
+    } finally {
+      await destroy(scope);
+      await assertWorkerDoesNotExist(api, workerName);
+    }
+  });
+
+  test("delete queues bound to worker versions", async (scope) => {
+    const queueName = `${BRANCH_PREFIX}-del-v-q`;
+    const workerName = `${BRANCH_PREFIX}-del-v`;
+
+    try {
+      const queue = await Queue(queueName, {
+        name: queueName,
+        adopt: true,
+      });
+
+      const script = `
+					export default {
+						async fetch() {
+							return new Response("");
+						},
+
+						async queue(
+							batch,
+						) {
+							for (const message of batch.messages) {
+								console.log("Received", message);
+							}
+						},
+					};
+				`;
+
+      await Worker(workerName, {
+        adopt: true,
+        script,
+        bindings: {
+          QUEUE: queue,
+        },
+        version: "test",
+      });
+
+      await Worker(workerName, {
+        adopt: true,
+        script,
+        bindings: {
+          QUEUE: queue,
+        },
+      });
+    } finally {
+      await destroy(scope);
     }
   });
 });

@@ -47,12 +47,12 @@ This guide shows how to create and manage [PlanetScale](https://planetscale.com/
    Create a PlanetScale account and get your API credentials. Add them to your `.env` file:
 
    ```bash
-   PLANETSCALE_ORG_ID=your_organization_id
+   PLANETSCALE_ORGANIZATION=your_organization_name
    PLANETSCALE_API_TOKEN=your_api_token
    ```
 
    :::tip
-   You can find your organization ID and create API tokens in your [PlanetScale dashboard](https://app.planetscale.com/).
+   You can find your organization name and create API tokens in your [PlanetScale dashboard](https://app.planetscale.com/).
    :::
 
 3. **Define schema**
@@ -115,7 +115,6 @@ This guide shows how to create and manage [PlanetScale](https://planetscale.com/
    const database = await Database("Database", {
      adopt: true,
      name: "sample-database",
-     organizationId: process.env.PLANETSCALE_ORG_ID!,
      region: {
        slug: "us-east",
      },
@@ -132,8 +131,7 @@ This guide shows how to create and manage [PlanetScale](https://planetscale.com/
    const branch = await Branch("Branch", {
      adopt: true,
      name: `${app.name}-${app.stage}-branch`,
-     organizationId: process.env.PLANETSCALE_ORG_ID!,
-     databaseName: database.name,
+     database,
      parentBranch: database.defaultBranch,
      isProduction: false,
      safeMigrations: !app.local,
@@ -142,9 +140,8 @@ This guide shows how to create and manage [PlanetScale](https://planetscale.com/
    // Create credentials for the branch
    const password = await Password("Password", {
      name: `${app.name}-${app.stage}-password`,
-     organizationId: process.env.PLANETSCALE_ORG_ID!,
-     database: database,
-     branch: branch,
+     database,
+     branch,
      role: "admin",
    });
 

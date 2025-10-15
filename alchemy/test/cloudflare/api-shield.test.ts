@@ -27,7 +27,7 @@ const test = alchemy.test(import.meta, {
 const api = await createCloudflareApi({});
 
 // Use existing zone instead of creating new ones
-const ZONE_NAME = "alchemy-test.us";
+const ZONE_NAME = process.env.ALCHEMY_TEST_DOMAIN!;
 
 const zoneId = (await findZoneForHostname(api, ZONE_NAME)).zoneId;
 
@@ -197,37 +197,37 @@ describe.skipIf(!process.env.ALL_TESTS).sequential("APIShield", () => {
       await expectOperations(shield, [
         {
           method: "delete",
-          host: "alchemy-test.us",
+          host: process.env.ALCHEMY_TEST_DOMAIN!,
           endpoint: "/api/users/{userId}",
           mitigation: "none",
         },
         {
           method: "get",
-          host: "alchemy-test.us",
+          host: process.env.ALCHEMY_TEST_DOMAIN!,
           endpoint: "/api/health",
           mitigation: "none",
         },
         {
           method: "get",
-          host: "alchemy-test.us",
+          host: process.env.ALCHEMY_TEST_DOMAIN!,
           endpoint: "/api/users",
           mitigation: "none",
         },
         {
           method: "get",
-          host: "alchemy-test.us",
+          host: process.env.ALCHEMY_TEST_DOMAIN!,
           endpoint: "/api/users/{userId}",
           mitigation: "none",
         },
         {
           method: "post",
-          host: "alchemy-test.us",
+          host: process.env.ALCHEMY_TEST_DOMAIN!,
           endpoint: "/api/users",
           mitigation: "none",
         },
         {
           method: "put",
-          host: "alchemy-test.us",
+          host: process.env.ALCHEMY_TEST_DOMAIN!,
           endpoint: "/api/users/{userId}",
           mitigation: "none",
         },
@@ -258,37 +258,37 @@ describe.skipIf(!process.env.ALL_TESTS).sequential("APIShield", () => {
       await expectOperations(shield, [
         {
           method: "delete",
-          host: "alchemy-test.us",
+          host: process.env.ALCHEMY_TEST_DOMAIN!,
           endpoint: "/api/users/{userId}",
           mitigation: "block",
         },
         {
           method: "get",
-          host: "alchemy-test.us",
+          host: process.env.ALCHEMY_TEST_DOMAIN!,
           endpoint: "/api/health",
           mitigation: "none",
         },
         {
           method: "get",
-          host: "alchemy-test.us",
+          host: process.env.ALCHEMY_TEST_DOMAIN!,
           endpoint: "/api/users",
           mitigation: "none",
         },
         {
           method: "get",
-          host: "alchemy-test.us",
+          host: process.env.ALCHEMY_TEST_DOMAIN!,
           endpoint: "/api/users/{userId}",
           mitigation: "none",
         },
         {
           method: "post",
-          host: "alchemy-test.us",
+          host: process.env.ALCHEMY_TEST_DOMAIN!,
           endpoint: "/api/users",
           mitigation: "block",
         },
         {
           method: "put",
-          host: "alchemy-test.us",
+          host: process.env.ALCHEMY_TEST_DOMAIN!,
           endpoint: "/api/users/{userId}",
           mitigation: "block",
         },
@@ -352,25 +352,25 @@ paths:
       await expectOperations(shield, [
         {
           method: "delete",
-          host: "alchemy-test.us",
+          host: process.env.ALCHEMY_TEST_DOMAIN!,
           endpoint: "/users/{id}",
           mitigation: "none",
         },
         {
           method: "get",
-          host: "alchemy-test.us",
+          host: process.env.ALCHEMY_TEST_DOMAIN!,
           endpoint: "/users",
           mitigation: "none",
         },
         {
           method: "get",
-          host: "alchemy-test.us",
+          host: process.env.ALCHEMY_TEST_DOMAIN!,
           endpoint: "/users/{id}",
           mitigation: "none",
         },
         {
           method: "post",
-          host: "alchemy-test.us",
+          host: process.env.ALCHEMY_TEST_DOMAIN!,
           endpoint: "/users",
           mitigation: "none",
         },
@@ -397,25 +397,25 @@ paths:
       await expectOperations(shield, [
         {
           method: "delete",
-          host: "alchemy-test.us",
+          host: process.env.ALCHEMY_TEST_DOMAIN!,
           endpoint: "/users/{id}",
           mitigation: "block",
         },
         {
           method: "get",
-          host: "alchemy-test.us",
+          host: process.env.ALCHEMY_TEST_DOMAIN!,
           endpoint: "/users",
           mitigation: "none",
         },
         {
           method: "get",
-          host: "alchemy-test.us",
+          host: process.env.ALCHEMY_TEST_DOMAIN!,
           endpoint: "/users/{id}",
           mitigation: "none",
         },
         {
           method: "post",
-          host: "alchemy-test.us",
+          host: process.env.ALCHEMY_TEST_DOMAIN!,
           endpoint: "/users",
           mitigation: "block",
         },
@@ -498,37 +498,37 @@ paths:
       await expectOperations(shield, [
         {
           method: "get",
-          host: "alchemy-test.us",
+          host: process.env.ALCHEMY_TEST_DOMAIN!,
           endpoint: "/admin",
           mitigation: "block",
         }, // Blanket admin block
         {
           method: "get",
-          host: "alchemy-test.us",
+          host: process.env.ALCHEMY_TEST_DOMAIN!,
           endpoint: "/products",
           mitigation: "none",
         }, // Per-method override
         {
           method: "get",
-          host: "alchemy-test.us",
+          host: process.env.ALCHEMY_TEST_DOMAIN!,
           endpoint: "/users",
           mitigation: "none",
         }, // Blanket override
         {
           method: "post",
-          host: "alchemy-test.us",
+          host: process.env.ALCHEMY_TEST_DOMAIN!,
           endpoint: "/admin",
           mitigation: "block",
         }, // Blanket admin block
         {
           method: "post",
-          host: "alchemy-test.us",
+          host: process.env.ALCHEMY_TEST_DOMAIN!,
           endpoint: "/products",
           mitigation: "block",
         }, // Per-method override
         {
           method: "post",
-          host: "alchemy-test.us",
+          host: process.env.ALCHEMY_TEST_DOMAIN!,
           endpoint: "/users",
           mitigation: "none",
         }, // Blanket override
@@ -593,31 +593,31 @@ paths:
       await expectOperations(shield, [
         {
           method: "delete",
-          host: "alchemy-test.us",
+          host: process.env.ALCHEMY_TEST_DOMAIN!,
           endpoint: "/products",
           mitigation: "none",
         },
         {
           method: "get",
-          host: "alchemy-test.us",
+          host: process.env.ALCHEMY_TEST_DOMAIN!,
           endpoint: "/legacy",
           mitigation: "none",
         },
         {
           method: "get",
-          host: "alchemy-test.us",
+          host: process.env.ALCHEMY_TEST_DOMAIN!,
           endpoint: "/products",
           mitigation: "none",
         },
         {
           method: "get",
-          host: "alchemy-test.us",
+          host: process.env.ALCHEMY_TEST_DOMAIN!,
           endpoint: "/users",
           mitigation: "none",
         },
         {
           method: "post",
-          host: "alchemy-test.us",
+          host: process.env.ALCHEMY_TEST_DOMAIN!,
           endpoint: "/users",
           mitigation: "none",
         },
@@ -669,25 +669,25 @@ paths:
       await expectOperations(shield, [
         {
           method: "delete",
-          host: "alchemy-test.us",
+          host: process.env.ALCHEMY_TEST_DOMAIN!,
           endpoint: "/products",
           mitigation: "block",
         }, // Overridden action
         {
           method: "get",
-          host: "alchemy-test.us",
+          host: process.env.ALCHEMY_TEST_DOMAIN!,
           endpoint: "/products",
           mitigation: "none",
         }, // Default action
         {
           method: "get",
-          host: "alchemy-test.us",
+          host: process.env.ALCHEMY_TEST_DOMAIN!,
           endpoint: "/users",
           mitigation: "none",
         }, // Default action
         {
           method: "post",
-          host: "alchemy-test.us",
+          host: process.env.ALCHEMY_TEST_DOMAIN!,
           endpoint: "/users",
           mitigation: "none",
         }, // Default action
@@ -752,19 +752,19 @@ paths:
       await expectOperations(shield, [
         {
           method: "get",
-          host: "alchemy-test.us",
+          host: process.env.ALCHEMY_TEST_DOMAIN!,
           endpoint: "/health",
           mitigation: "none",
         },
         {
           method: "get",
-          host: "alchemy-test.us",
+          host: process.env.ALCHEMY_TEST_DOMAIN!,
           endpoint: "/products",
           mitigation: "none",
         },
         {
           method: "post",
-          host: "alchemy-test.us",
+          host: process.env.ALCHEMY_TEST_DOMAIN!,
           endpoint: "/products",
           mitigation: "none",
         },
@@ -835,37 +835,37 @@ paths:
       await expectOperations(shield, [
         {
           method: "delete",
-          host: "alchemy-test.us",
+          host: process.env.ALCHEMY_TEST_DOMAIN!,
           endpoint: "/products",
           mitigation: "block",
         },
         {
           method: "get",
-          host: "alchemy-test.us",
+          host: process.env.ALCHEMY_TEST_DOMAIN!,
           endpoint: "/health",
           mitigation: "none",
         },
         {
           method: "get",
-          host: "alchemy-test.us",
+          host: process.env.ALCHEMY_TEST_DOMAIN!,
           endpoint: "/orders",
           mitigation: "none",
         },
         {
           method: "get",
-          host: "alchemy-test.us",
+          host: process.env.ALCHEMY_TEST_DOMAIN!,
           endpoint: "/products",
           mitigation: "none",
         },
         {
           method: "post",
-          host: "alchemy-test.us",
+          host: process.env.ALCHEMY_TEST_DOMAIN!,
           endpoint: "/orders",
           mitigation: "block",
         },
         {
           method: "post",
-          host: "alchemy-test.us",
+          host: process.env.ALCHEMY_TEST_DOMAIN!,
           endpoint: "/products",
           mitigation: "none",
         },

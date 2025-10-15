@@ -6,7 +6,6 @@ export default class Worker2 extends WorkerEntrypoint {
 
   async fetch(request: Request): Promise<Response> {
     const stub = this.env.DO.getByName("DO");
-    // @ts-expect-error - TODO(sam): fix this
     return await stub.fetch(request);
   }
   rpcMethod() {

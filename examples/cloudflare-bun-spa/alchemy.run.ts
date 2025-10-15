@@ -10,9 +10,9 @@ export const kv = await KVNamespace("kv", {
   adopt: true,
 });
 
-export const website = await BunSPA("website", {
+export const bunsite = await BunSPA("website", {
   entrypoint: "src/server.ts",
-  frontend: "index.html",
+  frontend: ["index.html", "about.html"],
   noBundle: false,
   adopt: true,
   bindings: {
@@ -22,13 +22,15 @@ export const website = await BunSPA("website", {
 });
 
 console.log({
-  url: website.url,
+  url: bunsite.url,
+  apiUrl: bunsite.apiUrl,
 });
 
 if (process.env.ALCHEMY_E2E) {
   const { test } = await import("./test/e2e.js");
   await test({
-    url: website.url,
+    url: bunsite.url!,
+    apiUrl: bunsite.apiUrl,
     env: { ALCHEMY_TEST_VALUE: "Hello from Alchemy!" },
   });
 }

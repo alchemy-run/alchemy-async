@@ -255,7 +255,6 @@ import { Worker } from "alchemy/cloudflare";
 const app = await alchemy("${context.projectName}");
 
 export const worker = await Worker("worker", {
-  name: \`\${app.name}-\${app.stage}\`,
   entrypoint: "src/worker.ts",
 });
 
@@ -269,7 +268,6 @@ import { Vite } from "alchemy/cloudflare";
 const app = await alchemy("${context.projectName}");
 
 export const worker = await Vite("${context.projectName}", {
-  name: \`\${app.name}-\${app.stage}-website\`,
   // replace if different from default:
   //
   // main: "./.output/server/index.mjs",
@@ -293,7 +291,6 @@ import { Astro } from "alchemy/cloudflare";
 const app = await alchemy("${context.projectName}");
 
 export const worker = await Astro("website", {
-  name: \`\${app.name}-\${app.stage}-website\`,
   // replace if different from default:
   //
   // main: "./.output/server/index.mjs",
@@ -316,7 +313,6 @@ import { ReactRouter } from "alchemy/cloudflare";
 const app = await alchemy("${context.projectName}");
 
 export const worker = await ReactRouter("website", {
-  name: \`\${app.name}-\${app.stage}-website\`,
   // replace if different from default:
   //
   // main: "build/server/index.js",
@@ -340,7 +336,6 @@ import { SvelteKit } from "alchemy/cloudflare";
 const app = await alchemy("${context.projectName}");
 
 export const worker = await SvelteKit("website", {
-  name: \`\${app.name}-\${app.stage}-website\`,
   // replace if different from default:
   //
   // main: "./.output/server/index.mjs",
@@ -363,7 +358,6 @@ import { TanStackStart } from "alchemy/cloudflare";
 const app = await alchemy("${context.projectName}");
 
 export const worker = await TanStackStart("website", {
-  name: \`\${app.name}-\${app.stage}-website\`,
   // replace if different from default:
   //
   // main: "./.output/server/index.mjs",
@@ -386,12 +380,10 @@ import { D1Database, DurableObjectNamespace, Redwood } from "alchemy/cloudflare"
 const app = await alchemy("${context.projectName}");
 
 const database = await D1Database("database", {
-  name: \`\${app.name}-\${app.stage}-db\`,
   migrationsDir: "migrations",
 });
 
 export const worker = await Redwood("website", {
-  name: \`\${app.name}-\${app.stage}-website\`,
   bindings: {
     AUTH_SECRET_KEY: alchemy.secret(process.env.AUTH_SECRET_KEY),
     DB: database,
@@ -421,7 +413,6 @@ import { Nextjs } from "alchemy/cloudflare";
 const app = await alchemy("${context.projectName}");
 
 export const website = await Nextjs("website", {
-  name: \`\${app.name}-\${app.stage}-website\`,
 });
 
 console.log({
@@ -439,7 +430,6 @@ import { Nuxt } from "alchemy/cloudflare";
 const app = await alchemy("${context.projectName}");
 
 export const website = await Nuxt("website", {
-  name: \`\${app.name}-\${app.stage}-website\`,
   // replace if different from default:
   //
   // main: "./.output/server/index.mjs",

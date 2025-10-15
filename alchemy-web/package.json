@@ -6,6 +6,7 @@
     "dev": "astro dev",
     "build": "astro build",
     "deploy": "alchemy deploy",
+    "destroy": "alchemy destroy",
     "preview": "astro preview",
     "astro": "astro"
   },

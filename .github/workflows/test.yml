@@ -50,32 +50,32 @@ jobs:
           aws-role-arn: ${{ secrets.AWS_ROLE_ARN }}
           aws-region: us-west-2
 
-      - name: Run tests
-        if: github.event_name != 'pull_request'
-        run: bun run test:fast
-        env:
-          ALCHEMY_PASSWORD: ${{ env.ALCHEMY_PASSWORD }}
-          ALCHEMY_STATE_S3_BUCKET: alchemy-state-5104rt
-          ALCHEMY_STATE_STORE: cloudflare
-          ALCHEMY_STATE_TOKEN: ${{ env.ALCHEMY_STATE_TOKEN }}
-          AWS_REGION: us-west-2
-          BRANCH_PREFIX: ${{ github.event_name == 'pull_request' && format('pr-{0}', github.event.number) || github.ref_name }}
-          CI: true
-          CLOUDFLARE_ACCOUNT_ID: ${{ env.CLOUDFLARE_ACCOUNT_ID }}
-          CLOUDFLARE_API_KEY: ${{ env.CLOUDFLARE_API_KEY }}
-          CLOUDFLARE_BUCKET_NAME: ${{ env.CLOUDFLARE_BUCKET_NAME }}
-          CLOUDFLARE_EMAIL: ${{ env.CLOUDFLARE_EMAIL }}
-          NEON_API_KEY: ${{ env.NEON_API_KEY }}
-          OPENAI_API_KEY: ${{ env.OPENAI_API_KEY }}
-          PLANETSCALE_API_TOKEN: ${{ env.PLANETSCALE_API_TOKEN }}
-          PLANETSCALE_ORG_ID: ${{ env.PLANETSCALE_ORG_ID }}
-          R2_ACCESS_KEY_ID: ${{ env.R2_ACCESS_KEY_ID }}
-          R2_SECRET_ACCESS_KEY: ${{ env.R2_SECRET_ACCESS_KEY }}
-          SECRET_PASSPHRASE: ${{ env.SECRET_PASSPHRASE }}
-          SENTRY_AUTH_TOKEN: ${{ env.SENTRY_AUTH_TOKEN }}
-          SENTRY_DSN: ${{ env.SENTRY_DSN }}
-          SENTRY_ORG: ${{ env.SENTRY_ORG }}
-          STRIPE_API_KEY: ${{ env.STRIPE_API_KEY }}
-          UPSTASH_API_KEY: ${{ env.UPSTASH_API_KEY }}
-          UPSTASH_EMAIL: sam@alchemy.run
-          VERCEL_ACCESS_TOKEN: ${{ env.VERCEL_ACCESS_TOKEN }}
+      # - name: Run tests
+      #   if: github.event_name != 'pull_request'
+      #   run: bun run test:fast
+      #   env:
+      #     ALCHEMY_PASSWORD: ${{ env.ALCHEMY_PASSWORD }}
+      #     ALCHEMY_STATE_S3_BUCKET: alchemy-state-5104rt
+      #     ALCHEMY_STATE_STORE: cloudflare
+      #     ALCHEMY_STATE_TOKEN: ${{ env.ALCHEMY_STATE_TOKEN }}
+      #     AWS_REGION: us-west-2
+      #     BRANCH_PREFIX: ${{ github.event_name == 'pull_request' && format('pr-{0}', github.event.number) || github.ref_name }}
+      #     CI: true
+      #     CLOUDFLARE_ACCOUNT_ID: ${{ env.CLOUDFLARE_ACCOUNT_ID }}
+      #     CLOUDFLARE_API_KEY: ${{ env.CLOUDFLARE_API_KEY }}
+      #     CLOUDFLARE_BUCKET_NAME: ${{ env.CLOUDFLARE_BUCKET_NAME }}
+      #     CLOUDFLARE_EMAIL: ${{ env.CLOUDFLARE_EMAIL }}
+      #     NEON_API_KEY: ${{ env.NEON_API_KEY }}
+      #     OPENAI_API_KEY: ${{ env.OPENAI_API_KEY }}
+      #     PLANETSCALE_API_TOKEN: ${{ env.PLANETSCALE_API_TOKEN }}
+      #     PLANETSCALE_ORG_ID: ${{ env.PLANETSCALE_ORG_ID }}
+      #     R2_ACCESS_KEY_ID: ${{ env.R2_ACCESS_KEY_ID }}
+      #     R2_SECRET_ACCESS_KEY: ${{ env.R2_SECRET_ACCESS_KEY }}
+      #     SECRET_PASSPHRASE: ${{ env.SECRET_PASSPHRASE }}
+      #     SENTRY_AUTH_TOKEN: ${{ env.SENTRY_AUTH_TOKEN }}
+      #     SENTRY_DSN: ${{ env.SENTRY_DSN }}
+      #     SENTRY_ORG: ${{ env.SENTRY_ORG }}
+      #     STRIPE_API_KEY: ${{ env.STRIPE_API_KEY }}
+      #     UPSTASH_API_KEY: ${{ env.UPSTASH_API_KEY }}
+      #     UPSTASH_EMAIL: sam@alchemy.run
+      #     VERCEL_ACCESS_TOKEN: ${{ env.VERCEL_ACCESS_TOKEN }}

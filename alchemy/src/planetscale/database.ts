@@ -18,14 +18,22 @@ interface BaseDatabaseProps extends PlanetScaleProps {
   name?: string;
 
   /**
-   * The organization ID where the database will be created
+   * The organization name where the database will be created
+   * @default process.env.PLANETSCALE_ORGANIZATION
    */
-  organizationId: string;
+  organization?: string;
 
   /**
    * Whether to adopt the database if it already exists in Planetscale
    */
   adopt?: boolean;
+
+  /**
+   * Whether to delete the database when the resource is destroyed.
+   * When false, the database will only be removed from the state but not deleted via API.
+   * @default true
+   */
+  delete?: boolean;
 
   /**
    * The region where the database will be created (create only)
@@ -157,6 +165,11 @@ export type Database = DatabaseProps & {
    * HTML URL to access the database
    */
   htmlUrl: string;
+
+  /**
+   * The organization of the database
+   */
+  organization: string;
 };
 
 /**
@@ -166,7 +179,7 @@ export type Database = DatabaseProps & {
  * // Create a basic database in a specific organization
  * const db = await Database("my-app-db", {
  *   name: "my-app-db",
- *   organizationId: "my-org",
+ *   organization: "my-org",
  *   clusterSize: "PS_10"
  * });
  *
@@ -174,7 +187,7 @@ export type Database = DatabaseProps & {
  * // Create a database with specific region and settings
  * const db = await Database("my-app-db", {
  *   name: "my-app-db",
- *   organizationId: "my-org",
+ *   organization: "my-org",
  *   region: {
  *     slug: "us-east"
  *   },
@@ -188,7 +201,7 @@ export type Database = DatabaseProps & {
  * // Create a database with custom API key
  * const db = await Database("my-app-db", {
  *   name: "my-app-db",
- *   organizationId: "my-org",
+ *   organization: "my-org",
  *   apiKey: alchemy.secret(process.env.CUSTOM_PLANETSCALE_TOKEN),
  *   clusterSize: "PS_10"
  * });
@@ -210,11 +223,23 @@ export const Database = Resource(
       arch: props.arch,
       region: props.region?.slug,
     });
+    const organization =
+      // @ts-expect-error - organizationId is a legacy thing, we keep this so we can destroy
+      this.output?.organizationId ??
+      props.organization ??
+      process.env.PLANETSCALE_ORGANIZATION ??
+      process.env.PLANETSCALE_ORG_ID;
+    if (!organization) {
+      throw new Error(
+        "PlanetScale organization is required. Please set the `organization` property or the `PLANETSCALE_ORGANIZATION` environment variable.",
+      );
+    }
+    const shouldDelete = props.delete ?? false;
 
     if (this.phase === "update" && this.output.name !== databaseName) {
       await api.updateDatabaseSettings({
         path: {
-          organization: props.organizationId,
+          organization,
           name: this.output.name,
         },
         body: { new_name: databaseName },
@@ -222,10 +247,10 @@ export const Database = Resource(
     }
 
     if (this.phase === "delete") {
-      if (this.output?.name) {
+      if (shouldDelete && this.output?.name) {
         const response = await api.deleteDatabase({
           path: {
-            organization: props.organizationId,
+            organization,
             name: this.output.name,
           },
           throwOnError: false,
@@ -243,7 +268,7 @@ export const Database = Resource(
     // Check if database exists
     const getResponse = await api.getDatabase({
       path: {
-        organization: props.organizationId,
+        organization,
         name: databaseName,
       },
       throwOnError: false,
@@ -259,20 +284,20 @@ export const Database = Resource(
       if (props.defaultBranch && props.defaultBranch !== "main") {
         const branchResponse = await api.getBranch({
           path: {
-            organization: props.organizationId,
+            organization,
             database: databaseName,
             name: props.defaultBranch,
           },
           throwOnError: false,
         });
         if (!branchResponse.data) {
-          await waitForDatabaseReady(api, props.organizationId, databaseName);
+          await waitForDatabaseReady(api, organization, databaseName);
         }
         if (branchResponse.error && branchResponse.response.status === 404) {
           // Create the branch
           await api.createBranch({
             path: {
-              organization: props.organizationId,
+              organization,
               database: databaseName,
             },
             body: {
@@ -285,7 +310,7 @@ export const Database = Resource(
 
       const { data } = await api.updateDatabaseSettings({
         path: {
-          organization: props.organizationId,
+          organization,
           name: databaseName,
         },
         body: {
@@ -303,7 +328,7 @@ export const Database = Resource(
 
       await ensureProductionBranchClusterSize(
         api,
-        props.organizationId,
+        organization,
         databaseName,
         props.defaultBranch || "main",
         data.kind,
@@ -320,6 +345,7 @@ export const Database = Resource(
         createdAt: data.created_at,
         updatedAt: data.updated_at,
         htmlUrl: data.html_url,
+        organization,
       };
     }
 
@@ -330,7 +356,7 @@ export const Database = Resource(
     // Create new database
     await api.createDatabase({
       path: {
-        organization: props.organizationId,
+        organization,
       },
       body: {
         name: databaseName,
@@ -343,7 +369,7 @@ export const Database = Resource(
     // These settings can't be set on creation, so we need to patch them after creation.
     const { data } = await api.updateDatabaseSettings({
       path: {
-        organization: props.organizationId,
+        organization,
         name: databaseName,
       },
       body: {
@@ -360,12 +386,12 @@ export const Database = Resource(
 
     // If a non-'main' default branch is specified, create it
     if (props.defaultBranch && props.defaultBranch !== "main") {
-      await waitForDatabaseReady(api, props.organizationId, databaseName);
+      await waitForDatabaseReady(api, organization, databaseName);
 
       // Check if branch exists
       const branchResponse = await api.getBranch({
         path: {
-          organization: props.organizationId,
+          organization,
           database: databaseName,
           name: props.defaultBranch,
         },
@@ -376,7 +402,7 @@ export const Database = Resource(
         // Create the branch
         await api.createBranch({
           path: {
-            organization: props.organizationId,
+            organization,
             database: databaseName,
           },
           body: {
@@ -387,7 +413,7 @@ export const Database = Resource(
 
         await ensureProductionBranchClusterSize(
           api,
-          props.organizationId,
+          organization,
           databaseName,
           props.defaultBranch || "main",
           data.kind,
@@ -397,7 +423,7 @@ export const Database = Resource(
         // Update database to use new branch as default
         const { data: updatedData } = await api.updateDatabaseSettings({
           path: {
-            organization: props.organizationId,
+            organization,
             name: databaseName,
           },
           body: {
@@ -415,6 +441,7 @@ export const Database = Resource(
           createdAt: updatedData.created_at,
           updatedAt: updatedData.updated_at,
           htmlUrl: updatedData.html_url,
+          organization,
         };
       }
     }
@@ -429,6 +456,7 @@ export const Database = Resource(
       createdAt: data.created_at,
       updatedAt: data.updated_at,
       htmlUrl: data.html_url,
+      organization,
     };
   },
 );

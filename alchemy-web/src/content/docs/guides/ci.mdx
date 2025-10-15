@@ -134,10 +134,11 @@ export function DeployWorkflow({ manager = "bun" }) {
       },
       cleanup: {
         "runs-on": "ubuntu-latest",
-        if: "${{ github.event.action == 'closed' && github.ref != 'refs/heads/main' }}",
+        if: "${{ github.event_name == 'pull_request' && github.event.action == 'closed' }}",
         permissions: {
           "id-token": "write",
           contents: "read",
+          "pull-requests": "write",
         },
         steps: [
           {

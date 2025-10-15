@@ -111,7 +111,7 @@ export async function enableWorkerSubdomain(
         ),
       ),
     (error) => error instanceof CloudflareApiError && error.status === 404,
-    10,
+    20,
     1000,
   );
 }

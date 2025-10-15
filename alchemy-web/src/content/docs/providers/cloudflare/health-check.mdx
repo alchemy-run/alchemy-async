@@ -1,0 +1,612 @@
+---
+title: Health Check
+description: Monitor origin server availability with Cloudflare Health Checks for automatic traffic routing and high availability.
+---
+
+Stop guessing if your origins are up. [Cloudflare Health Checks](https://developers.cloudflare.com/load-balancing/monitors/) ping your servers and report back. Pair them with Load Balancers to auto-route traffic away from unhealthy origins.
+
+## Quick Start
+
+Get a basic health check running:
+
+```ts
+import { HealthCheck } from "alchemy/cloudflare";
+
+const healthCheck = await HealthCheck("api-health", {
+  zone: "023e105f4ecef8ad9ca31a8372d0c353",
+  address: "api.example.com",
+  name: "api-server-check"
+});
+```
+
+This creates a health check that:
+- Performs HTTP checks every 60 seconds (default)
+- Marks the origin unhealthy after 1 consecutive failure (default)
+- Marks the origin healthy after 1 consecutive success (default)
+
+:::tip
+Start with a simple health check like this to verify your setup works, then add custom configuration based on your monitoring requirements. Health checks are most effective when paired with Load Balancers for automatic failover.
+:::
+
+## Health Check Configuration
+
+Dial in your monitoring protocol; timing, response & validation:
+```ts
+import { HealthCheck } from "alchemy/cloudflare";
+
+const healthCheck = await HealthCheck("backend-health", {
+  zone: "023e105f4ecef8ad9ca31a8372d0c353",  // Zone ID or Zone resource
+  address: "backend.example.com",             // Origin server hostname or IP
+  name: "backend-server-check",               // Health check identifier
+  type: "HTTPS",                              // Protocol: "HTTP", "HTTPS", or "TCP"
+  
+  // Timing configuration
+  interval: 30,                               // Check every 30 seconds
+  timeout: 10,                                // Timeout after 10 seconds
+  retries: 3,                                 // Retry 3 times on timeout
+  
+  // Threshold configuration
+  consecutiveFails: 2,                        // Mark unhealthy after 2 failures
+  consecutiveSuccesses: 2,                    // Mark healthy after 2 successes
+  
+  // HTTP/HTTPS specific configuration
+  httpConfig: {
+    path: "/health",                          // Health check endpoint
+    method: "GET",                            // HTTP method: "GET" or "HEAD"
+    expectedCodes: ["200", "201"],            // Expected status codes
+    expectedBody: "OK",                       // Expected response body substring
+    followRedirects: true,                    // Follow 3xx redirects
+    allowInsecure: false,                     // Validate SSL certificates
+    port: 443,                                // Port (defaults: 80 for HTTP, 443 for HTTPS)
+    header: {                                 // Custom headers
+      "Host": ["backend.example.com"],
+      "X-Health-Check": ["true"]
+    }
+  },
+  
+  // Monitoring configuration
+  checkRegions: ["WNAM", "ENAM", "WEU"],     // Regions to check from
+  suspended: false,                           // Enable/disable checks
+  description: "Backend server health monitoring"
+});
+```
+
+:::tip
+Set both thresholds to 2+ to avoid flapping from transient network blips.
+:::
+
+## HTTP/HTTPS Health Checks
+
+Monitor web servers and APIs with HTTP or HTTPS health checks:
+
+### Basic HTTP Check
+
+```ts
+const webHealthCheck = await HealthCheck("web-health", {
+  zone: "023e105f4ecef8ad9ca31a8372d0c353",
+  address: "web.example.com",
+  name: "web-server-check",
+  type: "HTTP",
+  httpConfig: {
+    path: "/",
+    expectedCodes: ["200"]
+  }
+});
+```
+
+### HTTPS with Custom Path and Headers
+
+```ts
+const apiHealthCheck = await HealthCheck("api-health", {
+  zone: "023e105f4ecef8ad9ca31a8372d0c353",
+  address: "api.example.com",
+  name: "api-endpoint-check",
+  type: "HTTPS",
+  httpConfig: {
+    path: "/api/health",
+    method: "GET",
+    expectedCodes: ["200", "201"],
+    expectedBody: "healthy",
+    header: {
+      "Host": ["api.example.com"],
+      "User-Agent": ["Cloudflare-Health-Check"],
+      "X-API-Key": [alchemy.secret.env.HEALTH_CHECK_API_KEY]
+    },
+    port: 443,
+    allowInsecure: false
+  }
+});
+```
+
+:::tip
+Use `expectedBody` to verify the health check endpoint returns the expected response, not just a 200 status code. This ensures your application logic is functioning correctly, not just your web server.
+:::
+
+### Response Code Ranges
+
+Use ranges to match multiple status codes:
+
+```ts
+const flexibleHealthCheck = await HealthCheck("flexible-health", {
+  zone: "023e105f4ecef8ad9ca31a8372d0c353",
+  address: "app.example.com",
+  name: "app-health-check",
+  httpConfig: {
+    path: "/health",
+    expectedCodes: ["2xx", "3xx"]  // Accept any 2xx or 3xx response
+  }
+});
+```
+
+## TCP Health Checks
+
+For databases, mail servers, or anything that speaks TCP:
+
+```ts
+const databaseHealthCheck = await HealthCheck("db-health", {
+  zone: "023e105f4ecef8ad9ca31a8372d0c353",
+  address: "db.example.com",
+  name: "database-connection-check",
+  type: "TCP",
+  tcpConfig: {
+    port: 5432,                    // PostgreSQL port
+    method: "connection_established"
+  },
+  interval: 60,
+  timeout: 5,
+  retries: 2
+});
+```
+
+**Common TCP ports:**
+- PostgreSQL: `5432`
+- MySQL: `3306`
+- Redis: `6379`
+- MongoDB: `27017`
+- SMTP: `25`, `587`, `465`
+- SSH: `22`
+
+:::note[TCP Checks]
+TCP checks only verify the port answers. No application-level validation, no auth checks.
+:::
+
+## Regional Distribution
+
+Configure which regions run health checks for geographic distribution:
+
+```ts
+const globalHealthCheck = await HealthCheck("global-health", {
+  zone: "023e105f4ecef8ad9ca31a8372d0c353",
+  address: "global.example.com",
+  name: "global-origin-check",
+  checkRegions: [
+    "WNAM",      // Western North America
+    "ENAM",      // Eastern North America
+    "WEU",       // Western Europe
+    "EEU",       // Eastern Europe
+    "SEAS",      // South East Asia
+    "OC"         // Oceania
+  ]
+});
+```
+
+**Available regions:**
+- `WNAM` - Western North America
+- `ENAM` - Eastern North America
+- `WEU` - Western Europe
+- `EEU` - Eastern Europe
+- `NSAM` - Northern South America
+- `SSAM` - Southern South America
+- `OC` - Oceania
+- `ME` - Middle East
+- `NAF` - Northern Africa
+- `SAF` - Southern Africa
+- `IN` - India
+- `SEAS` - South East Asia
+- `NEAS` - North East Asia
+- `ALL_REGIONS` - All available regions
+
+:::tip
+Select regions closest to your users or origin servers. More regions provide better global coverage but increase load on your origin.
+:::
+
+## Timing & Thresholds
+
+Fine-tune health check timing and failure thresholds:
+
+```ts
+const sensitiveHealthCheck = await HealthCheck("sensitive-health", {
+  zone: "023e105f4ecef8ad9ca31a8372d0c353",
+  address: "critical.example.com",
+  name: "critical-service-check",
+  
+  // Check frequently for fast detection
+  interval: 15,                    // Check every 15 seconds
+  timeout: 3,                      // 3 second timeout
+  retries: 5,                      // Retry 5 times on timeout
+  
+  // Conservative thresholds to avoid false positives
+  consecutiveFails: 3,             // 3 failures before marking unhealthy
+  consecutiveSuccesses: 3,         // 3 successes before marking healthy
+  
+  httpConfig: {
+    path: "/health",
+    expectedCodes: ["200"]
+  }
+});
+```
+
+**Timing guidelines:**
+- **High availability services**: Use shorter intervals (15-30s) with higher thresholds (2-3)
+- **Normal services**: Use default intervals (60s) with default thresholds (1-2)
+- **Low priority services**: Use longer intervals (120s+) with lower thresholds (1)
+
+**Calculation example:**
+With `interval: 30`, `consecutiveFails: 3`:
+- Time to detect failure: 90 seconds (3 × 30s)
+- Time to recover: 90 seconds (3 × 30s)
+
+:::caution
+Aggressive intervals hammer your origin. Balance speed with capacity.
+:::
+
+## Secure Headers with Secrets
+
+Use secrets for sensitive header values:
+
+```ts
+const secureHealthCheck = await HealthCheck("secure-health", {
+  zone: "023e105f4ecef8ad9ca31a8372d0c353",
+  address: "api.example.com",
+  name: "secure-api-check",
+  httpConfig: {
+    path: "/internal/health",
+    header: {
+      "Host": ["api.example.com"],
+      "Authorization": [alchemy.secret.env.HEALTH_CHECK_TOKEN],
+      "X-API-Key": [alchemy.secret.env.API_KEY]
+    }
+  }
+});
+```
+
+:::tip
+Store sensitive header values as secrets to keep them encrypted in your infrastructure state and logs.
+:::
+
+## Adopting Existing Checks
+
+Already have health checks? Adopt them by name instead of failing:
+
+```ts
+const existingHealthCheck = await HealthCheck("existing-health", {
+  zone: "023e105f4ecef8ad9ca31a8372d0c353",
+  address: "existing.example.com",
+  name: "existing-health-check",
+  adopt: true  // Adopt if health check with this name exists
+});
+```
+
+:::note
+Adoption finds health checks by exact name match. If a health check with the same name exists, it will be updated with the new configuration instead of failing.
+:::
+
+## Suspending Health Checks
+
+Pause checks during maintenance without deleting:
+
+```ts
+const suspendedHealthCheck = await HealthCheck("maintenance-health", {
+  zone: "023e105f4ecef8ad9ca31a8372d0c353",
+  address: "maintenance.example.com",
+  name: "maintenance-server-check",
+  suspended: true  // Don't send health checks
+});
+```
+
+**When to suspend:**
+- During planned maintenance
+- When origin is intentionally offline
+- When debugging health check configuration
+- When origin can't handle health check load
+
+## Load Balancer Integration
+
+Real power: automatic failover when origins go down.
+
+```ts
+import { HealthCheck, LoadBalancer, Pool } from "alchemy/cloudflare";
+
+// Create health checks for each origin
+const primaryHealthCheck = await HealthCheck("primary-health", {
+  zone: "023e105f4ecef8ad9ca31a8372d0c353",
+  address: "primary.example.com",
+  name: "primary-origin-check",
+  httpConfig: {
+    path: "/health",
+    expectedCodes: ["200"]
+  }
+});
+
+const secondaryHealthCheck = await HealthCheck("secondary-health", {
+  zone: "023e105f4ecef8ad9ca31a8372d0c353",
+  address: "secondary.example.com",
+  name: "secondary-origin-check",
+  httpConfig: {
+    path: "/health",
+    expectedCodes: ["200"]
+  }
+});
+
+// Create a pool with origins and health checks
+const pool = await Pool("main-pool", {
+  name: "main-origin-pool",
+  origins: [
+    {
+      name: "primary",
+      address: "primary.example.com",
+      enabled: true
+    },
+    {
+      name: "secondary",
+      address: "secondary.example.com",
+      enabled: true
+    }
+  ],
+  monitor: primaryHealthCheck  // Attach health check to pool
+});
+
+// Create load balancer
+const loadBalancer = await LoadBalancer("main-lb", {
+  zone: "023e105f4ecef8ad9ca31a8372d0c353",
+  name: "app.example.com",
+  defaultPools: [pool]
+});
+```
+
+:::tip
+Pool references a health check. Unhealthy origins get zero traffic automatically.
+:::
+
+## Status Monitoring
+
+Access health check status programmatically:
+
+```ts
+const healthCheck = await HealthCheck("monitored-health", {
+  zone: "023e105f4ecef8ad9ca31a8372d0c353",
+  address: "app.example.com",
+  name: "app-health-check"
+});
+
+// Health check status is available after creation
+console.log(healthCheck.status);         // "unknown" | "healthy" | "unhealthy" | "suspended"
+console.log(healthCheck.failureReason);  // Reason if unhealthy
+console.log(healthCheck.createdOn);      // Creation timestamp
+console.log(healthCheck.modifiedOn);     // Last modification timestamp
+```
+
+**Status values:**
+- `unknown` - Health check hasn't run yet
+- `healthy` - Origin is responding correctly
+- `unhealthy` - Origin is not responding or failing checks
+- `suspended` - Health checks are suspended
+
+## Advanced Patterns
+
+### Multi-Region Monitoring
+
+Check all your geographic origins:
+
+```ts
+const regions = [
+  { region: "us-west", address: "us-west.example.com" },
+  { region: "us-east", address: "us-east.example.com" },
+  { region: "eu-west", address: "eu-west.example.com" },
+  { region: "ap-southeast", address: "ap-southeast.example.com" }
+];
+
+const healthChecks = await Promise.all(
+  regions.map(({ region, address }) =>
+    HealthCheck(`${region}-health`, {
+      zone: "023e105f4ecef8ad9ca31a8372d0c353",
+      address,
+      name: `${region}-origin-check`,
+      httpConfig: {
+        path: "/health",
+        expectedCodes: ["200"],
+        header: {
+          "X-Region": [region]
+        }
+      }
+    })
+  )
+);
+```
+
+### Deep Health Validation
+
+Check more than "is it up", validate the whole stack:
+
+```ts
+const comprehensiveHealthCheck = await HealthCheck("comprehensive-health", {
+  zone: "023e105f4ecef8ad9ca31a8372d0c353",
+  address: "api.example.com",
+  name: "comprehensive-check",
+  httpConfig: {
+    path: "/health/comprehensive",
+    method: "GET",
+    expectedCodes: ["200"],
+    expectedBody: "all_systems_operational",  // Custom validation
+    header: {
+      "X-Health-Check-Version": ["v2"]
+    }
+  },
+  interval: 30,
+  timeout: 10,
+  consecutiveFails: 2,
+  consecutiveSuccesses: 2
+});
+```
+
+Your health endpoint should validate:
+- Database connectivity
+- External service availability
+- Disk space
+- Memory usage
+- Critical background jobs
+
+### Gradual Traffic Restoration
+
+Fast to kill, slow to restore - avoid thundering herd:
+
+```ts
+const cautiousHealthCheck = await HealthCheck("cautious-health", {
+  zone: "023e105f4ecef8ad9ca31a8372d0c353",
+  address: "recovering.example.com",
+  name: "recovering-origin-check",
+  
+  // Quick to mark unhealthy
+  consecutiveFails: 1,
+  
+  // Slow to mark healthy (wait for stability)
+  consecutiveSuccesses: 5,
+  
+  interval: 15,
+  httpConfig: {
+    path: "/health",
+    expectedCodes: ["200"]
+  }
+});
+```
+
+This pattern:
+- ✅ Quickly removes unhealthy origins from rotation (1 failure)
+- ✅ Waits for sustained health before restoration (5 successes)
+- ✅ Reduces risk of cascading failures
+- ✅ Protects recovering origins from traffic spikes
+
+## Troubleshooting
+
+### Always Unhealthy
+
+Origin is up, but health check says it's down:
+
+**Common causes:**
+
+1. **Incorrect path or port:**
+```ts
+// ❌ Wrong path
+httpConfig: {
+  path: "/healthcheck"  // Origin expects "/health"
+}
+
+// ✅ Correct path
+httpConfig: {
+  path: "/health"
+}
+```
+
+2. **Missing or incorrect headers:**
+```ts
+// ❌ Missing Host header
+httpConfig: {
+  path: "/health"
+}
+
+// ✅ Include Host header
+httpConfig: {
+  path: "/health",
+  header: {
+    "Host": ["api.example.com"]
+  }
+}
+```
+
+3. **Firewall blocking health checks:**
+- Ensure your firewall allows Cloudflare IP ranges
+- Check your origin's access logs for health check requests
+- Verify security groups allow traffic from Cloudflare
+
+4. **SSL certificate validation:**
+```ts
+// ❌ Self-signed certificate with validation enabled
+type: "HTTPS",
+httpConfig: {
+  allowInsecure: false
+}
+
+// ✅ Allow self-signed for development
+type: "HTTPS",
+httpConfig: {
+  allowInsecure: true  // Only for development!
+}
+```
+
+### Health Check Flapping
+
+Health bouncing between healthy/unhealthy?
+
+**Fix:** Require sustained changes:
+
+```ts
+// ❌ Too sensitive
+consecutiveFails: 1,
+consecutiveSuccesses: 1,
+
+// ✅ More stable
+consecutiveFails: 3,
+consecutiveSuccesses: 3,
+```
+
+### Timeout Errors
+
+Health checks timing out but origin is responding?
+
+**Try these:**
+
+1. **Increase timeout:**
+```ts
+timeout: 10,  // Increase from default 5 seconds
+```
+
+2. **Optimize health endpoint:**
+- Return cached responses
+- Avoid expensive database queries
+- Use in-memory checks
+- Return early on first successful check
+
+3. **Increase retries:**
+```ts
+retries: 5,  // Retry more times before marking unhealthy
+```
+
+### Expected Body Mismatch
+
+Getting "expected body not found"?
+
+**Debug it:**
+
+```ts
+// Temporarily remove expectedBody to see what's being returned
+httpConfig: {
+  path: "/health",
+  expectedCodes: ["200"],
+  // expectedBody: "OK"  // Comment out to debug
+}
+```
+
+Check your origin's health endpoint response format:
+- Ensure it returns plain text if using simple string matching
+- Check for leading/trailing whitespace
+- Verify the response isn't JSON-encoded
+- Use a substring that definitely appears in the response
+
+
+## Next Steps
+
+- Load Balancers: See [Load Balancer](https://developers.cloudflare.com/load-balancing) 
+- Monitoring: See [Cloudflare Analytics](https://developers.cloudflare.com/analytics/)
+- Zones: See [Zone](/providers/cloudflare/zone)
+- Join our [Discord](https://discord.gg/kPpzYbTQFx) for support and updates.
+

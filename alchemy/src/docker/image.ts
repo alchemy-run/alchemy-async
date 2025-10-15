@@ -190,7 +190,7 @@ export const Image = Resource(
 
       // Add build arguments
       for (const [key, value] of Object.entries(buildOptions)) {
-        buildArgs.push("--build-arg", `${key}="${value}"`);
+        buildArgs.push("--build-arg", `${key}=${value}`);
       }
 
       buildArgs.push("-f", dockerfile);

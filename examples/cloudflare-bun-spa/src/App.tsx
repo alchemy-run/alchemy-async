@@ -5,8 +5,17 @@ import bunLogo from "./assets/logo.svg";
 import alchemyLogo from "./assets/potion.png";
 import reactLogo from "./assets/react.svg";
 
-const apiBaseUrl = process.env.PUBLIC_BACKEND_URL || window.location.protocol + '//' + window.location.host;
-console.log("apiBaseUrl", apiBaseUrl);
+// This is ugly but it's necessary to support both local and prod environments
+let apiBaseUrl: string = window.location.protocol + '//' + window.location.host;
+try {
+  // Bun will only inline this if we use exactly `process.env.PUBLIC_BACKEND_URL` it we use other forms including process?.env for example bun will not inline it
+  // we can't check typeof process either because process may not be available but Bun may already have inlined process.env.PUBLIC_BACKEND_URL with the correct value
+  apiBaseUrl = process.env.PUBLIC_BACKEND_URL ?? apiBaseUrl;
+} catch {
+  // Bun may not have had anything to inline and process.env may not exist to above can throw an error
+  // do nothing
+}
+console.log("Using apiBaseUrl", apiBaseUrl);
 
 function backendUrl(path: string) {
   if(path.startsWith('/')) {

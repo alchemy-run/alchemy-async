@@ -1,6 +1,9 @@
 # syntax=docker/dockerfile:1
 
-FROM golang:1.24-alpine AS build
+# deliberately use an unset arg to ensure arg functionality works
+ARG IMAGE_VERSION
+
+FROM golang:${IMAGE_VERSION} AS build
 
 # Set destination for COPY
 WORKDIR /app

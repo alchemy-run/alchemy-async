@@ -31,12 +31,11 @@ describe
 
       database = await Database("database", {
         name: "role-test-db",
-        organizationId: process.env.PLANETSCALE_ORG_ID ?? "",
         clusterSize: "PS_10",
         kind: "postgresql",
         arch: "arm", // slightly faster than x86
       });
-      await waitForDatabaseReady(api, database.organizationId, database.name);
+      await waitForDatabaseReady(api, database.organization, database.name);
       scope = _scope;
     }, 240_000); // slow and steady wins the race
 
@@ -68,7 +67,7 @@ describe
         // Verify role was created by querying the API directly
         const { data } = await api.getRole({
           path: {
-            organization: database.organizationId,
+            organization: database.organization,
             database: database.name,
             branch: "main",
             id: role.id,
@@ -122,7 +121,7 @@ describe
         // Verify old password was deleted and new one created
         const { response: getOldResponse } = await api.getRole({
           path: {
-            organization: database.organizationId,
+            organization: database.organization,
             database: database.name,
             branch: "main",
             id: originalId,
@@ -133,7 +132,7 @@ describe
 
         const { data: newRole } = await api.getRole({
           path: {
-            organization: database.organizationId,
+            organization: database.organization,
             database: database.name,
             branch: "main",
             id: role.id,
@@ -142,6 +141,80 @@ describe
         expect(newRole.ttl).toEqual(3600);
       } finally {
         await destroy(scope);
+      }
+    });
+
+    test("role with delete=false should not be deleted via API", async (scope) => {
+      const testId = `${BRANCH_PREFIX}-nodelete-role`;
+      let roleId: string | null = null;
+
+      try {
+        const role = await Role(testId, {
+          database,
+          inheritedRoles: ["postgres"],
+          delete: false,
+        });
+
+        roleId = role.id; // Store ID before destroy
+
+        expect(role).toMatchObject({
+          delete: false,
+          inheritedRoles: ["postgres"],
+        });
+
+        // Verify role exists
+        const { data } = await api.getRole({
+          path: {
+            organization: database.organization,
+            database: database.name,
+            branch: "main",
+            id: role.id,
+          },
+        });
+        expect(data.id).toBe(role.id);
+      } catch (err) {
+        console.error("Test error:", err);
+        throw err;
+      } finally {
+        // When we call destroy, the role should NOT be deleted via API
+        await destroy(scope);
+
+        expect(roleId).not.toBeNull();
+
+        // Verify role still exists (was not deleted via API)
+        const { response } = await api.getRole({
+          path: {
+            organization: database.organization,
+            database: database.name,
+            branch: "main",
+            id: roleId!,
+          },
+          throwOnError: false,
+        });
+        expect(response.status).toBe(200); // Role should still exist
+
+        // Clean up manually for the test
+        await api.deleteRole({
+          path: {
+            organization: database.organization,
+            database: database.name,
+            branch: "main",
+            id: roleId!,
+          },
+          throwOnError: false,
+        });
+
+        // Verify manual cleanup worked
+        const { response: deletedResponse } = await api.getRole({
+          path: {
+            organization: database.organization,
+            database: database.name,
+            branch: "main",
+            id: roleId!,
+          },
+          throwOnError: false,
+        });
+        expect(deletedResponse.status).toBe(404);
       }
     });
   });

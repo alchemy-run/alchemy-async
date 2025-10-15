@@ -5,6 +5,26 @@ import { diff } from "../util/diff.ts";
 import { createClickhouseApi } from "./api.ts";
 import type { ClickhouseClient } from "./api/sdk.gen.ts";
 import type { Service as ApiService, Organization } from "./api/types.gen.ts";
+import { OrganizationRef } from "./organization.ts";
+
+type MysqlEndpoint = {
+  protocol: "mysql";
+  host: string;
+  port: number;
+  username: string;
+};
+
+type HttpsEndpoint = {
+  protocol: "https";
+  host: string;
+  port: number;
+};
+
+type NativesecureEndpoint = {
+  protocol: "nativesecure";
+  host: string;
+  port: number;
+};
 
 export interface ServiceProps {
   /**
@@ -18,7 +38,7 @@ export interface ServiceProps {
   secret?: string | Secret<string>;
 
   /**
-   * The id of Clickhouse cloud organization to create the service in.
+   * The id, name, or OrganizationRef of Clickhouse cloud organization to create the service in.
    */
   organization: string | Organization;
 
@@ -127,6 +147,13 @@ export interface ServiceProps {
    * The compliance type to create the service with.
    */
   complianceType?: ApiService["complianceType"];
+
+  /**
+   * wait for http service to be ready before marking the resource as created
+   *
+   * @default true
+   */
+  waitForHttpEndpointReady?: boolean;
 
   //todo(michael): I need to understand more about what these properties do before documenting
   //todo(michael): support linking to BYOC infrastructure directly
@@ -269,30 +296,17 @@ export interface Service {
   /**
    * The mysql endpoint details of the Clickhouse service.
    */
-  mysqlEndpoint?: {
-    protocol: "mysql";
-    host: string;
-    port: number;
-    username: string;
-  };
+  mysqlEndpoint?: MysqlEndpoint;
 
   /**
    * The https endpoint details of the Clickhouse service.
    */
-  httpsEndpoint?: {
-    protocol: "https";
-    host: string;
-    port: number;
-  };
+  httpsEndpoint?: HttpsEndpoint;
 
   /**
    * The nativesecure endpoint details of the Clickhouse service.
    */
-  nativesecureEndpoint?: {
-    protocol: "nativesecure";
-    host: string;
-    port: number;
-  };
+  nativesecureEndpoint?: NativesecureEndpoint;
 
   /**
    * The desired state of the Clickhouse service.
@@ -310,7 +324,7 @@ export interface Service {
  *
  * @example
  * // Create a basic Clickhouse service on aws
- * const organization = await getOrganizationByName("Alchemy's Organization");
+ * const organization = await OrganizationRef("Alchemy's Organization");
  * const service = await Service("clickhouse", {
  *   organization,
  *   provider: "aws",
@@ -348,6 +362,7 @@ export const Service = Resource(
     if (enableMysqlEndpoint) {
       endpoints.push({ protocol: "mysql", enabled: true });
     }
+    const waitForHttpEndpointReady = props.waitForHttpEndpointReady ?? true;
     //todo(michael): comment these in when disabling is supported
     // const enableHttpsEndpoint = props.enableHttpsEndpoint ?? true;
     // if (enableHttpsEndpoint) {
@@ -374,7 +389,9 @@ export const Service = Resource(
 
     const organizationId =
       typeof props.organization === "string"
-        ? props.organization
+        ? await OrganizationRef(props.organization)
+            .then((organization) => organization.id!)
+            .catch(() => props.organization as string)
         : props.organization.id!;
 
     if (this.phase === "delete") {
@@ -393,7 +410,6 @@ export const Service = Resource(
         organizationId,
         this.output.clickhouseId,
         (state) => state === "stopped",
-        10 * 60,
       );
 
       await api.deleteService({
@@ -402,6 +418,12 @@ export const Service = Resource(
           serviceId: this.output.clickhouseId,
         },
       });
+
+      await waitForServiceDeletion(
+        api,
+        organizationId,
+        this.output.clickhouseId,
+      );
 
       return this.destroy();
     }
@@ -481,13 +503,13 @@ export const Service = Resource(
         updates.releaseChannel = response.releaseChannel!;
         updates.mysqlEndpoint = response!.endpoints!.find(
           (endpoint) => endpoint.protocol === "mysql",
-        ) as any;
+        ) as MysqlEndpoint;
         updates.httpsEndpoint = response!.endpoints!.find(
           (endpoint) => endpoint.protocol === "https",
-        ) as any;
+        ) as HttpsEndpoint;
         updates.nativesecureEndpoint = response!.endpoints!.find(
           (endpoint) => endpoint.protocol === "nativesecure",
-        ) as any;
+        ) as NativesecureEndpoint;
       }
 
       if (stateTarget !== this.output.stateTarget) {
@@ -579,13 +601,23 @@ export const Service = Resource(
     const password = response.password!;
     const service = response.service!;
 
+    const httpEndpoint = service.endpoints!.find(
+      (endpoint) => endpoint.protocol === "https",
+    ) as HttpsEndpoint;
+
     await waitForServiceState(
       api,
       organizationId,
       response.service!.id!,
       (state) => state === "running" || state === "idle",
-      10 * 60,
     );
+
+    if (waitForHttpEndpointReady && httpEndpoint) {
+      await waitForHttpServiceReady(httpEndpoint as HttpsEndpoint, {
+        password: password!,
+        username: "default",
+      });
+    }
 
     return {
       organizationId: organizationId,
@@ -614,13 +646,11 @@ export const Service = Resource(
       state: service.state,
       mysqlEndpoint: service.endpoints!.find(
         (endpoint) => endpoint.protocol === "mysql",
-      ) as any,
-      httpsEndpoint: service.endpoints!.find(
-        (endpoint) => endpoint.protocol === "https",
-      ) as any,
+      ) as MysqlEndpoint,
+      httpsEndpoint: httpEndpoint,
       nativesecureEndpoint: service.endpoints!.find(
         (endpoint) => endpoint.protocol === "nativesecure",
-      ) as any,
+      ) as NativesecureEndpoint,
     };
   },
 );
@@ -630,9 +660,8 @@ async function waitForServiceState(
   organizationId: string,
   serviceId: string,
   stateChecker: (state: string) => boolean,
-  maxWaitSeconds: number,
 ) {
-  const checkState = async (): Promise<void> => {
+  async function checkState(): Promise<void> {
     const service = await api.getServiceDetails({
       path: {
         organizationId: organizationId,
@@ -646,8 +675,70 @@ async function waitForServiceState(
     }
 
     throw new Error(`Service ${serviceId} is in state ${serviceState}`);
-  };
+  }
 
+  await waitFor(checkState, 10 * 60);
+}
+
+async function waitForHttpServiceReady(
+  endpoint: {
+    protocol: "https";
+    host: string;
+    port: number;
+  },
+  credentials: { password: string; username: string },
+) {
+  async function checkHttpEndpoint() {
+    await fetch(
+      `https://${endpoint.host}:${endpoint.port}/?query=SELECT%20count%28%29%20FROM%20system.databases%20WHERE%20name%20%3D%20%27default%27`,
+      {
+        headers: {
+          Authorization: `Basic ${btoa(`${credentials.username}:${credentials.password}`)}`,
+        },
+      },
+    )
+      .then((res) => res.text())
+      .then((text) => {
+        if (text === "0") {
+          throw new Error("Service is not ready");
+        }
+        return;
+      });
+  }
+
+  await waitFor(checkHttpEndpoint, 10 * 60);
+}
+
+async function waitForServiceDeletion(
+  api: ClickhouseClient,
+  organizationId: string,
+  serviceId: string,
+) {
+  async function checkDeletion() {
+    const status = await api
+      .getServiceDetails({
+        path: {
+          organizationId: organizationId,
+          serviceId: serviceId,
+        },
+      })
+      .then((service) => service.response.status)
+      .catch((error) => {
+        return (error.status as number) ?? 500;
+      });
+    if (status === 404) {
+      return;
+    }
+    throw new Error(`Service ${serviceId} is not deleted`);
+  }
+
+  await waitFor(checkDeletion, 10 * 60);
+}
+
+async function waitFor(
+  checkFunction: () => Promise<void>,
+  maxWaitSeconds: number,
+) {
   if (maxWaitSeconds < 5) {
     maxWaitSeconds = 5;
   }
@@ -656,7 +747,7 @@ async function waitForServiceState(
 
   for (let attempt = 0; attempt < maxRetries; attempt++) {
     try {
-      await checkState();
+      await checkFunction();
       return;
     } catch (error) {
       if (attempt === maxRetries - 1) {

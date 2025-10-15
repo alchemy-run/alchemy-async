@@ -61,6 +61,7 @@ import { Workflow, isWorkflow, upsertWorkflow } from "./workflow.ts";
 import "../esbuild/bundle.ts";
 import { Scope } from "../scope.ts";
 import type { WorkerRef } from "./worker-ref.ts";
+import { createEmptyWorker, exists } from "./worker-stub.ts";
 
 /**
  * Configuration options for static assets
@@ -166,18 +167,12 @@ export interface BaseWorkerProps<
   url?: boolean;
 
   /**
-   * Observability configuration for the worker
+   * Specify the observability behavior of the Worker.
    *
-   * Controls whether worker logs are enabled
-   * @default { enabled: true }
+   * @see https://developers.cloudflare.com/workers/wrangler/configuration/#observability
+   * @default - `enabled: true`
    */
-  observability?: {
-    /**
-     * Whether to enable worker logs
-     * @default true
-     */
-    enabled?: boolean;
-  };
+  observability?: WorkerObservability;
 
   /**
    * Enable Workers Logpush to export trace events (request/response metadata,
@@ -391,6 +386,85 @@ export interface BaseWorkerProps<
    * Tail consumers that will receive execution logs from this worker
    */
   tailConsumers?: Array<Worker | { service: string }>;
+}
+
+export interface WorkerObservability {
+  /**
+   * If observability is enabled for this Worker
+   *
+   * @default true
+   */
+  enabled?: boolean;
+
+  /**
+   * A number between 0 and 1, where 0 indicates zero out of one hundred requests are logged, and 1 indicates every request is logged.
+   * If head_sampling_rate is unspecified, it is configured to a default value of 1 (100%).
+   * @see https://developers.cloudflare.com/workers/observability/logs/workers-logs/#head-based-sampling
+   * @default 1
+   */
+  headSamplingRate?: number;
+
+  /**
+   * Configuration for worker logs
+   */
+  logs?: {
+    /**
+     * Whether logs are enabled
+     * @default true
+     */
+    enabled?: boolean;
+
+    /**
+     * The sampling rate for logs
+     */
+    headSamplingRate?: number;
+
+    /**
+     * Set to false to disable invocation logs
+     * @default true
+     */
+    invocationLogs?: boolean;
+
+    /**
+     * If logs should be persisted to the Cloudflare observability platform where they can be queried in the dashboard.
+     * @default true
+     */
+    persist?: boolean;
+
+    /**
+     * What destinations logs emitted from the Worker should be sent to.
+     * @default []
+     */
+    destinations?: string[];
+  };
+
+  /**
+   * Configuration for worker traces
+   */
+  traces?: {
+    /**
+     * Whether traces are enabled
+     * @default true
+     */
+    enabled?: boolean;
+
+    /**
+     * The sampling rate for traces
+     */
+    headSamplingRate?: number;
+
+    /**
+     * If traces should be persisted to the Cloudflare observability platform where they can be queried in the dashboard.
+     * @default true
+     */
+    persist?: boolean;
+
+    /**
+     * What destinations traces emitted from the Worker should be sent to.
+     * @default []
+     */
+    destinations?: string[];
+  };
 }
 
 export interface InlineWorkerProps<
@@ -863,13 +937,20 @@ const _Worker = Resource(
         durableObjects: options.durableObjects,
         workflows: options.workflows,
       });
-      if (!props.version && this.output?.dev?.hasRemote !== false) {
+      if (this.output?.dev?.hasRemote !== false) {
         const api = await createCloudflareApi(props);
-        await deleteQueueConsumers(api, options.name);
-        await deleteWorker(api, {
-          scriptName: options.name,
-          dispatchNamespace: options.dispatchNamespace,
-        });
+        if (props.version) {
+          //* if the worker exists we deploy an empty version so we can destroy
+          if (await exists(api, options.name)) {
+            await createEmptyWorker(api, options.name, props.version);
+          }
+        } else {
+          await deleteQueueConsumers(api, options.name);
+          await deleteWorker(api, {
+            scriptName: options.name,
+            dispatchNamespace: options.dispatchNamespace,
+          });
+        }
       }
       return this.destroy();
     }
@@ -901,9 +982,11 @@ const _Worker = Resource(
           bundle,
           port: props.dev?.port,
           tunnel: props.dev?.tunnel ?? this.scope.tunnel,
+          cwd: props.cwd ?? process.cwd(),
         });
         this.onCleanup(() => controller.dispose());
       }
+
       await provisionResources(
         {
           ...props,
@@ -1159,11 +1242,17 @@ async function provisionResources<B extends Bindings>(
     containers: options.containers,
     domains: props.domains?.map((domain) => {
       if (typeof domain === "string") {
+        if (domain === "") {
+          throw new Error("Domain names cannot be empty strings");
+        }
         return {
           name: domain,
           zoneId: undefined,
           adopt: props.adopt,
         };
+      }
+      if (domain.domainName === "") {
+        throw new Error("Domain names cannot be empty strings");
       }
       return {
         name: domain.domainName,
@@ -1224,15 +1313,10 @@ async function provisionResources<B extends Bindings>(
         ? Promise.all(
             input.containers.map(async (container) => {
               return await ContainerApplication(container.id, {
-                image: container.image,
-                name: container.name,
-                instanceType: container.instanceType,
-                observability: container.observability,
+                ...container,
                 durableObjects: {
                   namespaceId: await getContainerNamespaceId(container),
                 },
-                schedulingPolicy: container.schedulingPolicy,
-                adopt: container.adopt,
                 dev: options.local,
                 ...input.api,
               });
@@ -1607,7 +1691,7 @@ async function assertWorkerDoesNotExist(
   );
 }
 
-async function getScriptMetadata(
+export async function getScriptMetadata(
   api: CloudflareApi,
   scriptName: string,
 ): Promise<WorkerScriptMetadata | undefined> {

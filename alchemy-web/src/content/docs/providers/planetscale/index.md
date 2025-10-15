@@ -14,6 +14,21 @@ PlanetScale is a serverless database platform that supports both MySQL and Postg
 - [Password](/providers/planetscale/password) - Create and manage database passwords with specific roles and permissions (MySQL only)
 - [Role](/providers/planetscale/role) - Create and manage database roles with inherited permissions (PostgreSQL only)
 
+## Authentication
+
+PlanetScale authentication is handled via environment variables.
+
+### Setting the Token ID and Secret
+The token ID and secret can be set by setting the `PLANETSCALE_SERVICE_TOKEN_ID` and `PLANETSCALE_SERVICE_TOKEN` environment variables. Alchemy will use those to generate the correct header for the planetscale API.
+
+### Directly Setting the API Token
+
+The API token can be set directly by setting the `PLANETSCALE_API_TOKEN` environment variable. This must follow the format outlined by planetscale here: [Authentication](https://planetscale.com/docs/concepts/authentication).
+
+### Overriding per Resource
+
+To support multiple accouns, alchemy allows you to override the authentication token for a resource by setting the `serviceTokenId` and `serviceToken` properties on planetscale resources.
+
 ## MySQL Example
 
 ```ts
@@ -22,7 +37,7 @@ import { Database, Branch, Password } from "alchemy/planetscale";
 // Create a MySQL database
 const database = await Database("my-app-db", {
   name: "my-app-db",
-  organizationId: "my-org",
+  organization: "my-org",
   clusterSize: "PS_10",
   allowDataBranching: true,
   automaticMigrations: true,
@@ -31,8 +46,8 @@ const database = await Database("my-app-db", {
 // Create a development branch
 const devBranch = await Branch("feature-123", {
   name: "feature-123",
-  organizationId: "my-org",
-  databaseName: database.name,
+  organization: "my-org",
+  database: database,
   parentBranch: "main",
   isProduction: false,
 });
@@ -40,17 +55,17 @@ const devBranch = await Branch("feature-123", {
 // Create passwords for database access (MySQL only)
 const readerPassword = await Password("app-reader", {
   name: "app-reader",
-  organizationId: "my-org",
-  databaseName: database.name,
+  organization: "my-org",
+  database: database,
   branchName: "main",
   role: "reader"
 });
 
 const writerPassword = await Password("app-writer", {
   name: "app-writer",
-  organizationId: "my-org",
-  databaseName: database.name,
-  branchName: devBranch.name,
+  organization: "my-org",
+  database: database,
+  branchName: devBranch,
   role: "writer",
   ttl: 86400 // 24 hours
 });
@@ -64,7 +79,7 @@ import { Database, Branch, Role } from "alchemy/planetscale";
 // Create a PostgreSQL database
 const pgDatabase = await Database("my-pg-db", {
   name: "my-pg-db",
-  organizationId: "my-org",
+  organization: "my-org",
   clusterSize: "PS_10",
   kind: "postgresql",
   allowDataBranching: true,
@@ -74,7 +89,7 @@ const pgDatabase = await Database("my-pg-db", {
 // Create a development branch
 const devBranch = await Branch("dev-branch", {
   name: "development",
-  organizationId: "my-org",
+  organization: "my-org",
   database: pgDatabase,
   parentBranch: "main",
   isProduction: false,

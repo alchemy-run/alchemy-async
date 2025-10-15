@@ -1,12 +1,12 @@
 {
   "name": "alchemy",
-  "version": "0.70.0",
+  "version": "0.73.1",
   "license": "Apache-2.0",
   "author": "Sam Goodwin <sam@alchemy.run>",
   "homepage": "https://alchemy.run",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/sam-goodwin/alchemy.git",
+    "url": "git+https://github.com/alchemy-run/alchemy.git",
     "directory": "alchemy"
   },
   "type": "module",
@@ -148,6 +148,10 @@
       "bun": "./src/stripe/index.ts",
       "import": "./lib/stripe/index.js"
     },
+    "./test/vite": {
+      "bun": "./src/test/vite.ts",
+      "import": "./lib/test/vite.js"
+    },
     "./upstash": {
       "bun": "./src/upstash/index.ts",
       "import": "./lib/upstash/index.js"
@@ -164,7 +168,9 @@
   "dependencies": {
     "@aws-sdk/credential-providers": "^3.0.0",
     "@cloudflare/unenv-preset": "^2.6.3",
+    "@cloudflare/workers-types": "catalog:",
     "@iarna/toml": "^2.2.5",
+    "@octokit/rest": "^21.1.1",
     "@smithy/node-config-provider": "^4.0.0",
     "@smithy/types": "^4.6.0",
     "aws4fetch": "^1.0.20",
@@ -201,14 +207,13 @@
     "@aws-sdk/client-ssm": "^3.0.0",
     "@aws-sdk/client-sts": "^3.0.0",
     "@cloudflare/vite-plugin": "^1.10.1",
-    "@cloudflare/workers-types": "catalog:",
     "@libsql/client": "^0.15.12",
-    "@octokit/rest": "^21.1.1",
     "@opennextjs/cloudflare": "^1.6.5",
     "astro": "^5.13.2",
     "drizzle-orm": "^0.44.2",
     "rwsdk": "^0.1.36",
-    "stripe": "^18.5.0"
+    "stripe": "^18.5.0",
+    "wrangler": "catalog:"
   },
   "peerDependenciesMeta": {
     "@astrojs/cloudflare": {
@@ -244,13 +249,7 @@
     "@cloudflare/vite-plugin": {
       "optional": true
     },
-    "@cloudflare/workers-types": {
-      "optional": true
-    },
     "@opennextjs/cloudflare": {
-      "optional": true
-    },
-    "@octokit/rest": {
       "optional": true
     },
     "@libsql/client": {
@@ -284,7 +283,6 @@
     "@cloudflare/containers": "^0.0.13",
     "@cloudflare/puppeteer": "^1.0.2",
     "@cloudflare/vite-plugin": "catalog:",
-    "@cloudflare/workers-types": "catalog:",
     "@coinbase/cdp-sdk": "^1.38.2",
     "@libsql/client": "^0.15.12",
     "@octokit/rest": "^21.1.1",
@@ -321,7 +319,7 @@
     "tsdown": "^0.14.2",
     "typescript": "catalog:",
     "undici": "^7.14.0",
-    "wrangler": "^4.27.0",
+    "wrangler": "^4.42.2",
     "zod": "^4.0.10"
   }
 }

@@ -29,6 +29,7 @@ import type { VersionMetadata } from "./version-metadata.ts";
 import type { WorkerRef } from "./worker-ref.ts";
 import type { WorkerStub } from "./worker-stub.ts";
 import type { Worker } from "./worker.ts";
+import type { WorkerLoader } from "./worker-loader.ts";
 import type { Workflow } from "./workflow.ts";
 
 export type Bindings = {
@@ -74,6 +75,7 @@ export type Binding =
   | WorkerStub
   | WorkerRef
   | WorkerEntrypoint
+  | WorkerLoader
   | Workflow
   | BrowserRendering
   | VersionMetadata
@@ -138,6 +140,7 @@ export type WorkerBindingSpec =
   | WorkerBindingVectorize
   | WorkerBindingVersionMetadata
   | WorkerBindingWasmModule
+  | WorkerBindingWorkerLoader
   | WorkerBindingWorkflow;
 
 /**
@@ -514,4 +517,14 @@ export interface WorkerBindingPipeline {
   type: "pipelines";
   /** Pipeline name */
   pipeline: string;
+}
+
+/**
+ * Worker Loader binding type
+ */
+export interface WorkerBindingWorkerLoader {
+  /** The name of the binding */
+  name: string;
+  /** Type identifier for Worker Loader binding */
+  type: "worker_loader";
 }

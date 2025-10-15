@@ -14,8 +14,52 @@ import { Database } from "alchemy/planetscale";
 
 const database = await Database("my-app-db", {
   name: "my-app-db",
-  organizationId: "my-org",
+  organization: "my-org",
   clusterSize: "PS_10",
+});
+```
+
+## Managing Organizations
+
+There are multiple ways to set the organization for a database. 
+
+Using `OrganizationRef`:
+
+```ts
+import { OrganizationRef, Database } from "alchemy/planetscale";
+
+const organization = await OrganizationRef("my-org");
+const database = await Database("my-app-db", {
+  organization,
+  name: "my-app-db",
+  clusterSize: "PS_10",
+});
+```
+
+Using the `PLANETSCALE_ORGANIZATION` environment variable. This is the default behavior if no organization is provided:
+
+```ts
+import { Database } from "alchemy/planetscale";
+
+const database = await Database("my-app-db", {
+  name: "my-app-db",
+  organization: alchemy.env.PLANETSCALE_ORGANIZATION,
+  clusterSize: "PS_10",
+});
+```
+
+## Deletion
+
+By default, when a database is deleted, the database will be removed from the state but not deleted via API. This is to prevent accidental loss of data. This setting can be changed by setting the `delete` property to `true`.
+
+```ts
+import { Database } from "alchemy/planetscale";
+
+const database = await Database("my-app-db", {
+  name: "my-app-db",
+  organization: alchemy.env.PLANETSCALE_ORGANIZATION,
+  clusterSize: "PS_10",
+  delete: true,
 });
 ```
 
@@ -28,7 +72,7 @@ import { Database } from "alchemy/planetscale";
 
 const pgDatabase = await Database("my-pg-db", {
   name: "my-pg-db",
-  organizationId: "my-org",
+  organization: "my-org",
   clusterSize: "PS_10",
   kind: "postgresql",
 });
@@ -43,7 +87,7 @@ import { Database } from "alchemy/planetscale";
 
 const database = await Database("eu-app-db", {
   name: "eu-app-db",
-  organizationId: "my-org",
+  organization: "my-org",
   region: {
     slug: "eu-west",
   },
@@ -63,7 +107,7 @@ import { Database } from "alchemy/planetscale";
 
 const prodDatabase = await Database("production-db", {
   name: "production-db",
-  organizationId: "my-org",
+  organization: "my-org",
   region: {
     slug: "us-east",
   },
@@ -89,7 +133,7 @@ import { Database } from "alchemy/planetscale";
 
 const database = await Database("custom-auth-db", {
   name: "custom-auth-db",
-  organizationId: "my-org",
+  organization: "my-org",
   clusterSize: "PS_10",
   apiKey: alchemy.secret(process.env.CUSTOM_PLANETSCALE_TOKEN),
 });
@@ -104,7 +148,7 @@ import { Database } from "alchemy/planetscale";
 
 const armDatabase = await Database("arm-pg-db", {
   name: "arm-pg-db",
-  organizationId: "my-org",
+  organization: "my-org",
   clusterSize: "PS_10",
   kind: "postgresql",
   arch: "arm",
@@ -120,7 +164,7 @@ import { Database } from "alchemy/planetscale";
 
 const existingDatabase = await Database("existing-db", {
   name: "existing-db",
-  organizationId: "my-org",
+  organization: "my-org",
   clusterSize: "PS_20",
   adopt: true,
   allowDataBranching: false,

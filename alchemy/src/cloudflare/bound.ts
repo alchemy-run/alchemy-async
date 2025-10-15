@@ -1,23 +1,3 @@
-import type {
-  Ai,
-  AnalyticsEngineDataset,
-  D1Database,
-  DispatchNamespace,
-  DurableObjectNamespace,
-  Fetcher,
-  Hyperdrive,
-  ImagesBinding,
-  KVNamespace,
-  Queue,
-  R2Bucket,
-  RateLimit,
-  Rpc,
-  SecretsStoreSecret,
-  Service,
-  VectorizeIndex,
-  WorkerVersionMetadata,
-  Workflow,
-} from "@cloudflare/workers-types";
 import type { Pipeline } from "cloudflare:pipelines";
 import type { Secret } from "../secret.ts";
 import type { Ai as _Ai } from "./ai.ts";
@@ -40,6 +20,7 @@ import type { SecretRef as CloudflareSecretRef } from "./secret-ref.ts";
 import type { Secret as CloudflareSecret } from "./secret.ts";
 import type { VectorizeIndex as _VectorizeIndex } from "./vectorize-index.ts";
 import type { VersionMetadata as _VersionMetadata } from "./version-metadata.ts";
+import type { WorkerLoader as _WorkerLoader } from "./worker-loader.ts";
 import type { WorkerRef } from "./worker-ref.ts";
 import type { WorkerStub } from "./worker-stub.ts";
 import type { Worker as _Worker } from "./worker.ts";
@@ -86,35 +67,39 @@ export type Bound<T extends Binding> = T extends _DurableObjectNamespace<
                           ? D1Database
                           : T extends DispatchNamespace
                             ? DispatchNamespace
-                            : T extends _VectorizeIndex
-                              ? VectorizeIndex
-                              : T extends _Queue<infer Body>
-                                ? Queue<Body>
-                                : T extends _AnalyticsEngineDataset
-                                  ? AnalyticsEngineDataset
-                                  : T extends _Pipeline<infer R>
-                                    ? Pipeline<R>
-                                    : T extends _RateLimit
-                                      ? RateLimit
-                                      : T extends string
-                                        ? T
-                                        : T extends BrowserRendering
-                                          ? Fetcher
-                                          : T extends _Ai<infer M>
-                                            ? Ai<M>
-                                            : T extends _Images
-                                              ? ImagesBinding
-                                              : T extends _VersionMetadata
-                                                ? WorkerVersionMetadata
-                                                : T extends Self
-                                                  ? Service
-                                                  : T extends Json<infer T>
-                                                    ? T
-                                                    : T extends _Container<
-                                                          infer Obj
-                                                        >
-                                                      ? DurableObjectNamespace<
-                                                          Obj &
-                                                            Rpc.DurableObjectBranded
-                                                        >
-                                                      : Service;
+                            : T extends _WorkerLoader
+                              ? WorkerLoader
+                              : T extends _VectorizeIndex
+                                ? VectorizeIndex
+                                : T extends _Queue<infer Body>
+                                  ? Queue<Body>
+                                  : T extends _AnalyticsEngineDataset
+                                    ? AnalyticsEngineDataset
+                                    : T extends _Pipeline<infer R>
+                                      ? Pipeline<R>
+                                      : T extends _RateLimit
+                                        ? RateLimit
+                                        : T extends string
+                                          ? T
+                                          : T extends BrowserRendering
+                                            ? Fetcher
+                                            : T extends _Ai<infer M>
+                                              ? Ai<M>
+                                              : T extends _Images
+                                                ? ImagesBinding
+                                                : T extends _VersionMetadata
+                                                  ? WorkerVersionMetadata
+                                                  : T extends Self
+                                                    ? Service
+                                                    : T extends Json<infer T>
+                                                      ? T
+                                                      : T extends _Container<
+                                                            infer Obj
+                                                          >
+                                                        ? DurableObjectNamespace<
+                                                            Obj &
+                                                              Rpc.DurableObjectBranded
+                                                          >
+                                                        : T extends undefined
+                                                          ? undefined
+                                                          : Service;

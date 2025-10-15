@@ -128,7 +128,7 @@ export const WorkerStub = Resource("cloudflare::WorkerStub", async function <
   } as WorkerStub<RPC>;
 });
 
-async function exists(
+export async function exists(
   api: CloudflareApi,
   workerName: string,
 ): Promise<boolean> {
@@ -145,9 +145,10 @@ async function exists(
   }
 }
 
-async function createEmptyWorker(
+export async function createEmptyWorker(
   api: CloudflareApi,
   workerName: string,
+  version?: string,
 ): Promise<void> {
   // Minimal empty worker script
   const emptyScript = `export default { 
@@ -178,6 +179,12 @@ async function createEmptyWorker(
           main_module: "worker.js",
           compatibility_date: "2025-04-20",
           bindings: [],
+          ...(version != null && {
+            annotations: {
+              "workers/tag": version,
+              "workers/message": `Version ${version}`,
+            },
+          }),
         }),
       ],
       {
@@ -189,14 +196,24 @@ async function createEmptyWorker(
   // Upload worker script
   await extractCloudflareResult(
     `create empty worker "${workerName}"`,
-    api.put(
-      `/accounts/${api.accountId}/workers/scripts/${workerName}`,
-      formData,
-      {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-      },
-    ),
+    version != null
+      ? api.post(
+          `/accounts/${api.accountId}/workers/scripts/${workerName}/versions`,
+          formData,
+          {
+            headers: {
+              "Content-Type": "multipart/form-data",
+            },
+          },
+        )
+      : api.put(
+          `/accounts/${api.accountId}/workers/scripts/${workerName}`,
+          formData,
+          {
+            headers: {
+              "Content-Type": "multipart/form-data",
+            },
+          },
+        ),
   );
 }

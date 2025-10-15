@@ -780,6 +780,15 @@ export interface ContainerApplicationData {
   [key: string]: any;
 }
 
+export async function getContainerApplicationByName(
+  api: CloudflareApi,
+  name: string,
+) {
+  return (await listContainerApplications(api)).find(
+    (app) => app.name === name,
+  );
+}
+
 export async function getContainerApplication(
   api: CloudflareApi,
   applicationId: string,
