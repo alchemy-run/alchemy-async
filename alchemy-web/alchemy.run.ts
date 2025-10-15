@@ -65,6 +65,7 @@ export const router = await Worker("router", {
 const url = domain ? `https://${domain}` : router.url;
 
 console.log(url);
+console.log({ stage, domain, website: website.url, router: router.url });
 
 if (process.env.PULL_REQUEST) {
   await GitHubComment("comment", {
