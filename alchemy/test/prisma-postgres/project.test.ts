@@ -9,7 +9,7 @@ const test = alchemy.test(import.meta, {
   prefix: BRANCH_PREFIX,
 });
 
-describe.skipIf(!process.env.ALL_TESTS)("Prisma Project", async () => {
+describe("Prisma Project", async () => {
   const api = createPrismaApi();
 
   test("create and delete project", async (scope) => {
