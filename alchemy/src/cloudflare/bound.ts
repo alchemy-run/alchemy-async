@@ -100,4 +100,6 @@ export type Bound<T extends Binding> = T extends _DurableObjectNamespace<
                                                             Obj &
                                                               Rpc.DurableObjectBranded
                                                           >
-                                                        : Service;
+                                                        : T extends undefined
+                                                          ? undefined
+                                                          : Service;
