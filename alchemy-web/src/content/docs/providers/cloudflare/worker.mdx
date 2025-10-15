@@ -635,7 +635,7 @@ Break circular dependencies with WorkerStub:
 // alchemy.run.ts
 import { Worker, WorkerStub } from "alchemy/cloudflare";
 
-const authStub = WorkerStub("auth", { name: "auth-service" });
+const authStub = WorkerStub("auth-stub", { name: "auth-service" });
 
 export const apiWorker = await Worker("api", {
   entrypoint: "./src/api.ts",

@@ -1,11 +1,15 @@
 import envPaths from "env-paths";
 import { exec } from "node:child_process";
 import fs from "node:fs/promises";
+import http from "node:http";
+import https from "node:https";
 import os from "node:os";
+import { URL } from "node:url";
 import path from "pathe";
 import pkg from "../../package.json" with { type: "json" };
 import type { Phase } from "../alchemy.ts";
 import { Scope } from "../scope.ts";
+import { parseOption } from "./cli-args.ts";
 import { logger } from "./logger.ts";
 import { memoize } from "./memoize.ts";
 
@@ -170,9 +174,25 @@ export const collectData = memoize(async (): Promise<GenericTelemetryData> => {
     getRuntime(),
     getEnvironment(),
   ]);
+
+  const sessionId =
+    parseOption("--telemetry-session-id") ??
+    process.env.ALCHEMY_TELEMETRY_SESSION_ID ??
+    //@ts-expect-error
+    globalThis.ALCHEMY_TELEMETRY_SESSION_ID ??
+    crypto.randomUUID();
+
+  const referrer =
+    parseOption("--telemetry-ref") ??
+    process.env.ALCHEMY_TELEMETRY_REF ??
+    //@ts-expect-error
+    globalThis.ALCHEMY_TELEMETRY_REF ??
+    "";
+
   return {
     userId: userId ?? "",
-    sessionId: crypto.randomUUID(),
+    sessionId,
+    referrer,
     platform: os.platform(),
     osVersion: os.release(),
     arch: os.arch(),
@@ -192,6 +212,7 @@ export const collectData = memoize(async (): Promise<GenericTelemetryData> => {
 export type GenericTelemetryData = {
   userId: string;
   sessionId: string;
+  referrer: string;
   platform: string;
   osVersion: string;
   arch: string;
@@ -287,7 +308,7 @@ export async function createAndSendEvent(
       ...(await collectData()),
       ...serializeError(error),
     };
-    await fetch(TELEMETRY_API_URL, {
+    await fetchNoResponse(TELEMETRY_API_URL, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -325,4 +346,49 @@ function serializeError(error: Error | undefined) {
     errorMessage: "",
     errorStack: "",
   };
+}
+
+async function fetchNoResponse(
+  url: string,
+  options: {
+    body?: string;
+    headers?: Record<string, string>;
+    method?: string;
+  } = {},
+) {
+  const parsedUrl = new URL(url);
+  const isHttps = parsedUrl.protocol === "https:";
+  const client = isHttps ? https : http;
+
+  const body = options.body || "";
+  const headers = {
+    ...options.headers,
+    "Content-Length": Buffer.byteLength(body),
+  };
+
+  const requestOptions = {
+    hostname: parsedUrl.hostname,
+    port: parsedUrl.port || (isHttps ? 443 : 80),
+    path: parsedUrl.pathname + parsedUrl.search,
+    method: options.method || "GET",
+    headers,
+  };
+
+  await new Promise<void>((resolve, reject) => {
+    const req = client.request(requestOptions);
+
+    req.on("error", (error) => {
+      reject(error);
+    });
+
+    if (body) {
+      req.write(body);
+    }
+
+    req.once("finish", () => {
+      resolve(void 0);
+    });
+
+    req.end();
+  });
 }

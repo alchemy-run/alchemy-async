@@ -47,14 +47,14 @@ This guide shows how to create and manage [PlanetScale PostgreSQL](https://plane
    Create a PlanetScale account and get your API credentials. Add them to your `.env` file:
 
    ```properties
-   PLANETSCALE_ORG_ID=your_organization_id
+   PLANETSCALE_ORGANIZATION=your_organization_name
    PLANETSCALE_API_TOKEN=your_api_token
    CLOUDFLARE_ACCOUNT_ID=your_cloudflare_account_id
    CLOUDFLARE_API_TOKEN=your_cloudflare_api_token
    ```
 
    :::tip
-   You can find your organization ID and create API tokens in your [PlanetScale dashboard](https://app.planetscale.com/).
+   You can find your organization name and create API tokens in your [PlanetScale dashboard](https://app.planetscale.com/).
    :::
 
 3. **Define schema**
@@ -158,7 +158,6 @@ This guide shows how to create and manage [PlanetScale PostgreSQL](https://plane
    // Create the PostgreSQL database
    const database = await Database("Database", {
      name: "sample-database",
-     organizationId: alchemy.env.PLANETSCALE_ORG_ID,
      clusterSize: "PS_10",
      kind: "postgresql",
    });

@@ -15,8 +15,10 @@ import {
 import { DEFAULT_STAGE, Scope, type ProviderCredentials } from "./scope.ts";
 import { secret } from "./secret.ts";
 import type { StateStoreType } from "./state.ts";
+import { cliArgs, parseOption } from "./util/cli-args.ts";
 import type { LoggerApi } from "./util/cli.ts";
 import { ALCHEMY_ROOT } from "./util/root-dir.ts";
+import { createAndSendEvent } from "./util/telemetry.ts";
 
 /**
  * Type alias for semantic highlighting of `alchemy` as a type keyword
@@ -101,18 +103,17 @@ async function _alchemy(
   appName: string,
   options?: Omit<AlchemyOptions, "appName">,
 ): Promise<Scope> {
-  const cliArgs = process.argv.slice(2);
+  const startedAt = performance.now();
+  let firstAnalyticsPromise: Promise<void> | undefined;
+  if (!options?.noTrack) {
+    firstAnalyticsPromise = createAndSendEvent({
+      event: "alchemy.start",
+      duration: performance.now() - startedAt,
+    });
+  }
   // user may select a specific app to auto-enable read mode for any other app
   const app = parseOption("--app");
-  function parseOption<D extends string | undefined>(
-    option: string,
-    defaultValue?: D,
-  ): D {
-    const i = cliArgs.indexOf(option);
-    return (
-      i !== -1 && i + 1 < cliArgs.length ? cliArgs[i + 1] : defaultValue
-    ) as D;
-  }
+
   const cliOptions = {
     phase:
       app && app !== appName
@@ -170,6 +171,7 @@ If this is a mistake, you can disable this check by setting the ALCHEMY_CI_STATE
     password: mergedOptions?.password ?? process.env.ALCHEMY_PASSWORD,
     noTrack: mergedOptions?.noTrack ?? false,
     isSelected: app === undefined ? undefined : app === appName,
+    startedAt,
   });
   onExit((code) => {
     root.cleanup().then(() => {
@@ -188,8 +190,20 @@ If this is a mistake, you can disable this check by setting the ALCHEMY_CI_STATE
   Scope.storage.enterWith(root);
   Scope.storage.enterWith(stage);
   if (mergedOptions?.phase === "destroy") {
-    await destroy(stage);
+    const err = await destroy(stage).catch((e) => e);
+    if (!options?.noTrack) {
+      await createAndSendEvent(
+        {
+          event: err instanceof Error ? "alchemy.error" : "alchemy.success",
+          duration: performance.now() - root.startedAt,
+        },
+        err instanceof Error ? err : undefined,
+      );
+    }
     return process.exit(0);
+  }
+  if (firstAnalyticsPromise) {
+    await firstAnalyticsPromise;
   }
   return root;
 }

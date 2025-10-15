@@ -30,7 +30,7 @@ export class InstrumentedStateStore<T extends StateStore>
       error = err;
       throw err;
     } finally {
-      createAndSendEvent(
+      await createAndSendEvent(
         {
           event,
           stateStore: this.stateStoreClass,

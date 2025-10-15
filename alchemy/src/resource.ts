@@ -179,7 +179,7 @@ export function Resource<
         const error = new Error(
           `Resource ${resourceID} already exists in the stack and is of a different type: '${otherResource?.[ResourceKind]}' !== '${type}'`,
         );
-        createAndSendEvent(
+        await createAndSendEvent(
           {
             event: "resource.error",
             resource: type,

@@ -8,6 +8,7 @@ import { detectRuntime } from "../../src/util/detect-node-runtime.ts";
 import { detectPackageManager } from "../../src/util/detect-package-manager.ts";
 import { exists } from "../../src/util/exists.ts";
 import { promiseWithResolvers } from "../../src/util/promise-with-resolvers.ts";
+import { collectData } from "../../src/util/telemetry.ts";
 import { ExitSignal } from "../trpc.ts";
 import { CDPProxy } from "./cdp-manager/cdp-proxy.ts";
 import { CDPManager } from "./cdp-manager/server.ts";
@@ -75,7 +76,7 @@ export const execArgs = {
   profile: z
     .string()
     .optional()
-    .describe("Alchemy profile to use for authoriziing requests"),
+    .describe("Alchemy profile to use for authorizing requests"),
 } as const;
 
 export async function execAlchemy(
@@ -120,6 +121,13 @@ export async function execAlchemy(
   const execArgs: string[] = [];
 
   const shouldInspect = (inspect || inspectBrk || inspectWait) ?? false;
+
+  const telemetryData = await collectData();
+
+  args.push(`--telemetry-session-id ${telemetryData.sessionId}`);
+  args.push(
+    `--telemetry-ref ${telemetryData.referrer ? `${telemetryData.referrer}+cli` : "cli"}`,
+  );
 
   if (quiet) args.push("--quiet");
   if (read) args.push("--read");
@@ -237,8 +245,9 @@ export async function execAlchemy(
     promiseWithResolvers<string>();
 
   process.on("SIGINT", async () => {
+    // hold the parent process open until the child process exits,
+    // then the trpc middleware will handle the SIGINT after sending the event
     await exitPromise;
-    process.exit(sanitizeExitCode(child.exitCode));
   });
 
   const child = spawn(command, {
@@ -298,7 +307,8 @@ export async function execAlchemy(
 
   const exitPromise = once(child, "exit");
   await exitPromise.catch(() => {});
-  process.exit(sanitizeExitCode(child.exitCode));
+
+  throw new ExitSignal(sanitizeExitCode(child.exitCode));
 }
 
 /**

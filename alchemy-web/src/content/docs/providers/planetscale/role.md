@@ -18,7 +18,7 @@ import { Database, Role } from "alchemy/planetscale";
 
 const database = await Database("my-db", {
   name: "my-database",
-  organizationId: "my-org",
+  organization: "my-org",
   clusterSize: "PS_10",
   kind: "postgresql",
 });
@@ -32,6 +32,20 @@ const role = await Role("app-role", {
 The `"postgres"` role provides full administrator access to the database. While this can be useful in development, we recommend following the [principle of least privilege](https://en.wikipedia.org/wiki/Principle_of_least_privilege) and creating roles with specific permissions instead, particularly for production environments.
 :::
 
+## Deletion
+
+By default, when a role is deleted, the role will be removed from the state but not deleted via API. This is to prevent accidental loss of data. This setting can be changed by setting the `delete` property to `true`.
+
+```ts
+import { Role } from "alchemy/planetscale";
+
+const role = await Role("app-role", {
+  database,
+  inheritedRoles: ["postgres"],
+  delete: true,
+});
+```
+
 ## Role with Specific Branch
 
 Create a role for a specific branch:
@@ -41,14 +55,14 @@ import { Role, Database, Branch } from "alchemy/planetscale";
 
 const database = await Database("my-db", {
   name: "my-database",
-  organizationId: "my-org",
+  organization: "my-org",
   clusterSize: "PS_10",
   kind: "postgresql",
 });
 
 const branch = await Branch("dev-branch", {
   name: "development",
-  organizationId: "my-org",
+  organization: "my-org",
   database,
   parentBranch: "main",
 });
@@ -68,7 +82,7 @@ You can pass in the database and branch names as strings instead of using the Da
 import { Role } from "alchemy/planetscale";
 
 const role = await Role("dev-role", {
-  organizationId: "my-org", // Required when using string database and branch names
+  organization: "my-org", // Required when using string database and branch names
   database: "my-database",
   branch: "main",
   inheritedRoles: ["pg_read_all_data", "pg_write_all_data"],
@@ -76,7 +90,7 @@ const role = await Role("dev-role", {
 ```
 
 :::warning
-If both the database and branch are provided as strings, you must provide your organization ID as well.
+If both the database and branch are provided as strings, you must provide your organization name as well.
 :::
 
 ## Role with Inherited Permissions
@@ -140,7 +154,7 @@ import { Role } from "alchemy/planetscale";
 
 const monitorRole = await Role("monitor", {
   database: "my-database",
-  organizationId: "my-org",
+  organization: "my-org",
   inheritedRoles: [
     "pg_monitor",
     "pg_read_all_settings",
@@ -159,7 +173,7 @@ import { Role } from "alchemy/planetscale";
 
 const role = await Role("app-role", {
   database: "my-database",
-  organizationId: "my-org",
+  organization: "my-org",
   inheritedRoles: ["postgres"],
 });
 
@@ -184,7 +198,7 @@ import { Hyperdrive } from "alchemy/cloudflare";
 
 const database = await Database("my-db", {
   name: "my-database",
-  organizationId: "my-org",
+  organization: "my-org",
   clusterSize: "PS_10",
   kind: "postgresql",
 });

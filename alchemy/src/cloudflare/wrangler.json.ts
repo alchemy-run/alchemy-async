@@ -4,7 +4,6 @@ import type { Context } from "../context.ts";
 import { Resource } from "../resource.ts";
 import { Scope } from "../scope.ts";
 import { isSecret } from "../secret.ts";
-import { unencryptSecrets } from "./util/filter-env-bindings.ts";
 import { assertNever } from "../util/assert-never.ts";
 import type { Bindings, WorkerBindingRateLimit } from "./bindings.ts";
 import type { R2BucketJurisdiction } from "./bucket.ts";
@@ -12,6 +11,7 @@ import type { DurableObjectNamespace } from "./durable-object-namespace.ts";
 import type { EventSource } from "./event-source.ts";
 import { isQueueEventSource } from "./event-source.ts";
 import { isQueue } from "./queue.ts";
+import { unencryptSecrets } from "./util/filter-env-bindings.ts";
 import { isWorker, type Worker, type WorkerProps } from "./worker.ts";
 
 type WranglerJsonRateLimit = Omit<WorkerBindingRateLimit, "type"> & {
@@ -301,7 +301,7 @@ export interface WranglerJsonSpec {
    */
   ai?: {
     binding: string;
-    experimental_remote?: boolean;
+    remote?: boolean;
   };
 
   /**
@@ -309,7 +309,7 @@ export interface WranglerJsonSpec {
    */
   browser?: {
     binding: string;
-    experimental_remote?: boolean;
+    remote?: boolean;
   };
 
   /**
@@ -317,7 +317,7 @@ export interface WranglerJsonSpec {
    */
   images?: {
     binding: string;
-    experimental_remote?: boolean;
+    remote?: boolean;
   };
 
   /**
@@ -330,7 +330,7 @@ export interface WranglerJsonSpec {
      * The ID of the KV namespace used during `wrangler dev`
      */
     preview_id?: string;
-    experimental_remote?: boolean;
+    remote?: boolean;
   }[];
 
   /**
@@ -355,7 +355,7 @@ export interface WranglerJsonSpec {
      * The preview name of this R2 bucket at the edge.
      */
     preview_bucket_name?: string;
-    experimental_remote?: boolean;
+    remote?: boolean;
   }[];
 
   /**
@@ -396,7 +396,7 @@ export interface WranglerJsonSpec {
   vectorize?: {
     binding: string;
     index_name: string;
-    experimental_remote?: boolean;
+    remote?: boolean;
   }[];
 
   /**
@@ -416,7 +416,7 @@ export interface WranglerJsonSpec {
      * The ID of the D1 database used during `wrangler dev`
      */
     preview_database_id?: string;
-    experimental_remote?: boolean;
+    remote?: boolean;
   }[];
 
   /**
@@ -499,7 +499,7 @@ export interface WranglerJsonSpec {
   dispatch_namespaces?: {
     binding: string;
     namespace: string;
-    experimental_remote?: boolean;
+    remote?: boolean;
   }[];
 
   /**
@@ -559,7 +559,7 @@ function processBindings(
     binding: string;
     id: string;
     preview_id: string;
-    experimental_remote?: boolean;
+    remote?: boolean;
   }[] = [];
   const durableObjects: {
     name: string;
@@ -592,7 +592,7 @@ function processBindings(
     database_name: string;
     migrations_dir?: string;
     preview_database_id: string;
-    experimental_remote?: boolean;
+    remote?: boolean;
   }[] = [];
   const queues: {
     producers: { queue: string; binding: string }[];
@@ -608,7 +608,7 @@ function processBindings(
   const vectorizeIndexes: {
     binding: string;
     index_name: string;
-    experimental_remote?: boolean;
+    remote?: boolean;
   }[] = [];
   const analyticsEngineDatasets: { binding: string; dataset: string }[] = [];
   const hyperdrive: {
@@ -625,7 +625,7 @@ function processBindings(
   const dispatchNamespaces: {
     binding: string;
     namespace: string;
-    experimental_remote?: boolean;
+    remote?: boolean;
   }[] = [];
   const unsafeBindings: WranglerJsonRateLimit[] = [];
   const containers: {
@@ -693,9 +693,7 @@ function processBindings(
         binding: bindingName,
         id: id,
         preview_id: id,
-        ...("dev" in binding && binding.dev?.remote
-          ? { experimental_remote: true }
-          : {}),
+        ...("dev" in binding && binding.dev?.remote ? { remote: true } : {}),
       });
     } else if (
       typeof binding === "object" &&
@@ -725,7 +723,7 @@ function processBindings(
         preview_bucket_name: name,
         jurisdiction:
           binding.jurisdiction === "default" ? undefined : binding.jurisdiction,
-        ...(binding.dev?.remote ? { experimental_remote: true } : {}),
+        ...(binding.dev?.remote ? { remote: true } : {}),
       });
     } else if (binding.type === "secret") {
       // Secret binding
@@ -753,7 +751,7 @@ function processBindings(
         database_name: binding.name,
         migrations_dir: binding.migrationsDir,
         preview_database_id: id,
-        ...(binding.dev?.remote ? { experimental_remote: true } : {}),
+        ...(binding.dev?.remote ? { remote: true } : {}),
       });
     } else if (binding.type === "queue") {
       const id =
@@ -769,7 +767,7 @@ function processBindings(
         binding: bindingName,
         index_name: binding.name,
         // https://developers.cloudflare.com/workers/development-testing/#recommended-remote-bindings
-        experimental_remote: true,
+        remote: true,
       });
     } else if (binding.type === "browser") {
       if (spec.browser) {
@@ -778,7 +776,7 @@ function processBindings(
       spec.browser = {
         binding: bindingName,
         // https://developers.cloudflare.com/workers/development-testing/#recommended-remote-bindings
-        experimental_remote: true,
+        remote: true,
       };
     } else if (binding.type === "ai") {
       if (spec.ai) {
@@ -787,7 +785,7 @@ function processBindings(
       spec.ai = {
         binding: bindingName,
         // https://developers.cloudflare.com/workers/development-testing/#recommended-remote-bindings
-        experimental_remote: true,
+        remote: true,
       };
     } else if (binding.type === "images") {
       if (spec.images) {
@@ -796,7 +794,7 @@ function processBindings(
       spec.images = {
         binding: bindingName,
         // https://developers.cloudflare.com/workers/development-testing/#recommended-remote-bindings
-        experimental_remote: true,
+        remote: true,
       };
     } else if (binding.type === "analytics_engine") {
       analyticsEngineDatasets.push({
@@ -837,7 +835,7 @@ function processBindings(
       dispatchNamespaces.push({
         binding: bindingName,
         namespace: binding.namespaceName,
-        experimental_remote: true,
+        remote: true,
       });
     } else if (binding.type === "ratelimit") {
       unsafeBindings.push({

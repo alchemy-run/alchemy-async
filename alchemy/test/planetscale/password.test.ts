@@ -17,7 +17,6 @@ const test = alchemy.test(import.meta, {
 
 describe.skipIf(!process.env.PLANETSCALE_TEST)("Password Resource", () => {
   const api = createPlanetScaleClient();
-  const organizationId = alchemy.env.PLANETSCALE_ORG_ID;
 
   let database: Database;
   let branch: Branch;
@@ -25,14 +24,13 @@ describe.skipIf(!process.env.PLANETSCALE_TEST)("Password Resource", () => {
 
   test.beforeAll(async (_scope) => {
     database = await Database("password-test-db", {
-      organizationId,
+      organization: alchemy.env.PLANETSCALE_ORG_ID,
       clusterSize: "PS_10",
     });
-    await waitForDatabaseReady(api, organizationId, database.name);
+    await waitForDatabaseReady(api, database.organization, database.name);
 
     branch = await Branch("password-test-branch", {
-      organizationId,
-      databaseName: database.name,
+      database,
       parentBranch: "main",
       isProduction: false,
     });
@@ -53,9 +51,8 @@ describe.skipIf(!process.env.PLANETSCALE_TEST)("Password Resource", () => {
       // Create a password
       let password = await Password(name, {
         name,
-        organizationId,
-        database: database.name,
-        branch: branch.name,
+        database,
+        branch,
         role: "reader",
       });
 
@@ -69,7 +66,7 @@ describe.skipIf(!process.env.PLANETSCALE_TEST)("Password Resource", () => {
       // Verify password was created by querying the API directly
       const { data: getResponse } = await api.getPassword({
         path: {
-          organization: organizationId,
+          organization: database.organization,
           database: database.name,
           branch: branch.name,
           id: password.id,
@@ -81,8 +78,7 @@ describe.skipIf(!process.env.PLANETSCALE_TEST)("Password Resource", () => {
       // Update the password (only name and cidrs should trigger update, not replace)
       password = await Password(name, {
         name: `${name}-updated`,
-        organizationId,
-        database: database.name,
+        database,
         branch: branch.name,
         role: "reader",
       });
@@ -92,7 +88,7 @@ describe.skipIf(!process.env.PLANETSCALE_TEST)("Password Resource", () => {
       // Verify password was updated
       const { data: getUpdatedResponse } = await api.getPassword({
         path: {
-          organization: organizationId,
+          organization: database.organization,
           database: database.name,
           branch: branch.name,
           id: password.id,
@@ -114,9 +110,8 @@ describe.skipIf(!process.env.PLANETSCALE_TEST)("Password Resource", () => {
       // Create initial password
       let password = await Password(name, {
         name,
-        organizationId,
-        database: database.name,
-        branch: branch.name,
+        database,
+        branch,
         role: "reader",
         ttl: 3600,
         cidrs: ["0.0.0.0/0"],
@@ -129,9 +124,8 @@ describe.skipIf(!process.env.PLANETSCALE_TEST)("Password Resource", () => {
       // Update password with different role (should trigger replacement)
       password = await Password(name, {
         name,
-        organizationId,
-        database: database.name,
-        branch: branch.name,
+        database,
+        branch,
         role: "writer", // Changed role
         ttl: 3600,
         cidrs: ["0.0.0.0/0"],
@@ -147,7 +141,7 @@ describe.skipIf(!process.env.PLANETSCALE_TEST)("Password Resource", () => {
       // Verify old password was deleted and new one created
       const { response: getOldResponse } = await api.getPassword({
         path: {
-          organization: organizationId,
+          organization: database.organization,
           database: database.name,
           branch: branch.name,
           id: originalId,
@@ -158,7 +152,7 @@ describe.skipIf(!process.env.PLANETSCALE_TEST)("Password Resource", () => {
 
       const { data: getNewResponse } = await api.getPassword({
         path: {
-          organization: organizationId,
+          organization: database.organization,
           database: database.name,
           branch: branch.name,
           id: password.id,
@@ -167,6 +161,82 @@ describe.skipIf(!process.env.PLANETSCALE_TEST)("Password Resource", () => {
       expect(getNewResponse.role).toEqual("writer");
     } finally {
       await destroy(scope);
+    }
+  });
+
+  test("password with delete=false should not be deleted via API", async (scope) => {
+    const passwordName = `${BRANCH_PREFIX}-nodelete-password`;
+    let passwordId: string | null = null;
+
+    try {
+      const password = await Password("nodelete-password", {
+        name: passwordName,
+        database: database,
+        branch: branch,
+        role: "reader",
+        delete: false,
+      });
+
+      passwordId = password.id; // Store ID before destroy
+
+      expect(password).toMatchObject({
+        role: "reader",
+        delete: false,
+      });
+
+      // Verify password exists
+      const { data } = await api.getPassword({
+        path: {
+          organization: database.organization,
+          database: database.name,
+          branch: branch.name,
+          id: password.id,
+        },
+      });
+      expect(data.id).toBe(password.id);
+    } catch (err) {
+      console.error("Test error:", err);
+      throw err;
+    } finally {
+      // When we call destroy, the password should NOT be deleted via API
+      await destroy(scope);
+
+      expect(passwordId).not.toBeNull();
+
+      // Verify password still exists (was not deleted via API)
+      const { response } = await api.getPassword({
+        path: {
+          organization: database.organization,
+          database: database.name,
+          branch: branch.name,
+          id: passwordId!,
+        },
+        throwOnError: false,
+      });
+      expect(response.status).toBe(200); // Password should still exist
+
+      // Clean up manually for the test
+      await api.deletePassword({
+        path: {
+          organization: database.organization,
+          database: database.name,
+          branch: branch.name,
+          id: passwordId!,
+        },
+        throwOnError: false,
+      });
+
+      // Verify manual cleanup worked
+      const { response: deletedResponse } = await api.getPassword({
+        path: {
+          organization: database.organization,
+          database: database.name,
+          branch: branch.name,
+          id: passwordId!,
+        },
+        throwOnError: false,
+      });
+      expect(deletedResponse.status).toBe(404);
     }
   });
 });

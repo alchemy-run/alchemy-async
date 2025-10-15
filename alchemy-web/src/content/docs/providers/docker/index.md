@@ -103,4 +103,4 @@ export const url = `http://localhost:3000`;
 
 ## Additional Resources
 
-For more complex examples, see the [Docker Example](https://github.com/sam-goodwin/alchemy/tree/main/examples/docker) in the Alchemy repository.
+For more complex examples, see the [Docker Example](https://github.com/alchemy-run/alchemy/tree/main/examples/docker) in the Alchemy repository.

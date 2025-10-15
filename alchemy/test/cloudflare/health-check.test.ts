@@ -455,18 +455,14 @@ describe.sequential("HealthCheck Resource", () => {
 
     try {
       const firstId = `${BRANCH_PREFIX}-healthcheck-adopt-first`;
-      try {
-        created = await HealthCheck(firstId, {
-          zone: zoneId,
-          address: workerHostname,
-          name: sharedName,
-          interval: 60,
-          timeout: 5,
-          retries: 2,
-        });
-      } catch (error) {
-        throw error;
-      }
+      created = await HealthCheck(firstId, {
+        zone: zoneId,
+        address: workerHostname,
+        name: sharedName,
+        interval: 60,
+        timeout: 5,
+        retries: 2,
+      });
 
       expect(created).toBeDefined();
 
@@ -508,18 +504,14 @@ describe.sequential("HealthCheck Resource", () => {
     const secondId = `${BRANCH_PREFIX}-healthcheck-adopt-conflict-second`;
 
     try {
-      try {
-        created = await HealthCheck(firstId, {
-          zone: zoneId,
-          address: workerHostname,
-          name: sharedName,
-          interval: 60,
-          timeout: 5,
-          retries: 2,
-        });
-      } catch (error) {
-        throw error;
-      }
+      created = await HealthCheck(firstId, {
+        zone: zoneId,
+        address: workerHostname,
+        name: sharedName,
+        interval: 60,
+        timeout: 5,
+        retries: 2,
+      });
 
       await expect(
         HealthCheck(secondId, {

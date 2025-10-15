@@ -85,7 +85,7 @@ async function _apply<Out extends ResourceAttributes>(
         // we are running in a monorepo and are not the selected app, so we need to wait for the process to be consistent
         state = await waitForConsistentState();
       }
-      createAndSendEvent({
+      await createAndSendEvent({
         event: "resource.read",
         phase: scope.phase,
         duration: performance.now() - start,

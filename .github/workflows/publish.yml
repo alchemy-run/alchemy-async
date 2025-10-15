@@ -32,9 +32,6 @@ jobs:
           aws-role-arn: ${{ secrets.AWS_ROLE_ARN }}
           aws-region: us-west-2
 
-      - name: Install Playwright Browsers
-        run: bunx playwright install --with-deps chromium
-
       - name: Get Astro version
         id: astro-version
         run: echo "version=$(bun info astro version)" >> $GITHUB_OUTPUT
@@ -48,9 +45,13 @@ jobs:
           key: astro-cache-${{ steps.astro-version.outputs.version }}
 
       - name: Check Types and Lint
-        run: | 
+        run: |
           bun run build
           bun run check
+
+      - name: Install Playwright Browsers
+        run: bun playwright install --with-deps chromium
+        working-directory: alchemy-web
 
       - name: Deploy Website
         id: deploy
