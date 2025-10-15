@@ -16,6 +16,11 @@ export async function TanStackStart<B extends Bindings>(
   id: string,
   props?: Partial<TanStackStartProps<B>>,
 ): Promise<TanStackStart<B>> {
+  const main =
+    props?.wrangler?.main ??
+    ((await exists(path.resolve(props?.cwd ?? process.cwd(), "src/server.ts")))
+      ? "src/server.ts"
+      : undefined);
   return await Vite(id, {
     entrypoint: "dist/server/index.js",
     assets: "dist/client",
@@ -25,16 +30,10 @@ export async function TanStackStart<B extends Bindings>(
     ...props,
     wrangler: {
       ...props?.wrangler,
-      main:
-        props?.wrangler?.main ??
-        ((await exists(
-          path.resolve(props?.cwd ?? process.cwd(), "src/server.ts"),
-        ))
-          ? "src/server.ts"
-          : undefined),
+      main,
       transform: async (spec) => {
         const transformed = (await props?.wrangler?.transform?.(spec)) ?? spec;
-        if (!props?.wrangler?.main) {
+        if (!main) {
           transformed.main = "@tanstack/react-start/server-entry";
         }
         return transformed;
