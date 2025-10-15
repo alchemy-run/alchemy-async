@@ -11,10 +11,7 @@ const database = await Database("database", {
   region: "us-east-1",
 });
 
-const connection = await Connection("connection", {
-  database,
-  name: "connection",
-});
+const connection = await Connection("connection", { database });
 
 const db = await Hyperdrive("prisma-postgres", {
   origin: connection.connectionString.unencrypted,

@@ -28,30 +28,18 @@ export PRISMA_SERVICE_TOKEN="sk_..."
 
 ```ts
 import alchemy from "alchemy";
-import {
-  Project,
-  Database,
-  Connection,
-} from "alchemy/prisma/postgres";
+import { Connection, Database, Project } from "alchemy/prisma-postgres";
 
 const app = await alchemy("prisma-postgres-example");
 
-const project = await Project("project", {
-  name: "prisma-app",
-  region: "us-east-1",
-  createDatabase: false,
-});
+const project = await Project("project");
 
 const database = await Database("database", {
   project,
-  name: "primary",
   region: "us-east-1",
 });
 
-const connection = await Connection("connection", {
-  database,
-  name: "application",
-});
+const connection = await Connection("connection", { database });
 
 console.log("Database URL", connection.connectionString.unencrypted);
 
@@ -65,3 +53,10 @@ To remove all resources created by the guide, run:
 ```bash
 alchemy destroy
 ```
+
+## Next Steps
+
+- Explore setting up [Prisma Postgres with Cloudflare Hyperdrive](/providers/prisma-postgres/index)
+- Set up a cloudflare worker to consume the Prisma Postgres database
+- Explore using multiple [Prisma Postgres workspaces](/providers/prisma-postgres/workspace) in an alchemy project
+- Join our [Discord](https://discord.gg/kPpzYbTQFx) for support and updates.
