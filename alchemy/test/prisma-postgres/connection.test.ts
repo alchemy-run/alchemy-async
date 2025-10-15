@@ -1,7 +1,7 @@
 import { describe, expect } from "vitest";
 import { alchemy } from "../../src/alchemy.ts";
 import { createPrismaApi } from "../../src/prisma-postgres/api.ts";
-import { DatabaseConnection } from "../../src/prisma-postgres/database-connection.ts";
+import { Connection } from "../../src/prisma-postgres/connection.ts";
 import { Database } from "../../src/prisma-postgres/database.ts";
 import { Project } from "../../src/prisma-postgres/project.ts";
 import "../../src/test/vitest.ts";
@@ -18,7 +18,7 @@ describe("Prisma Database Connection", async () => {
     const projectId = `${BRANCH_PREFIX}-test-dbc-project`;
     const databaseId = `${BRANCH_PREFIX}-test-dbc-database`;
     const testId = `${BRANCH_PREFIX}-test-database-connection`;
-    let databaseConnection: DatabaseConnection | undefined;
+    let connection: Connection | undefined;
     let project: Project | undefined;
 
     try {
@@ -32,22 +32,22 @@ describe("Prisma Database Connection", async () => {
         region: "ap-northeast-1",
       });
 
-      databaseConnection = await DatabaseConnection(testId, {
+      connection = await Connection(testId, {
         database,
         name: testId,
       });
 
-      expect(databaseConnection.name).toBe(testId);
-      expect(databaseConnection.database).toBe(database.id);
-      expect(databaseConnection.createdAt).toBeDefined();
-      expect(databaseConnection.connectionString.unencrypted).toBeDefined();
+      expect(connection.name).toBe(testId);
+      expect(connection.database).toBe(database.id);
+      expect(connection.createdAt).toBeDefined();
+      expect(connection.connectionString.unencrypted).toBeDefined();
     } finally {
       await alchemy.destroy(scope);
 
-      if (databaseConnection != null) {
+      if (connection != null) {
         const status = await api
           .listDatabaseConnections({
-            path: { databaseId: databaseConnection.database },
+            path: { databaseId: connection.database },
           })
           .then((data) => data.data.data.find((c) => c.name === testId))
           .catch((error) => {

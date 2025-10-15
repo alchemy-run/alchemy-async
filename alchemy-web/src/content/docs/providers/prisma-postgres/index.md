@@ -8,7 +8,7 @@ description: Learn how to manage Prisma Postgres databases, connections, and pro
 ## Resources
 
 - [Database](/providers/prisma-postgres/database) - Create and manage Prisma Postgres databases with configuration options
-- [DatabaseConnection](/providers/prisma-postgres/database-connection) - Create and manage Prisma Postgres database connections with configuration options
+- [Connection](/providers/prisma-postgres/connection) - Create and manage Prisma Postgres database connections with configuration options
 - [Project](/providers/prisma-postgres/project) - Create and manage Prisma Postgres projects with configuration options
 - [WorkspaceRef](/providers/prisma-postgres/workspace) - reference Prisma Postgres workspaces by name or id
 
@@ -29,7 +29,7 @@ To support multiple accounts, alchemy allows you to override the authentication 
 ```ts title="alchemy.run.ts"
 import alchemy from "alchemy";
 import { Hyperdrive, Worker } from "alchemy/cloudflare";
-import { Database, DatabaseConnection, Project } from "alchemy/prisma-postgres";
+import { Database, Connection, Project } from "alchemy/prisma-postgres";
 
 const app = await alchemy("prisma-postgres-example");
 
@@ -40,7 +40,7 @@ const database = await Database("database", {
   region: "us-east-1",
 });
 
-const connection = await DatabaseConnection("connection", {
+const connection = await Connection("connection", {
   database,
   name: "connection",
 });

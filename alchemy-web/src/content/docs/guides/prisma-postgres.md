@@ -31,7 +31,7 @@ import alchemy from "alchemy";
 import {
   Project,
   Database,
-  DatabaseConnection,
+  Connection,
 } from "alchemy/prisma/postgres";
 
 const app = await alchemy("prisma-postgres-example");
@@ -48,7 +48,7 @@ const database = await Database("database", {
   region: "us-east-1",
 });
 
-const connection = await DatabaseConnection("connection", {
+const connection = await Connection("connection", {
   database,
   name: "application",
 });

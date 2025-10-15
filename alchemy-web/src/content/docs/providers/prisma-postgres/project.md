@@ -53,6 +53,6 @@ console.log(`Production DB: ${productionDb.name}`);
 ## Related Resources
 
 - [Database](/providers/prisma-postgres/database) - Create databases within a project
-- [DatabaseConnection](/providers/prisma-postgres/database-connection) - Create connection strings for databases
+- [Connection](/providers/prisma-postgres/connection) - Create connection strings for databases
 - [Workspace](/providers/prisma-postgres/workspace) - Learn about Prisma workspaces
 

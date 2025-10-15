@@ -4,7 +4,7 @@ import { secret, type Secret } from "../secret.ts";
 import { createPrismaApi } from "./api.ts";
 import type { Database } from "./database.ts";
 
-export interface DatabaseConnectionProps {
+export interface ConnectionProps {
   /**
    * Database (id or resource) the connection belongs to
    */
@@ -21,7 +21,7 @@ export interface DatabaseConnectionProps {
   serviceToken?: Secret<string>;
 }
 
-export interface DatabaseConnection {
+export interface Connection {
   /**
    * The prisma id of the connection
    */
@@ -77,10 +77,10 @@ export interface DatabaseConnection {
  *
  * @example
  * // Create a database connection for a database
- * import { Database, DatabaseConnection } from "alchemy/prisma-postgres";
+ * import { Database, Connection } from "alchemy/prisma-postgres";
  * const project = await Project("my-project");
  * const database = await Database("my-database", { project });
- * const connection = await DatabaseConnection("my-connection", {
+ * const connection = await Connection("my-connection", {
  *   database: database,
  * });
  * console.log(`Connection String: ${connection.connectionString.unencrypted}`);
@@ -88,23 +88,23 @@ export interface DatabaseConnection {
  * @example
  * // Create a database connection and connect it to Cloudflare Hyperdrive
  * import { Hyperdrive } from "alchemy/cloudflare";
- * import { Database, DatabaseConnection } from "alchemy/prisma-postgres";
+ * import { Database, Connection } from "alchemy/prisma-postgres";
  * const project = await Project("my-project");
  * const database = await Database("my-database", { project });
- * const connection = await DatabaseConnection("my-connection", {
+ * const connection = await Connection("my-connection", {
  *   database: database,
  * });
  * const db = await Hyperdrive("prisma-postgres", {
  *   origin: connection.connectionString.unencrypted,
  * });
  */
-export const DatabaseConnection = Resource(
-  "prisma::DatabaseConnection",
+export const Connection = Resource(
+  "prisma::Connection",
   async function (
-    this: Context<DatabaseConnection>,
+    this: Context<Connection>,
     id: string,
-    props: DatabaseConnectionProps,
-  ): Promise<DatabaseConnection> {
+    props: ConnectionProps,
+  ): Promise<Connection> {
     const api = createPrismaApi({
       serviceToken: props.serviceToken,
     });

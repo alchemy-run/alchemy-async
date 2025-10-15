@@ -1,18 +1,18 @@
 ---
-title: DatabaseConnection
+title: Connection
 description: Learn how to create and manage connection strings for Prisma Hosted Databases using Alchemy.
 ---
 
-The `DatabaseConnection` resource lets you create and manage connection strings for Prisma Postgres databases. Each connection provides secure credentials and connection details for accessing your database.
+The `Connection` resource lets you create and manage connection strings for Prisma Postgres databases. Each connection provides secure credentials and connection details for accessing your database.
 
 ## Minimal Example
 
 Create a basic connection string for a database:
 
 ```ts
-import { DatabaseConnection } from "alchemy/prisma-postgres";
+import { Connection } from "alchemy/prisma-postgres";
 
-const connection = await DatabaseConnection("app-connection", {
+const connection = await Connection("app-connection", {
   database: "db_12345abcde"
 });
 
@@ -27,7 +27,7 @@ console.log(`User: ${connection.user}`);
 Create a full setup from project to connection:
 
 ```ts
-import { Project, Database, DatabaseConnection } from "alchemy/prisma-postgres";
+import { Project, Database, Connection } from "alchemy/prisma-postgres";
 
 const project = await Project("my-app");
 
@@ -35,7 +35,7 @@ const database = await Database("production", {
   project: project,
 });
 
-const connection = await DatabaseConnection("app-connection", {
+const connection = await Connection("app-connection", {
   database: database,
   name: "production-api-connection"
 });
@@ -51,7 +51,7 @@ console.log(`Connection String: ${connection.connectionString.unencrypted}`);
 Integrate Prisma database connections with Cloudflare Hyperdrive for accelerated database access:
 
 ```ts
-import { Database, DatabaseConnection } from "alchemy/prisma-postgres";
+import { Database, Connection } from "alchemy/prisma-postgres";
 import { Hyperdrive, Worker } from "alchemy/cloudflare";
 
 const database = await Database("my-db", {
@@ -59,7 +59,7 @@ const database = await Database("my-db", {
   region: "us-east-1"
 });
 
-const connection = await DatabaseConnection("app-connection", {
+const connection = await Connection("app-connection", {
   database: database
 });
 

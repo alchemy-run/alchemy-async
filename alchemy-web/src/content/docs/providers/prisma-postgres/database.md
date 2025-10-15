@@ -68,7 +68,7 @@ const testDatabase = await Database("test-db", {
 Create a database and connection string for your application:
 
 ```ts
-import { Project, Database, DatabaseConnection } from "alchemy/prisma-postgres";
+import { Project, Database, Connection } from "alchemy/prisma-postgres";
 
 const project = await Project("my-app");
 
@@ -77,7 +77,7 @@ const database = await Database("production", {
   region: "us-east-1"
 });
 
-const connection = await DatabaseConnection("app-connection", {
+const connection = await Connection("app-connection", {
   database: database,
 });
 
@@ -86,6 +86,6 @@ console.log(`Connection string available at: ${connection.connectionString.unenc
 ## Related Resources
 
 - [Project](/providers/prisma-postgres/project) - Create projects to contain databases
-- [DatabaseConnection](/providers/prisma-postgres/database-connection) - Create connection strings for databases
+- [Connection](/providers/prisma-postgres/connection) - Create connection strings for databases
 - [Workspace](/providers/prisma-postgres/workspace) - Learn about Prisma workspaces
 
