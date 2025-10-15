@@ -10,7 +10,7 @@ The Database resource lets you create and manage Prisma Postgres database resour
 Create a basic database in a project:
 
 ```ts
-import { Database } from "alchemy/prisma";
+import { Database } from "alchemy/prisma-postgres";
 
 const database = await Database("my-db", {
   project: "prj_12345abcde",
@@ -26,7 +26,7 @@ console.log(`Status: ${database.status}`);
 Create a database using a Project resource:
 
 ```ts
-import { Project, Database } from "alchemy/prisma";
+import { Project, Database } from "alchemy/prisma-postgres";
 
 const project = await Project("my-app", {
   name: "my-app"
@@ -43,7 +43,7 @@ const database = await Database("production", {
 Create databases in various regions:
 
 ```ts
-import { Database } from "alchemy/prisma";
+import { Database } from "alchemy/prisma-postgres";
 
 // Asia Pacific
 const apDatabase = await Database("ap-db", {
@@ -57,7 +57,7 @@ const apDatabase = await Database("ap-db", {
 Adopt an existing Prisma database for management:
 
 ```ts
-import { Database } from "alchemy/prisma";
+import { Database } from "alchemy/prisma-postgres";
 
 const existingDatabase = await Database("existing-db", {
   project: "prj_12345abcde",
@@ -67,12 +67,16 @@ const existingDatabase = await Database("existing-db", {
 });
 ```
 
+:::warning
+Prisma Postgres allows for multiple databases with the same name, adopt will find the first database with a matching name; this may lead to unexpected behavior.
+:::
+
 ## Database with Delete Protection
 
 By default, databases are not deleted when the Alchemy resource is destroyed. Enable deletion for ephemeral databases:
 
 ```ts
-import { Database } from "alchemy/prisma";
+import { Database } from "alchemy/prisma-postgres";
 
 const testDatabase = await Database("test-db", {
   project: "prj_12345abcde",
@@ -86,7 +90,7 @@ const testDatabase = await Database("test-db", {
 Create a database and connection string for your application:
 
 ```ts
-import { Project, Database, DatabaseConnection } from "alchemy/prisma";
+import { Project, Database, DatabaseConnection } from "alchemy/prisma-postgres";
 
 const project = await Project("my-app");
 

@@ -10,7 +10,7 @@ The Project resource lets you create and manage [Prisma Postgres projects](https
 Create a basic project with default settings:
 
 ```ts
-import { Project } from "alchemy/prisma";
+import { Project } from "alchemy/prisma-postgres";
 
 const project = await Project("my-app");
 
@@ -24,7 +24,7 @@ console.log(`Workspace: ${project.workspace.name}`);
 Adopt an existing Prisma project that already exists:
 
 ```ts
-import { Project } from "alchemy/prisma";
+import { Project } from "alchemy/prisma-postgres";
 
 const existingProject = await Project("existing-app", {
   name: "existing-app",
@@ -32,12 +32,16 @@ const existingProject = await Project("existing-app", {
 });
 ```
 
+:::warning
+Prisma Postgres allows for multiple projects with the same name, adopt will find the first project with a matching name; this may lead to unexpected behavior.
+:::
+
 ## Project with Delete Protection
 
 By default, projects are not deleted when the Alchemy resource is destroyed in order to prevent accidental data loss. Enable deletion if you want the project to be removed:
 
 ```diff lang='ts'
-import { Project } from "alchemy/prisma";
+import { Project } from "alchemy/prisma-postgres";
 
  const ephemeralProject = await Project("test-project", {
    name: "test-project",
@@ -50,7 +54,7 @@ import { Project } from "alchemy/prisma";
 Create a project and add databases to it:
 
 ```ts
-import { Project, Database } from "alchemy/prisma";
+import { Project, Database } from "alchemy/prisma-postgres";
 
 const project = await Project("my-app", {
   name: "my-app"
@@ -65,7 +69,7 @@ console.log(`Production DB: ${productionDb.name}`);
 
 ## Related Resources
 
-- [Database](/providers/prisma/database) - Create databases within a project
-- [DatabaseConnection](/providers/prisma/database-connection) - Create connection strings for databases
-- [Workspace](/providers/prisma/workspace) - Learn about Prisma workspaces
+- [Database](/providers/prisma-postgres/database) - Create databases within a project
+- [DatabaseConnection](/providers/prisma-postgres/database-connection) - Create connection strings for databases
+- [Workspace](/providers/prisma-postgres/workspace) - Learn about Prisma workspaces
 

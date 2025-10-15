@@ -8,7 +8,7 @@ Alchemy exposes a utility to easily reference [Prisma Postgres workspaces](https
 ## Minimal Example
 
 ```ts
-import { WorkspaceRef } from "alchemy/prisma";
+import { WorkspaceRef } from "alchemy/prisma-postgres";
 
 const workspace = await WorkspaceRef("my-workspace");
 ```

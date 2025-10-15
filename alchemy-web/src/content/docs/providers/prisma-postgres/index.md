@@ -29,7 +29,7 @@ To support multiple accounts, alchemy allows you to override the authentication 
 ```ts title="alchemy.run.ts"
 import alchemy from "alchemy";
 import { Hyperdrive, Worker } from "alchemy/cloudflare";
-import { Database, DatabaseConnection, Project } from "alchemy/prisma";
+import { Database, DatabaseConnection, Project } from "alchemy/prisma-postgres";
 
 const app = await alchemy("prisma-postgres-example");
 
@@ -47,7 +47,7 @@ const connection = await DatabaseConnection("connection", {
 
 const db = await Hyperdrive("prisma-postgres", {
   name: "prisma-postgres",
-  origin: `postgres://${connection.user}:${connection.password?.unencrypted}@${connection.host}/${connection.database}`,
+  origin: connection.connectionString.unencrypted,
 });
 
 export const worker = await Worker("worker", {

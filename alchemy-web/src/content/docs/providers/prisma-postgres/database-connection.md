@@ -10,7 +10,7 @@ The `DatabaseConnection` resource lets you create and manage connection strings 
 Create a basic connection string for a database:
 
 ```ts
-import { DatabaseConnection } from "alchemy/prisma";
+import { DatabaseConnection } from "alchemy/prisma-postgres";
 
 const connection = await DatabaseConnection("app-connection", {
   database: "db_12345abcde"
@@ -27,7 +27,7 @@ console.log(`User: ${connection.user}`);
 Create a full setup from project to connection:
 
 ```ts
-import { Project, Database, DatabaseConnection } from "alchemy/prisma";
+import { Project, Database, DatabaseConnection } from "alchemy/prisma-postgres";
 
 const project = await Project("my-app");
 
@@ -51,7 +51,7 @@ console.log(`Connection String: ${connection.connectionString.unencrypted}`);
 Integrate Prisma database connections with Cloudflare Hyperdrive for accelerated database access:
 
 ```ts
-import { Database, DatabaseConnection } from "alchemy/prisma";
+import { Database, DatabaseConnection } from "alchemy/prisma-postgres";
 import { Hyperdrive, Worker } from "alchemy/cloudflare";
 
 const database = await Database("my-db", {
@@ -65,7 +65,7 @@ const connection = await DatabaseConnection("app-connection", {
 
 const db = await Hyperdrive("prisma-postgres", {
   name: "prisma-postgres",
-  origin: `postgres://${connection.user}:${connection.password?.unencrypted}@${connection.host}/${connection.database}`,
+  origin: connection.connectionString.unencrypted,
 });
 
 const worker = await Worker("api", {
@@ -78,8 +78,8 @@ const worker = await Worker("api", {
 
 ## Related Resources
 
-- [Database](/providers/prisma/database) - Create databases for connections
-- [Project](/providers/prisma/project) - Create projects to contain databases
+- [Database](/providers/prisma-postgres/database) - Create databases for connections
+- [Project](/providers/prisma-postgres/project) - Create projects to contain databases
 - [Hyperdrive](/providers/cloudflare/hyperdrive) - Accelerate database connections with Cloudflare
 - [Worker](/providers/cloudflare/worker) - Deploy serverless functions with database access
 
