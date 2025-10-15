@@ -1,0 +1,75 @@
+---
+import DefaultHead from "@astrojs/starlight/components/Head.astro";
+
+interface Props {
+  entry?: {
+    data: {
+      title?: string;
+      description?: string;
+    };
+  };
+}
+
+const { entry } = Astro.props;
+const title = entry?.data?.title;
+const description = entry?.data?.description;
+const url = Astro.url.href;
+
+const organizationSchema = {
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  name: "Alchemy",
+  url: "https://alchemy.run",
+  logo: "https://alchemy.run/alchemy-logo-dark.svg",
+  sameAs: [
+    "https://github.com/alchemy-run/alchemy",
+    "https://x.com/alchemy_run",
+    "https://discord.gg/jwKw8dBJdN"
+  ]
+};
+
+const articleSchema = title ? {
+  "@context": "https://schema.org",
+  "@type": "TechArticle",
+  headline: title,
+  description: description || title,
+  url: url,
+  author: organizationSchema,
+  publisher: organizationSchema,
+  image: {
+    "@type": "ImageObject",
+    url: `https://alchemy.run/og/${Astro.url.pathname.replace(/\//g, "-").slice(1) || "index"}.png`
+  }
+} : null;
+
+const pathSegments = Astro.url.pathname
+  .split("/")
+  .filter(s => s)
+  .slice(0, -1);
+
+const breadcrumbSchema = pathSegments.length > 0 ? {
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  itemListElement: [
+    {
+      "@type": "ListItem",
+      position: 1,
+      name: "Home",
+      item: "https://alchemy.run"
+    },
+    ...pathSegments.map((segment, i) => ({
+      "@type": "ListItem",
+      position: i + 2,
+      name: segment.replace(/-/g, " ").replace(/\b\w/g, l => l.toUpperCase()),
+      item: `https://alchemy.run/${pathSegments.slice(0, i + 1).join("/")}`
+    }))
+  ]
+} : null;
+
+---
+
+<DefaultHead {...Astro.props} />
+
+<script type="application/ld+json" set:html={JSON.stringify(organizationSchema)} />
+{articleSchema && <script type="application/ld+json" set:html={JSON.stringify(articleSchema)} />}
+{breadcrumbSchema && <script type="application/ld+json" set:html={JSON.stringify(breadcrumbSchema)} />}
