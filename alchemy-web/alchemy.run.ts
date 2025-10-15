@@ -62,11 +62,8 @@ export const router = await Worker("router", {
   },
 });
 
-const url = stage !== "prod"
-  ? website.url
-  : domain
-    ? `https://${domain}`
-    : router.url;
+const url =
+  stage !== "prod" ? website.url : domain ? `https://${domain}` : router.url;
 
 console.log(url);
 
