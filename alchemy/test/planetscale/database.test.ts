@@ -232,7 +232,7 @@ describe.skipIf(!process.env.PLANETSCALE_TEST).concurrent.each(kinds)(
         // Verify database was deleted
         await assertDatabaseDeleted(api, organization, name);
       }
-    }, 1_500_000); // must wait on multiple resizes and branch creation
+    }, 5_000_000); // must wait on multiple resizes and branch creation
 
     test.skipIf(kind !== "postgresql")(
       `create database with arm arch (${kind})`,
@@ -272,6 +272,63 @@ describe.skipIf(!process.env.PLANETSCALE_TEST).concurrent.each(kinds)(
       },
       5_000_000,
     );
+
+    test(`database with delete=false should not be deleted via API (${kind})`, async (scope) => {
+      const name = `${BRANCH_PREFIX}-${kind}-nodelete`;
+
+      try {
+        const database = await Database("nodelete", {
+          name,
+          clusterSize: "PS_10",
+          kind,
+          delete: false,
+        });
+
+        expect(database).toMatchObject({
+          id: expect.any(String),
+          name,
+          delete: false,
+        });
+
+        // Verify database exists
+        await waitForDatabaseReady(api, organization, name);
+        const { data } = await api.getDatabase({
+          path: {
+            organization,
+            name,
+          },
+        });
+        expect(data.name).toBe(name);
+      } catch (err) {
+        console.error("Test error:", err);
+        throw err;
+      } finally {
+        // When we call destroy, the database should NOT be deleted via API
+        await destroy(scope);
+
+        // Verify database still exists (was not deleted via API)
+        const { response } = await api.getDatabase({
+          path: {
+            organization,
+            name,
+          },
+          throwOnError: false,
+        });
+        expect(response.status).toBe(200); // Database should still exist
+
+        // Clean up manually for the test
+        await api.deleteDatabase({
+          path: {
+            organization,
+            name,
+          },
+          throwOnError: false,
+        });
+
+        // Wait for manual cleanup to complete
+        await assertDatabaseDeleted(api, organization, name);
+      }
+    }, 5_000_000);
   },
 );
 

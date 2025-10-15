@@ -2,7 +2,7 @@
   "extends": "../tsconfig.base.json",
   "include": ["package.json", "src/**/*.ts", "src/**/*.js", "src/**/*.tsx"],
   "compilerOptions": {
-    "types": ["@cloudflare/workers-types"],
+    "types": [],
     "composite": true,
     "noEmit": false,
     "outDir": "./lib",
