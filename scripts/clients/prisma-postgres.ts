@@ -1,7 +1,7 @@
 import type {
-	OpenApi,
-	OpenApiOperationObject,
-	UserConfig,
+  OpenApi,
+  OpenApiOperationObject,
+  UserConfig,
 } from "@hey-api/openapi-ts";
 import { keys, toCamelCase } from "./utils.ts";
 
@@ -34,7 +34,7 @@ for (const path of keys(spec.paths)) {
 export default {
   input: spec as any,
   output: {
-    path: "alchemy/src/prisma/api",
+    path: "alchemy/src/prisma-postgres/api",
     format: "biome",
   },
   plugins: [
