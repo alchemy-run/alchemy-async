@@ -5,7 +5,6 @@ import type {
 } from "@hey-api/openapi-ts";
 import { keys, toCamelCase } from "./utils.ts";
 
-
 const spec = await fetch("https://api.prisma.io/v1/doc").then(
   (res) => res.json() as Promise<OpenApi.V3_0_X>,
 );
