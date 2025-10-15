@@ -15,11 +15,15 @@ import type { DO } from "./src/worker1.ts";
 
 const app = await alchemy("cloudflare-worker-simple");
 
+// to test with remote bindings, set to true
+const remote = false;
+
 const [d1, kv, r2] = await Promise.all([
   D1Database("d1", {
     name: `${app.name}-${app.stage}-d1`,
     adopt: true,
     migrationsDir: "migrations",
+    dev: { remote },
   }),
   KVNamespace("kv", {
     title: `${app.name}-${app.stage}-kv`,
@@ -28,10 +32,12 @@ const [d1, kv, r2] = await Promise.all([
       { key: "test1", value: "test1" },
       { key: "test2", value: "test2" },
     ],
+    dev: { remote },
   }),
   R2Bucket("r2", {
     name: `${app.name}-${app.stage}-r2`,
     adopt: true,
+    dev: { remote },
   }),
 ]);
 const doNamespace = DurableObjectNamespace<DO>("DO", {
