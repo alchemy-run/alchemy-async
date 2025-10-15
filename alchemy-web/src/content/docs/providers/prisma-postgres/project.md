@@ -19,23 +19,6 @@ console.log(`Project Name: ${project.name}`);
 console.log(`Workspace: ${project.workspace.name}`);
 ```
 
-## Adopting Existing Project
-
-Adopt an existing Prisma project that already exists:
-
-```ts
-import { Project } from "alchemy/prisma-postgres";
-
-const existingProject = await Project("existing-app", {
-  name: "existing-app",
-  adopt: true
-});
-```
-
-:::warning
-Prisma Postgres allows for multiple projects with the same name, adopt will find the first project with a matching name; this may lead to unexpected behavior.
-:::
-
 ## Project with Delete Protection
 
 By default, projects are not deleted when the Alchemy resource is destroyed in order to prevent accidental data loss. Enable deletion if you want the project to be removed:

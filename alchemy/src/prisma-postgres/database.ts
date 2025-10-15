@@ -37,13 +37,6 @@ export interface DatabaseProps {
   delete?: boolean;
 
   /**
-   * Whether to adopt an existing database
-   *
-   * @default false
-   */
-  adopt?: boolean;
-
-  /**
    * The service token to use for the API
    */
   serviceToken?: Secret<string>;
@@ -124,7 +117,6 @@ export const Database = Resource(
     const api = createPrismaApi({
       serviceToken: props.serviceToken,
     });
-    const adopt = props.adopt ?? this.scope.adopt;
     const name =
       props.name ?? this.output?.name ?? this.scope.createPhysicalName(id);
     const shouldDelete = props.delete ?? false;
@@ -142,23 +134,6 @@ export const Database = Resource(
 
     if (this.phase === "update") {
       return this.replace();
-    }
-
-    if (adopt) {
-      const database = await findDatabaseByName({
-        ...props,
-        name,
-      });
-      if (database != null) {
-        return {
-          id: database.id,
-          name: database.name,
-          region: database.region?.id,
-          status: database.status,
-          createdAt: database.createdAt,
-          project,
-        };
-      }
     }
 
     const database = await api

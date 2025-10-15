@@ -17,13 +17,6 @@ export interface ProjectProps {
   delete?: boolean;
 
   /**
-   * Whether to adopt an existing project
-   *
-   * @default false
-   */
-  adopt?: boolean;
-
-  /**
    * The service token to use for the API
    */
   serviceToken?: Secret<string>;
@@ -83,7 +76,6 @@ export const Project = Resource(
     const api = createPrismaApi({
       serviceToken: props?.serviceToken,
     });
-    const adopt = props?.adopt ?? this.scope.adopt;
     const name =
       props?.name ?? this.output?.name ?? this.scope.createPhysicalName(id);
     const shouldDelete = props?.delete ?? false;
@@ -98,21 +90,6 @@ export const Project = Resource(
     }
     if (this.phase === "update") {
       return this.replace();
-    }
-
-    if (adopt) {
-      const project = await findProjectByName({
-        ...(props ?? {}),
-        name,
-      });
-      if (project != null) {
-        return {
-          id: project.id,
-          name: project.name,
-          createdAt: project.createdAt,
-          workspace: project.workspace,
-        };
-      }
     }
 
     const project = await api

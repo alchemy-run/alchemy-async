@@ -49,25 +49,6 @@ const apDatabase = await Database("ap-db", {
 });
 ```
 
-## Adopting Existing Database
-
-Adopt an existing Prisma database for management:
-
-```ts
-import { Database } from "alchemy/prisma-postgres";
-
-const existingDatabase = await Database("existing-db", {
-  project: "prj_12345abcde",
-  name: "existing-db",
-  region: "us-east-1",
-  adopt: true
-});
-```
-
-:::warning
-Prisma Postgres allows for multiple databases with the same name, adopt will find the first database with a matching name; this may lead to unexpected behavior.
-:::
-
 ## Database with Delete Protection
 
 By default, databases are not deleted when the Alchemy resource is destroyed. Enable deletion for ephemeral databases:
