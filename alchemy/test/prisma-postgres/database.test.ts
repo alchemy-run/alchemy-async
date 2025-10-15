@@ -1,8 +1,8 @@
 import { describe, expect } from "vitest";
 import { alchemy } from "../../src/alchemy.ts";
-import { createPrismaApi } from "../../src/prisma/api.ts";
-import { Database } from "../../src/prisma/database.ts";
-import { Project } from "../../src/prisma/project.ts";
+import { createPrismaApi } from "../../src/prisma-postgres/api.ts";
+import { Database } from "../../src/prisma-postgres/database.ts";
+import { Project } from "../../src/prisma-postgres/project.ts";
 import "../../src/test/vitest.ts";
 import { BRANCH_PREFIX } from "../util.ts";
 
