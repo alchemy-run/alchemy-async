@@ -1,7 +1,7 @@
 {
-  "name": "prisma-postgres-example",
+  "name": "prisma-example",
   "version": "0.0.0",
-  "description": "Alchemy Prisma Postgres example",
+  "description": "Alchemy Prisma example",
   "type": "module",
   "scripts": {
     "build": "tsc -b",
@@ -11,5 +11,8 @@
   "devDependencies": {
     "alchemy": "workspace:*",
     "typescript": "catalog:"
+  },
+  "dependencies": {
+    "pg": "^8.16.3"
   }
 }
