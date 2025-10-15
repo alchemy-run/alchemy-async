@@ -56,7 +56,7 @@ alchemy destroy
 
 ## Next Steps
 
-- Explore setting up [Prisma Postgres with Cloudflare Hyperdrive](/providers/prisma-postgres/index)
+- Explore setting up [Prisma Postgres with Cloudflare Hyperdrive](/providers/prisma-postgres)
 - Set up a cloudflare worker to consume the Prisma Postgres database
 - Explore using multiple [Prisma Postgres workspaces](/providers/prisma-postgres/workspace) in an alchemy project
 - Join our [Discord](https://discord.gg/kPpzYbTQFx) for support and updates.
