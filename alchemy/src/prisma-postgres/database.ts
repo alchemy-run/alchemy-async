@@ -80,6 +80,39 @@ export interface Database {
   project: string;
 }
 
+/**
+ * Creates and manages Prisma Postgres databases.
+ *
+ * Prisma Postgres databases are fully managed PostgreSQL instances
+ * that can be connected to applications. Databases belong to a
+ * Prisma Postgres project.
+ *
+ * @example
+ * // Create a database for a project
+ * import { Project, Database } from "alchemy/prisma-postgres";
+ * const project = await Project("my-app");
+ * const database = await Database("my-database", {
+ *   project: project,
+ * });
+ *
+ * @example
+ * // Create a database in the asia pacific region
+ * import { Project, Database } from "alchemy/prisma-postgres";
+ * const project = await Project("my-app");
+ * const database = await Database("my-database", {
+ *   project: project,
+ *   region: "ap-northeast-1",
+ * });
+ *
+ * @example
+ * // Create a database and fully delete on destroy
+ * import { Project, Database } from "alchemy/prisma-postgres";
+ * const project = await Project("my-app");
+ * const database = await Database("my-database", {
+ *   project: project,
+ *   delete: true,
+ * });
+ */
 export const Database = Resource(
   "prisma::Database",
   async function (

@@ -64,7 +64,6 @@ const connection = await DatabaseConnection("app-connection", {
 });
 
 const db = await Hyperdrive("prisma-postgres", {
-  name: "prisma-postgres",
   origin: connection.connectionString.unencrypted,
 });
 

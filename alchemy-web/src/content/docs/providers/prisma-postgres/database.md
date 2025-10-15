@@ -28,13 +28,10 @@ Create a database using a Project resource:
 ```ts
 import { Project, Database } from "alchemy/prisma-postgres";
 
-const project = await Project("my-app", {
-  name: "my-app"
-});
+const project = await Project("my-app");
 
 const database = await Database("production", {
   project: project,
-  name: "production-db",
 });
 ```
 

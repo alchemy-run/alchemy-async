@@ -61,6 +61,18 @@ export interface Project {
   };
 }
 
+/**
+ * Creates and manages Prisma Postgres projects.
+ *
+ * Prisma Postgres projects are containers for your databases and
+ * their configurations. Projects belong to a workspace and can
+ * contain multiple databases.
+ *
+ * @example
+ * // Create a database for a project
+ * import { Project, Database } from "alchemy/prisma-postgres";
+ * const project = await Project("my-app");
+ */
 export const Project = Resource(
   "prisma::Project",
   async function (

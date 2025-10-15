@@ -41,7 +41,7 @@ export interface DatabaseConnection {
    * The prisma connection string (prefixed with `prisma+postgres://`)
    */
   prismaConnectionString: Secret<string>;
-	
+
   /**
    * The connection string
    */
@@ -68,6 +68,36 @@ export interface DatabaseConnection {
   user: string | null;
 }
 
+/**
+ * Creates and manages Prisma Postgres database connections.
+ *
+ * Prisma Postgres database connections provide secure credentials
+ * and connection details for accessing your databases. Connections
+ * belong to a Prisma Postgres database.
+ *
+ * @example
+ * // Create a database connection for a database
+ * import { Database, DatabaseConnection } from "alchemy/prisma-postgres";
+ * const project = await Project("my-project");
+ * const database = await Database("my-database", { project });
+ * const connection = await DatabaseConnection("my-connection", {
+ *   database: database,
+ * });
+ * console.log(`Connection String: ${connection.connectionString.unencrypted}`);
+ *
+ * @example
+ * // Create a database connection and connect it to Cloudflare Hyperdrive
+ * import { Hyperdrive } from "alchemy/cloudflare";
+ * import { Database, DatabaseConnection } from "alchemy/prisma-postgres";
+ * const project = await Project("my-project");
+ * const database = await Database("my-database", { project });
+ * const connection = await DatabaseConnection("my-connection", {
+ *   database: database,
+ * });
+ * const db = await Hyperdrive("prisma-postgres", {
+ *   origin: connection.connectionString.unencrypted,
+ * });
+ */
 export const DatabaseConnection = Resource(
   "prisma::DatabaseConnection",
   async function (
@@ -112,7 +142,9 @@ export const DatabaseConnection = Resource(
       name: connection.name,
       createdAt: connection.createdAt,
       prismaConnectionString: secret(connection.connectionString),
-			connectionString: secret(`postgres://${connection.user}:${connection.pass}@${connection.host}/${connection.database}`),
+      connectionString: secret(
+        `postgres://${connection.user}:${connection.pass}@${connection.host}/${connection.database}`,
+      ),
       database: database,
       host: connection.host,
       password: connection.pass ? secret(connection.pass) : null,
