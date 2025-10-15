@@ -25,25 +25,27 @@ describe("alchemy.run", async () => {
 });
 
 describe("simulating CLI behavior via programmatic options", () => {
-  test("should error when CLI passes local=true and stage=up (alchemy dev --stage up)", async () => {
+  test("should error when CLI passes local=true and phase=up (alchemy dev --phase up)", async () => {
     await expect(async () => {
-      const app = await alchemy(`${BRANCH_PREFIX}-cli-dev-stage-up`, {
+      const app = await alchemy(`${BRANCH_PREFIX}-cli-dev-phase-up`, {
         local: true,
-        stage: "up",
+        phase: "up",
       });
       await app.finalize();
-    }).rejects.toThrow(/Cannot use stage "up" in dev\/local mode/);
+    }).rejects.toThrow(/Cannot use phase "up" in dev\/local mode/);
   });
 
   test("should work when CLI passes local=true and stage=dev (alchemy dev --stage dev)", async () => {
     const app = await alchemy(`${BRANCH_PREFIX}-cli-dev-stage-dev`, {
       local: true,
       stage: "dev",
+      phase: "read",
     });
 
     expect(app).toBeDefined();
     expect(app.local).toBe(true);
     expect(app.stage).toBe("dev");
+    expect(app.phase).toBe("read");
 
     await app.finalize();
     await destroy(app);

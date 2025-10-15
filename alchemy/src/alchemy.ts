@@ -162,18 +162,18 @@ If this is a mistake, you can disable this check by setting the ALCHEMY_CI_STATE
 `);
   }
 
-  if (mergedOptions.local && mergedOptions.stage === "up") {
+  if (mergedOptions.local && mergedOptions.phase === "up") {
     throw new Error(
-      `Cannot use stage "up" in dev/local mode (--dev or --local).
+      `Cannot use phase "up" in dev/local mode (--dev or --local).
   
-  The stage name "up" is used for deploying to production.
+  The phase "up" is used for deploying to production.
     
   To run in local development mode:
-    - Remove the --stage flag to use your default stage (${DEFAULT_STAGE})
-    - Or use a different stage name: --stage dev
+    - Remove the --phase flag to use your default phase (up)
+    - Or use a different phase name: --phase destroy or --phase read
     
-  To deploy to the "up" stage:
-    - Use: alchemy deploy --stage up (without --dev/--local)
+  To deploy with the "up" phase:
+    - Use: alchemy deploy --phase up (without --dev/--local)
   `,
     );
   }
