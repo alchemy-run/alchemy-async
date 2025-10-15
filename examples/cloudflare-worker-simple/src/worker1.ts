@@ -23,17 +23,14 @@ const app = new Hono<{ Bindings: typeof worker1.Env }>()
       ].join("\n"),
     );
   })
-  .get("/assets/:path", async (c): Promise<Response> => {
+  .get("/assets/:path", async (c) => {
     const url = new URL(c.req.url);
     const path = c.req.param("path");
-    const response = await c.env.ASSETS.fetch(new URL(`/${path}`, url.origin));
-    // @ts-expect-error - type of response is not correct
-    return response;
+    return await c.env.ASSETS.fetch(new URL(`/${path}`, url.origin));
   })
-  .get("/do/:name", async (c): Promise<Response> => {
+  .get("/do/:name", async (c) => {
     const name = c.req.param("name");
     const stub = c.env.DO.getByName(name);
-    // @ts-expect-error - type of response is not correct
     return await stub.fetch(c.req.raw);
   })
   .get("/d1", async (c) => {
@@ -103,9 +100,7 @@ const app = new Hono<{ Bindings: typeof worker1.Env }>()
     if (!object) {
       throw new HTTPException(404, { message: "Not found" });
     }
-    // @ts-expect-error - type of headers is not correct
     object.writeHttpMetadata(c.res.headers);
-    // @ts-expect-error - type of body is not correct
     return c.newResponse(object.body, 200);
   })
   .put("/r2/:key", async (c) => {
