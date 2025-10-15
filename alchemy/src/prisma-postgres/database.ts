@@ -2,6 +2,7 @@ import type { Context } from "../context.ts";
 import { Resource } from "../resource.ts";
 import type { Secret } from "../secret.ts";
 import { createPrismaApi } from "./api.ts";
+import type { CreateDatabaseData } from "./api/types.gen.ts";
 import type { Project } from "./project.ts";
 
 export interface DatabaseProps {
@@ -168,10 +169,8 @@ export const Database = Resource(
         body: {
           isDefault: false,
           name,
-          region: props.region as NonNullable<
-            Parameters<typeof api.createDatabase>[0]["body"]
-          >["region"],
-        },
+          region: props.region,
+        } as CreateDatabaseData["body"],
       })
       .then((response) => response.data.data);
 
