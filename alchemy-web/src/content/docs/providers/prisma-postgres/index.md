@@ -1,18 +1,16 @@
 ---
-title: Prisma
-description: Learn how to manage Prisma databases, connections, and projects using Alchemy.
+title: Prisma Postgres
+description: Learn how to manage Prisma Postgres databases, connections, and projects using Alchemy.
 ---
 
-Prisma provides a managed postgres database service. Alchemy provides resource to manage Prisma databases, connections, and projects programmatically.
-
-[Official Prisma Documentation](https://www.prisma.io/docs) | [Prisma API Reference](https://www.prisma.io/docs/orm/prisma-api)
+[Prisma Postgres](https://www.prisma.io/docs/platform/about#overview) provides a managed postgres database service. Alchemy provides resource to manage Prisma databases, connections, and projects programmatically.
 
 ## Resources
 
-- [Database](/providers/prisma/database) - Create and manage Prisma databases with configuration options
-- [DatabaseConnection](/providers/prisma/database-connection) - Create and manage Prisma database connections with configuration options
-- [Project](/providers/prisma/project) - Create and manage Prisma projects with configuration options
-- [WorkspaceRef](/providers/prisma/workspace) - reference Prisma workspaces by name or id
+- [Database](/providers/prisma-postgres/database) - Create and manage Prisma Postgres databases with configuration options
+- [DatabaseConnection](/providers/prisma-postgres/database-connection) - Create and manage Prisma Postgres database connections with configuration options
+- [Project](/providers/prisma-postgres/project) - Create and manage Prisma Postgres projects with configuration options
+- [WorkspaceRef](/providers/prisma-postgres/workspace) - reference Prisma Postgres workspaces by name or id
 
 ## Authentication
 

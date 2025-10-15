@@ -3,7 +3,7 @@ title: DatabaseConnection
 description: Learn how to create and manage connection strings for Prisma Hosted Databases using Alchemy.
 ---
 
-The DatabaseConnection resource lets you create and manage [connection strings](https://www.prisma.io/docs/data-platform/about#connection-strings) for Prisma Data Platform databases. Each connection provides secure credentials and connection details for accessing your database.
+The `DatabaseConnection` resource lets you create and manage connection strings for Prisma Postgres databases. Each connection provides secure credentials and connection details for accessing your database.
 
 ## Minimal Example
 

@@ -1,7 +1,7 @@
 {
-  "name": "prisma-example",
+  "name": "prisma-postgres",
   "version": "0.0.0",
-  "description": "Alchemy Prisma example",
+  "description": "Alchemy Prisma Postgres example",
   "type": "module",
   "scripts": {
     "build": "tsc -b",

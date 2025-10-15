@@ -38,6 +38,11 @@ export interface DatabaseConnection {
   createdAt: string;
 
   /**
+   * The prisma connection string (prefixed with `prisma+postgres://`)
+   */
+  prismaConnectionString: Secret<string>;
+	
+  /**
    * The connection string
    */
   connectionString: Secret<string>;
@@ -106,7 +111,8 @@ export const DatabaseConnection = Resource(
       id: connection.id,
       name: connection.name,
       createdAt: connection.createdAt,
-      connectionString: secret(connection.connectionString),
+      prismaConnectionString: secret(connection.connectionString),
+			connectionString: secret(`postgres://${connection.user}:${connection.pass}@${connection.host}/${connection.database}`),
       database: database,
       host: connection.host,
       password: connection.pass ? secret(connection.pass) : null,

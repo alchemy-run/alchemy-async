@@ -128,9 +128,9 @@
       "bun": "./src/planetscale/index.ts",
       "import": "./lib/planetscale/index.js"
     },
-    "./prisma": {
-      "bun": "./src/prisma/index.ts",
-      "import": "./lib/prisma/index.js"
+    "./prisma-postgres": {
+      "bun": "./src/prisma-postgres/index.ts",
+      "import": "./lib/prisma-postgres/index.js"
     },
     "./random": {
       "bun": "./src/random/index.ts",

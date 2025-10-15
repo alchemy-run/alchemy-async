@@ -1,12 +1,22 @@
 import alchemy from "alchemy";
 import { Hyperdrive, Worker } from "alchemy/cloudflare";
-import { Database, DatabaseConnection, Project } from "alchemy/prisma";
+import {
+	Database,
+	DatabaseConnection,
+	Project,
+} from "../../alchemy/lib/prisma-postgres";
 
 const app = await alchemy("prisma-postgres-example");
 
 const project = await Project("project");
 
 const database = await Database("database", {
+	name: "test",
+  project,
+  region: "us-east-1",
+});
+const database2 = await Database("database2", {
+	name: "test",
   project,
   region: "us-east-1",
 });
@@ -16,15 +26,15 @@ const connection = await DatabaseConnection("connection", {
   name: "connection",
 });
 
-const db = await Hyperdrive("prisma-postgres", {
+const db2 = await Hyperdrive("prisma-postgres", {
   name: "prisma-postgres",
-  origin: `postgres://${connection.user}:${connection.password?.unencrypted}@${connection.host}/${connection.database}`,
+  origin: connection.connectionString.unencrypted,
 });
 
 export const worker = await Worker("worker", {
   entrypoint: "src/worker.ts",
   bindings: {
-    HYPERDRIVE: db,
+    HYPERDRIVE: db2,
   },
   compatibilityFlags: ["nodejs_compat"],
 });

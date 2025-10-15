@@ -1,9 +1,9 @@
 ---
 title: Project
-description: Learn how to create and manage Prisma projects using Alchemy.
+description: Learn how to create and manage Prisma Postgres projects using Alchemy.
 ---
 
-The Project resource lets you create and manage Prisma projects, which serve as containers for your databases and their configurations. Projects belong to a workspace and can contain multiple databases.
+The Project resource lets you create and manage [Prisma Postgres projects](https://www.prisma.io/docs/platform/about#project), which serve as containers for your databases and their configurations. Projects belong to a workspace and can contain multiple databases.
 
 ## Minimal Example
 

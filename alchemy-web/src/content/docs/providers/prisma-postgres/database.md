@@ -1,9 +1,9 @@
 ---
 title: Database
-description: Learn how to create and manage Prisma Hosted Databases using Alchemy.
+description: Learn how to create and manage Prisma Postgres databases using Alchemy.
 ---
 
-The Database resource lets you create and manage Prisma Hosted Databases within a project. Each database is a fully managed PostgreSQL instance that can be connected to your applications.
+The Database resource lets you create and manage Prisma Postgres database resources within an alchemy project. Each database is a fully managed PostgreSQL instance that can be connected to applications.
 
 ## Minimal Example
 
@@ -103,7 +103,7 @@ console.log(`Connection string available at: ${connection.connectionString.unenc
 ```
 ## Related Resources
 
-- [Project](/providers/prisma/project) - Create projects to contain databases
-- [DatabaseConnection](/providers/prisma/database-connection) - Create connection strings for databases
-- [Workspace](/providers/prisma/workspace) - Learn about Prisma workspaces
+- [Project](/providers/prisma-postgres/project) - Create projects to contain databases
+- [DatabaseConnection](/providers/prisma-postgres/database-connection) - Create connection strings for databases
+- [Workspace](/providers/prisma-postgres/workspace) - Learn about Prisma workspaces
 
