@@ -62,7 +62,11 @@ export const router = await Worker("router", {
   },
 });
 
-const url = domain ? `https://${domain}` : router.url;
+const url = process.env.PULL_REQUEST
+  ? website.url
+  : domain
+    ? `https://${domain}`
+    : router.url;
 
 console.log(url);
 
