@@ -62,7 +62,7 @@ export const router = await Worker("router", {
   },
 });
 
-const url = process.env.PULL_REQUEST
+const url = stage !== "prod"
   ? website.url
   : domain
     ? `https://${domain}`
