@@ -24,13 +24,11 @@ describe("Prisma Database Connection", async () => {
     try {
       project = await Project(projectId, {
         name: projectId,
-        adopt: true,
       });
 
       const database = await Database(databaseId, {
         project,
         name: databaseId,
-        adopt: true,
         region: "ap-northeast-1",
       });
 

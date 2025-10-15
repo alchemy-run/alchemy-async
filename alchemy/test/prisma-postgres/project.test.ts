@@ -20,7 +20,6 @@ describe("Prisma Project", async () => {
       project = await Project(testId, {
         name: testId,
         delete: true,
-        adopt: true,
       });
 
       expect(project.name).toEqual(testId);
@@ -58,7 +57,6 @@ describe("Prisma Project", async () => {
     try {
       project = await Project(testId, {
         name: testId,
-        adopt: true,
       });
     } finally {
       await alchemy.destroy(scope);

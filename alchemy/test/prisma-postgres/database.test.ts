@@ -21,7 +21,6 @@ describe("Prisma Database", async () => {
     try {
       const project = await Project(projectId, {
         name: projectId,
-        adopt: true,
         delete: true,
       });
 
@@ -29,7 +28,6 @@ describe("Prisma Database", async () => {
         project,
         name: testId,
         delete: true,
-        adopt: true,
         region: "ap-northeast-1",
       });
 
@@ -71,13 +69,11 @@ describe("Prisma Database", async () => {
     try {
       project = await Project(projectId, {
         name: projectId,
-        adopt: true,
       });
 
       database = await Database(testId, {
         project,
         name: testId,
-        adopt: true,
       });
     } finally {
       await alchemy.destroy(scope);
