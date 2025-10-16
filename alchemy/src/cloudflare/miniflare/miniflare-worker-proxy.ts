@@ -1,9 +1,11 @@
 import * as miniflare from "miniflare";
+import assert from "node:assert";
 import { once } from "node:events";
 import http from "node:http";
 import { Readable } from "node:stream";
 import { WebSocket, WebSocketServer } from "ws";
 import { createUpgradeHandler } from "../../util/http.ts";
+import { logger } from "../../util/logger.ts";
 
 export interface MiniflareWorkerProxy {
   url: URL;
@@ -90,17 +92,50 @@ export async function createMiniflareWorkerProxy(options: {
     });
   };
 
-  server.listen(options.port);
-  await once(server, "listening");
-  const url = new URL(`http://localhost:${options.port}`);
+  await listen(server, options.port);
 
   return {
-    url,
+    url: getAddress(server),
     close: async () => {
       // If we await this while the `wss` server is open, the server will hang.
       server.close();
     },
   };
+}
+
+/**
+ * Listens on the given port, retrying on the next port if the port is already in use.
+ */
+async function listen(server: http.Server, port: number) {
+  try {
+    server.listen(port);
+    await once(server, "listening");
+  } catch (error) {
+    if (
+      typeof error === "object" &&
+      error !== null &&
+      "code" in error &&
+      error.code === "EADDRINUSE"
+    ) {
+      logger.warn(`Port ${port} is already in use, trying ${port + 1}...`);
+      await listen(server, port + 1);
+    } else {
+      throw error;
+    }
+  }
+}
+
+function getAddress(server: http.Server) {
+  const address = server.address();
+  assert(
+    address &&
+      typeof address === "object" &&
+      "address" in address &&
+      "port" in address,
+    "Server is not listening",
+  );
+  const hostname = address.address === "::" ? "localhost" : address.address;
+  return new URL(`http://${hostname}:${address.port}`);
 }
 
 interface RequestInfo {
