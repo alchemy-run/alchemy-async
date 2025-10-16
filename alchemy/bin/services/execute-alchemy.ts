@@ -154,6 +154,7 @@ export async function execAlchemy(
     console.log("finding root dir");
     try {
       const rootDir = await findWorkspaceRoot(cwd);
+      console.log("found root dir", rootDir);
       // no root directory was provided but a specific app was provided, so we need to find the monorepo root
       args.push(`--root-dir ${rootDir}`);
       if (!envFile) {
@@ -239,6 +240,7 @@ export async function execAlchemy(
       }
   }
 
+  console.log(command);
   const childRuntime = command.split(" ")[0];
 
   const { promise: inspectorUrlPromise, resolve: resolveInspectorUrl } =
