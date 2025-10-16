@@ -1,6 +1,6 @@
 {
   "name": "alchemy",
-  "version": "0.73.0",
+  "version": "0.73.1",
   "license": "Apache-2.0",
   "author": "Sam Goodwin <sam@alchemy.run>",
   "homepage": "https://alchemy.run",
@@ -127,6 +127,10 @@
     "./planetscale": {
       "bun": "./src/planetscale/index.ts",
       "import": "./lib/planetscale/index.js"
+    },
+    "./prisma-postgres": {
+      "bun": "./src/prisma-postgres/index.ts",
+      "import": "./lib/prisma-postgres/index.js"
     },
     "./random": {
       "bun": "./src/random/index.ts",

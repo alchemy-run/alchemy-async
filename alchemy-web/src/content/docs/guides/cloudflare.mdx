@@ -101,6 +101,54 @@ To select a specific profile, use the `--profile` flag:
 
 First, [create an API Token](https://developers.cloudflare.com/fundamentals/api/get-started/create-token/) and then use it in your Alchemy app.
 
+The Alchemy CLI exposes a utility for creating Cloudflare tokens that follow a profile
+<Tabs syncKey="pkgManager">
+  <TabItem label="bun">
+    ```sh
+    bun alchemy util create-cloudflare-token --profile <profile>
+    ```
+  </TabItem>
+  <TabItem label="npm">
+    ```sh
+    npx alchemy util create-cloudflare-token --profile <profile>
+    ```
+  </TabItem>
+  <TabItem label="pnpm">
+    ```sh
+    pnpm alchemy util create-cloudflare-token --profile <profile>
+    ```
+  </TabItem>
+  <TabItem label="yarn">
+    ```sh
+    yarn alchemy util create-cloudflare-token --profile <profile>
+    ```
+  </TabItem>
+</Tabs>
+
+as well as a utility for creating "god tokens" with full write access to everything in a cloudflare account:
+<Tabs syncKey="pkgManager">
+  <TabItem label="bun">
+    ```sh
+    bun alchemy util create-cloudflare-token --god-token
+    ```
+  </TabItem>
+  <TabItem label="npm">
+    ```sh
+    npx alchemy util create-cloudflare-token --god-token
+    ```
+  </TabItem>
+  <TabItem label="pnpm">
+    ```sh
+    pnpm alchemy util create-cloudflare-token --god-token
+    ```
+  </TabItem>
+  <TabItem label="yarn">
+    ```sh
+    yarn alchemy util create-cloudflare-token --god-token
+    ```
+  </TabItem>
+</Tabs>
+
 By default, Alchemy will use the `CLOUDFLARE_API_TOKEN` environment variable if set.
 
 You can store the token in your `.env` file

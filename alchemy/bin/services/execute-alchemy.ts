@@ -245,8 +245,9 @@ export async function execAlchemy(
     promiseWithResolvers<string>();
 
   process.on("SIGINT", async () => {
+    // hold the parent process open until the child process exits,
+    // then the trpc middleware will handle the SIGINT after sending the event
     await exitPromise;
-    throw new ExitSignal(sanitizeExitCode(child.exitCode));
   });
 
   const child = spawn(command, {

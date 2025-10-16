@@ -1,6 +1,8 @@
 // @ts-check
 import sitemap from "@astrojs/sitemap";
 import starlight from "@astrojs/starlight";
+import tailwindcss from "@tailwindcss/vite";
+import icon from "astro-icon";
 import { defineConfig } from "astro/config";
 import starlightBlog from "starlight-blog";
 import starlightLinksValidator from "starlight-links-validator";
@@ -46,7 +48,7 @@ export default defineConfig({
         dark: "./public/alchemy-logo-dark.svg",
         replacesTitle: true,
       },
-      customCss: ["./src/styles/custom.css"],
+      customCss: ["./src/styles/global.css", "./src/styles/custom.css"],
       prerender: true,
       routeMiddleware: "./src/routeData.ts",
       social: [
@@ -72,6 +74,7 @@ export default defineConfig({
       components: {
         Hero: "./src/components/Hero.astro",
         MarkdownContent: "./src/components/MarkdownContent.astro",
+        PageTitle: "./src/components/docs/PageTitle.astro",
       },
       sidebar: [
         {
@@ -116,5 +119,10 @@ export default defineConfig({
         starlightLinksValidator(),
       ],
     }),
+    icon(),
   ],
+
+  vite: {
+    plugins: [tailwindcss()],
+  },
 });

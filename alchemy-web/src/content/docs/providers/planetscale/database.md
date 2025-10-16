@@ -19,6 +19,50 @@ const database = await Database("my-app-db", {
 });
 ```
 
+## Managing Organizations
+
+There are multiple ways to set the organization for a database. 
+
+Using `OrganizationRef`:
+
+```ts
+import { OrganizationRef, Database } from "alchemy/planetscale";
+
+const organization = await OrganizationRef("my-org");
+const database = await Database("my-app-db", {
+  organization,
+  name: "my-app-db",
+  clusterSize: "PS_10",
+});
+```
+
+Using the `PLANETSCALE_ORGANIZATION` environment variable. This is the default behavior if no organization is provided:
+
+```ts
+import { Database } from "alchemy/planetscale";
+
+const database = await Database("my-app-db", {
+  name: "my-app-db",
+  organization: alchemy.env.PLANETSCALE_ORGANIZATION,
+  clusterSize: "PS_10",
+});
+```
+
+## Deletion
+
+By default, when a database is deleted, the database will be removed from the state but not deleted via API. This is to prevent accidental loss of data. This setting can be changed by setting the `delete` property to `true`.
+
+```ts
+import { Database } from "alchemy/planetscale";
+
+const database = await Database("my-app-db", {
+  name: "my-app-db",
+  organization: alchemy.env.PLANETSCALE_ORGANIZATION,
+  clusterSize: "PS_10",
+  delete: true,
+});
+```
+
 ## PostgreSQL Database
 
 Create a PostgreSQL database:

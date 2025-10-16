@@ -10,15 +10,20 @@ import {
   Worker,
 } from "alchemy/cloudflare";
 import assert from "node:assert";
+import { spawn } from "node:child_process";
 import type { DO } from "./src/worker1.ts";
 
 const app = await alchemy("cloudflare-worker-simple");
+
+// to test with remote bindings, set to true
+const remote = false;
 
 const [d1, kv, r2] = await Promise.all([
   D1Database("d1", {
     name: `${app.name}-${app.stage}-d1`,
     adopt: true,
     migrationsDir: "migrations",
+    dev: { remote },
   }),
   KVNamespace("kv", {
     title: `${app.name}-${app.stage}-kv`,
@@ -27,10 +32,12 @@ const [d1, kv, r2] = await Promise.all([
       { key: "test1", value: "test1" },
       { key: "test2", value: "test2" },
     ],
+    dev: { remote },
   }),
   R2Bucket("r2", {
     name: `${app.name}-${app.stage}-r2`,
     adopt: true,
+    dev: { remote },
   }),
 ]);
 const doNamespace = DurableObjectNamespace<DO>("DO", {
@@ -67,6 +74,24 @@ console.log(`worker2.url: ${worker2.url}`);
 
 console.log("worker1.name", worker1.name);
 console.log("worker2.name", worker2.name);
+
+if (process.env.ALCHEMY_E2E) {
+  const child = spawn("node", ["e2e.test.ts"], {
+    env: {
+      PATH: process.env.PATH,
+      WORKER_URL: worker1.url,
+    },
+  });
+  child.stdout.pipe(process.stdout);
+  child.stderr.pipe(process.stderr);
+  await new Promise((resolve, reject) => {
+    child.on("exit", resolve);
+    child.on("error", reject);
+  });
+  if (child.exitCode !== 0) {
+    throw new Error(`Test exited with code ${child.exitCode}`);
+  }
+}
 
 await app.finalize();
 

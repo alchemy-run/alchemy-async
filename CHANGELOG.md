@@ -1,3 +1,13 @@
+## v0.73.1
+
+### &nbsp;&nbsp;&nbsp;🐞 Bug Fixes
+
+- **cli**: Exit signal handling &nbsp;-&nbsp; by **John Royal** in https://github.com/alchemy-run/alchemy/issues/1116 [<samp>(b74a8)</samp>](https://github.com/alchemy-run/alchemy/commit/b74a80d4)
+
+##### &nbsp;&nbsp;&nbsp;&nbsp;[View changes on GitHub](https://github.com/alchemy-run/alchemy/compare/v0.73.0...v0.73.1)
+
+---
+
 ## v0.73.0
 
 ### &nbsp;&nbsp;&nbsp;🐞 Bug Fixes

@@ -32,6 +32,20 @@ const role = await Role("app-role", {
 The `"postgres"` role provides full administrator access to the database. While this can be useful in development, we recommend following the [principle of least privilege](https://en.wikipedia.org/wiki/Principle_of_least_privilege) and creating roles with specific permissions instead, particularly for production environments.
 :::
 
+## Deletion
+
+By default, when a role is deleted, the role will be removed from the state but not deleted via API. This is to prevent accidental loss of data. This setting can be changed by setting the `delete` property to `true`.
+
+```ts
+import { Role } from "alchemy/planetscale";
+
+const role = await Role("app-role", {
+  database,
+  inheritedRoles: ["postgres"],
+  delete: true,
+});
+```
+
 ## Role with Specific Branch
 
 Create a role for a specific branch:

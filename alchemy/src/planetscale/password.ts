@@ -58,6 +58,13 @@ export interface PasswordProps extends PlanetScaleProps {
    * The CIDRs of the password
    */
   cidrs?: string[];
+
+  /**
+   * Whether to delete the password when the resource is destroyed.
+   * When false, the password will only be removed from the state but not deleted via API.
+   * @default true
+   */
+  delete?: boolean;
 }
 
 /**
@@ -293,6 +300,7 @@ export const Password = Resource(
       typeof props.branch === "string"
         ? props.branch
         : (props.branch?.name ?? "main");
+    const shouldDelete = props.delete ?? false;
     if (!organization) {
       throw new Error(
         "PlanetScale organization is required. Please set the `organization` property or the `PLANETSCALE_ORGANIZATION` environment variable.",
@@ -300,7 +308,7 @@ export const Password = Resource(
     }
 
     if (this.phase === "delete") {
-      if (this.output?.id) {
+      if (shouldDelete && this.output?.id) {
         const res = await api.deletePassword({
           path: {
             organization,
