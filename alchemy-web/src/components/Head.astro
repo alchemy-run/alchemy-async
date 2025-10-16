@@ -1,53 +1,51 @@
 ---
 import DefaultHead from "@astrojs/starlight/components/Head.astro";
+import { Schema } from "astro-seo-schema";
 
-interface Props {
-  entry?: {
-    data: {
-      title?: string;
-      description?: string;
-    };
-  };
+import type { BreadcrumbList, ListItem, Organization, TechArticle, WithContext } from "schema-dts";
+
+interface StarlightRouteData {
+  title?: string;
+  description?: string;
 }
 
-const { entry } = Astro.props;
-const title = entry?.data?.title;
-const description = entry?.data?.description;
-const url = Astro.url.href;
+// TODO(nestor): look into inferring types from `Astro.locals.starlightRoute``
+const { title, description }: StarlightRouteData = Astro.locals.starlightRoute.entry.data;
 
-const organizationSchema = {
+const organizationSchema: WithContext<Organization> = {
   "@context": "https://schema.org",
   "@type": "Organization",
   name: "Alchemy",
-  url: "https://alchemy.run",
-  logo: "https://alchemy.run/alchemy-logo-dark.svg",
+  url: Astro.url.origin,
+  logo: `${Astro.url.origin}/alchemy-logo-dark.svg`,
   sameAs: [
     "https://github.com/alchemy-run/alchemy",
     "https://x.com/alchemy_run",
-    "https://discord.gg/jwKw8dBJdN"
-  ]
+    "https://discord.gg/jwKw8dBJdN",
+  ],
 };
 
-const articleSchema = title ? {
+const ogImageUrl = `${Astro.url.origin}/og${Astro.url.pathname.endsWith("/") ? (Astro.url.pathname.slice(0, -1) || "/index") : Astro.url.pathname}.png`;
+
+const articleSchema: WithContext<TechArticle> = {
   "@context": "https://schema.org",
   "@type": "TechArticle",
   headline: title,
   description: description || title,
-  url: url,
+  url: Astro.url.href,
   author: organizationSchema,
   publisher: organizationSchema,
   image: {
     "@type": "ImageObject",
-    url: `https://alchemy.run/og/${Astro.url.pathname.replace(/\//g, "-").slice(1) || "index"}.png`
-  }
-} : null;
+    url: ogImageUrl,
+  },
+};
 
 const pathSegments = Astro.url.pathname
   .split("/")
   .filter(s => s)
-  .slice(0, -1);
 
-const breadcrumbSchema = pathSegments.length > 0 ? {
+const breadcrumbSchema: WithContext<BreadcrumbList> = {
   "@context": "https://schema.org",
   "@type": "BreadcrumbList",
   itemListElement: [
@@ -55,21 +53,20 @@ const breadcrumbSchema = pathSegments.length > 0 ? {
       "@type": "ListItem",
       position: 1,
       name: "Home",
-      item: "https://alchemy.run"
+      item: Astro.url.origin,
     },
-    ...pathSegments.map((segment, i) => ({
+    ...pathSegments.map((segment, i): ListItem => ({
       "@type": "ListItem",
       position: i + 2,
       name: segment.replace(/-/g, " ").replace(/\b\w/g, l => l.toUpperCase()),
-      item: `https://alchemy.run/${pathSegments.slice(0, i + 1).join("/")}`
-    }))
-  ]
-} : null;
-
+      ...(i === pathSegments.length - 1 ? {} : { item: `${Astro.url.origin}/${pathSegments.slice(0, i + 1).join("/")}` }),
+    })),
+  ],
+};
 ---
 
 <DefaultHead {...Astro.props} />
 
-<script type="application/ld+json" set:html={JSON.stringify(organizationSchema)} />
-{articleSchema && <script type="application/ld+json" set:html={JSON.stringify(articleSchema)} />}
-{breadcrumbSchema && <script type="application/ld+json" set:html={JSON.stringify(breadcrumbSchema)} />}
+<Schema item={organizationSchema}/>
+{title && <Schema item={articleSchema}/>}
+{pathSegments.length > 0 && <Schema item={breadcrumbSchema}/>}
