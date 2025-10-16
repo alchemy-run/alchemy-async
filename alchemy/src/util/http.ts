@@ -1,7 +1,8 @@
+import { once } from "node:events";
 import http from "node:http";
 import type { AddressInfo } from "node:net";
-import { Readable, type Duplex } from "node:stream";
-import { WebSocketServer, type WebSocket } from "ws";
+import { type Duplex, Readable } from "node:stream";
+import { WebSocket, WebSocketServer } from "ws";
 
 export class HTTPServer {
   httpServer = http.createServer();
@@ -11,19 +12,22 @@ export class HTTPServer {
     websocket?: (request: Request) => Promise<WebSocket>;
     fetch: (request: Request) => Promise<Response>;
   }) {
+    const websocket = options.websocket;
+    if (websocket) {
+      const wss = new WebSocketServer({ noServer: true });
+      this.webSocketServer = wss;
+      this.httpServer.on(
+        "upgrade",
+        createUpgradeHandler({
+          wss,
+          createServerWebSocket: (req) => websocket(toWebRequest(req)),
+        }),
+      );
+    }
     this.httpServer.on("request", async (req, res) => {
       const response = await options.fetch(toWebRequest(req));
       await writeNodeResponse(res, response);
     });
-    const websocket = options.websocket;
-    if (websocket) {
-      const webSocketServer = new WebSocketServer({ noServer: true });
-      this.webSocketServer = webSocketServer;
-      this.httpServer.on("upgrade", async (req, socket, head) => {
-        const ws = await websocket(toWebRequest(req));
-        coupleWebSocket(webSocketServer, req, socket, head, ws);
-      });
-    }
   }
 
   listen(port?: number) {
@@ -48,32 +52,74 @@ export class HTTPServer {
   }
 
   async close() {
-    const webSocketServer = this.webSocketServer;
-    if (webSocketServer) {
-      await new Promise<void>((resolve, reject) => {
-        webSocketServer.close((err) => (err ? reject(err) : resolve()));
-      });
-    }
-    await new Promise<void>((resolve, reject) => {
-      this.httpServer.close((err) => (err ? reject(err) : resolve()));
-    });
+    this.webSocketServer?.close();
+    this.httpServer.close();
   }
 }
 
-export function coupleWebSocket(
-  wss: WebSocketServer,
-  req: http.IncomingMessage,
-  socket: Duplex,
-  head: Buffer,
-  server: WebSocket,
-) {
-  wss.handleUpgrade(req, socket, head, (client) => {
-    client.on("message", (event, binary) => server.send(event, { binary }));
-    client.on("close", (code, reason) => server.close(code, reason));
-    server.on("message", (event, binary) => client.send(event, { binary }));
-    server.on("close", (code, reason) => client.close(code, reason));
-    wss.emit("connection", client, req);
-  });
+export function createUpgradeHandler(props: {
+  wss: WebSocketServer;
+  createServerWebSocket: (req: http.IncomingMessage) => Promise<WebSocket>;
+}) {
+  async function waitForWebSocketOpen(server: WebSocket) {
+    if (server.readyState === WebSocket.CONNECTING) {
+      // Wait for client to be open before accepting worker pair (which would
+      // release buffered messages). Note this will throw if an "error" event is
+      // dispatched (https://github.com/cloudflare/miniflare/issues/229).
+      await once(server, "open");
+    } else if (server.readyState >= WebSocket.CLOSING) {
+      throw new TypeError("Incoming WebSocket connection already closed.");
+    }
+  }
+
+  function forwardWebSocketEvents(from: WebSocket, to: WebSocket) {
+    const ready = waitForWebSocketOpen(to);
+    const ifOpen = (fn: () => void) => {
+      // Wait for target to be open before sending message
+      void ready.then(() => {
+        // Silently discard messages received after close:
+        // https://www.rfc-editor.org/rfc/rfc6455#section-1.4
+        if (to.readyState !== WebSocket.OPEN) return;
+
+        fn();
+      });
+    };
+    from.on("message", (event, binary) => {
+      ifOpen(() => {
+        to.send(event, { binary });
+      });
+    });
+    from.on("close", (code, reason) => {
+      // Handle close events similar to Miniflare:
+      // https://github.com/cloudflare/workers-sdk/blob/88f081f4e2bd299e715d18bcfe181971f534ff76/packages/miniflare/src/http/websocket.ts#L276-L282
+
+      ifOpen(() => {
+        if (code === 1005 /* No Status Received */) {
+          to.close();
+        } else if (code === 1006 /* Abnormal Closure */) {
+          to.terminate();
+        } else {
+          to.close(code, reason);
+        }
+      });
+    });
+    from.on("error", (error) => {
+      console.error("Websocket error:", error);
+
+      ifOpen(() => {
+        to.terminate();
+      });
+    });
+  }
+
+  return async (req: http.IncomingMessage, socket: Duplex, head: Buffer) => {
+    const server = await props.createServerWebSocket(req);
+    props.wss.handleUpgrade(req, socket, head, async (client) => {
+      forwardWebSocketEvents(server, client);
+      forwardWebSocketEvents(client, server);
+      props.wss.emit("connection", client, req);
+    });
+  };
 }
 
 export function toWebRequest(

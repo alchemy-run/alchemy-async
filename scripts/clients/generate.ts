@@ -6,7 +6,12 @@ import {
 import path from "node:path";
 import { patchNeonResponseTypes } from "./neon.ts";
 
-export const clients = ["neon", "planetscale", "clickhouse"] as const;
+export const clients = [
+  "neon",
+  "planetscale",
+  "clickhouse",
+  "prisma-postgres",
+] as const;
 
 export const generate = async () => {
   await patchBiomeConfig();

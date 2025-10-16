@@ -412,3 +412,12 @@ Logout of a configured cloud provider.
 
 - `-p, --profile` - The profile to logout from (default: `default`)
 - `-h, --help` - Display help for command
+
+```sh
+alchemy util create-cloudflare-token
+```
+
+A utility for creating Cloudflare tokens.
+
+- `-p, --profile` - Create a cloudflare token mirroring the oauth scopes in the specified profile
+- `--god-token` - Create a "god token" with full write access to everything in a cloudflare account

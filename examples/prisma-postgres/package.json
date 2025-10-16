@@ -1,0 +1,18 @@
+{
+  "name": "prisma-postgres",
+  "version": "0.0.0",
+  "description": "Alchemy Prisma Postgres example",
+  "type": "module",
+  "scripts": {
+    "build": "tsc -b",
+    "deploy": "alchemy deploy --env-file ../../.env",
+    "destroy": "alchemy destroy --env-file ../../.env"
+  },
+  "devDependencies": {
+    "alchemy": "workspace:*",
+    "typescript": "catalog:"
+  },
+  "dependencies": {
+    "pg": "^8.16.3"
+  }
+}
