@@ -98,7 +98,6 @@ async function _apply<Out extends ResourceAttributes>(
       // -> poll until it does not (i.e. when the owner process applies the change and updates the state store)
       async function waitForConsistentState() {
         while (true) {
-          console.log("waiting for consistent state", state);
           if (state === undefined) {
             // state doesn't exist yet
           } else if (
