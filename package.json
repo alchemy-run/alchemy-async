@@ -55,7 +55,7 @@
     ]
   },
   "devDependencies": {
-    "@biomejs/biome": "^2.2.2",
+    "@biomejs/biome": "2.2.2",
     "@cloudflare/workers-types": "catalog:",
     "@hey-api/openapi-ts": "^0.84.3",
     "@redwoodjs/sdk": "^0.0.80",
