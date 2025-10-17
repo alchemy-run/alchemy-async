@@ -446,7 +446,11 @@ export const GET: APIRoute = async ({ props, params }) => {
       </div>
       ${breadcrumbText ? `<div class="breadcrumb">${breadcrumbText}</div>` : ""}
       <h1 class="title">${data.title}</h1>
-      ${data.description || data.excerpt ? `<p class="description">${data.description || data.excerpt}</p>` : ""}
+      ${
+        data.description || data.excerpt
+          ? `<p class="description">${data.description || data.excerpt}</p>`
+          : ""
+      }
     </div>
 
     <div class="character-container">

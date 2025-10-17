@@ -158,11 +158,7 @@ export async function idempotentSpawn({
   // Follow a file from persisted offset and mirror to a sink (stdout/stderr)
   async function followFilePersisted(
     logPath: string,
-    {
-      write,
-      chunkSize = 64 * 1024,
-      tickMs = 100,
-    }: {
+    { write, chunkSize = 64 * 1024, tickMs = 100 }: {
       stateKey: string;
       write: (buf: Buffer) => boolean;
       chunkSize?: number;

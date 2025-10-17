@@ -25,18 +25,20 @@ export function camelToSnakeObjectDeep<T extends object | undefined>(
 }
 
 // Helper to check if a character is uppercase
-type IsUpper<C extends string> = C extends Uppercase<C>
-  ? C extends Lowercase<C>
-    ? false // Not a letter
-    : true // Uppercase letter
-  : false;
+type IsUpper<C extends string> =
+  C extends Uppercase<C>
+    ? C extends Lowercase<C>
+      ? false // Not a letter
+      : true // Uppercase letter
+    : false;
 
 // Helper to check if a character is lowercase
-type IsLower<C extends string> = C extends Lowercase<C>
-  ? C extends Uppercase<C>
-    ? false // Not a letter
-    : true // Lowercase letter
-  : false;
+type IsLower<C extends string> =
+  C extends Lowercase<C>
+    ? C extends Uppercase<C>
+      ? false // Not a letter
+      : true // Lowercase letter
+    : false;
 
 // Convert a camelCase string to snake_case at the type level
 type CamelToSnakeString<

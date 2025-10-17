@@ -25,7 +25,7 @@ function useServerCounter(key: string) {
   useEffect(() => {
     fetchBackend(`/api/test/kv/${key}`)
       .then((res) => {
-        if(res.status === 404) return "0";
+        if (res.status === 404) return "0";
         return res.ok ? res.text() : null;
       })
       .then((value) => setCount(value ? Number.parseInt(value, 10) : 0))
@@ -82,10 +82,12 @@ function App() {
         </button>
         {error && <p style={{ color: "red", fontSize: "0.9em" }}>{error}</p>}
         <p>
-          Edit <code>src/App.tsx</code> and save to test HMR (frontend changes are applied in real time)
+          Edit <code>src/App.tsx</code> and save to test HMR (frontend changes
+          are applied in real time)
         </p>
         <p>
-          Edit <code>src/worker.tsx</code> and save to test alchemy dev (backend changes are applied in real time)
+          Edit <code>src/worker.tsx</code> and save to test alchemy dev (backend
+          changes are applied in real time)
         </p>
         <p style={{ fontSize: "0.9em", opacity: 0.7 }}>
           Counter persisted in Cloudflare KV

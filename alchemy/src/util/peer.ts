@@ -11,7 +11,9 @@ export class PeerDependencyError extends Error {
   }) {
     super(
       [
-        `Missing peer ${input.missing.length} ${input.missing.length === 1 ? "dependency" : "dependencies"}${input.feature ? ` for ${input.feature}` : ""}:`,
+        `Missing peer ${input.missing.length} ${
+          input.missing.length === 1 ? "dependency" : "dependencies"
+        }${input.feature ? ` for ${input.feature}` : ""}:`,
         ...input.missing.map((dep) => `- "${dep}"`),
         "",
         "Please install with:",

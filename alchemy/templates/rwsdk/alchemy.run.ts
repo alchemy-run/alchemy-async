@@ -1,8 +1,12 @@
 import alchemy from "alchemy";
-import { D1Database, DurableObjectNamespace, Redwood } from "alchemy/cloudflare";
+import {
+  D1Database,
+  DurableObjectNamespace,
+  Redwood,
+} from "alchemy/cloudflare";
 
 const app = await alchemy("{projectName}");
-    
+
 const database = await D1Database("database", {
   migrationsDir: "migrations",
 });
@@ -22,4 +26,3 @@ console.log({
 });
 
 await app.finalize();
-    

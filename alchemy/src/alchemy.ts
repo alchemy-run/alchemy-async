@@ -123,6 +123,7 @@ async function _alchemy(
           : cliArgs.includes("--read")
             ? "read"
             : "up",
+
     local: cliArgs.includes("--local") || cliArgs.includes("--dev"),
     watch: cliArgs.includes("--watch") || execArgv.includes("--watch"),
     quiet: cliArgs.includes("--quiet"),
@@ -149,7 +150,7 @@ async function _alchemy(
     process.env.CI &&
     process.env.ALCHEMY_CI_STATE_STORE_CHECK !== "false"
   ) {
-    throw new Error(`You are running Alchemy in a CI environment with the default local state store. 
+    throw new Error(`You are running Alchemy in a CI environment with the default local state store.
 This can lead to orphaned infrastructure and is rarely what you want to do.
 
 Instead, you should choose a persistent state store:

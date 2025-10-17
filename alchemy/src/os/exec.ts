@@ -356,7 +356,9 @@ export async function exec(
       } else {
         reject(
           new Error(
-            `Command failed with exit code ${code}${stderr ? `: ${stderr}` : ""}`,
+            `Command failed with exit code ${code}${
+              stderr ? `: ${stderr}` : ""
+            }`,
           ),
         );
       }

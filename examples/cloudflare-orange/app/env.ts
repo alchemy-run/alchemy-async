@@ -8,6 +8,6 @@ declare global {
 
 declare module "cloudflare:workers" {
   namespace Cloudflare {
-    export interface Env extends CloudFlareEnv { }
+    export interface Env extends CloudFlareEnv {}
   }
 }

@@ -30,12 +30,7 @@ interface FileMetadata {
  */
 export async function uploadAssets(
   api: CloudflareApi,
-  {
-    workerName,
-    assets,
-    assetConfig,
-    namespace,
-  }: {
+  { workerName, assets, assetConfig, namespace }: {
     workerName: string;
     assets: Assets;
     assetConfig?: WorkerProps["assets"];

@@ -159,7 +159,9 @@ export class DockerApi {
       return true;
     } catch (error) {
       console.log(
-        `Docker daemon not running: ${error instanceof Error ? error.message : String(error)}`,
+        `Docker daemon not running: ${
+          error instanceof Error ? error.message : String(error)
+        }`,
       );
       return false;
     }

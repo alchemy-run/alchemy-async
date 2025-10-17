@@ -17,14 +17,12 @@ export async function findWorkspaceRoot(dir: string = process.cwd()) {
 }
 
 const read = (...p: string[]): Promise<any> =>
-  fs
-    .readFile(path.join(...p), "utf8")
+  fs.readFile(path.join(...p), "utf8")
     .then(JSON.parse)
     .catch(() => undefined);
 
 const exists = (...p: string[]) =>
-  fs
-    .access(path.join(...p))
+  fs.access(path.join(...p))
     .then(() => true)
     .catch(() => false);
 

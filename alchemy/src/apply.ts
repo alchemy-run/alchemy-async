@@ -332,7 +332,9 @@ async function _apply<Out extends ResourceAttributes>(
           phase === "create" ? "created" : isReplaced ? "replaced" : "updated",
         prefixColor: "greenBright",
         resource: formatFQN(resource[ResourceFQN]),
-        message: `${phase === "create" ? "Created" : isReplaced ? "Replaced" : "Updated"} Resource`,
+        message: `${
+          phase === "create" ? "Created" : isReplaced ? "Replaced" : "Updated"
+        } Resource`,
         status: "success",
       });
     }

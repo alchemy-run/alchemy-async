@@ -190,7 +190,11 @@ export const GitHubSecret = Resource(
         // If secret type changed, we need to delete the old one first
         if (secretTypeChanged) {
           logger.log(
-            `Secret type changed from ${wasEnvironmentSecret ? "environment" : "repository"} to ${isEnvironmentSecret ? "environment" : "repository"} secret. Deleting the old secret first.`,
+            `Secret type changed from ${
+              wasEnvironmentSecret ? "environment" : "repository"
+            } to ${
+              isEnvironmentSecret ? "environment" : "repository"
+            } secret. Deleting the old secret first.`,
           );
 
           try {
