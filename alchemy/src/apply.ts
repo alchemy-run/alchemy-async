@@ -97,6 +97,7 @@ async function _apply<Out extends ResourceAttributes>(
 
       // -> poll until it does not (i.e. when the owner process applies the change and updates the state store)
       async function waitForConsistentState() {
+        let startTime = Date.now();
         while (true) {
           if (state === undefined) {
             // state doesn't exist yet
@@ -115,6 +116,14 @@ async function _apply<Out extends ResourceAttributes>(
           } else if (await inputsAreEqual(state)) {
             // sweet, we've reached a stable state and read can progress
             return state;
+          } else {
+            const elapsed = Date.now() - startTime;
+            if (elapsed > 10_000) {
+              logger.warn(
+                `Resource '${resource[ResourceFQN]}' is not in a stable state after ${elapsed}ms, be sure to check if your input props are deterministic:`,
+                state.props,
+              );
+            }
           }
           // jitter between 100-300ms
           const jitter = 100 + Math.random() * 200;
