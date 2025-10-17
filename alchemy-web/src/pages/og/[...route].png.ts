@@ -9,7 +9,6 @@ import {
   unlink,
   writeFile,
 } from "node:fs/promises";
-// biome-ignore lint/style/noRestrictedImports: node:path in alchemy-web is OK
 import { dirname, join } from "node:path";
 import { chromium, type Browser } from "playwright";
 

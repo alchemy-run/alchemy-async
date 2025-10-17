@@ -1,7 +1,6 @@
 #!/usr/bin/env bun
 import { $ } from "bun";
 import { mkdir, writeFile } from "node:fs/promises";
-// biome-ignore lint/style/noRestrictedImports: node:path in scripts is OK
 import { dirname } from "node:path";
 import prettier from "prettier";
 

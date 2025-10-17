@@ -1,6 +1,5 @@
 import fs from "node:fs/promises";
 import os from "node:os";
-// biome-ignore lint/style/noRestrictedImports: node:path in test is OK
 import { posix as path } from "node:path";
 import { expect } from "vitest";
 import { alchemy } from "../src/alchemy.ts";

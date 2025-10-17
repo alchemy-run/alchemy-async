@@ -1,4 +1,3 @@
-/** biome-ignore-all lint/suspicious/noTemplateCurlyInString: we are building a github template workflow */
 import { spinner } from "@clack/prompts";
 import { ensureDir, readFile, writeFile } from "fs-extra";
 import path from "pathe";
@@ -255,7 +254,7 @@ import { CloudflareStateStore } from "alchemy/state";`;
       const githubWorkflowCode = `
 if (process.env.PULL_REQUEST) {
   const previewUrl = worker.url;
-  
+
   await GitHubComment("pr-preview-comment", {
     owner: process.env.GITHUB_REPOSITORY_OWNER || "your-username",
     repository: process.env.GITHUB_REPOSITORY_NAME || "${context.name}",
@@ -263,7 +262,7 @@ if (process.env.PULL_REQUEST) {
     body: \`
 ## 🚀 Preview Deployed
 
-Your preview is ready! 
+Your preview is ready!
 
 **Preview URL:** \${previewUrl}
 

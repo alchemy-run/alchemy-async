@@ -861,7 +861,6 @@ function processBindings(
       });
     } else {
       console.log("binding", binding);
-      // biome-ignore lint/correctness/noVoidTypeReturn: it returns never
       return assertNever(binding);
     }
   }

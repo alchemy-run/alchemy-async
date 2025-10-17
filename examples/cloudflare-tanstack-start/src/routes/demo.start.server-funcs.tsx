@@ -44,7 +44,6 @@ function Home() {
 
   const [todo, setTodo] = useState("");
 
-  // biome-ignore lint/correctness/useExhaustiveDependencies: part of template
   const submitTodo = useCallback(async () => {
     todos = await addTodo({ data: todo });
     setTodo("");
