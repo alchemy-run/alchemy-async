@@ -8,9 +8,9 @@
  *   bun node_modules/alchemy/src/coinbase/faucet.ts backend/dev  # Fund specific scope
  */
 
-import { readFile, access } from "node:fs/promises";
-import { join } from "node:path";
 import { glob } from "glob";
+import { access, readFile } from "node:fs/promises";
+import { join } from "pathe";
 import { createCdpClient } from "./client.ts";
 import type { EvmAccount } from "./evm-account.ts";
 import type { EvmSmartAccount } from "./evm-smart-account.ts";

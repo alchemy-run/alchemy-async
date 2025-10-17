@@ -13,6 +13,8 @@ import {
   type CloudflareApiOptions,
 } from "./api.ts";
 import { deleteMiniflareBinding } from "./miniflare/delete.ts";
+import * as mf from "miniflare";
+import { getDefaultPersistPath } from "./miniflare/paths.ts";
 
 /**
  * Properties for creating or updating a KV Namespace
@@ -220,6 +222,13 @@ const _KVNamespace = Resource(
     };
 
     if (local) {
+      if (props.values) {
+        await insertLocalKVRecords({
+          namespaceId: dev.id,
+          values: props.values,
+          rootDir: this.scope.rootDir,
+        });
+      }
       return {
         type: "kv_namespace",
         namespaceId: this.output?.namespaceId ?? "",
@@ -340,31 +349,18 @@ export async function insertKVRecords(
     const BATCH_SIZE = 10000;
 
     for (let i = 0; i < props.values.length; i += BATCH_SIZE) {
-      const batch = props.values.slice(i, i + BATCH_SIZE);
-
-      const bulkPayload = batch.map((entry) => {
-        const item: any = {
+      const bulkPayload = props.values
+        .slice(i, i + BATCH_SIZE)
+        .map((entry) => ({
           key: entry.key,
           value:
             typeof entry.value === "string"
               ? entry.value
               : JSON.stringify(entry.value),
-        };
-
-        if (entry.expiration) {
-          item.expiration = entry.expiration;
-        }
-
-        if (entry.expirationTtl) {
-          item.expiration_ttl = entry.expirationTtl;
-        }
-
-        if (entry.metadata) {
-          item.metadata = entry.metadata;
-        }
-
-        return item;
-      });
+          expiration: entry.expiration,
+          expiration_ttl: entry.expirationTtl,
+          metadata: entry.metadata,
+        }));
 
       await withExponentialBackoff(
         async () => {
@@ -394,6 +390,42 @@ export async function insertKVRecords(
         1000, // Start with 1 second delay
       );
     }
+  }
+}
+
+export async function insertLocalKVRecords(input: {
+  namespaceId: string;
+  values: KVPair[];
+  rootDir: string;
+}) {
+  const miniflare = new mf.Miniflare({
+    script: "",
+    modules: true,
+    defaultPersistRoot: getDefaultPersistPath(input.rootDir),
+    kvNamespaces: { KV: input.namespaceId },
+    kvPersist: true,
+    log: process.env.DEBUG ? new mf.Log(mf.LogLevel.DEBUG) : undefined,
+  });
+  try {
+    await miniflare.ready;
+    const kv = await miniflare.getKVNamespace("KV");
+    await Promise.all(
+      input.values.map((record) =>
+        kv.put(
+          record.key,
+          typeof record.value === "string"
+            ? record.value
+            : JSON.stringify(record.value),
+          {
+            expiration: record.expiration,
+            expirationTtl: record.expirationTtl,
+            metadata: record.metadata,
+          },
+        ),
+      ),
+    );
+  } finally {
+    await miniflare.dispose();
   }
 }
 

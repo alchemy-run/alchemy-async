@@ -1,6 +1,6 @@
 import esbuild from "esbuild";
 import { readdir } from "node:fs/promises";
-import path from "node:path";
+import path from "pathe";
 import pkg from "../package.json";
 
 const WORKERS_DIR = path.join(__dirname, "..", "workers");

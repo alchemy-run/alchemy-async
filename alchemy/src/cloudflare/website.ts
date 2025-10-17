@@ -1,6 +1,6 @@
 import assert from "node:assert";
 import fs from "node:fs/promises";
-import path from "node:path";
+import path from "pathe";
 import { Exec } from "../os/index.ts";
 import { Scope } from "../scope.ts";
 import { dedent } from "../util/dedent.ts";

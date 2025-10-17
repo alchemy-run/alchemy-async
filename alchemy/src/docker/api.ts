@@ -2,7 +2,7 @@ import { execa } from "execa";
 import { Buffer } from "node:buffer";
 import { spawn } from "node:child_process";
 import fs from "node:fs/promises";
-import path from "node:path";
+import path from "pathe";
 import type { Duration, HealthcheckConfig } from "./container.ts";
 
 /**

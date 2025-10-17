@@ -1,5 +1,5 @@
 import fs from "node:fs/promises";
-import path from "node:path";
+import path from "pathe";
 
 export async function findWorkspaceRoot(dir: string = process.cwd()) {
   if ((await fs.stat(dir)).isDirectory()) {

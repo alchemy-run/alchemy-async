@@ -1,6 +1,6 @@
 import { AsyncLocalStorage } from "node:async_hooks";
-import path from "node:path";
 import util from "node:util";
+import path from "pathe";
 import pc from "picocolors";
 import type { Phase } from "./alchemy.ts";
 import { destroy, destroyAll, DestroyStrategy } from "./destroy.ts";

@@ -1,4 +1,4 @@
-import * as path from "node:path";
+import path from "pathe";
 import { describe, expect } from "vitest";
 import { alchemy } from "../../src/alchemy.ts";
 import { Worker } from "../../src/cloudflare/worker.ts";

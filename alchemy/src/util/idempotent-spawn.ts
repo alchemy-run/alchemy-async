@@ -1,7 +1,7 @@
 import { spawn } from "node:child_process";
 import fs from "node:fs";
 import fsp from "node:fs/promises";
-import path from "node:path";
+import path from "pathe";
 import { AsyncMutex } from "./mutex.ts";
 
 export interface IdempotentSpawnOptions {

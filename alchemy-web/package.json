@@ -15,14 +15,22 @@
     "@astrojs/cloudflare": "12.6.0",
     "@astrojs/sitemap": "^3.5.0",
     "@astrojs/starlight": "^0.34.3",
+    "@astrojs/starlight-tailwind": "^4.0.1",
+    "@iconify-json/bx": "^1.2.2",
+    "@tailwindcss/vite": "^4.1.14",
     "alchemy": "workspace:*",
     "astro": "^5.12.8",
+    "astro-icon": "^1.1.5",
+    "astro-seo-schema": "^5.1.0",
+    "schema-dts": "^1.1.5",
     "starlight-blog": "^0.24.0",
-    "starlight-links-validator": "^0.17.2"
+    "starlight-links-validator": "^0.17.2",
+    "tailwindcss": "^4.1.14"
   },
   "devDependencies": {
     "@cloudflare/workers-types": "catalog:",
     "astro-expressive-code": "^0.41.2",
+    "esbuild": "^0.25.11",
     "playwright": "^1.54.2",
     "sharp": "^0.32.5",
     "starlight-theme-nova": "^0.9.0",

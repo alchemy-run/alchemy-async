@@ -121,21 +121,21 @@ export interface File {
  * @example
  * // Upload a dispute evidence file
  * const disputeEvidence = await File("dispute-evidence", {
- *   file: fs.readFileSync("./evidence.pdf"),
+ *   file: await fs.promises.readFile("./evidence.pdf"),
  *   purpose: "dispute_evidence"
  * });
  *
  * @example
  * // Upload an identity document
  * const identityDocument = await File("identity-doc", {
- *   file: fs.readFileSync("./passport.jpg"),
+ *   file: await fs.promises.readFile("./passport.jpg"),
  *   purpose: "identity_document"
  * });
  *
  * @example
  * // Upload a business logo with file link
  * const businessLogo = await File("business-logo", {
- *   file: fs.readFileSync("./logo.png"),
+ *   file: await fs.promises.readFile("./logo.png"),
  *   purpose: "business_logo",
  *   fileLink: {
  *     create: true,

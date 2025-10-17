@@ -1,6 +1,7 @@
 import type { PluginConfig } from "@cloudflare/vite-plugin";
+// biome-ignore lint/style/noRestrictedImports: I/O is acceptable here
 import { existsSync, mkdirSync, writeFileSync } from "node:fs";
-import { dirname } from "node:path";
+import { dirname } from "pathe";
 import { getDefaultConfigPath } from "../miniflare/paths.ts";
 import alchemyVite from "../vite/plugin.ts";
 

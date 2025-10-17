@@ -22,7 +22,7 @@ import {
   ReleaseAddressCommand,
 } from "@aws-sdk/client-ec2";
 import * as fs from "node:fs";
-import * as path from "node:path";
+import path from "pathe";
 import { BRANCH_PREFIX } from "../../util.ts";
 
 const ec2 = new EC2Client({});

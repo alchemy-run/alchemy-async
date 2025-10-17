@@ -1,6 +1,7 @@
 #!/usr/bin/env bun
 import { randomUUID } from "node:crypto";
 import { access, mkdir, readdir, readFile, writeFile } from "node:fs/promises";
+// biome-ignore lint/style/noRestrictedImports: node:path in scripts is OK
 import { join } from "node:path";
 import OpenAI from "openai";
 import prettier from "prettier";

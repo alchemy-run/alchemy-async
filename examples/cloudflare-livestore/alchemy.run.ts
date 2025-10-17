@@ -1,5 +1,3 @@
-/// <reference types="@types/node" />
-
 import alchemy from "alchemy";
 import { D1Database, DurableObjectNamespace, Vite } from "alchemy/cloudflare";
 

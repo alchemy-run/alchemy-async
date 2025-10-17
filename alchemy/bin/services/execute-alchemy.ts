@@ -1,7 +1,7 @@
 import { log } from "@clack/prompts";
 import { spawn } from "node:child_process";
 import { once } from "node:events";
-import { resolve } from "node:path";
+import { resolve } from "pathe";
 import pc from "picocolors";
 import z from "zod";
 import { detectRuntime } from "../../src/util/detect-node-runtime.ts";
@@ -151,9 +151,9 @@ export async function execAlchemy(
   if (rootDir) {
     args.push(`--root-dir ${rootDir}`);
   } else if (app) {
-    console.log("finding root dir");
     try {
       const rootDir = await findWorkspaceRoot(cwd);
+      console.log("found root dir:", rootDir);
       // no root directory was provided but a specific app was provided, so we need to find the monorepo root
       args.push(`--root-dir ${rootDir}`);
       if (!envFile) {

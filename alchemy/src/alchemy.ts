@@ -1,5 +1,5 @@
-import path from "node:path";
 import { execArgv } from "node:process";
+import path from "pathe";
 import { onExit } from "signal-exit";
 import { isReplacedSignal } from "./apply.ts";
 import { DestroyStrategy, destroy, isDestroyedSignal } from "./destroy.ts";

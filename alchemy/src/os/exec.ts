@@ -1,6 +1,6 @@
 import { spawn, type SpawnOptions } from "node:child_process";
 import { createHash } from "node:crypto";
-import { join } from "node:path";
+import { join } from "pathe";
 import type { Context } from "../context.ts";
 import { Resource } from "../resource.ts";
 import type { Secret } from "../secret.ts";

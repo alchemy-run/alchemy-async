@@ -5,8 +5,8 @@
  * and writes it to a file to use as the default compatibility date.
  */
 
-import { writeFileSync } from "node:fs";
-import { resolve } from "node:path";
+import { writeFile } from "node:fs/promises";
+import { resolve } from "pathe";
 
 const compatibilityDate = await fetchWorkersCompatibilityDate();
 console.log(`Fetched Workers compatibility date: ${compatibilityDate}`);
@@ -30,7 +30,7 @@ const outputPath = resolve(
   "compatibility-date.gen.ts",
 );
 
-writeFileSync(outputPath, content, "utf8");
+await writeFile(outputPath, content, "utf8");
 
 console.log(`Written to: ${outputPath}`);
 

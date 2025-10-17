@@ -1,6 +1,7 @@
 import { AsyncLocalStorage } from "node:async_hooks";
+// biome-ignore lint/style/noRestrictedImports: I/O is acceptable here
 import { existsSync, readlinkSync, statSync } from "node:fs";
-import path from "node:path";
+import path from "pathe";
 import { ALCHEMY_ROOT } from "../../util/root-dir.ts";
 
 const dynamicImportContext = new AsyncLocalStorage<boolean>();

@@ -1,7 +1,7 @@
 /// <reference types="bun" />
 
 import { afterAll, beforeAll, it } from "bun:test";
-import path from "node:path";
+import path from "pathe";
 import { alchemy } from "../alchemy.ts";
 import { Scope } from "../scope.ts";
 import type { TestOptions } from "./options.ts";

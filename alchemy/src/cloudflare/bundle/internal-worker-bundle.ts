@@ -1,6 +1,6 @@
 import crypto from "node:crypto";
 import fs from "node:fs/promises";
-import path from "node:path";
+import path from "pathe";
 import { memoize } from "../../util/memoize.ts";
 import type { WorkerBundle } from "../worker-bundle.ts";
 

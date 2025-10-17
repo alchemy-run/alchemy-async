@@ -1,5 +1,5 @@
 import fs from "node:fs/promises";
-import path from "node:path";
+import path from "pathe";
 import { Scope } from "../../scope.ts";
 import { exists } from "../../util/exists.ts";
 import type { Bindings } from "../bindings.ts";
@@ -18,7 +18,7 @@ export interface BunSPAProps<B extends Bindings> extends WebsiteProps<B> {
   /**
    * The path to the frontend entrypoints that bun should bundle for deployment & serve in dev mode.
    * These are usually html files. Glob patterns are supported.
-   * Typically set to index.html
+   * Typically set to src/index.html
    */
   frontend: string | string[];
   outDir?: string;
@@ -70,6 +70,8 @@ export async function BunSPA<B extends Bindings>(
   }
 
   const scope = Scope.current;
+  const nodeEnv =
+    (props.bindings?.NODE_ENV ?? scope.local) ? "development" : "production";
   console.log("creating website", outDir);
   const website = await Website(id, {
     spa: true,
@@ -77,17 +79,14 @@ export async function BunSPA<B extends Bindings>(
     bindings: {
       ...props.bindings,
       // set NODE_ENV in worker appropriately if not already set
-      NODE_ENV:
-        (props.bindings?.NODE_ENV ?? scope.local)
-          ? "development"
-          : "production",
+      NODE_ENV: nodeEnv,
     } as unknown as B,
     assets: {
       directory: path.resolve(outDir),
     },
     build: spreadBuildProps(
       props,
-      `bun build '${frontendPaths.join("' '")}' --outdir ${outDir}`,
+      `bun build '${frontendPaths.join("' '")}' --target=browser --minify --define:process.env.NODE_ENV='"${nodeEnv}"' --env='BUN_PUBLIC_* --outdir ${outDir}`,
     ),
   });
 
@@ -129,7 +128,7 @@ export async function BunSPA<B extends Bindings>(
         ...process.env,
         NODE_ENV: "development",
         ALCHEMY_ROOT: Scope.current.rootDir,
-        PUBLIC_BACKEND_URL: apiUrl,
+        BUN_PUBLIC_BACKEND_URL: apiUrl,
       },
     });
   }
@@ -144,8 +143,8 @@ async function validateBunfigToml(cwd: string): Promise<void> {
       "bunfig.toml is required for BunSPA to work correctly.\n\n" +
         `Create ${bunfigPath} with the following content:\n\n` +
         "[serve.static]\n" +
-        `env='PUBLIC_*'\n\n` +
-        "This allows Bun to expose PUBLIC_* environment variables to the frontend during development.",
+        `env='BUN_PUBLIC_*'\n\n` +
+        "This allows Bun to expose BUN_PUBLIC_* environment variables to the frontend during development.",
     );
   }
 
@@ -153,15 +152,16 @@ async function validateBunfigToml(cwd: string): Promise<void> {
   const config = Bun.TOML.parse(content) as Record<string, any>;
 
   const hasServeStatic = config.serve?.static;
-  const hasEnvConfig = hasServeStatic && config.serve.static.env === "PUBLIC_*";
+  const hasEnvConfig =
+    hasServeStatic && config.serve.static.env === "BUN_PUBLIC_*";
 
   if (!hasServeStatic || !hasEnvConfig) {
     throw new Error(
       "bunfig.toml is missing required configuration for BunSPA.\n\n" +
         `Add the following section to ${bunfigPath}:\n\n` +
         "[serve.static]\n" +
-        `env='PUBLIC_*'\n\n` +
-        "This allows Bun to expose PUBLIC_* environment variables to the frontend during development.",
+        `env='BUN_PUBLIC_*'\n\n` +
+        "This allows Bun to expose BUN_PUBLIC_* environment variables to the frontend during development.",
     );
   }
 }

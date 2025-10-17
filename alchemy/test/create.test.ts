@@ -1,8 +1,8 @@
 import "../src/test/vitest.ts";
 
 import fs from "node:fs/promises";
-import path from "node:path";
 import url from "node:url";
+import path from "pathe";
 import { describe, expect, test } from "vitest";
 import { patchCatalogAndInstall, runCommand } from "./util.ts";
 

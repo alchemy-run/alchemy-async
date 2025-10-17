@@ -1,6 +1,6 @@
 import * as miniflare from "miniflare";
 import assert from "node:assert";
-import path from "node:path";
+import path from "pathe";
 import { Scope } from "../../scope.ts";
 import { findOpenPort } from "../../util/find-open-port.ts";
 import type { HTTPServer } from "../../util/http.ts";

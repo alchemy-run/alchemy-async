@@ -1,5 +1,3 @@
-/// <reference types="@types/node" />
-
 import alchemy from "alchemy";
 import { Nuxt } from "alchemy/cloudflare";
 

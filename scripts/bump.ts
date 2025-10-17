@@ -1,6 +1,7 @@
 import { $ } from "bun";
 import { generate } from "changelogithub";
 import { readFile, writeFile } from "node:fs/promises";
+// biome-ignore lint/style/noRestrictedImports: node:path in scripts is OK
 import { join } from "node:path";
 
 export async function generateReleaseNotes(tag: string) {

@@ -1,5 +1,6 @@
 import { glob } from "glob";
 import { readFile, writeFile } from "node:fs/promises";
+// biome-ignore lint/style/noRestrictedImports: node:path in scripts is OK
 import * as path from "node:path";
 
 const docsPath = path.join(

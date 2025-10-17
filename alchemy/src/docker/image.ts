@@ -1,6 +1,6 @@
 import fs from "node:fs/promises";
 import os from "node:os";
-import path from "node:path";
+import path from "pathe";
 import type { Context } from "../context.ts";
 import { Resource } from "../resource.ts";
 import type { Secret } from "../secret.ts";

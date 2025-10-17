@@ -43,7 +43,7 @@
     "typescript": "^5.8.3",
     "vibe-rules": "^0.2.31",
     "alchemy": "workspace:*",
-    "vite": "^6.2.6",
+    "vite": "^7.1.9",
     "wrangler": "^4.16.0"
   },
   "pnpm": {

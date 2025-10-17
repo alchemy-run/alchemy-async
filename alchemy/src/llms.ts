@@ -1,5 +1,5 @@
 import fs from "node:fs/promises";
-import path from "node:path";
+import path from "pathe";
 
 export interface AlchemyRule {
   name: string;

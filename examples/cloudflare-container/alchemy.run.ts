@@ -1,5 +1,3 @@
-/// <reference types="@types/node" />
-
 import alchemy from "alchemy";
 import { Container, Worker } from "alchemy/cloudflare";
 import { SQLiteStateStore } from "alchemy/state";

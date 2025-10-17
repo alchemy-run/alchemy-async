@@ -1,6 +1,5 @@
 import type { APIRoute } from "astro";
 import { getCollection, type CollectionEntry } from "astro:content";
-import { readFileSync } from "node:fs";
 import {
   access,
   constants,
@@ -10,6 +9,7 @@ import {
   unlink,
   writeFile,
 } from "node:fs/promises";
+// biome-ignore lint/style/noRestrictedImports: node:path in alchemy-web is OK
 import { dirname, join } from "node:path";
 import { chromium, type Browser } from "playwright";
 
@@ -52,7 +52,7 @@ async function getBrowser(): Promise<Browser> {
   return sharedBrowser;
 }
 
-function getAsset(filename: string): string {
+async function getAsset(filename: string): Promise<string> {
   // Return cached version if available
   if (assetCache.has(filename)) {
     return assetCache.get(filename)!;
@@ -60,7 +60,7 @@ function getAsset(filename: string): string {
 
   try {
     const publicDir = join(process.cwd(), "public");
-    const fileData = readFileSync(join(publicDir, filename));
+    const fileData = await readFile(join(publicDir, filename));
 
     // Determine MIME type based on file extension
     const ext = filename.split(".").pop()?.toLowerCase();
@@ -225,7 +225,9 @@ export async function getStaticPaths() {
 }
 
 export const GET: APIRoute = async ({ props, params }) => {
-  const { entry } = props as { entry: CollectionEntry<"docs"> };
+  const { entry } = props as {
+    entry: CollectionEntry<"docs"> & { digest: string };
+  };
   const { data, digest } = entry;
   const route = params.route || "index";
 
@@ -247,7 +249,7 @@ export const GET: APIRoute = async ({ props, params }) => {
       const cachedImage = await readFile(cacheFile);
       console.log(" (using cache)");
 
-      return new Response(cachedImage, {
+      return new Response(Buffer.from(cachedImage), {
         headers: {
           "Content-Type": "image/png",
           "Cache-Control": "public, max-age=3600",
@@ -440,7 +442,7 @@ export const GET: APIRoute = async ({ props, params }) => {
   <div class="og-container">
     <div class="content">
       <div class="logo">
-        <img src="${getAsset("alchemy-logo-dark.svg")}" alt="Alchemy" class="logo-image" />
+        <img src="${await getAsset("alchemy-logo-dark.svg")}" alt="Alchemy" class="logo-image" />
       </div>
       ${breadcrumbText ? `<div class="breadcrumb">${breadcrumbText}</div>` : ""}
       <h1 class="title">${data.title}</h1>
@@ -449,7 +451,7 @@ export const GET: APIRoute = async ({ props, params }) => {
 
     <div class="character-container">
       <div class="character-circle">
-        <img src="${getAsset("alchemist.webp")}" alt="Alchemist" class="character-image" />
+        <img src="${await getAsset("alchemist.webp")}" alt="Alchemist" class="character-image" />
       </div>
     </div>
   </div>
@@ -503,7 +505,7 @@ export const GET: APIRoute = async ({ props, params }) => {
   }
 
   // Return the screenshot as the response
-  return new Response(screenshot, {
+  return new Response(Buffer.from(screenshot), {
     headers: {
       "Content-Type": "image/png",
       "Cache-Control": "public, max-age=3600",

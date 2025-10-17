@@ -61,11 +61,19 @@ export async function createRemoteProxyWorker(input: {
     websocket: async (req) => {
       const input = new URL(req.url);
       const proxied = new URL(input.pathname + input.search, `https://${host}`);
+      const headers: Record<string, string> = {
+        "cf-workers-preview-token": token,
+        host,
+      };
+      // We don't want to include all headers because some can mess with websocket connections.
+      // However, it's important to include `mf-` prefixed headers to configure bindings for miniflare to work.
+      req.headers.forEach((value, key) => {
+        if (key.startsWith("mf-")) {
+          headers[key] = value;
+        }
+      });
       return new WebSocket(proxied, {
-        headers: {
-          "cf-workers-preview-token": token,
-          host,
-        },
+        headers,
       });
     },
     fetch: async (req) => {

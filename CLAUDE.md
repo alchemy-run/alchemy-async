@@ -754,6 +754,36 @@ test("end-to-end workflow", async (scope) => {
 - **Minimize cross-resource dependencies**: Resources should be as independent as possible
 - **Clear separation of concerns**: Keep API calls, validation, and business logic separate
 
+## Performance Best Practices
+
+### Asynchronous I/O
+
+- **Never use synchronous I/O**: Always use async/await for file operations, network requests, and any I/O operations
+- **Blocking the event loop is cancer**: Synchronous operations block the entire event loop and harm application performance
+
+```ts
+// ❌ DON'T: Synchronous I/O
+const data = fs.readFileSync('file.txt');
+
+// ✅ DO: Asynchronous I/O
+const data = await fs.promises.readFile('file.txt');
+```
+
+for mapping over arrays, use `Promise.all` instead of a `for` loop:
+
+```ts
+// ❌ DON'T: for loop
+for (const item of items) {
+  await fs.existsSync(item);
+}
+
+import { exists } from "../utils/exists.ts";
+// ✅ DO: Promise.all
+await Promise.all(items.map(
+  async (item) => await exists(item)
+));
+```
+
 ## Alchemy.run Patterns
 
 ### Application Scoping

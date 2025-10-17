@@ -1,6 +1,6 @@
 import type { Plugin } from "esbuild";
 import type { NodeJSCompatMode } from "miniflare";
-import { relative } from "node:path";
+import { relative } from "pathe";
 import pc from "picocolors";
 import { dedent } from "../../util/dedent.ts";
 import { logger } from "../../util/logger.ts";

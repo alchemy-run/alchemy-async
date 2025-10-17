@@ -68,7 +68,7 @@ Authenticate once with your Cloudflare account:
 </Tabs>
 
 :::tip
-Alchemy automatically re-uses your Wrangler OAuth tokens. See the [Cloudflare](/guides/cloudflare) guide for other options.
+Alchemy login creates Cloudflare OAuth tokens for alchemy. See the [Cloudflare](/guides/cloudflare) guide for other options.
 :::
 
 ## Deploy
@@ -177,8 +177,6 @@ ALCHEMY_PASSWORD=change-me
 ### `alchemy.run.ts`
 
 ```typescript
-/// <reference types="@types/node" />
-
 import alchemy from "alchemy";
 import { Vite } from "alchemy/cloudflare";
 

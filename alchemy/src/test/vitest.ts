@@ -1,4 +1,4 @@
-import path from "node:path";
+import path from "pathe";
 import { afterAll, beforeAll, it } from "vitest";
 import { alchemy } from "../alchemy.ts";
 import { Scope } from "../scope.ts";
