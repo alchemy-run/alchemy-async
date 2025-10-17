@@ -103,6 +103,33 @@ describe("cloudflare-worker-simple", () => {
   });
 
   describe("kv", () => {
+    it("inserts kv records", async () => {
+      const list = await api.kv.$get();
+      assert.equal(list.status, 200);
+      assert.deepEqual(await list.json(), {
+        keys: ["my-object-value", "my-string-value"], // these are inserted in alchemy.run.ts
+      });
+
+      const getObjectValue = await api.kv[":key"].$get({
+        param: {
+          key: "my-object-value",
+        },
+      });
+      assert.equal(getObjectValue.status, 200);
+      assert.deepEqual(await getObjectValue.json(), {
+        type: "object",
+        properties: { id: { type: "string" } },
+      });
+
+      const getStringValue = await api.kv[":key"].$get({
+        param: {
+          key: "my-string-value",
+        },
+      });
+      assert.equal(getStringValue.status, 200);
+      assert.deepEqual(await getStringValue.text(), "hello-world");
+    });
+
     it("create, get, delete", async () => {
       const key = crypto.randomUUID();
       const value = crypto.randomUUID();

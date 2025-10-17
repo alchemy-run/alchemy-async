@@ -73,7 +73,7 @@ const app = new Hono<{ Bindings: typeof worker1.Env }>()
     if (!value) {
       throw new HTTPException(404, { message: "Not found" });
     }
-    return c.json(JSON.parse(value));
+    return typeof value === "string" ? c.text(value) : c.json(value);
   })
   .put(
     "/kv/:key",
