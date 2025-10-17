@@ -118,7 +118,11 @@ async function _apply<Out extends ResourceAttributes>(
             return state;
           } else {
             const elapsed = Date.now() - startTime;
-            if (elapsed > 10_000) {
+            if (
+              // looks stable but the props are different on our side, it's likely that the input props are not deterministic
+              (state.status === "created" || state.status === "updated") &&
+              elapsed > 1_000
+            ) {
               logger.warn(
                 `Resource '${resource[ResourceFQN]}' is not in a stable state after ${elapsed}ms, be sure to check if your input props are deterministic:`,
                 state.props,
