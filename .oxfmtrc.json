@@ -1,0 +1,23 @@
+{
+  "semi": true,
+  "singleQuote": false,
+  "tabWidth": 2,
+  "useTabs": false,
+  "printWidth": 80,
+  "endOfLine": "lf",
+  "experimentalTernaries": true,
+  "prettierignore": [
+    "**/node_modules/**",
+    "**/*.d.ts",
+    "**/*.mdx",
+    ".worktrees",
+    "examples/cloudflare-tanstack-start/src/routeTree.gen.ts",
+    "examples/cloudflare-redwood/worker-configuration.d.ts",
+    "./alchemy/src/aws/control/types.ts",
+    "examples/cloudflare-tanstack-start/.output/",
+    "examples/cloudflare-nuxt-pipeline/.output/",
+    "./alchemy/lib/",
+    "**/*.gen.ts",
+    "alchemy-web/src/scripts/posthog.js"
+  ]
+}
