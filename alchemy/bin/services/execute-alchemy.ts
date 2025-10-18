@@ -7,12 +7,12 @@ import z from "zod";
 import { detectRuntime } from "../../src/util/detect-node-runtime.ts";
 import { detectPackageManager } from "../../src/util/detect-package-manager.ts";
 import { exists } from "../../src/util/exists.ts";
+import { findWorkspaceRoot } from "../../src/util/find-workspace-root.ts";
 import { promiseWithResolvers } from "../../src/util/promise-with-resolvers.ts";
 import { collectData } from "../../src/util/telemetry.ts";
 import { ExitSignal } from "../trpc.ts";
 import { CDPProxy } from "./cdp-manager/cdp-proxy.ts";
 import { CDPManager } from "./cdp-manager/server.ts";
-import { findWorkspaceRoot } from "./find-workspace-root.ts";
 
 export const entrypoint = z
   .string()
