@@ -38,6 +38,9 @@ export async function deleteMiniflareBinding(
     .catch(() => []);
   await Promise.all(files.map((file) => fs.rm(path.join(bindingPath, file))));
 
+  // if running E2E tests, do not delete the data directory to prevent race conditions in smoke tests
+  if (process.env.ALCHEMY_E2E) return;
+
   // delete data directory, if present
   await removeDirectory(path.join(persistRoot, type, id), {
     recursive: true,
