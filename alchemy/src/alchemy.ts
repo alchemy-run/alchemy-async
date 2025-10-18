@@ -5,14 +5,14 @@ import { isReplacedSignal } from "./apply.ts";
 import { DestroyStrategy, destroy, isDestroyedSignal } from "./destroy.ts";
 import { env } from "./env.ts";
 import {
+  type PendingResource,
   ResourceFQN,
   ResourceID,
   ResourceKind,
   ResourceScope,
   ResourceSeq,
-  type PendingResource,
 } from "./resource.ts";
-import { DEFAULT_STAGE, Scope, type ProviderCredentials } from "./scope.ts";
+import { DEFAULT_STAGE, type ProviderCredentials, Scope } from "./scope.ts";
 import { secret } from "./secret.ts";
 import type { StateStoreType } from "./state.ts";
 import { cliArgs, parseOption } from "./util/cli-args.ts";

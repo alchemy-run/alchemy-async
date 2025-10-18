@@ -300,7 +300,7 @@ Always run these commands before committing:
 
 ```sh
 # Fix code formatting and linting
-bun biome check --fix
+bun format
 
 # Run tests (targets changed files vs main)
 bun run test

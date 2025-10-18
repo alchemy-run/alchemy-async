@@ -1,12 +1,12 @@
 {
+  "oxc.fmt.experimental": true,
   "editor.codeLens": false,
   "editor.formatOnSave": true,
   "editor.formatOnSaveMode": "file",
   "editor.codeActionsOnSave": {
     "source.fixAll.ruff": "always",
     "source.fixAll": "explicit",
-    "source.organizeImports": "explicit",
-    "source.organizeImports.biome": "explicit"
+    "source.organizeImports": "explicit"
   },
   "rewrap.autoWrap.enabled": false,
   "[rust]": {
@@ -19,7 +19,7 @@
   "[json]": {
     "editor.indentSize": 2,
     "editor.insertSpaces": true,
-    "editor.defaultFormatter": "biomejs.biome"
+    "editor.defaultFormatter": "oxc.oxc-vscode"
   },
   "[markdown]": {
     "editor.formatOnSave": false,
@@ -37,18 +37,18 @@
   "vitest.disableWorkspaceWarning": true,
   "[typescript]": {
     "editor.indentSize": 2,
-    "editor.defaultFormatter": "biomejs.biome"
+    "editor.defaultFormatter": "oxc.oxc-vscode"
   },
   "[javascript]": {
     "editor.indentSize": 2,
-    "editor.defaultFormatter": "biomejs.biome"
+    "editor.defaultFormatter": "oxc.oxc-vscode"
   },
   "[tsx]": {
     "editor.indentSize": 2,
-    "editor.defaultFormatter": "biomejs.biome"
+    "editor.defaultFormatter": "oxc.oxc-vscode"
   },
   "[jsx]": {
     "editor.indentSize": 2,
-    "editor.defaultFormatter": "biomejs.biome"
+    "editor.defaultFormatter": "oxc.oxc-vscode"
   }
 }
