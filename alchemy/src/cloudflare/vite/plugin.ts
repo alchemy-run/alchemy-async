@@ -5,17 +5,15 @@ import {
   getDefaultConfigPath,
   getDefaultPersistPath,
   validateConfigPath,
-  validatePersistPath,
 } from "../miniflare/paths.ts";
 
 const alchemy = (config?: PluginConfig): PluginOption => {
   const persistState = config?.persistState ?? {
-    path: validatePersistPath(
+    path:
       typeof config?.persistState === "object"
         ? config.persistState.path
         : // persist path should default to the /.alchemy/miniflare/v3
           getDefaultPersistPath(),
-    ),
   };
   if (typeof persistState === "object" && persistState.path.endsWith("v3")) {
     persistState.path = path.dirname(persistState.path);
