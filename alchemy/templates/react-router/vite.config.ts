@@ -10,7 +10,7 @@ export default defineConfig({
     tailwindcss(),
     reactRouter(),
     tsconfigPaths({
-      root: "."
+      root: ".",
     }),
   ],
 });

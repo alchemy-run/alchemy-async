@@ -239,9 +239,11 @@ export async function prepareWorkerMetadata(
     };
   },
 ): Promise<WorkerMetadata> {
-  const oldSettings = await (props.unstable_cacheWorkerSettings
-    ? getWorkerSettingsWithCache
-    : getWorkerSettings)(api, props.workerName);
+  const oldSettings = await (
+    props.unstable_cacheWorkerSettings
+      ? getWorkerSettingsWithCache
+      : getWorkerSettings
+  )(api, props.workerName);
   const oldTags: string[] | undefined = Array.from(
     new Set([
       ...(oldSettings?.default_environment?.script?.tags ?? []),

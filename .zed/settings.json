@@ -1,0 +1,11 @@
+{
+  "lsp": {
+    "oxc": {
+      "settings": {
+        "run": "onSave",
+        "fmt.experimental": true,
+        "fmt.configPath": null
+      }
+    }
+  }
+}

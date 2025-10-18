@@ -162,7 +162,9 @@ async function createCloudflareGodToken() {
 
   while (true) {
     const accountId = await text({
-      message: `Enter account ID ${accountIds.length > 0 ? "(or press enter to finish)" : ""}`,
+      message: `Enter account ID ${
+        accountIds.length > 0 ? "(or press enter to finish)" : ""
+      }`,
       placeholder: accountIds.length === 0 ? "account-id" : "",
       defaultValue: "",
       validate: (value) => {

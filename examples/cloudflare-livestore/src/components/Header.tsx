@@ -1,20 +1,21 @@
-import { useStore } from '@livestore/react'
-import React from 'react'
+import { useStore } from "@livestore/react";
+import React from "react";
 
-import { events } from '../livestore/events.ts'
-import { uiState$ } from '../livestore/queries.ts'
+import { events } from "../livestore/events.ts";
+import { uiState$ } from "../livestore/queries.ts";
 
 export const Header: React.FC = () => {
-  const { store } = useStore()
-  const { newTodoText } = store.useQuery(uiState$)
+  const { store } = useStore();
+  const { newTodoText } = store.useQuery(uiState$);
 
-  const updatedNewTodoText = (text: string) => store.commit(events.uiStateSet({ newTodoText: text }))
+  const updatedNewTodoText = (text: string) =>
+    store.commit(events.uiStateSet({ newTodoText: text }));
 
   const todoCreated = () =>
     store.commit(
       events.todoCreated({ id: crypto.randomUUID(), text: newTodoText }),
-      events.uiStateSet({ newTodoText: '' }),
-    )
+      events.uiStateSet({ newTodoText: "" }),
+    );
 
   return (
     <header className="header">
@@ -26,11 +27,11 @@ export const Header: React.FC = () => {
         value={newTodoText}
         onChange={(e) => updatedNewTodoText(e.target.value)}
         onKeyDown={(e) => {
-          if (e.key === 'Enter') {
-            todoCreated()
+          if (e.key === "Enter") {
+            todoCreated();
           }
         }}
       ></input>
     </header>
-  )
-}
+  );
+};

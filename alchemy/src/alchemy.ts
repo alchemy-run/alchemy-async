@@ -5,14 +5,14 @@ import { isReplacedSignal } from "./apply.ts";
 import { DestroyStrategy, destroy, isDestroyedSignal } from "./destroy.ts";
 import { env } from "./env.ts";
 import {
+  type PendingResource,
   ResourceFQN,
   ResourceID,
   ResourceKind,
   ResourceScope,
   ResourceSeq,
-  type PendingResource,
 } from "./resource.ts";
-import { DEFAULT_STAGE, Scope, type ProviderCredentials } from "./scope.ts";
+import { DEFAULT_STAGE, type ProviderCredentials, Scope } from "./scope.ts";
 import { secret } from "./secret.ts";
 import type { StateStoreType } from "./state.ts";
 import { cliArgs, parseOption } from "./util/cli-args.ts";
@@ -125,6 +125,7 @@ async function _alchemy(
           : cliArgs.includes("--read")
             ? "read"
             : "up",
+
     local: cliArgs.includes("--local") || cliArgs.includes("--dev"),
     watch: cliArgs.includes("--watch") || execArgv.includes("--watch"),
     quiet: cliArgs.includes("--quiet"),
@@ -151,7 +152,7 @@ async function _alchemy(
     process.env.CI &&
     process.env.ALCHEMY_CI_STATE_STORE_CHECK !== "false"
   ) {
-    throw new Error(`You are running Alchemy in a CI environment with the default local state store. 
+    throw new Error(`You are running Alchemy in a CI environment with the default local state store.
 This can lead to orphaned infrastructure and is rarely what you want to do.
 
 Instead, you should choose a persistent state store:

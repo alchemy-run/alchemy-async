@@ -34,7 +34,6 @@ export default {
   input: spec as any,
   output: {
     path: "alchemy/src/prisma-postgres/api",
-    format: "biome",
   },
   plugins: [
     {

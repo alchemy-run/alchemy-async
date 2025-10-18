@@ -126,7 +126,9 @@ export async function execAlchemy(
 
   args.push(`--telemetry-session-id ${telemetryData.sessionId}`);
   args.push(
-    `--telemetry-ref ${telemetryData.referrer ? `${telemetryData.referrer}+cli` : "cli"}`,
+    `--telemetry-ref ${
+      telemetryData.referrer ? `${telemetryData.referrer}+cli` : "cli"
+    }`,
   );
 
   if (quiet) args.push("--quiet");

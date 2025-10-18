@@ -314,7 +314,9 @@ async function createOrUpdateRecord(
     }
 
     throw new Error(
-      `Failed to ${existingId ? "update" : "create"} DNS record ${record.name}: ${response.statusText}\nResponse: ${errorBody}`,
+      `Failed to ${
+        existingId ? "update" : "create"
+      } DNS record ${record.name}: ${response.statusText}\nResponse: ${errorBody}`,
     );
   }
 

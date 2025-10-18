@@ -26,7 +26,7 @@ bun run build
 
 ## Check
 
-Type-check and lint (with biome):
+Type-check and lint (with oxfmt):
 
 ```sh
 bun check
@@ -92,7 +92,7 @@ alchemy-web/
         {resource}.md # example-oriented reference docs for the resource
 examples/
   {provider}-{qualifier?}/ # only add a qualifier if there are more than one example for this {provider}
-    package.json    
+    package.json
     tsconfig.json
     alchemy.run.ts
     README.md
@@ -147,19 +147,19 @@ export const {Resource} = Resource(
       return this.destroy();
     } else {
       let response;
-      
+
       if (this.phase === "update" && this.output?.id) {
         // Update existing resource
         response = await api.put(/* update call */);
       } else {
-        // Create new resource  
+        // Create new resource
         response = await api.post(/* create call */);
       }
-      
+
       if (!response.ok) {
         throw new Error(`API error: ${response.statusText}`);
       }
-      
+
       const data = await response.json();
       return {
         id: data.id,
@@ -224,7 +224,7 @@ describe("{Provider}", () => {
         // assertions
       })
 
-      // UPDATE  
+      // UPDATE
       resource = await {Resource}("{id}", {
         // updated props
       })
@@ -289,7 +289,7 @@ Each resource requires:
 
 Create a getting started guide in `./alchemy-web/docs/guides/{provider}.md` that walks users through:
 - Installation and setup
-- Credential configuration  
+- Credential configuration
 - Creating their first resource
 - Deploying and testing
 - Cleanup/teardown
@@ -300,7 +300,7 @@ Always run these commands before committing:
 
 ```sh
 # Fix code formatting and linting
-bun biome check --fix
+bun format
 
 # Run tests (targets changed files vs main)
 bun run test

@@ -11,7 +11,7 @@ declare module "react-router" {
 
 const requestHandler = createRequestHandler(
   () => import("virtual:react-router/server-build"),
-  import.meta.env.MODE
+  import.meta.env.MODE,
 );
 
 export default {
@@ -20,4 +20,4 @@ export default {
       cloudflare: { env, ctx },
     });
   },
-}
+};

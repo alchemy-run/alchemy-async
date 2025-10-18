@@ -128,7 +128,9 @@ export function test(
 
   const scope = new Scope({
     parent: undefined,
-    scopeName: `${defaultOptions.prefix ? `${defaultOptions.prefix}-` : ""}${path.basename(meta.filename)}`,
+    scopeName: `${
+      defaultOptions.prefix ? `${defaultOptions.prefix}-` : ""
+    }${path.basename(meta.filename)}`,
     stateStore: defaultOptions?.stateStore,
     phase: "up",
     noTrack: true,

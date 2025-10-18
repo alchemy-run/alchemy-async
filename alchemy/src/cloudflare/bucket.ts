@@ -1007,7 +1007,9 @@ export async function listBuckets(
   }
 
   // Build URL with query parameters
-  const path = `/accounts/${api.accountId}/r2/buckets${params.toString() ? `?${params.toString()}` : ""}`;
+  const path = `/accounts/${api.accountId}/r2/buckets${
+    params.toString() ? `?${params.toString()}` : ""
+  }`;
 
   // Make the API request
   const result = await extractCloudflareResult<{
@@ -1262,12 +1264,7 @@ function mapHeadersToHttpMetadata(headers: Headers): R2HTTPMetadata {
 
 export async function putObject(
   api: CloudflareApi,
-  {
-    bucketName,
-    key,
-    object,
-    options,
-  }: {
+  { bucketName, key, object, options }: {
     bucketName: string;
     key: string;
     object: PutObjectObject;

@@ -338,9 +338,7 @@ export type Options<
 class _HeyApiClient {
   protected _client: Client = client;
 
-  constructor(args?: {
-    client?: Client;
-  }) {
+  constructor(args?: { client?: Client }) {
     if (args?.client) {
       this._client = args.client;
     }

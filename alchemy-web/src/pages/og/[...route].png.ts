@@ -9,7 +9,6 @@ import {
   unlink,
   writeFile,
 } from "node:fs/promises";
-// biome-ignore lint/style/noRestrictedImports: node:path in alchemy-web is OK
 import { dirname, join } from "node:path";
 import { chromium, type Browser } from "playwright";
 
@@ -446,7 +445,11 @@ export const GET: APIRoute = async ({ props, params }) => {
       </div>
       ${breadcrumbText ? `<div class="breadcrumb">${breadcrumbText}</div>` : ""}
       <h1 class="title">${data.title}</h1>
-      ${data.description || data.excerpt ? `<p class="description">${data.description || data.excerpt}</p>` : ""}
+      ${
+        data.description || data.excerpt
+          ? `<p class="description">${data.description || data.excerpt}</p>`
+          : ""
+      }
     </div>
 
     <div class="character-container">
