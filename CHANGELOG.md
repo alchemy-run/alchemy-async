@@ -1,3 +1,21 @@
+## v0.75.0
+
+### &nbsp;&nbsp;&nbsp;🐞 Bug Fixes
+
+- **cli**:
+  - Log errors when cli exits with an generic Error &nbsp;-&nbsp; by **Rahul Mishra** in https://github.com/alchemy-run/alchemy/issues/1137 [<samp>(6f8b9)</samp>](https://github.com/alchemy-run/alchemy/commit/6f8b95b5)
+- **cloudflare**:
+  - Insert kv records to miniflare &nbsp;-&nbsp; by **John Royal** in https://github.com/alchemy-run/alchemy/issues/1139 [<samp>(8c995)</samp>](https://github.com/alchemy-run/alchemy/commit/8c995c30)
+  - Local workers fail to initialize concurrently &nbsp;-&nbsp; by **John Royal** in https://github.com/alchemy-run/alchemy/issues/1132 [<samp>(f9a50)</samp>](https://github.com/alchemy-run/alchemy/commit/f9a50206)
+  - Add missing quote to bun-spa &nbsp;-&nbsp; by **Sam Goodwin** [<samp>(b03ce)</samp>](https://github.com/alchemy-run/alchemy/commit/b03ce242)
+  - Get the tunnel token when it's not returned by the first API call &nbsp;-&nbsp; by **Andrew Jefferson** in https://github.com/alchemy-run/alchemy/issues/1138 [<samp>(a69e8)</samp>](https://github.com/alchemy-run/alchemy/commit/a69e8915)
+- **core**:
+  - Error on mismatch between options.phase and CLI args &nbsp;-&nbsp; by **Jacob M-G Evans** and **Sam Goodwin** in https://github.com/alchemy-run/alchemy/issues/1121 [<samp>(706b7)</samp>](https://github.com/alchemy-run/alchemy/commit/706b7b31)
+
+##### &nbsp;&nbsp;&nbsp;&nbsp;[View changes on GitHub](https://github.com/alchemy-run/alchemy/compare/v0.74.2...v0.75.0)
+
+---
+
 ## v0.74.2
 
 ### &nbsp;&nbsp;&nbsp;🐞 Bug Fixes

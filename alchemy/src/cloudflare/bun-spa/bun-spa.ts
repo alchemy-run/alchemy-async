@@ -86,7 +86,7 @@ export async function BunSPA<B extends Bindings>(
     },
     build: spreadBuildProps(
       props,
-      `bun build '${frontendPaths.join("' '")}' --target=browser --minify --define:process.env.NODE_ENV='"${nodeEnv}"' --env='BUN_PUBLIC_* --outdir ${outDir}`,
+      `bun build '${frontendPaths.join("' '")}' --target=browser --minify --define:process.env.NODE_ENV='"${nodeEnv}"' --env='BUN_PUBLIC_*' --outdir ${outDir}`,
     ),
   });
 
