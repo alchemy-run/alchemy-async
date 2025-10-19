@@ -140,13 +140,9 @@ async function createToken(
 async function createCloudflareGodToken() {
   intro(pc.cyan("🧪 Create Cloudflare God Token"));
 
-  log.info(
-    pc.dim(
-      "Enter Cloudflare Global API Key. It can be found in the cloudflare dashboard: https://dash.cloudflare.com/profile/api-tokens",
-    ),
-  );
   const apiKey = await password({
-    message: "Enter Cloudflare Global API Key",
+    message:
+      "Enter Cloudflare Global API Key. It can be found in the cloudflare dashboard: https://dash.cloudflare.com/profile/api-tokens",
   });
   if (isCancel(apiKey)) {
     throw new CancelSignal();
@@ -256,13 +252,9 @@ async function createCloudflareProfileToken(input: { profile?: string }) {
     }
   }
 
-  log.info(
-    pc.dim(
-      "Enter Cloudflare Global API Key. It can be found in the cloudflare dashboard: https://dash.cloudflare.com/profile/api-tokens",
-    ),
-  );
   const apiKey = await password({
-    message: "Enter Cloudflare Global API Key",
+    message:
+      "Enter Cloudflare Global API Key. It can be found in the cloudflare dashboard: https://dash.cloudflare.com/profile/api-tokens",
   });
   if (isCancel(apiKey)) {
     throw new CancelSignal();
