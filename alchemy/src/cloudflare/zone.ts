@@ -2,6 +2,7 @@ import type { Context } from "../context.ts";
 import { Resource } from "../resource.ts";
 import { logger } from "../util/logger.ts";
 import { handleApiError } from "./api-error.ts";
+import { extractCloudflareResult } from "./api-response.ts";
 import {
   createCloudflareApi,
   type CloudflareApi,
@@ -568,45 +569,12 @@ async function getZoneSettings(
 export async function getZoneByDomain(
   api: CloudflareApi,
   domainName: string,
-): Promise<ZoneData | null> {
-  const response = await api.get(
-    `/zones?name=${encodeURIComponent(domainName)}`,
+): Promise<CloudflareZone | undefined> {
+  const [zone] = await extractCloudflareResult<CloudflareZone[]>(
+    `get zone for ${domainName}`,
+    api.get(`/zones?name=${encodeURIComponent(domainName)}`),
   );
-
-  if (!response.ok) {
-    throw new Error(
-      `Error fetching zone for '${domainName}': ${response.statusText}`,
-    );
-  }
-
-  const zones = ((await response.json()) as { result: CloudflareZone[] })
-    .result;
-
-  if (zones.length === 0) {
-    return null;
-  }
-
-  const zoneData = zones[0];
-
-  // Get zone settings
-  const settings = await getZoneSettings(api, zoneData.id);
-
-  return {
-    id: zoneData.id,
-    name: zoneData.name,
-    type: zoneData.type,
-    status: zoneData.status,
-    paused: zoneData.paused,
-    accountId: zoneData.account.id,
-    nameservers: zoneData.name_servers,
-    originalNameservers: zoneData.original_name_servers,
-    createdAt: new Date(zoneData.created_on).getTime(),
-    modifiedAt: new Date(zoneData.modified_on).getTime(),
-    activatedAt: zoneData.activated_on
-      ? new Date(zoneData.activated_on).getTime()
-      : null,
-    settings,
-  };
+  return zone;
 }
 
 /**
