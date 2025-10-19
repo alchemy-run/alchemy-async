@@ -294,121 +294,6 @@ yarn tsx ./alchemy.run --destroy
 
 ## Resource Implementation
 
-### Type Definition Patterns
-
-Alchemy resources follow a specific type definition pattern that ensures type safety and consistency. The key principle is that **the output interface name MUST match the exported resource name** to create a pseudo-class construct:
-
-#### Flat Properties vs Nested Objects
-
-Prefer flat properties over nested configuration objects for better developer experience and type safety:
-
-```ts
-// ✅ PREFERRED: Flat properties
-export interface MyResourceProps {
-  name?: string;
-  region: string;
-  secret?: string | Secret;
-  timeout?: number;
-}
-
-// ❌ AVOID: Nested configuration objects
-export interface MyResourceProps {
-  name?: string;
-  config: {
-    region: string;
-    secret?: string | Secret;
-    timeout?: number;
-  };
-}
-```
-
-Flat properties provide:
-- Better IDE autocomplete and type checking
-- Cleaner resource creation syntax
-- Easier validation and error handling
-- More intuitive API design
-
-```ts
-// ✅ CORRECT: Interface name matches exported resource name
-export type Hyperdrive = {
-  // ... properties
-}
-export const Hyperdrive = Resource(/* ... */);
-
-// ❌ INCORRECT: Interface name doesn't match
-export interface HyperdriveOutput extends Resource<"cloudflare::Hyperdrive"> {
-  // ... properties
-}
-export const Hyperdrive = Resource(/* ... */);
-```
-
-```ts
-// 1. Define Props interface for input parameters
-// Note: Extend provider-specific credential interfaces when applicable:
-// - Cloudflare: extends CloudflareApiOptions
-// - AWS: extends AwsClientProps
-// - Other providers: define their own credential patterns
-
-export interface MyResourceProps {
-  /**
-   * Name of the resource
-   * @default ${app}-${stage}-${id}
-   */
-  name?: string;
-
-  /**
-   * Property description
-   */
-  property: string;
-
-  /**
-   * Secret value for authentication
-   * Use alchemy.secret() to securely store this value
-   */
-  secret?: string | Secret;
-
-  /**
-   * Whether to adopt an existing resource
-   * @default false
-   */
-  adopt?: boolean;
-
-  // Internal properties for lifecycle management
-  /** @internal */
-  resourceId?: string;
-}
-
-// 2. Define output type using Omit pattern
-// The Omit pattern removes input-only properties and adds computed/transformed properties
-export type MyResource = Omit<MyResourceProps, "adopt"> & {
-  /**
-   * The ID of the resource
-   */
-  id: string;
-
-  /**
-   * Name of the resource (required in output)
-   */
-  name: string;
-
-  /**
-   * The provider-generated ID
-   */
-  resourceId: string;
-
-  /**
-   * Secret value (always wrapped in Secret for output)
-   */
-  secret: Secret;
-
-  /**
-   * Resource type identifier for binding
-   * @internal
-   */
-  type: "my-resource";
-};
-```
-
 ### Resource Implementation Pattern
 
 Resources are implemented using the pseudo-class pattern with proper lifecycle management:
@@ -514,6 +399,300 @@ export const MyResource = Resource(
     };
   },
 );
+```
+
+### Advanced Resource Patterns
+
+#### Input Normalization with Wrapper Functions
+
+When resources accept flexible input types (e.g., `string | Secret`, `string | Resource`), use a public wrapper function to normalize inputs before passing to the internal Resource:
+
+```ts
+//! Public interface - accepts flexible types
+export function MyResource(id: string, props: MyResourceProps): Promise<MyResource> {
+  return _MyResource(id, {
+    ...props,
+    secret: typeof props.secret === "string" 
+      ? secret(props.secret) 
+      : props.secret,
+    database: typeof props.database === "string"
+      ? props.database
+      : props.database
+  });
+}
+
+//! Internal implementation - guaranteed normalized types
+const _MyResource = Resource(
+  "provider::MyResource",
+  async function (
+    this: Context<MyResource>,
+    id: string,
+    props: Omit<MyResourceProps, "secret"> & { secret: Secret }
+  ): Promise<MyResource> {
+    // Implementation with guaranteed types
+  }
+);
+```
+
+This pattern enables:
+- Flexible API for users (accepts string or Resource/Secret)
+- Type-safe implementation (guaranteed normalized types)
+- Clear separation of concerns
+
+#### Type Guard Functions (Required)
+
+Every resource MUST export a type guard function using `ResourceKind`:
+
+```ts
+import { ResourceKind } from "../resource.ts";
+
+export function isMyResource(resource: any): resource is MyResource {
+  return resource?.[ResourceKind] === "provider::MyResource";
+}
+```
+
+Use in conditional logic:
+```ts
+function processBinding(binding: any) {
+  if (isMyResource(binding)) {
+    // TypeScript now knows this is MyResource
+    console.log(binding.id);
+  }
+}
+```
+
+#### Output Type Pattern with Omit
+
+Prefer `Omit` over `extends` for output types to cleanly separate input and computed properties:
+
+```ts
+// ✅ PREFERRED: Clear separation of input vs output
+export type MyResource = Omit<MyResourceProps, "delete" | "secret"> & {
+  /**
+   * The ID assigned by the provider
+   */
+  id: string;
+
+  /**
+   * Secret value (guaranteed wrapped)
+   */
+  secret: Secret;
+
+  /**
+   * Resource type identifier
+   */
+  type: "my-resource";
+
+  /**
+   * Creation timestamp
+   */
+  createdAt: number;
+};
+
+// ❌ AVOID: Mixing input and output concerns
+export interface MyResource extends MyResourceProps {
+  id: string;
+  // Input props are now part of the output type
+}
+```
+
+#### Physical Name Generation with Scope
+
+Use the scope to generate deterministic physical names with defaults:
+
+```ts
+const name = props.name 
+  ?? this.output?.name  // Preserve on update
+  ?? this.scope.createPhysicalName(id);  // Default: {app}-{stage}-{id}
+```
+
+#### Resource Replacement for Immutable Properties
+
+When an immutable property changes, signal replacement via `this.replace()`:
+
+```ts
+if (this.phase === "update" && this.output.name !== name) {
+  logger.log(`Immutable property 'name' changed, replacing resource`);
+  return this.replace(); // Deletes old, creates new
+}
+```
+
+#### Conditional Deletion Pattern
+
+Support opt-out deletion with a `delete?: boolean` property:
+
+```ts
+export interface MyResourceProps {
+  /**
+   * Whether to delete the resource when removed from Alchemy
+   * @default true
+   */
+  delete?: boolean;
+}
+
+if (this.phase === "delete") {
+  if (props.delete !== false && this.output?.id) {
+    try {
+      await api.delete(`/resources/${this.output.id}`);
+    } catch (error) {
+      if (error.status !== 404) throw error; // OK if already deleted
+    }
+  }
+  return this.destroy();
+}
+```
+
+#### Internal API Types Convention
+
+Mark internal types used only for API serialization with JSDoc `@internal`:
+
+```ts
+/**
+ * Raw provider API response for resource creation
+ * @internal
+ */
+interface ResourceApiResponse {
+  id: string;
+  name: string;
+  created_at: number;
+  // API field names may differ from output
+}
+```
+
+#### Retry Patterns with Exponential Backoff
+
+Use exponential backoff for transient errors:
+
+```ts
+import { withExponentialBackoff } from "../util/retry.ts";
+
+const result = await withExponentialBackoff(
+  async () => {
+    return await extractProviderResult<ApiResponse>(
+      `create resource "${name}"`,
+      api.post("/resources", requestBody)
+    );
+  },
+  (error) => {
+    // Retry condition: specific transient errors
+    return error.code === 1002 || error instanceof TimeoutError;
+  },
+  30,    // maximum attempts
+  100,   // initial delay in ms
+);
+```
+
+### Type Definition Patterns
+
+Alchemy resources follow a specific type definition pattern that ensures type safety and consistency. The key principle is that **the output interface name MUST match the exported resource name** to create a pseudo-class construct:
+
+#### Flat Properties vs Nested Objects
+
+Prefer flat properties over nested configuration objects for better developer experience and type safety:
+
+```ts
+// ✅ PREFERRED: Flat properties
+export interface MyResourceProps {
+  name?: string;
+  region: string;
+  secret?: string | Secret;
+  timeout?: number;
+}
+
+// ❌ AVOID: Nested configuration objects
+export interface MyResourceProps {
+  name?: string;
+  config: {
+    region: string;
+    secret?: string | Secret;
+    timeout?: number;
+  };
+}
+```
+
+Flat properties provide:
+- Better IDE autocomplete and type checking
+- Cleaner resource creation syntax
+- Easier validation and error handling
+- More intuitive API design
+
+```ts
+// ✅ CORRECT: Interface name matches exported resource name
+export type MyResource = {
+  // ... properties
+}
+export const MyResource = Resource(/* ... */);
+
+// ❌ INCORRECT: Interface name doesn't match
+export interface MyResourceOutput extends Resource<"provider::MyResource"> {
+  // ... properties
+}
+export const MyResource = Resource(/* ... */);
+```
+
+#### Props Interface Definition
+
+Define Props interface for input parameters:
+
+```ts
+export interface MyResourceProps {
+  /**
+   * Name of the resource
+   * @default ${app}-${stage}-${id}
+   */
+  name?: string;
+
+  /**
+   * Property description
+   */
+  property: string;
+
+  /**
+   * Secret value for authentication
+   * Use alchemy.secret() to securely store this value
+   */
+  secret?: string | Secret;
+
+  /**
+   * Whether to adopt an existing resource
+   * @default false
+   */
+  adopt?: boolean;
+
+  // Internal properties for lifecycle management
+  /** @internal */
+  resourceId?: string;
+}
+
+// Define output type using Omit pattern
+// The Omit pattern removes input-only properties and adds computed/transformed properties
+export type MyResource = Omit<MyResourceProps, "adopt"> & {
+  /**
+   * The ID of the resource
+   */
+  id: string;
+
+  /**
+   * Name of the resource (required in output)
+   */
+  name: string;
+
+  /**
+   * The provider-generated ID
+   */
+  resourceId: string;
+
+  /**
+   * Secret value (always wrapped in Secret for output)
+   */
+  secret: Secret;
+
+  /**
+   * Resource type identifier for binding
+   * @internal
+   */
+  type: "my-resource";
+};
 ```
 
 ### Runtime Bindings
@@ -899,3 +1078,5 @@ bun vitest ./alchemy/test/.. -t "..."
 # Pull Request
 
 When submitting a Pull Request with a change, always include a code snippet that shows how the new feature/fix is used. It is not enough to just describe it with text and bullet points.
+
+```

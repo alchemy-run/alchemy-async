@@ -180,7 +180,188 @@ export const {Resource} = Resource(
 - **Check response status directly** instead of relying on exceptions
 - **Handle 404s gracefully** during deletion
 
-#### 4. Resource Property References
+#### 4. Advanced Resource Patterns
+
+##### Input Normalization with Wrapper Functions
+
+When resources accept flexible input types (e.g., `string | Secret`, `string | Resource`), use a public wrapper function to normalize inputs before passing to the internal Resource:
+
+```typescript
+// Public interface - accepts flexible types
+export function MyResource(id: string, props: MyResourceProps): Promise<MyResource> {
+  return _MyResource(id, {
+    ...props,
+    secret: typeof props.secret === "string" 
+      ? secret(props.secret) 
+      : props.secret,
+    database: typeof props.database === "string"
+      ? props.database
+      : props.database
+  });
+}
+
+// Internal implementation - guaranteed normalized types
+const _MyResource = Resource(
+  "provider::MyResource",
+  async function (
+    this: Context<MyResource>,
+    id: string,
+    props: Omit<MyResourceProps, "secret"> & { secret: Secret }
+  ): Promise<MyResource> {
+    // Implementation with guaranteed types
+  }
+);
+```
+
+This pattern enables:
+- Flexible API for users (accepts string or Resource/Secret)
+- Type-safe implementation (guaranteed normalized types)
+- Clear separation of concerns
+
+##### Type Guard Functions (Required)
+
+Every resource MUST export a type guard function using `ResourceKind`:
+
+```typescript
+import { ResourceKind } from "../resource.ts";
+
+export function isMyResource(resource: any): resource is MyResource {
+  return resource?.[ResourceKind] === "provider::MyResource";
+}
+```
+
+Use in conditional logic:
+```typescript
+function processBinding(binding: any) {
+  if (isMyResource(binding)) {
+    // TypeScript now knows this is MyResource
+    console.log(binding.id);
+  }
+}
+```
+
+##### Output Type Pattern with Omit
+
+Prefer `Omit` over `extends` for output types to cleanly separate input and computed properties:
+
+```typescript
+// ✅ PREFERRED: Clear separation of input vs output
+export type MyResource = Omit<MyResourceProps, "delete" | "secret"> & {
+  /**
+   * The ID assigned by the provider
+   */
+  id: string;
+
+  /**
+   * Secret value (guaranteed wrapped)
+   */
+  secret: Secret;
+
+  /**
+   * Resource type identifier
+   */
+  type: "my-resource";
+
+  /**
+   * Creation timestamp
+   */
+  createdAt: number;
+};
+
+// ❌ AVOID: Mixing input and output concerns
+export interface MyResource extends MyResourceProps {
+  id: string;
+  // Input props are now part of the output type
+}
+```
+
+##### Physical Name Generation with Scope
+
+Use the scope to generate deterministic physical names with defaults:
+
+```typescript
+const name = props.name 
+  ?? this.output?.name  // Preserve on update
+  ?? this.scope.createPhysicalName(id);  // Default: {app}-{stage}-{id}
+```
+
+##### Resource Replacement for Immutable Properties
+
+When an immutable property changes, signal replacement via `this.replace()`:
+
+```typescript
+if (this.phase === "update" && this.output.name !== name) {
+  logger.log(`Immutable property 'name' changed, replacing resource`);
+  return this.replace(); // Deletes old, creates new
+}
+```
+
+##### Conditional Deletion Pattern
+
+Support opt-out deletion with a `delete?: boolean` property:
+
+```typescript
+export interface MyResourceProps {
+  /**
+   * Whether to delete the resource when removed from Alchemy
+   * @default true
+   */
+  delete?: boolean;
+}
+
+if (this.phase === "delete") {
+  if (props.delete !== false && this.output?.id) {
+    try {
+      await api.delete(`/resources/${this.output.id}`);
+    } catch (error) {
+      if (error.status !== 404) throw error; 
+    }
+  }
+  return this.destroy();
+}
+```
+
+##### Internal API Types Convention
+
+Mark internal types used only for API serialization with JSDoc `@internal`:
+
+```typescript
+/**
+ * Raw provider API response for resource creation
+ * @internal
+ */
+interface ResourceApiResponse {
+  id: string;
+  name: string;
+  created_at: number;
+  // API field names may differ from output
+}
+```
+
+##### Retry Patterns with Exponential Backoff
+
+Use exponential backoff for transient errors:
+
+```typescript
+import { withExponentialBackoff } from "../util/retry.ts";
+
+const result = await withExponentialBackoff(
+  async () => {
+    return await extractProviderResult<ApiResponse>(
+      `create resource "${name}"`,
+      api.post("/resources", requestBody)
+    );
+  },
+  (error) => {
+    // Retry condition: specific transient errors
+    return error.code === 1002 || error instanceof TimeoutError;
+  },
+  30,    // maximum attempts
+  100,   // initial delay in ms
+);
+```
+
+#### 5. Resource Property References
 
 When designing input props, if you have a property that references another entity by ID (e.g., `tableId`, `bucketArn`), instead use:
 
