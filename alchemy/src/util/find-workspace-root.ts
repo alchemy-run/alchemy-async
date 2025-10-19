@@ -6,11 +6,13 @@ import { exists } from "./exists.ts";
 export async function findWorkspaceRoot(
   directory: string = process.cwd(),
 ): Promise<string> {
-  for (const [file, predicate] of Object.entries(predicates)) {
-    const filePath = path.join(directory, file);
-    if (await check(filePath, predicate)) {
-      return directory;
-    }
+  const checks = await Promise.all(
+    Object.entries(predicates).map(async ([file, predicate]) => {
+      return await check(path.join(directory, file), predicate);
+    }),
+  );
+  if (checks.includes(true)) {
+    return directory;
   }
   return await findWorkspaceRoot(path.resolve(directory, ".."));
 }
