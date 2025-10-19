@@ -831,7 +831,9 @@ const _Worker = Resource(
   ) {
     let adopt = props.adopt ?? this.scope.adopt;
     const workerName =
-      props.name ?? this.output?.name ?? this.scope.createPhysicalName(id);
+      props.name ??
+      this.output?.name ??
+      this.scope.createPhysicalName(id).toLowerCase();
     if (this.phase === "create" && !props.adopt) {
       // it is possible that this worker already exists and was created by the old Website wrapper with a nested scope
       // we need to detect this and set adopt=true so that the previous version will be adopted seamlessly
