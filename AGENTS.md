@@ -879,6 +879,8 @@ Before committing changes to Git and pushing Pull Requests, make sure to run the
 ```sh
 bun format
 ```
+If that fails, consider running (but be careful):
+
 
 Then run tests:
 
