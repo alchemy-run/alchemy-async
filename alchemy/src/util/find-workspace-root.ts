@@ -1,70 +1,100 @@
 import fs from "node:fs";
 import fsp from "node:fs/promises";
 import path from "pathe";
+import { exists } from "./exists.ts";
 
-export function findWorkspaceRootSync(dir: string = process.cwd()) {
-  if (fs.statSync(dir).isDirectory()) {
-    if (fs.existsSync(path.join(dir, ".git"))) {
-      return dir;
-    } else if (readSync(dir, "package.json")?.workspaces) {
-      return dir;
-    } else if (rootFiles.some((file) => fs.existsSync(path.join(dir, file)))) {
-      return dir;
+export async function findWorkspaceRoot(
+  directory: string = process.cwd(),
+): Promise<string> {
+  for (const [file, predicate] of Object.entries(predicates)) {
+    const filePath = path.join(directory, file);
+    if (await check(filePath, predicate)) {
+      return directory;
     }
   }
-  return findWorkspaceRootSync(path.resolve(dir, ".."));
+  return await findWorkspaceRoot(path.resolve(directory, ".."));
 }
 
-export async function findWorkspaceRoot(dir: string = process.cwd()) {
-  if ((await fsp.stat(dir)).isDirectory()) {
-    if (await exists(dir, ".git")) {
-      // the root of the git repo is usually the workspace root and we should always stop here
-      return dir;
-    } else if ((await read(dir, "package.json"))?.workspaces) {
-      // package.json with workspaces (bun, npm, etc.)
-      return dir;
-    } else if (await anyExists(dir, ...rootFiles)) {
-      return dir;
+export function findWorkspaceRootSync(
+  directory: string = process.cwd(),
+): string {
+  for (const [file, predicate] of Object.entries(predicates)) {
+    const filePath = path.join(directory, file);
+    if (checkSync(filePath, predicate)) {
+      return directory;
     }
   }
-  return findWorkspaceRoot(path.resolve(dir, ".."));
+  return findWorkspaceRootSync(path.resolve(directory, ".."));
 }
 
-const read = (...p: string[]): Promise<any> =>
-  fsp
-    .readFile(path.join(...p), "utf8")
-    .then(JSON.parse)
-    .catch(() => undefined);
-
-const readSync = (...p: string[]): any => {
-  try {
-    return JSON.parse(fs.readFileSync(path.join(...p), "utf8"));
-  } catch {
-    return undefined;
+async function check(filePath: string, predicate: Predicate) {
+  if (!(await exists(filePath))) {
+    return false;
   }
-};
 
-const exists = (...p: string[]) =>
-  fsp
-    .access(path.join(...p))
-    .then(() => true)
-    .catch(() => false);
+  if (typeof predicate === "function") {
+    try {
+      const value = await fsp.readFile(filePath, "utf-8");
+      const json = JSON.parse(value);
+      return predicate(json);
+    } catch {
+      return false;
+    }
+  } else {
+    return true;
+  }
+}
 
-const anyExists = (base: string, ...files: string[]) =>
-  Promise.all(files.map((file) => exists(base, file))).then((results) =>
-    results.some(Boolean),
-  );
+function checkSync(filePath: string, predicate: Predicate) {
+  if (!fs.existsSync(filePath)) {
+    return false;
+  }
 
-const rootFiles = [
-  // pnpm
-  "pnpm-workspace.yaml",
-  "pnpm-workspace.yml",
+  if (typeof predicate === "function") {
+    try {
+      const value = fs.readFileSync(filePath, "utf-8");
+      const json = JSON.parse(value);
+      return predicate(json);
+    } catch {
+      return false;
+    }
+  } else {
+    return predicate;
+  }
+}
+
+type Predicate = true | ((value: Record<string, unknown>) => boolean);
+
+const predicates: Record<string, Predicate> = {
+  // bun
+  "bun.lock": true,
+  "bun.lockb": true,
+
+  // git
+  ".git": true,
+
   // lerna
-  "lerna.json",
+  "lerna.json": true,
+
+  // npm
+  "package.json": (value) => "workspaces" in value,
+  "package-lock.json": true,
+
   // nx
-  "nx.json",
-  // turbo
-  // "turbo.json",
+  "nx.json": true,
+
+  // pnpm
+  "pnpm-lock.yaml": true,
+  "pnpm-workspace.yaml": true,
+  "pnpm-workspace.yml": true,
+
   // rush
-  "rush.json",
-];
+  "rush.json": true,
+
+  // turbo
+  // (a monorepo can contain more than one turbo.json, but unless it's the root, it must contain the `extends` property)
+  "turbo.json": (value) => !("extends" in value),
+
+  // yarn
+  "yarn.lock": true,
+};
