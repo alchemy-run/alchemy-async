@@ -184,7 +184,9 @@ export const {Resource} = Resource(
 
 ##### Input Normalization with Wrapper Functions
 
-When resources accept flexible input types (e.g., `string | Secret`, `string | Resource`), use a public wrapper function to normalize inputs before passing to the internal Resource:
+When resources accept **multiple flexible input types** (e.g., `string | Secret`, `string | Resource`), use a public wrapper function to normalize inputs before passing to the internal Resource.
+
+**Note**: This pattern is only needed when your Props interface has properties with union types that require normalization. If all props accept single types, skip this pattern and use the Resource directly.
 
 ```typescript
 // Public interface - accepts flexible types
@@ -291,14 +293,15 @@ When an immutable property changes, signal replacement via `this.replace()`:
 
 ```typescript
 if (this.phase === "update" && this.output.name !== name) {
-  logger.log(`Immutable property 'name' changed, replacing resource`);
   return this.replace(); // Deletes old, creates new
 }
 ```
 
 ##### Conditional Deletion Pattern
 
-Support opt-out deletion with a `delete?: boolean` property:
+Support opt-out deletion with a `delete?: boolean` property.
+
+**Note**: This pattern is typically used for **data resources only** (databases, storage buckets, key-value stores, etc.). Compute resources (workers, functions, containers) should always be deleted when removed from Alchemy without an opt-out option.
 
 ```typescript
 export interface MyResourceProps {
