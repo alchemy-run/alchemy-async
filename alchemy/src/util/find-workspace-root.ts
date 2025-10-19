@@ -14,7 +14,12 @@ export async function findWorkspaceRoot(
   if (checks.includes(true)) {
     return directory;
   }
-  return await findWorkspaceRoot(path.resolve(directory, ".."));
+  const parent = path.resolve(directory, "..");
+  if (parent === directory) {
+    // Bail if we've reached the filesystem root to avoid infinite recursion
+    return directory;
+  }
+  return await findWorkspaceRoot(parent);
 }
 
 export function findWorkspaceRootSync(
@@ -26,7 +31,12 @@ export function findWorkspaceRootSync(
       return directory;
     }
   }
-  return findWorkspaceRootSync(path.resolve(directory, ".."));
+  const parent = path.resolve(directory, "..");
+  if (parent === directory) {
+    // Bail if we've reached the filesystem root to avoid infinite recursion
+    return directory;
+  }
+  return findWorkspaceRootSync(parent);
 }
 
 async function check(filePath: string, predicate: Predicate) {
