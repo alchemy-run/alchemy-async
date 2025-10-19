@@ -167,7 +167,6 @@ export interface HyperdriveProps extends CloudflareApiOptions {
   /**
    * UUID of the hyperdrive (only used for update/delete operations)
    * This is provided by Cloudflare and is different from the resource ID
-   * @internal
    */
   hyperdriveId?: string;
 
