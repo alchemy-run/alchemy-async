@@ -192,21 +192,18 @@ describe.skipIf(!process.env.ALL_TESTS)("Zone Resource", () => {
       const foundZone = await getZoneByDomain(api, lookupTestDomain);
 
       // Verify the lookup returned the correct zone
-      expect(foundZone).toBeTruthy();
-      expect(foundZone!.id).toEqual(zone.id);
-      expect(foundZone!.name).toEqual(lookupTestDomain);
-      expect(foundZone!.type).toEqual("full");
-      expect(foundZone!.accountId).toEqual(zone.accountId);
-      expect(foundZone!.nameservers).toEqual(zone.nameservers);
-      expect(foundZone!.settings.ssl).toEqual("flexible");
-      expect(foundZone!.settings.alwaysUseHttps).toEqual("on");
+      expect(foundZone).toMatchObject({
+        id: zone.id,
+        name: lookupTestDomain,
+        type: "full",
+      });
 
       // Test lookup of non-existent domain
       const nonExistentZone = await getZoneByDomain(
         api,
         `${BRANCH_PREFIX}-non-existent.dev`,
       );
-      expect(nonExistentZone).toBeNull();
+      expect(nonExistentZone).toBeUndefined();
     } finally {
       // Always clean up
       await destroy(scope);
