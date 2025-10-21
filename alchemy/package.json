@@ -172,7 +172,7 @@
   },
   "dependencies": {
     "@aws-sdk/credential-providers": "^3.0.0",
-    "@cloudflare/unenv-preset": "^2.7.7",
+    "@cloudflare/unenv-preset": "2.7.7",
     "@cloudflare/workers-types": "catalog:",
     "@iarna/toml": "^2.2.5",
     "@octokit/rest": "^21.1.1",
