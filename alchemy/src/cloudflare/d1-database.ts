@@ -318,7 +318,6 @@ const _D1Database = Resource(
       // after that, the ID will remain the UUID for the lifetime of the database
       !this.output?.id
     ) {
-      logger.log("Creating D1 database:", databaseName);
       try {
         dbData = await createDatabase(api, databaseName, props);
 
@@ -354,9 +353,6 @@ const _D1Database = Resource(
 
           // Update the database with the provided properties
           if (props.readReplication) {
-            logger.log(
-              `Updating adopted database ${databaseName} with new properties`,
-            );
             dbData = await updateDatabase(api, existingDb.id, props);
           }
         } else {
@@ -374,15 +370,10 @@ const _D1Database = Resource(
           `Cannot update primaryLocationHint from '${this.output.primaryLocationHint}' to '${props.primaryLocationHint}' after database creation.`,
         );
       }
-      logger.log("Updating D1 database:", databaseName);
       // Update the database with new properties
       dbData = await updateDatabase(api, this.output.id, props);
     } else {
       // If no ID exists, fall back to creating a new database
-      logger.log(
-        "No existing database ID found, creating new D1 database:",
-        databaseName,
-      );
       dbData = await createDatabase(api, databaseName, props);
     }
 
