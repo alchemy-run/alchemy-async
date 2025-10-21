@@ -172,7 +172,7 @@
   },
   "dependencies": {
     "@aws-sdk/credential-providers": "^3.0.0",
-    "@cloudflare/unenv-preset": "^2.6.3",
+    "@cloudflare/unenv-preset": "^2.7.7",
     "@cloudflare/workers-types": "catalog:",
     "@iarna/toml": "^2.2.5",
     "@octokit/rest": "^21.1.1",
@@ -196,7 +196,7 @@
     "picocolors": "^1.1.1",
     "proper-lockfile": "^4.1.2",
     "signal-exit": "^4.1.0",
-    "unenv": "2.0.0-rc.19",
+    "unenv": "2.0.0-rc.21",
     "ws": "^8.18.3",
     "yaml": "^2.0.0"
   },
