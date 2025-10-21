@@ -1,5 +1,3 @@
-/// <reference types="node" />
-
 import alchemy from "alchemy";
 import { ReactRouter } from "alchemy/cloudflare";
 

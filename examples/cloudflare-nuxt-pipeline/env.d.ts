@@ -21,4 +21,3 @@ declare module "h3" {
     };
   }
 }
-

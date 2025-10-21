@@ -10,7 +10,7 @@ const test = alchemy.test(import.meta, {
 });
 
 describe
-  .skipIf(!!process.env.ALL_TESTS)
+  .skipIf(!process.env.ALL_TESTS)
   .sequential("Clickhouse Service", async () => {
     const testId = "test-service";
 

@@ -1,2 +1,2 @@
 [serve.static]
-env='PUBLIC_*'
+env='BUN_PUBLIC_*'

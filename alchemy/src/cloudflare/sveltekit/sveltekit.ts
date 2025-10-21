@@ -1,4 +1,4 @@
-import { join } from "node:path";
+import { join } from "pathe";
 import type { Assets } from "../assets.ts";
 import type { Bindings } from "../bindings.ts";
 import { Vite, type ViteProps } from "../vite/vite.ts";

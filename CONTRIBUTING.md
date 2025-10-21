@@ -26,7 +26,7 @@ bun run build
 
 ## Check
 
-Type-check and lint (with biome):
+Type-check and lint (with oxfmt):
 
 ```sh
 bun check
@@ -92,7 +92,7 @@ alchemy-web/
         {resource}.md # example-oriented reference docs for the resource
 examples/
   {provider}-{qualifier?}/ # only add a qualifier if there are more than one example for this {provider}
-    package.json    
+    package.json
     tsconfig.json
     alchemy.run.ts
     README.md
@@ -147,19 +147,19 @@ export const {Resource} = Resource(
       return this.destroy();
     } else {
       let response;
-      
+
       if (this.phase === "update" && this.output?.id) {
         // Update existing resource
         response = await api.put(/* update call */);
       } else {
-        // Create new resource  
+        // Create new resource
         response = await api.post(/* create call */);
       }
-      
+
       if (!response.ok) {
         throw new Error(`API error: ${response.statusText}`);
       }
-      
+
       const data = await response.json();
       return {
         id: data.id,
@@ -180,7 +180,191 @@ export const {Resource} = Resource(
 - **Check response status directly** instead of relying on exceptions
 - **Handle 404s gracefully** during deletion
 
-#### 4. Resource Property References
+#### 4. Advanced Resource Patterns
+
+##### Input Normalization with Wrapper Functions
+
+When resources accept **multiple flexible input types** (e.g., `string | Secret`, `string | Resource`), use a public wrapper function to normalize inputs before passing to the internal Resource.
+
+**Note**: This pattern is only needed when your Props interface has properties with union types that require normalization. If all props accept single types, skip this pattern and use the Resource directly.
+
+```typescript
+// Public interface - accepts flexible types
+export function MyResource(id: string, props: MyResourceProps): Promise<MyResource> {
+  return _MyResource(id, {
+    ...props,
+    secret: typeof props.secret === "string" 
+      ? secret(props.secret) 
+      : props.secret,
+    database: typeof props.database === "string"
+      ? props.database
+      : props.database
+  });
+}
+
+// Internal implementation - guaranteed normalized types
+const _MyResource = Resource(
+  "provider::MyResource",
+  async function (
+    this: Context<MyResource>,
+    id: string,
+    props: Omit<MyResourceProps, "secret"> & { secret: Secret }
+  ): Promise<MyResource> {
+    // Implementation with guaranteed types
+  }
+);
+```
+
+This pattern enables:
+- Flexible API for users (accepts string or Resource/Secret)
+- Type-safe implementation (guaranteed normalized types)
+- Clear separation of concerns
+
+##### Type Guard Functions (Required)
+
+Every resource MUST export a type guard function using `ResourceKind`:
+
+```typescript
+import { ResourceKind } from "../resource.ts";
+
+export function isMyResource(resource: any): resource is MyResource {
+  return resource?.[ResourceKind] === "provider::MyResource";
+}
+```
+
+Use in conditional logic:
+```typescript
+function processBinding(binding: any) {
+  if (isMyResource(binding)) {
+    // TypeScript now knows this is MyResource
+    console.log(binding.id);
+  }
+}
+```
+
+##### Output Type Pattern with Omit
+
+Prefer `Omit` over `extends` for output types to cleanly separate input and computed properties:
+
+```typescript
+// ✅ PREFERRED: Clear separation of input vs output
+export type MyResource = Omit<MyResourceProps, "delete" | "secret"> & {
+  /**
+   * The ID assigned by the provider
+   */
+  id: string;
+
+  /**
+   * Secret value (guaranteed wrapped)
+   */
+  secret: Secret;
+
+  /**
+   * Resource type identifier
+   */
+  type: "my-resource";
+
+  /**
+   * Creation timestamp
+   */
+  createdAt: number;
+};
+
+// ❌ AVOID: Mixing input and output concerns
+export interface MyResource extends MyResourceProps {
+  id: string;
+  // Input props are now part of the output type
+}
+```
+
+##### Physical Name Generation with Scope
+
+Use the scope to generate deterministic physical names with defaults:
+
+```typescript
+const name = props.name 
+  ?? this.output?.name  // Preserve on update
+  ?? this.scope.createPhysicalName(id);  // Default: {app}-{stage}-{id}
+```
+
+##### Resource Replacement for Immutable Properties
+
+When an immutable property changes, signal replacement via `this.replace()`:
+
+```typescript
+if (this.phase === "update" && this.output.name !== name) {
+  return this.replace(); // Deletes old, creates new
+}
+```
+
+##### Conditional Deletion Pattern
+
+Support opt-out deletion with a `delete?: boolean` property.
+
+**Note**: This pattern is typically used for **data resources only** (databases, storage buckets, key-value stores, etc.). Compute resources (workers, functions, containers) should always be deleted when removed from Alchemy without an opt-out option.
+
+```typescript
+export interface MyResourceProps {
+  /**
+   * Whether to delete the resource when removed from Alchemy
+   * @default true
+   */
+  delete?: boolean;
+}
+
+if (this.phase === "delete") {
+  if (props.delete !== false && this.output?.id) {
+    try {
+      await api.delete(`/resources/${this.output.id}`);
+    } catch (error) {
+      if (error.status !== 404) throw error; 
+    }
+  }
+  return this.destroy();
+}
+```
+
+##### Internal API Types Convention
+
+Mark internal types used only for API serialization with JSDoc `@internal`:
+
+```typescript
+/**
+ * Raw provider API response for resource creation
+ * @internal
+ */
+interface ResourceApiResponse {
+  id: string;
+  name: string;
+  created_at: number;
+  // API field names may differ from output
+}
+```
+
+##### Retry Patterns with Exponential Backoff
+
+Use exponential backoff for transient errors:
+
+```typescript
+import { withExponentialBackoff } from "../util/retry.ts";
+
+const result = await withExponentialBackoff(
+  async () => {
+    return await extractProviderResult<ApiResponse>(
+      `create resource "${name}"`,
+      api.post("/resources", requestBody)
+    );
+  },
+  (error) => {
+    // Retry condition: specific transient errors
+    return error.code === 1002 || error instanceof TimeoutError;
+  },
+  30,    // maximum attempts
+  100,   // initial delay in ms
+);
+```
+
+#### 5. Resource Property References
 
 When designing input props, if you have a property that references another entity by ID (e.g., `tableId`, `bucketArn`), instead use:
 
@@ -224,7 +408,7 @@ describe("{Provider}", () => {
         // assertions
       })
 
-      // UPDATE  
+      // UPDATE
       resource = await {Resource}("{id}", {
         // updated props
       })
@@ -289,7 +473,7 @@ Each resource requires:
 
 Create a getting started guide in `./alchemy-web/docs/guides/{provider}.md` that walks users through:
 - Installation and setup
-- Credential configuration  
+- Credential configuration
 - Creating their first resource
 - Deploying and testing
 - Cleanup/teardown
@@ -300,7 +484,7 @@ Always run these commands before committing:
 
 ```sh
 # Fix code formatting and linting
-bun biome check --fix
+bun format
 
 # Run tests (targets changed files vs main)
 bun run test

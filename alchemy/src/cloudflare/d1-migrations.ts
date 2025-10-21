@@ -1,6 +1,6 @@
 import { glob } from "glob";
 import * as fs from "node:fs/promises";
-import * as path from "node:path";
+import path from "pathe";
 import { logger } from "../util/logger.ts";
 import { handleApiError } from "./api-error.ts";
 import type { CloudflareApi } from "./api.ts";

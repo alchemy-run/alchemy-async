@@ -1,7 +1,7 @@
-import { execSync } from "node:child_process";
+import { exec } from "node:child_process";
 import fs from "node:fs/promises";
 import os from "node:os";
-import path from "node:path";
+import path from "pathe";
 import type { AlchemyOptions } from "../src/alchemy.ts";
 import { CloudflareStateStore } from "../src/state/cloudflare-state-store.ts";
 import { D1StateStore } from "../src/state/d1-state-store.ts";
@@ -137,7 +137,7 @@ export async function runCommand(
   console.log(`Running: ${command} in ${cwd}`);
 
   try {
-    const result = execSync(command, {
+    const result = await exec(command, {
       cwd,
       env: {
         ...process.env,

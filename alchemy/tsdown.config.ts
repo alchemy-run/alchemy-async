@@ -10,5 +10,5 @@ export default defineConfig({
     inlineDynamicImports: true,
     banner: "#!/usr/bin/env node",
   },
-  noExternal: ["execa", "open", "env-paths"]
+  noExternal: ["execa", "open", "env-paths"],
 });

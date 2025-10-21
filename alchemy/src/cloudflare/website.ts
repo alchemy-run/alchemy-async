@@ -1,6 +1,6 @@
 import assert from "node:assert";
 import fs from "node:fs/promises";
-import path from "node:path";
+import path from "pathe";
 import { Exec } from "../os/index.ts";
 import { Scope } from "../scope.ts";
 import { dedent } from "../util/dedent.ts";
@@ -9,7 +9,6 @@ import { Assets } from "./assets.ts";
 import type { Bindings } from "./bindings.ts";
 import { DEFAULT_COMPATIBILITY_DATE } from "./compatibility-date.gen.ts";
 import { unionCompatibilityFlags } from "./compatibility-presets.ts";
-import { writeMiniflareSymlink } from "./miniflare/symlink-miniflare-state.ts";
 import {
   extractStringAndSecretBindings,
   unencryptSecrets,
@@ -261,10 +260,6 @@ export async function Website<B extends Bindings>(
           },
       };`;
     await fs.writeFile(paths.entrypoint, content);
-  }
-
-  if (Scope.current.local) {
-    await writeMiniflareSymlink(Scope.current.rootDir, paths.cwd);
   }
 
   await WranglerJson({

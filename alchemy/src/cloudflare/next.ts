@@ -1,5 +1,5 @@
 import * as fs from "node:fs/promises";
-import path from "node:path";
+import path from "pathe";
 import pc from "picocolors";
 import { getPackageManagerRunner } from "../util/detect-package-manager.ts";
 import { exists } from "../util/exists.ts";

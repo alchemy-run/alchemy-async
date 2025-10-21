@@ -1,5 +1,3 @@
-/// <reference types="@types/node" />
-
 import alchemy from "alchemy";
 import { D1Database, Worker } from "alchemy/cloudflare";
 import { Exec } from "alchemy/os";

@@ -1,22 +1,23 @@
-import path from "node:path";
 import { execArgv } from "node:process";
+import path from "pathe";
 import { onExit } from "signal-exit";
 import { isReplacedSignal } from "./apply.ts";
 import { DestroyStrategy, destroy, isDestroyedSignal } from "./destroy.ts";
 import { env } from "./env.ts";
 import {
+  type PendingResource,
   ResourceFQN,
   ResourceID,
   ResourceKind,
   ResourceScope,
   ResourceSeq,
-  type PendingResource,
 } from "./resource.ts";
-import { DEFAULT_STAGE, Scope, type ProviderCredentials } from "./scope.ts";
+import { DEFAULT_STAGE, type ProviderCredentials, Scope } from "./scope.ts";
 import { secret } from "./secret.ts";
 import type { StateStoreType } from "./state.ts";
 import { cliArgs, parseOption } from "./util/cli-args.ts";
 import type { LoggerApi } from "./util/cli.ts";
+import { logger } from "./util/logger.ts";
 import { ALCHEMY_ROOT } from "./util/root-dir.ts";
 import { createAndSendEvent } from "./util/telemetry.ts";
 
@@ -111,6 +112,7 @@ async function _alchemy(
       duration: performance.now() - startedAt,
     });
   }
+
   // user may select a specific app to auto-enable read mode for any other app
   const app = parseOption("--app");
 
@@ -123,6 +125,7 @@ async function _alchemy(
           : cliArgs.includes("--read")
             ? "read"
             : "up",
+
     local: cliArgs.includes("--local") || cliArgs.includes("--dev"),
     watch: cliArgs.includes("--watch") || execArgv.includes("--watch"),
     quiet: cliArgs.includes("--quiet"),
@@ -149,7 +152,7 @@ async function _alchemy(
     process.env.CI &&
     process.env.ALCHEMY_CI_STATE_STORE_CHECK !== "false"
   ) {
-    throw new Error(`You are running Alchemy in a CI environment with the default local state store. 
+    throw new Error(`You are running Alchemy in a CI environment with the default local state store.
 This can lead to orphaned infrastructure and is rarely what you want to do.
 
 Instead, you should choose a persistent state store:
@@ -160,6 +163,59 @@ You can read more about State and State Stores here: https://alchemy.run/concept
 
 If this is a mistake, you can disable this check by setting the ALCHEMY_CI_STATE_STORE_CHECK=false.
 `);
+  }
+
+  const isRunningFromCLI = parseOption("--telemetry-ref")?.endsWith("cli");
+
+  if (app && options?.phase) {
+    throw new Error(
+      `Cannot hard-code phase to "${options?.phase}" when running with --app ${app}`,
+    );
+  }
+
+  if (
+    options?.phase === "up" &&
+    (cliArgs.includes("--destroy") || cliArgs.includes("--read"))
+  ) {
+    throw new Error(
+      `Cannot hard-code phase to "up" when running with --destroy or --read`,
+    );
+  }
+
+  if (
+    options?.phase === "destroy" &&
+    (cliArgs.includes("--read") || cliArgs.includes("--dev"))
+    // TODO(sam): this is missing running from CLI "up" phase (because that is default)
+  ) {
+    throw new Error(
+      `Cannot hard-code phase to "destroy" when running with --read or --dev`,
+    );
+  }
+
+  if (
+    isRunningFromCLI &&
+    options?.phase === "destroy" &&
+    !cliArgs.includes("--destroy")
+  ) {
+    throw new Error(
+      'The phase was hard-coded to "destroy", but alchemy is running from the CLI without the --destroy option.',
+    );
+  }
+
+  if (options?.phase === "read" && cliArgs.includes("--destroy")) {
+    throw new Error(
+      `Cannot hard-code phase to "read" when running with --destroy`,
+    );
+  }
+
+  if (
+    isRunningFromCLI &&
+    options?.phase === "read" &&
+    !cliArgs.includes("--read")
+  ) {
+    logger.warn(
+      'The phase was hard-coded to "read", but alchemy is running from the CLI without the --read option, this is likely a mistake.',
+    );
   }
 
   const phase = mergedOptions?.phase ?? "up";

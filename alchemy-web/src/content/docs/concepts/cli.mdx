@@ -347,7 +347,7 @@ alchemy create [name] [options]
 Create a new Alchemy project from a template.
 
 - `name` (optional): Project name or path
-- `--template` - Project template type (choices: "typescript", "vite", "astro", "react-router", "sveltekit", "tanstack-start", "rwsdk", "nuxt")
+- `--template` - Project template type (choices: "typescript", "vite", "bun-spa", "astro", "react-router", "sveltekit", "tanstack-start", "rwsdk", "nuxt")
 - `--yes` - Skip prompts and use defaults (default: `false`)
 - `--overwrite` - Overwrite existing directory (default: `false`)
 - `--install` - Install dependencies after scaffolding
@@ -378,6 +378,46 @@ alchemy create my-app --overwrite
 # create without installing dependencies
 alchemy create my-app --no-install
 ```
+:::
+
+## `init`
+
+```sh
+alchemy init [options]
+```
+
+Initialize Alchemy in an existing project. This command adds Alchemy infrastructure to projects that were created using other tools (like `bun init`, `vite create`, `npm create astro`, etc.).
+
+- `--framework` - Force a specific framework instead of auto-detection (choices: "typescript", "vite", "bun-spa", "astro", "react-router", "sveltekit", "tanstack-start", "rwsdk", "nuxt", "nextjs")
+- `--yes` - Skip prompts and use defaults (default: `false`)
+- `-h, --help` - Display help for command
+
+:::tip
+
+Here are some examples of how to use the `init` command:
+
+```sh
+# auto-detect framework and initialize interactively
+cd my-existing-project
+alchemy init
+
+# initialize with a specific framework
+alchemy init --framework bun-spa
+
+# skip prompts and use auto-detected framework
+alchemy init --yes
+```
+:::
+
+The `init` command will:
+- Auto-detect your framework from `package.json` dependencies
+- Create an `alchemy.run.ts` file with framework-specific configuration
+- Add Alchemy scripts to your `package.json` (`deploy`, `destroy`, `alchemy:dev`)
+- Install Alchemy and any required framework adapters as dev dependencies
+- Update configuration files as needed (e.g., `vite.config.ts`, `bunfig.toml`, etc.)
+
+:::note
+For BunSPA projects specifically, `alchemy init` will validate or create a `bunfig.toml` file with the required `env='BUN_PUBLIC_*'` configuration.
 :::
 
 ## `configure`
@@ -412,3 +452,15 @@ Logout of a configured cloud provider.
 
 - `-p, --profile` - The profile to logout from (default: `default`)
 - `-h, --help` - Display help for command
+
+## `util create-cloudflare-token`
+
+```sh
+alchemy util create-cloudflare-token
+```
+
+A utility for creating Cloudflare tokens.
+
+- `-p, --profile` - Create a cloudflare token mirroring the oauth scopes in the specified profile
+- `--god-token` - Create a "god token" with full write access to everything in a cloudflare account
+

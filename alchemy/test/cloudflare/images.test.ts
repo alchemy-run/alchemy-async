@@ -5,7 +5,7 @@ import { Worker } from "../../src/cloudflare/worker.js";
 import { destroy } from "../../src/destroy.js";
 import { BRANCH_PREFIX } from "../util.js";
 
-import path from "node:path";
+import path from "pathe";
 import "../../src/test/vitest.js";
 
 const test = alchemy.test(import.meta, {

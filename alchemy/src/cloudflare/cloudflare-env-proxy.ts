@@ -3,7 +3,6 @@ import {
   getDefaultConfigPath,
   getDefaultPersistPath,
   validateConfigPath,
-  validatePersistPath,
 } from "./miniflare/paths.ts";
 
 export const getCloudflareEnvProxy = async <E>(
@@ -22,12 +21,11 @@ export const getPlatformProxyOptions = (
     input.persist === false
       ? false
       : {
-          path: validatePersistPath(
+          path:
             typeof input.persist === "object" &&
-              typeof input.persist.path === "string"
+            typeof input.persist.path === "string"
               ? input.persist.path
               : getDefaultPersistPath(),
-          ),
         };
   if (!persist) {
     const message =

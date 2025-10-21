@@ -11,10 +11,10 @@ Upload a dispute evidence file:
 
 ```ts
 import { File } from "alchemy/stripe";
-import fs from "fs";
+import fs from "node:fs/promises";
 
 const disputeEvidence = await File("dispute-evidence", {
-  file: fs.readFileSync("./evidence.pdf"),
+  file: await fs.readFile("./evidence.pdf"),
   purpose: "dispute_evidence",
 });
 ```
@@ -25,10 +25,10 @@ Upload an identity document:
 
 ```ts
 import { File } from "alchemy/stripe";
-import fs from "fs";
+import fs from "node:fs/promises";
 
 const identityDocument = await File("identity-doc", {
-  file: fs.readFileSync("./passport.jpg"),
+  file: await fs.readFile("./passport.jpg"),
   purpose: "identity_document",
 });
 ```
@@ -39,10 +39,10 @@ Upload a business logo with file link:
 
 ```ts
 import { File } from "alchemy/stripe";
-import fs from "fs";
+import fs from "node:fs/promises";
 
 const businessLogo = await File("business-logo", {
-  file: fs.readFileSync("./logo.png"),
+  file: await fs.readFile("./logo.png"),
   purpose: "business_logo",
   fileLink: {
     create: true,

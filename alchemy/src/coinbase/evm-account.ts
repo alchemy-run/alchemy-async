@@ -207,7 +207,9 @@ export const EvmAccount = Resource(
             );
 
             console.log(
-              `💧 Requested ${toFund.length} new faucet fund${toFund.length === 1 ? "" : "s"} for ${this.output.address}`,
+              `💧 Requested ${toFund.length} new faucet fund${
+                toFund.length === 1 ? "" : "s"
+              } for ${this.output.address}`,
             );
           }
         } catch (error: any) {

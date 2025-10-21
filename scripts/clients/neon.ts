@@ -8,7 +8,6 @@ export default {
   input: spec as any,
   output: {
     path: "alchemy/src/neon/api",
-    format: "biome",
   },
   plugins: [
     {

@@ -1,6 +1,8 @@
 import { Hono } from "hono";
 import { cors } from "hono/cors";
-import type { CloudflareEnv } from "./env.ts";
+import type { bunsite } from "../alchemy.run.ts";
+
+type CloudflareEnv = typeof bunsite.Env;
 
 export const api = new Hono<{ Bindings: CloudflareEnv }>();
 

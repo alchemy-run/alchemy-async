@@ -44,6 +44,13 @@ export interface BranchProps extends PlanetScaleProps {
   adopt?: boolean;
 
   /**
+   * Whether to delete the branch when the resource is destroyed.
+   * When false, the branch will only be removed from the state but not deleted via API.
+   * @default true
+   */
+  delete?: boolean;
+
+  /**
    * The parent branch name or Branch object
    * @default "main"
    */
@@ -179,6 +186,7 @@ export const Branch = Resource(
       (typeof props.database === "string"
         ? props.database
         : props.database.name);
+    const shouldDelete = props.delete ?? false;
 
     if (!organization) {
       throw new Error(
@@ -192,7 +200,7 @@ export const Branch = Resource(
     }
 
     if (this.phase === "delete") {
-      if (this.output?.name) {
+      if (shouldDelete && this.output?.name) {
         const response = await api.deleteBranch({
           path: {
             organization,

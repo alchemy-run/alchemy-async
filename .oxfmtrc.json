@@ -1,0 +1,12 @@
+{
+  "semi": true,
+  "singleQuote": false,
+  "tabWidth": 2,
+  "useTabs": false,
+  "printWidth": 80,
+  "endOfLine": "lf",
+  "experimentalTernaries": true,
+  "experimental_sort_imports": {
+    "order": "asc"
+  }
+}

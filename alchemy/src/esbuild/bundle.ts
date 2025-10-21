@@ -1,7 +1,7 @@
 import type esbuild from "esbuild";
 import crypto from "node:crypto";
 import fs from "node:fs/promises";
-import path from "node:path";
+import path from "pathe";
 import type { Context } from "../context.ts";
 import { Resource } from "../resource.ts";
 import { logger } from "../util/logger.ts";

@@ -1,5 +1,5 @@
 import fs from "node:fs/promises";
-import path from "node:path";
+import path from "pathe";
 import type { Context } from "../context.ts";
 import { Resource } from "../resource.ts";
 import { Scope } from "../scope.ts";
@@ -861,7 +861,6 @@ function processBindings(
       });
     } else {
       console.log("binding", binding);
-      // biome-ignore lint/correctness/noVoidTypeReturn: it returns never
       return assertNever(binding);
     }
   }

@@ -2,7 +2,7 @@ import { execa } from "execa";
 import { Buffer } from "node:buffer";
 import { spawn } from "node:child_process";
 import fs from "node:fs/promises";
-import path from "node:path";
+import path from "pathe";
 import type { Duration, HealthcheckConfig } from "./container.ts";
 
 /**
@@ -159,7 +159,9 @@ export class DockerApi {
       return true;
     } catch (error) {
       console.log(
-        `Docker daemon not running: ${error instanceof Error ? error.message : String(error)}`,
+        `Docker daemon not running: ${
+          error instanceof Error ? error.message : String(error)
+        }`,
       );
       return false;
     }

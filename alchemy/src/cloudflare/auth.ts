@@ -118,6 +118,7 @@ export namespace CloudflareAuth {
     "secrets_store:write",
     "containers:write",
     "cloudchamber:write",
+    "vectorize:write",
   ];
 
   /**

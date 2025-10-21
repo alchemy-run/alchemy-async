@@ -4,7 +4,7 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "build": "tsc -b && bun build index.html --outdir dist/client",
+    "build": "tsc -b",
     "deploy": "alchemy deploy --env-file ../../.env",
     "destroy": "alchemy destroy --env-file ../../.env",
     "dev": "alchemy dev --env-file ../../.env",
@@ -16,8 +16,8 @@
     "react-dom": "^19.0.0"
   },
   "devDependencies": {
+    "bun-types-no-globals": "1.3.0",
     "@eslint/js": "^9.21.0",
-    "@types/node": "^22.13.10",
     "@types/react": "^19.0.10",
     "@types/react-dom": "^19.0.4",
     "alchemy": "workspace:*",

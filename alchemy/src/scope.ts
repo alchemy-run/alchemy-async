@@ -1,6 +1,6 @@
 import { AsyncLocalStorage } from "node:async_hooks";
-import path from "node:path";
 import util from "node:util";
+import path from "pathe";
 import pc from "picocolors";
 import type { Phase } from "./alchemy.ts";
 import { destroy, destroyAll, DestroyStrategy } from "./destroy.ts";
@@ -173,8 +173,8 @@ export class Scope {
 
   public static readonly KIND = "alchemy::Scope" as const;
 
-  public static storage = (globalThis.__ALCHEMY_STORAGE__ ??=
-    new AsyncLocalStorage<Scope>());
+  public static storage = globalThis.__ALCHEMY_STORAGE__ ??=
+    new AsyncLocalStorage<Scope>();
 
   public static getScope(): Scope | undefined {
     return Scope.storage.getStore();

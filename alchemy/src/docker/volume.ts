@@ -135,13 +135,13 @@ export const Volume = Resource(
       return this.destroy();
     } else {
       // Set default driver if not provided
-      props.driver = props.driver || "local";
+      const driver = props.driver || "local";
       const driverOpts = props.driverOpts || {};
 
       // Create the volume
       const volumeId = await api.createVolume(
         volumeName,
-        props.driver,
+        driver,
         driverOpts,
         processedLabels,
       );
@@ -152,6 +152,7 @@ export const Volume = Resource(
 
       return {
         ...props,
+        driver: driver,
         id: volumeId,
         name: volumeName,
         mountpoint,

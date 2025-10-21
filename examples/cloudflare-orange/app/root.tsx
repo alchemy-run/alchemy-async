@@ -64,7 +64,9 @@ export function ErrorBoundary() {
   return (
     <main className="w-screen h-screen flex flex-col gap-2 items-center justify-center mx-auto">
       <h1 className="text-xl font-mono">HTTP {status}</h1>
-      <h2 className="text-5xl font-mono border-orange-500 border-b-2 pb-3 border-dotted">{details}</h2>
+      <h2 className="text-5xl font-mono border-orange-500 border-b-2 pb-3 border-dotted">
+        {details}
+      </h2>
       {stack && <pre className="text-xs text-left">{stack}</pre>}
     </main>
   );

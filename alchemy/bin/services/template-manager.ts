@@ -1,10 +1,17 @@
 import { log, spinner } from "@clack/prompts";
 import { execa } from "execa";
-import * as fs from "fs-extra";
 import { globby } from "globby";
-import * as path from "node:path";
-import { join } from "node:path";
+import path, { join } from "pathe";
 
+import {
+  copy,
+  ensureDir,
+  readFile,
+  readJson,
+  writeFile,
+  writeJson,
+} from "fs-extra";
+import { exists } from "../../src/util/exists.ts";
 import { PKG_ROOT } from "../constants.ts";
 import { throwWithContext } from "../errors.ts";
 import type { ProjectContext } from "../types.ts";
@@ -17,7 +24,7 @@ export async function copyTemplate(
 ): Promise<void> {
   const templatePath = path.join(PKG_ROOT, "templates", templateName);
 
-  if (!fs.existsSync(templatePath)) {
+  if (!(await exists(templatePath))) {
     throw new Error(`Template '${templateName}' not found at ${templatePath}`);
   }
 
@@ -52,8 +59,8 @@ export async function copyTemplate(
 
       const destPath = join(context.path, destFile);
 
-      await fs.ensureDir(path.dirname(destPath));
-      await fs.copy(srcPath, destPath);
+      await ensureDir(path.dirname(destPath));
+      await copy(srcPath, destPath);
     }
 
     await substituteProjectName(context);
@@ -89,9 +96,9 @@ export async function copyTemplate(
 
 async function substituteProjectName(context: ProjectContext): Promise<void> {
   const alchemyFile = join(context.path, "alchemy.run.ts");
-  const code = await fs.readFile(alchemyFile, "utf8");
+  const code = await readFile(alchemyFile, "utf8");
   const newCode = code.replace("{projectName}", context.name);
-  await fs.writeFile(alchemyFile, newCode);
+  await writeFile(alchemyFile, newCode);
 }
 
 async function updateTemplatePackageJson(
@@ -99,11 +106,11 @@ async function updateTemplatePackageJson(
 ): Promise<void> {
   const packageJsonPath = join(context.path, "package.json");
 
-  if (!fs.existsSync(packageJsonPath)) {
+  if (!(await exists(packageJsonPath))) {
     return;
   }
 
-  const packageJson = await fs.readJson(packageJsonPath);
+  const packageJson = await readJson(packageJsonPath);
 
   packageJson.name = context.name;
 
@@ -113,13 +120,13 @@ async function updateTemplatePackageJson(
     packageJson.scripts.dev = "alchemy dev";
   }
 
-  await fs.writeJson(packageJsonPath, packageJson, { spaces: 2 });
+  await writeJson(packageJsonPath, packageJson, { spaces: 2 });
 }
 
 async function handleRwsdkPostInstall(context: ProjectContext): Promise<void> {
   try {
     const migrationsDir = join(context.path, "migrations");
-    await fs.ensureDir(migrationsDir);
+    await ensureDir(migrationsDir);
 
     const commands = PackageManager[context.packageManager];
     const devInitCommand = `${commands.run} dev:init`;

@@ -1,7 +1,7 @@
 import type esbuild from "esbuild";
 import assert from "node:assert";
 import fs from "node:fs/promises";
-import path from "node:path";
+import path from "pathe";
 import type { WorkerBundle } from "../worker-bundle.ts";
 
 export function createWasmPlugin() {

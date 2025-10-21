@@ -34,6 +34,7 @@ import {
 } from "./durable-object-namespace.ts";
 import { type EventSource, isQueueEventSource } from "./event-source.ts";
 import { deleteMiniflareWorkerData } from "./miniflare/delete.ts";
+import { MiniflareController } from "./miniflare/miniflare-controller.ts";
 import {
   QueueConsumer,
   deleteQueueConsumer,
@@ -830,7 +831,9 @@ const _Worker = Resource(
   ) {
     let adopt = props.adopt ?? this.scope.adopt;
     const workerName =
-      props.name ?? this.output?.name ?? this.scope.createPhysicalName(id);
+      props.name ??
+      this.output?.name ??
+      this.scope.createPhysicalName(id).toLowerCase();
     if (this.phase === "create" && !props.adopt) {
       // it is possible that this worker already exists and was created by the old Website wrapper with a nested scope
       // we need to detect this and set adopt=true so that the previous version will be adopted seamlessly
@@ -966,9 +969,6 @@ const _Worker = Resource(
       if (props.dev?.url) {
         url = props.dev.url;
       } else {
-        const { MiniflareController } = await import(
-          "./miniflare/miniflare-controller.js"
-        );
         const controller = MiniflareController.singleton;
         url = await controller.add({
           api,

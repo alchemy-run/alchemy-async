@@ -5,7 +5,7 @@
 import type { Plugin, PluginBuild } from "esbuild";
 import assert from "node:assert";
 import { createRequire } from "node:module";
-import nodePath from "node:path";
+import nodePath from "pathe";
 import { dedent } from "../../util/dedent.ts";
 import { NODEJS_MODULES_RE } from "./nodejs-builtin-modules.ts";
 

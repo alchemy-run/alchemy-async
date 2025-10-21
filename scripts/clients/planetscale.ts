@@ -221,7 +221,6 @@ export default {
   input: spec as any,
   output: {
     path: "alchemy/src/planetscale/api",
-    format: "biome",
   },
   plugins: [
     {

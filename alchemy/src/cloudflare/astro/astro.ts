@@ -1,4 +1,4 @@
-import { join, resolve } from "node:path";
+import { join, resolve } from "pathe";
 import { getPackageManagerRunner } from "../../util/detect-package-manager.ts";
 import type { Assets } from "../assets.ts";
 import type { Bindings } from "../bindings.ts";

@@ -5,7 +5,7 @@ import { Worker } from "../../src/cloudflare/worker.ts";
 import { destroy } from "../../src/destroy.ts";
 import { BRANCH_PREFIX } from "../util.ts";
 
-import path from "node:path";
+import path from "pathe";
 import "../../src/test/vitest.ts";
 import { fetchAndExpectOK } from "../../src/util/safe-fetch.ts";
 

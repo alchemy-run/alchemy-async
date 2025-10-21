@@ -1,9 +1,11 @@
 import * as miniflare from "miniflare";
+import assert from "node:assert";
 import { once } from "node:events";
 import http from "node:http";
 import { Readable } from "node:stream";
 import { WebSocket, WebSocketServer } from "ws";
-import { coupleWebSocket } from "../../util/http.ts";
+import { createUpgradeHandler } from "../../util/http.ts";
+import { logger } from "../../util/logger.ts";
 
 export interface MiniflareWorkerProxy {
   url: URL;
@@ -20,15 +22,14 @@ export async function createMiniflareWorkerProxy(options: {
   const server = http.createServer();
   const wss = new WebSocketServer({ noServer: true });
 
-  server.on("upgrade", async (req, socket, head) => {
-    try {
-      const server = await createServerWebSocket(req);
-      coupleWebSocket(wss, req, socket, head, server);
-    } catch (error) {
-      console.error(error);
-      socket.destroy();
-    }
-  });
+  server.on(
+    "upgrade",
+    createUpgradeHandler({
+      wss,
+      createServerWebSocket: (req) => createServerWebSocket(req),
+    }),
+  );
+
   server.on("request", async (req, res) => {
     try {
       const response = await handleFetch(req);
@@ -84,26 +85,57 @@ export async function createMiniflareWorkerProxy(options: {
     options.transformRequest?.(info);
     const name = options.getWorkerName(info);
 
-    const server = new WebSocket(url, protocols, {
+    return new WebSocket(url, protocols, {
       headers: {
         "MF-Route-Override": name,
       },
     });
-    await once(server, "open");
-    return server;
   };
 
-  server.listen(options.port);
-  await once(server, "listening");
-  const url = new URL(`http://localhost:${options.port}`);
+  await listen(server, options.port);
 
   return {
-    url,
+    url: getAddress(server),
     close: async () => {
       // If we await this while the `wss` server is open, the server will hang.
       server.close();
     },
   };
+}
+
+/**
+ * Listens on the given port, retrying on the next port if the port is already in use.
+ */
+async function listen(server: http.Server, port: number) {
+  try {
+    server.listen(port);
+    await once(server, "listening");
+  } catch (error) {
+    if (
+      typeof error === "object" &&
+      error !== null &&
+      "code" in error &&
+      error.code === "EADDRINUSE"
+    ) {
+      logger.warn(`Port ${port} is already in use, trying ${port + 1}...`);
+      await listen(server, port + 1);
+    } else {
+      throw error;
+    }
+  }
+}
+
+function getAddress(server: http.Server) {
+  const address = server.address();
+  assert(
+    address &&
+      typeof address === "object" &&
+      "address" in address &&
+      "port" in address,
+    "Server is not listening",
+  );
+  const hostname = address.address === "::" ? "localhost" : address.address;
+  return new URL(`http://${hostname}:${address.port}`);
 }
 
 interface RequestInfo {

@@ -1,3 +1,111 @@
+## v0.76.1
+
+### &nbsp;&nbsp;&nbsp;🐞 Bug Fixes
+
+- **cloudflare**:
+  - Add vectorize:index to default scopes &nbsp;-&nbsp; by **Sam Goodwin** in https://github.com/alchemy-run/alchemy/issues/1164 [<samp>(21ce5)</samp>](https://github.com/alchemy-run/alchemy/commit/21ce5313)
+  - Convert maxWaitTimeMs to seconds in miniflare &nbsp;-&nbsp; by **Sam Goodwin** in https://github.com/alchemy-run/alchemy/issues/1165 [<samp>(bc423)</samp>](https://github.com/alchemy-run/alchemy/commit/bc423684)
+
+##### &nbsp;&nbsp;&nbsp;&nbsp;[View changes on GitHub](https://github.com/alchemy-run/alchemy/compare/v0.76.0...v0.76.1)
+
+---
+
+## v0.76.0
+
+### &nbsp;&nbsp;&nbsp;🐞 Bug Fixes
+
+- Improve workspace root detection &nbsp;-&nbsp; by **John Royal** in https://github.com/alchemy-run/alchemy/issues/1156 [<samp>(0e1a2)</samp>](https://github.com/alchemy-run/alchemy/commit/0e1a2b8c)
+- **CLI**:
+  - Make god token warning less aggressive &nbsp;-&nbsp; by **Michael K** in https://github.com/alchemy-run/alchemy/issues/1145 [<samp>(24321)</samp>](https://github.com/alchemy-run/alchemy/commit/2432155c)
+- **cli**:
+  - Add message telling user where to get global api key &nbsp;-&nbsp; by **Michael K** in https://github.com/alchemy-run/alchemy/issues/1153 [<samp>(edf6e)</samp>](https://github.com/alchemy-run/alchemy/commit/edf6e356)
+- **cloudflare**:
+  - Lowercase auto-generated worker name &nbsp;-&nbsp; by **John Royal** in https://github.com/alchemy-run/alchemy/issues/1158 [<samp>(e12cf)</samp>](https://github.com/alchemy-run/alchemy/commit/e12cf144)
+  - Avoid fetching settings when inferring zone id &nbsp;-&nbsp; by **John Royal** in https://github.com/alchemy-run/alchemy/issues/1159 [<samp>(2d79a)</samp>](https://github.com/alchemy-run/alchemy/commit/2d79afe0)
+
+##### &nbsp;&nbsp;&nbsp;&nbsp;[View changes on GitHub](https://github.com/alchemy-run/alchemy/compare/v0.75.1...v0.76.0)
+
+---
+
+## v0.75.1
+
+### &nbsp;&nbsp;&nbsp;🐞 Bug Fixes
+
+- **cloudflare**: Use workspace root for persist path &nbsp;-&nbsp; by **John Royal** in https://github.com/alchemy-run/alchemy/issues/1143 [<samp>(5d094)</samp>](https://github.com/alchemy-run/alchemy/commit/5d0940f8)
+- **core**: Warn if a resource isn't stable after 10s in a monorepo &nbsp;-&nbsp; by **Sam Goodwin** in https://github.com/alchemy-run/alchemy/issues/1141 [<samp>(66333)</samp>](https://github.com/alchemy-run/alchemy/commit/663331d0)
+
+##### &nbsp;&nbsp;&nbsp;&nbsp;[View changes on GitHub](https://github.com/alchemy-run/alchemy/compare/v0.75.0...v0.75.1)
+
+---
+
+## v0.75.0
+
+### &nbsp;&nbsp;&nbsp;🐞 Bug Fixes
+
+- **cli**:
+  - Log errors when cli exits with an generic Error &nbsp;-&nbsp; by **Rahul Mishra** in https://github.com/alchemy-run/alchemy/issues/1137 [<samp>(6f8b9)</samp>](https://github.com/alchemy-run/alchemy/commit/6f8b95b5)
+- **cloudflare**:
+  - Insert kv records to miniflare &nbsp;-&nbsp; by **John Royal** in https://github.com/alchemy-run/alchemy/issues/1139 [<samp>(8c995)</samp>](https://github.com/alchemy-run/alchemy/commit/8c995c30)
+  - Local workers fail to initialize concurrently &nbsp;-&nbsp; by **John Royal** in https://github.com/alchemy-run/alchemy/issues/1132 [<samp>(f9a50)</samp>](https://github.com/alchemy-run/alchemy/commit/f9a50206)
+  - Add missing quote to bun-spa &nbsp;-&nbsp; by **Sam Goodwin** [<samp>(b03ce)</samp>](https://github.com/alchemy-run/alchemy/commit/b03ce242)
+  - Get the tunnel token when it's not returned by the first API call &nbsp;-&nbsp; by **Andrew Jefferson** in https://github.com/alchemy-run/alchemy/issues/1138 [<samp>(a69e8)</samp>](https://github.com/alchemy-run/alchemy/commit/a69e8915)
+- **core**:
+  - Error on mismatch between options.phase and CLI args &nbsp;-&nbsp; by **Jacob M-G Evans** and **Sam Goodwin** in https://github.com/alchemy-run/alchemy/issues/1121 [<samp>(706b7)</samp>](https://github.com/alchemy-run/alchemy/commit/706b7b31)
+
+##### &nbsp;&nbsp;&nbsp;&nbsp;[View changes on GitHub](https://github.com/alchemy-run/alchemy/compare/v0.74.2...v0.75.0)
+
+---
+
+## v0.74.2
+
+### &nbsp;&nbsp;&nbsp;🐞 Bug Fixes
+
+- **docker**: Do not mutate props in Volume &nbsp;-&nbsp; by **Sam Goodwin** [<samp>(3af75)</samp>](https://github.com/alchemy-run/alchemy/commit/3af75fbe)
+
+##### &nbsp;&nbsp;&nbsp;&nbsp;[View changes on GitHub](https://github.com/alchemy-run/alchemy/compare/v0.74.1...v0.74.2)
+
+---
+
+## v0.74.1
+
+### &nbsp;&nbsp;&nbsp;🐞 Bug Fixes
+
+- **core**: Fix bug where miniflare symlink did not work in a split monorepo &nbsp;-&nbsp; by **Sam Goodwin** in https://github.com/alchemy-run/alchemy/issues/1131 [<samp>(57a49)</samp>](https://github.com/alchemy-run/alchemy/commit/57a49197)
+
+##### &nbsp;&nbsp;&nbsp;&nbsp;[View changes on GitHub](https://github.com/alchemy-run/alchemy/compare/v0.74.0...v0.74.1)
+
+---
+
+## v0.74.0
+
+### &nbsp;&nbsp;&nbsp;🚀 Features
+
+- **cli**: Add command to make a cloudflare god token &nbsp;-&nbsp; by **Michael K** in https://github.com/alchemy-run/alchemy/issues/1089 [<samp>(541c9)</samp>](https://github.com/alchemy-run/alchemy/commit/541c9c7f)
+- **planetscale**: Allow planetscale resources to be not deleted &nbsp;-&nbsp; by **Rahul Mishra** in https://github.com/alchemy-run/alchemy/issues/1118 [<samp>(4ed2a)</samp>](https://github.com/alchemy-run/alchemy/commit/4ed2a51c)
+- **prisma-postgres**: Implement prisma postgres &nbsp;-&nbsp; by **Michael K** in https://github.com/alchemy-run/alchemy/issues/1123 [<samp>(27af7)</samp>](https://github.com/alchemy-run/alchemy/commit/27af708b)
+
+### &nbsp;&nbsp;&nbsp;🐞 Bug Fixes
+
+- **cloudflare**:
+  - Support optional bindings &nbsp;-&nbsp; by **Sam Goodwin** in https://github.com/alchemy-run/alchemy/issues/1124 [<samp>(74fdc)</samp>](https://github.com/alchemy-run/alchemy/commit/74fdcf7b)
+  - Improve websocket proxy handling &nbsp;-&nbsp; by **John Royal** in https://github.com/alchemy-run/alchemy/issues/1098 [<samp>(5a409)</samp>](https://github.com/alchemy-run/alchemy/commit/5a409f43)
+  - Auto-detect server entry for tanstack start &nbsp;-&nbsp; by **John Royal** in https://github.com/alchemy-run/alchemy/issues/1127 [<samp>(29e28)</samp>](https://github.com/alchemy-run/alchemy/commit/29e28a7d)
+  - Update vite + plugin no longer watches .alchemy &nbsp;-&nbsp; by **Michael K** in https://github.com/alchemy-run/alchemy/issues/1114 [<samp>(f99b1)</samp>](https://github.com/alchemy-run/alchemy/commit/f99b1cf5)
+
+##### &nbsp;&nbsp;&nbsp;&nbsp;[View changes on GitHub](https://github.com/alchemy-run/alchemy/compare/v0.73.1...v0.74.0)
+
+---
+
+## v0.73.1
+
+### &nbsp;&nbsp;&nbsp;🐞 Bug Fixes
+
+- **cli**: Exit signal handling &nbsp;-&nbsp; by **John Royal** in https://github.com/alchemy-run/alchemy/issues/1116 [<samp>(b74a8)</samp>](https://github.com/alchemy-run/alchemy/commit/b74a80d4)
+
+##### &nbsp;&nbsp;&nbsp;&nbsp;[View changes on GitHub](https://github.com/alchemy-run/alchemy/compare/v0.73.0...v0.73.1)
+
+---
+
 ## v0.73.0
 
 ### &nbsp;&nbsp;&nbsp;🐞 Bug Fixes

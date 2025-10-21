@@ -10,11 +10,12 @@ import {
   spinner,
   text,
 } from "@clack/prompts";
-import * as fs from "fs-extra";
-import { resolve } from "node:path";
+import { rm } from "fs-extra";
+import { resolve } from "pathe";
 import pc from "picocolors";
 import z from "zod";
 import { detectPackageManager } from "../../src/util/detect-package-manager.ts";
+import { exists } from "../../src/util/exists.ts";
 import { throwWithContext } from "../errors.ts";
 import { initializeGitRepo, isGitInstalled } from "../services/git.ts";
 import { addGitHubWorkflowToAlchemy } from "../services/github-workflow.ts";
@@ -209,7 +210,7 @@ async function getInstallPreference(
 async function handleDirectoryOverwrite(
   context: ProjectContext,
 ): Promise<void> {
-  if (!fs.existsSync(context.path)) {
+  if (!(await exists(context.path))) {
     return;
   }
 
@@ -249,7 +250,7 @@ async function removeExistingDirectory(context: ProjectContext): Promise<void> {
   s.start(`Removing existing directory: ${pc.yellow(context.path)}`);
 
   try {
-    await fs.rm(context.path, { recursive: true, force: true });
+    await rm(context.path, { recursive: true, force: true });
     s.stop(`Directory ${pc.yellow(context.path)} removed.`);
   } catch (error) {
     s.stop(pc.red(`Failed to remove directory ${pc.yellow(context.path)}.`));

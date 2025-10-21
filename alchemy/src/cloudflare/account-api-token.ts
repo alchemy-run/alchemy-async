@@ -360,7 +360,9 @@ export const AccountApiToken = Resource(
       }));
 
       throw new Error(
-        `Error ${this.phase === "update" ? "updating" : "creating"} token '${tokenName}': ${
+        `Error ${
+          this.phase === "update" ? "updating" : "creating"
+        } token '${tokenName}': ${
           errorData.errors?.[0]?.message || response.statusText
         }`,
       );

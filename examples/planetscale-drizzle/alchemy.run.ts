@@ -1,5 +1,3 @@
-/// <reference types="@types/node" />
-
 import alchemy from "alchemy";
 import { Exec } from "alchemy/os";
 import { Branch, Database, Password } from "alchemy/planetscale";

@@ -342,7 +342,9 @@ export const buildWorkerOptions = async (
       const dlq = eventSource.settings?.deadLetterQueue;
       (options.queueConsumers ??= {})[queue.name] = {
         maxBatchSize: eventSource.settings?.batchSize,
-        maxBatchTimeout: eventSource.settings?.maxWaitTimeMs,
+        maxBatchTimeout: eventSource.settings?.maxWaitTimeMs
+          ? eventSource.settings?.maxWaitTimeMs / 1000
+          : undefined,
         maxRetries: eventSource.settings?.maxRetries,
         retryDelay: eventSource.settings?.retryDelay,
         deadLetterQueue: typeof dlq === "string" ? dlq : dlq?.name,
