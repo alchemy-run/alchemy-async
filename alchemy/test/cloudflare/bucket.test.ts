@@ -815,6 +815,56 @@ describe("R2 Bucket Resource", async () => {
       await destroy(scope);
     }
   });
+
+  test("multipart upload - streaming with size hint", async (scope) => {
+    const bucketName = `${BRANCH_PREFIX.toLowerCase()}-multipart-streaming`;
+    let bucket: R2Bucket | undefined;
+    const fs = await import("node:fs");
+    const os = await import("node:os");
+    const path = await import("node:path");
+
+    const tempDir = await fs.promises.mkdtemp(
+      path.join(os.tmpdir(), "r2-stream-test-"),
+    );
+    const tempFile = path.join(tempDir, "stream-test.bin");
+
+    try {
+      bucket = await R2Bucket(bucketName, {
+        name: bucketName,
+        adopt: true,
+        empty: true,
+      });
+
+      const partSize = 10 * 1024 * 1024;
+      const buffer = Buffer.alloc(partSize, "S");
+      await fs.promises.writeFile(tempFile, buffer);
+
+      const upload = await bucket.createMultipartUpload("streamed-file.bin");
+
+      const stream = fs.createReadStream(tempFile);
+      const part = await upload.uploadPart(1, stream, { size: partSize });
+
+      expect(part.partNumber).toBe(1);
+      expect(part.etag).toBeTruthy();
+
+      const result = await upload.complete([part]);
+      expect(result.size).toBe(partSize);
+
+      const downloaded = await bucket.get("streamed-file.bin");
+      expect(downloaded).toBeTruthy();
+      if (!downloaded) throw new Error("Downloaded object is null");
+      const text = await downloaded.text();
+      expect(text.length).toBe(partSize);
+      expect(text[0]).toBe("S");
+    } finally {
+      await destroy(scope);
+
+      try {
+        await fs.promises.unlink(tempFile);
+        await fs.promises.rmdir(tempDir);
+      } catch {}
+    }
+  });
 });
 
 /**

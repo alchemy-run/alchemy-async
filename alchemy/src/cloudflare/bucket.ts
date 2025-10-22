@@ -1,7 +1,12 @@
-import type { R2PutOptions } from "@cloudflare/workers-types/experimental/index.ts";
+import type {
+  R2HTTPMetadata,
+  R2MultipartOptions,
+  R2PutOptions,
+} from "@cloudflare/workers-types/experimental/index.ts";
 import { XMLParser } from "fast-xml-parser";
 import * as mf from "miniflare";
 import { Buffer } from "node:buffer";
+import { Readable } from "node:stream";
 import { isDeepStrictEqual } from "node:util";
 import { alchemy } from "../alchemy.ts";
 import type { Context } from "../context.ts";
@@ -295,24 +300,31 @@ export type R2Objects = {
     }
 );
 
-export interface R2HTTPMetadata {
-  contentType?: string;
-  contentLanguage?: string;
-  contentDisposition?: string;
-  contentEncoding?: string;
-  cacheControl?: string;
-  cacheExpiry?: Date;
-}
-
-export interface R2MultipartOptions {
-  httpMetadata?: R2HTTPMetadata | Headers;
-  customMetadata?: Record<string, string>;
-  storageClass?: string;
-  ssecKey?: ArrayBuffer | string;
-}
-
 export interface R2UploadPartOptions {
+  /**
+   * Server-side encryption key (SSEC)
+   */
   ssecKey?: ArrayBuffer | string;
+
+  /**
+   * Size of the part in bytes.
+   *
+   * **When to provide this:**
+   * - **Required** for `ReadableStream` to enable streaming without buffering
+   * - **Optional** for `Blob`, `Buffer`, `Uint8Array`, `string` (size is auto-detected)
+   *
+   * **Why this matters:**
+   * Providing the size allows streaming large data (like `fs.createReadStream()`) without
+   * loading the entire part into memory. This is essential for uploading very large files efficiently.
+   *
+   * @example
+   * ```ts
+   * // Streaming 100MB chunk without buffering
+   * const stream = fs.createReadStream(filePath, { start: 0, end: 100 * 1024 * 1024 });
+   * await upload.uploadPart(1, stream, { size: 100 * 1024 * 1024 });
+   * ```
+   */
+  size?: number;
 }
 
 export interface R2UploadedPart {
@@ -325,7 +337,13 @@ export interface R2MultipartUpload {
   readonly uploadId: string;
   uploadPart(
     partNumber: number,
-    value: ReadableStream | ArrayBuffer | ArrayBufferView | string | Blob,
+    value:
+      | ReadableStream
+      | Readable
+      | ArrayBuffer
+      | ArrayBufferView
+      | string
+      | Blob,
     options?: R2UploadPartOptions,
   ): Promise<R2UploadedPart>;
   abort(): Promise<void>;
@@ -552,7 +570,13 @@ export async function R2Bucket(
     uploadId,
     uploadPart: async (
       partNumber: number,
-      value: ReadableStream | ArrayBuffer | ArrayBufferView | string | Blob,
+      value:
+        | ReadableStream
+        | Readable
+        | ArrayBuffer
+        | ArrayBufferView
+        | string
+        | Blob,
       options?: R2UploadPartOptions,
     ) => {
       const s3 = ensureS3Client();
@@ -693,6 +717,34 @@ export async function R2Bucket(
       key: string,
       options?: R2MultipartOptions,
     ): Promise<R2MultipartUpload> => {
+      if (isLocal) {
+        const mfBucket = await localBucket();
+        const upload = await mfBucket.createMultipartUpload(
+          key,
+          normalizeMultipartOptionsForMiniflare(options),
+        );
+
+        return {
+          key: upload.key,
+          uploadId: upload.uploadId,
+          uploadPart: async (partNumber, value, partOptions) => {
+            const normalizedValue = await normalizeMultipartPartValue(value);
+            return await upload.uploadPart(
+              partNumber,
+              normalizedValue,
+              partOptions,
+            );
+          },
+          abort: async () => await upload.abort(),
+          complete: async (parts) => {
+            const result = await upload.complete(parts);
+            // Miniflare returns R2Object which has the methods directly on it
+            // Cast to our R2ObjectContent interface for compatibility
+            return result as unknown as R2ObjectContent;
+          },
+        };
+      }
+
       const s3 = ensureS3Client();
       const result = await createMultipartUploadApi(api, s3, {
         bucketName: bucket.name,
@@ -1069,16 +1121,12 @@ async function abortOutstandingMultipartUploads(
   let uploadIdMarker: string | undefined;
 
   while (true) {
-    const {
-      uploads,
-      truncated,
-      nextKeyMarker,
-      nextUploadIdMarker,
-    } = await listMultipartUploadsApi(api, s3, {
-      bucketName,
-      keyMarker,
-      uploadIdMarker,
-    });
+    const { uploads, truncated, nextKeyMarker, nextUploadIdMarker } =
+      await listMultipartUploadsApi(api, s3, {
+        bucketName,
+        keyMarker,
+        uploadIdMarker,
+      });
 
     if (uploads.length) {
       await Promise.all(
@@ -1434,13 +1482,113 @@ export type PutObjectObject =
   | Buffer
   | Blob;
 
+interface HeadersLike {
+  forEach(callback: (value: string, key: string) => void): void;
+  get(name: string): string | null;
+}
+
+interface BlobLike {
+  arrayBuffer(): Promise<ArrayBuffer>;
+}
+
+interface ReadableStreamLike<T = unknown> {
+  getReader(): ReadableStreamDefaultReader<T>;
+}
+
+function isHeadersLike(value: unknown): value is HeadersLike {
+  return (
+    typeof value === "object" &&
+    value !== null &&
+    typeof (value as HeadersLike).forEach === "function" &&
+    typeof (value as HeadersLike).get === "function"
+  );
+}
+
+function isBlobLike(value: unknown): value is BlobLike {
+  return (
+    typeof value === "object" &&
+    value !== null &&
+    typeof (value as BlobLike).arrayBuffer === "function"
+  );
+}
+
+function isReadableStreamLike(value: unknown): value is ReadableStreamLike {
+  return (
+    typeof value === "object" &&
+    value !== null &&
+    typeof (value as ReadableStreamLike).getReader === "function"
+  );
+}
+
+function normalizeMultipartOptionsForMiniflare(
+  options?: R2MultipartOptions,
+): R2MultipartOptions {
+  if (!options) {
+    return {};
+  }
+
+  const normalized: R2MultipartOptions = { ...options };
+
+  if (
+    normalized.httpMetadata !== undefined &&
+    isHeadersLike(normalized.httpMetadata)
+  ) {
+    const headers =
+      normalized.httpMetadata instanceof Headers
+        ? normalized.httpMetadata
+        : new Headers(normalized.httpMetadata as unknown as HeadersInit);
+    normalized.httpMetadata = mapHeadersToHttpMetadata(headers);
+  }
+
+  return normalized;
+}
+
+async function normalizeMultipartPartValue(
+  value:
+    | ReadableStream
+    | Readable
+    | ArrayBuffer
+    | ArrayBufferView
+    | string
+    | Blob,
+): Promise<string | ArrayBuffer | ArrayBufferView> {
+  if (value instanceof Readable) {
+    const buffer = await streamToBuffer(
+      Readable.toWeb(value) as unknown as ReadableStream<Uint8Array>,
+    );
+    return new Uint8Array(buffer);
+  }
+
+  if (isBlobLike(value)) {
+    const buffer = await value.arrayBuffer();
+    return new Uint8Array(buffer);
+  }
+
+  if (isReadableStreamLike(value)) {
+    const buffer = await streamToBuffer(
+      value as unknown as ReadableStream<Uint8Array>,
+    );
+    return new Uint8Array(buffer);
+  }
+
+  return value as string | ArrayBuffer | ArrayBufferView;
+}
+
 function mapHttpMetadataToHeaders(
-  httpMetadata: R2PutOptions["httpMetadata"],
+  httpMetadata: unknown,
 ): Record<string, string> {
   const headers: Record<string, string> = {};
 
-  if (httpMetadata instanceof Headers) {
-    httpMetadata.forEach((value, key) => {
+  if (!httpMetadata) {
+    return headers;
+  }
+
+  if (isHeadersLike(httpMetadata)) {
+    const headersInstance =
+      httpMetadata instanceof Headers
+        ? httpMetadata
+        : new Headers(httpMetadata as HeadersInit);
+    headersInstance.forEach((value, key) => {
       headers[key] = value;
     });
   } else {
@@ -1493,6 +1641,7 @@ export async function putObject(
         ? mapHttpMetadataToHeaders(options?.httpMetadata)
         : {}),
     };
+
 
     const response = await api.put(
       `/accounts/${api.accountId}/r2/buckets/${bucketName}/objects/${key}`,
@@ -1589,7 +1738,13 @@ export async function uploadPartApi(
     key: string;
     uploadId: string;
     partNumber: number;
-    value: ReadableStream | ArrayBuffer | ArrayBufferView | string | Blob;
+    value:
+      | ReadableStream
+      | Readable
+      | ArrayBuffer
+      | ArrayBufferView
+      | string
+      | Blob;
     options?: R2UploadPartOptions;
   },
 ): Promise<R2UploadedPart> {
@@ -1601,7 +1756,8 @@ export async function uploadPartApi(
 
   return await withExponentialBackoff(
     async () => {
-      const { body, size } = await toS3Body(value);
+      // Pass size hint to enable streaming without buffering
+      const { body, size } = await toS3Body(value, options.size);
       const headers: Record<string, string> = {
         "Content-Type": "application/octet-stream",
       };
@@ -1796,7 +1952,12 @@ export async function listMultipartUploadsApi(
       }
 
       if (!response.ok) {
-        await handleApiError(response, "list multipart uploads", "bucket", bucketName);
+        await handleApiError(
+          response,
+          "list multipart uploads",
+          "bucket",
+          bucketName,
+        );
       }
 
       const xml = await response.text();
@@ -1902,10 +2063,18 @@ function isRetryableS3Error(error: unknown): boolean {
     const cause: any = error.cause;
     const code = cause?.code ?? cause?.errno ?? cause;
     if (typeof cause === "object") {
-      if (cause?.code === "EPIPE" || cause?.code === "ECONNRESET" || cause?.code === "ETIMEDOUT") {
+      if (
+        cause?.code === "EPIPE" ||
+        cause?.code === "ECONNRESET" ||
+        cause?.code === "ETIMEDOUT"
+      ) {
         return true;
       }
-      if (cause?.errno === -32 || cause?.errno === -104 || cause?.errno === -110) {
+      if (
+        cause?.errno === -32 ||
+        cause?.errno === -104 ||
+        cause?.errno === -110
+      ) {
         return true;
       }
     }
@@ -1932,7 +2101,7 @@ function buildCreateMultipartHeaders(
 ): Record<string, string> {
   const headers: Record<string, string> = {};
 
-  if (options.httpMetadata) {
+  if (options.httpMetadata !== undefined) {
     Object.assign(headers, mapHttpMetadataToHeaders(options.httpMetadata));
   }
 
@@ -1954,11 +2123,21 @@ function buildCreateMultipartHeaders(
 }
 
 async function toS3Body(
-  value: ReadableStream | ArrayBuffer | ArrayBufferView | string | Blob,
+  value:
+    | ReadableStream
+    | Readable
+    | ArrayBuffer
+    | ArrayBufferView
+    | string
+    | Blob,
+  sizeHint?: number,
 ): Promise<{ body: BodyInit; size: number | undefined }> {
-  if (value instanceof ReadableStream) {
-    const buffer = await streamToBuffer(value);
-    return { body: new Uint8Array(buffer) as BodyInit, size: buffer.length };
+  if (typeof Blob !== "undefined" && value instanceof Blob) {
+    return { body: value, size: value.size };
+  }
+
+  if (value instanceof Buffer) {
+    return { body: value, size: value.byteLength };
   }
 
   if (value instanceof ArrayBuffer) {
@@ -1977,10 +2156,26 @@ async function toS3Body(
     return { body: buffer, size: buffer.byteLength };
   }
 
-  if (typeof Blob !== "undefined" && value instanceof Blob) {
-    const arrayBuffer = await value.arrayBuffer();
-    const uint8 = new Uint8Array(arrayBuffer);
-    return { body: uint8, size: uint8.byteLength };
+  if (value instanceof Readable) {
+    if (sizeHint !== undefined) {
+      return {
+        // Return the original Node stream so aws4fetch can sign without disturbing it.
+        body: value as unknown as BodyInit,
+        size: sizeHint,
+      };
+    }
+    const buffer = await streamToBuffer(
+      Readable.toWeb(value) as unknown as ReadableStream,
+    );
+    return { body: new Uint8Array(buffer), size: buffer.length };
+  }
+
+  if (value instanceof ReadableStream) {
+    if (sizeHint !== undefined) {
+      return { body: value, size: sizeHint };
+    }
+    const buffer = await streamToBuffer(value);
+    return { body: new Uint8Array(buffer), size: buffer.length };
   }
 
   throw new Error("Unsupported body type for multipart upload");

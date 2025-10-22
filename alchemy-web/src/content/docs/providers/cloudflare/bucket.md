@@ -267,7 +267,7 @@ console.log(list.objects.length);
 
 Use multipart uploads for files larger than 5 MiB. Alchemy automatically retries transient Cloudflare consistency errors (for example, `NoSuchBucket`, `NoSuchUpload`) and network hiccups (`EPIPE`, `ECONNRESET`, `ETIMEDOUT`). Ensure each part except the final one is ≥ 5 MiB; smaller parts will be rejected by R2.
 
-### Create, Upload, Complete
+### Basic Example
 
 ```ts
 import { Buffer } from "node:buffer";
@@ -289,11 +289,116 @@ const upload = await bucket.createMultipartUpload("large-file.bin", {
 
 const part1 = await upload.uploadPart(1, makePart("A"));
 const part2 = await upload.uploadPart(2, makePart("B"));
-const part3 = await upload.uploadPart(3, Buffer.from("tail")); // final part can be smaller
+const part3 = await upload.uploadPart(3, Buffer.from("tail"));
 
 const object = await upload.complete([part1, part2, part3]);
-console.log(object.size); // total size
+console.log(object.size);
 ```
+
+### Streaming From Workers (API Upload Pattern)
+
+Clients typically upload from the browser to a Worker or Hono route; the handler can then stream the request body into R2 without touching the file system. This pattern avoids buffering multi-gigabyte files in memory and works for single or multiple concurrent uploads.
+
+```ts
+// worker.ts
+import { R2Bucket } from "alchemy/cloudflare";
+import type {
+  R2Bucket as R2BucketBinding,
+  R2UploadedPart,
+} from "@cloudflare/workers-types/experimental";
+
+interface Env {
+  BUCKET: R2BucketBinding;
+}
+
+const bucket = await R2Bucket("uploads", {
+  name: "my-uploads",
+  adopt: true,
+});
+
+export default {
+  async fetch(request: Request, env: Env) {
+    if (request.method !== "POST") {
+      return new Response("Method Not Allowed", { status: 405 });
+    }
+
+    const fileName = request.headers.get("x-file-name") ?? crypto.randomUUID();
+    const contentType = request.headers.get("content-type") ?? "application/octet-stream";
+    const stream = request.body;
+    if (!stream) {
+      return new Response("Readable stream required", { status: 400 });
+    }
+
+    const partSize = 8 * 1024 * 1024; // 8 MiB chunks; adjust to match your UI chunk size.
+    const upload = await env.BUCKET.createMultipartUpload(fileName, {
+      httpMetadata: { contentType },
+    });
+
+    const reader = stream.getReader();
+    let buffer = new Uint8Array(0);
+    let partNumber = 1;
+    const uploadedParts: R2UploadedPart[] = [];
+    const inflight: Promise<R2UploadedPart>[] = [];
+
+    const flush = (chunk: Uint8Array) => {
+      const partPromise = upload.uploadPart(partNumber++, chunk, { size: chunk.byteLength });
+      inflight.push(partPromise);
+    };
+
+    while (true) {
+      const { value, done } = await reader.read();
+      if (done) {
+        if (buffer.length) flush(buffer);
+        break;
+      }
+
+      const combined = new Uint8Array(buffer.length + value.length);
+      combined.set(buffer);
+      combined.set(value, buffer.length);
+
+      let offset = 0;
+      while (offset + partSize <= combined.length) {
+        flush(combined.slice(offset, offset + partSize));
+        offset += partSize;
+      }
+      buffer = combined.slice(offset);
+    }
+
+    uploadedParts.push(...(await Promise.all(inflight)));
+    const result = await upload.complete(uploadedParts);
+
+    return new Response(JSON.stringify({ key: result.key, size: result.size }), {
+      status: 201,
+      headers: { "content-type": "application/json" },
+    });
+  },
+};
+```
+
+**Browser call:**
+
+```ts
+async function uploadFile(file: File) {
+  const response = await fetch("/api/upload", {
+    method: "POST",
+    headers: {
+      "x-file-name": file.name,
+      "content-type": file.type,
+    },
+    body: file.stream(),
+  });
+
+  if (!response.ok) {
+    throw new Error(`Upload failed: ${await response.text()}`);
+  }
+  return await response.json();
+}
+```
+
+- **Large files:** the worker flushes parts whenever the buffer reaches `partSize`, keeping memory usage bounded.
+- **Multiple files:** create one upload per file and call `uploadFile` with `Promise.all(files.map(uploadFile))` to run them in parallel.
+- **Chunked browser uploads:** if the client already splits into parts, post each chunk with `x-part-number` headers and call `upload.uploadPart` directly — still avoid the file system.
+- **Error handling:** wrap the `flush` call in try/catch to `await upload.abort()` on failure so you don’t leave dangling uploads.
 
 ### Resume an Upload
 
