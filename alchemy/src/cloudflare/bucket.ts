@@ -1,6 +1,9 @@
 import type { R2PutOptions } from "@cloudflare/workers-types/experimental/index.ts";
+import { XMLParser } from "fast-xml-parser";
 import * as mf from "miniflare";
+import { Buffer } from "node:buffer";
 import { isDeepStrictEqual } from "node:util";
+import { alchemy } from "../alchemy.ts";
 import type { Context } from "../context.ts";
 import { Resource, ResourceKind } from "../resource.ts";
 import { Scope } from "../scope.ts";
@@ -9,16 +12,22 @@ import { isRetryableError } from "../state/r2-rest-state-store.ts";
 import { withExponentialBackoff } from "../util/retry.ts";
 import { CloudflareApiError, handleApiError } from "./api-error.ts";
 import {
-  extractCloudflareResult,
   type CloudflareApiErrorPayload,
+  extractCloudflareResult,
 } from "./api-response.ts";
 import {
-  createCloudflareApi,
   type CloudflareApi,
   type CloudflareApiOptions,
+  createCloudflareApi,
 } from "./api.ts";
 import { deleteMiniflareBinding } from "./miniflare/delete.ts";
 import { getDefaultPersistPath } from "./miniflare/paths.ts";
+import { createR2S3Client, type R2S3Client } from "./r2-s3-client.ts";
+
+const xmlParser = new XMLParser({
+  ignoreDeclaration: true,
+  ignoreAttributes: false,
+});
 
 export type R2BucketJurisdiction = "default" | "eu" | "fedramp";
 
@@ -320,7 +329,7 @@ export interface R2MultipartUpload {
     options?: R2UploadPartOptions,
   ): Promise<R2UploadedPart>;
   abort(): Promise<void>;
-  complete(uploadedParts: R2UploadedPart[]): Promise<R2Object>;
+  complete(uploadedParts: R2UploadedPart[]): Promise<R2ObjectContent>;
 }
 
 export type R2Bucket = _R2Bucket & {
@@ -422,6 +431,30 @@ export function isBucket(resource: any): resource is R2Bucket {
 }
 
 /**
+ * Resolve R2 credentials with environment variable defaults
+ * @internal
+ */
+function resolveR2Credentials(props: BucketProps) {
+  return {
+    accessKeyId:
+      props.accessKeyId ??
+      (process.env.R2_ACCESS_KEY_ID
+        ? alchemy.secret(process.env.R2_ACCESS_KEY_ID)
+        : undefined),
+    secretAccessKey:
+      props.secretAccessKey ??
+      (process.env.R2_SECRET_ACCESS_KEY
+        ? alchemy.secret(process.env.R2_SECRET_ACCESS_KEY)
+        : undefined),
+    sessionToken:
+      props.sessionToken ??
+      (process.env.R2_SESSION_TOKEN
+        ? alchemy.secret(process.env.R2_SESSION_TOKEN)
+        : undefined),
+  };
+}
+
+/**
  * Creates and manages Cloudflare R2 Buckets for object storage.
  *
  * R2 Buckets provide S3-compatible object storage with automatic data replication
@@ -480,6 +513,20 @@ export async function R2Bucket(
     },
   });
 
+  let s3Client: R2S3Client | null = null;
+  const ensureS3Client = (): R2S3Client => {
+    if (s3Client) {
+      return s3Client;
+    }
+    const r2Creds = resolveR2Credentials(props);
+    s3Client = createR2S3Client({
+      accountId: api.accountId,
+      ...r2Creds,
+      profile: props.profile,
+    });
+    return s3Client;
+  };
+
   let _miniflare: mf.Miniflare | undefined;
   const miniflare = () => {
     if (_miniflare) {
@@ -507,28 +554,34 @@ export async function R2Bucket(
       partNumber: number,
       value: ReadableStream | ArrayBuffer | ArrayBufferView | string | Blob,
       options?: R2UploadPartOptions,
-    ) =>
-      uploadPartApi(api, {
+    ) => {
+      const s3 = ensureS3Client();
+      return uploadPartApi(api, s3, {
         bucketName: bucket.name,
         key,
         uploadId,
         partNumber,
         value,
         options,
-      }),
-    abort: async () =>
-      abortMultipartUploadApi(api, {
+      });
+    },
+    abort: async () => {
+      const s3 = ensureS3Client();
+      await abortMultipartUploadApi(api, s3, {
         bucketName: bucket.name,
         key,
         uploadId,
-      }),
-    complete: async (parts: R2UploadedPart[]) =>
-      completeMultipartUploadApi(api, {
+      });
+    },
+    complete: async (parts: R2UploadedPart[]) => {
+      const s3 = ensureS3Client();
+      return await completeMultipartUploadApi(api, s3, {
         bucketName: bucket.name,
         key,
         uploadId,
         parts,
-      }),
+      });
+    },
   });
 
   return {
@@ -640,7 +693,8 @@ export async function R2Bucket(
       key: string,
       options?: R2MultipartOptions,
     ): Promise<R2MultipartUpload> => {
-      const result = await createMultipartUploadApi(api, {
+      const s3 = ensureS3Client();
+      const result = await createMultipartUploadApi(api, s3, {
         bucketName: bucket.name,
         key,
         options,
@@ -981,6 +1035,70 @@ async function emptyBucket(
     }
     break;
   }
+
+  await abortOutstandingMultipartUploads(api, bucketName, props);
+}
+
+async function abortOutstandingMultipartUploads(
+  api: CloudflareApi,
+  bucketName: string,
+  props: BucketProps,
+) {
+  const credentials = resolveR2Credentials(props);
+
+  if (!credentials.accessKeyId || !credentials.secretAccessKey) {
+    // Without S3 credentials we cannot manage multipart uploads; skip cleanup.
+    return;
+  }
+
+  let s3: R2S3Client;
+  try {
+    s3 = createR2S3Client({
+      accountId: api.accountId,
+      accessKeyId: credentials.accessKeyId,
+      secretAccessKey: credentials.secretAccessKey,
+      sessionToken: credentials.sessionToken,
+      profile: props.profile,
+    });
+  } catch {
+    // If we cannot create the S3 client, there is nothing else we can do here.
+    return;
+  }
+
+  let keyMarker: string | undefined;
+  let uploadIdMarker: string | undefined;
+
+  while (true) {
+    const {
+      uploads,
+      truncated,
+      nextKeyMarker,
+      nextUploadIdMarker,
+    } = await listMultipartUploadsApi(api, s3, {
+      bucketName,
+      keyMarker,
+      uploadIdMarker,
+    });
+
+    if (uploads.length) {
+      await Promise.all(
+        uploads.map((upload) =>
+          abortMultipartUploadApi(api, s3, {
+            bucketName,
+            key: upload.key,
+            uploadId: upload.uploadId,
+          }),
+        ),
+      );
+    }
+
+    if (!truncated) {
+      break;
+    }
+
+    keyMarker = nextKeyMarker;
+    uploadIdMarker = nextUploadIdMarker;
+  }
 }
 
 /**
@@ -1040,7 +1158,14 @@ export async function listObjects(
       };
     }
     throw new CloudflareApiError(
-      `Failed to list objects in bucket "${bucketName}": ${json.errors.map((e) => `- [${e.code}] ${e.message}${e.documentation_url ? ` (${e.documentation_url})` : ""}`).join("\n")}`,
+      `Failed to list objects in bucket "${bucketName}": ${json.errors
+        .map(
+          (e) =>
+            `- [${e.code}] ${e.message}${
+              e.documentation_url ? ` (${e.documentation_url})` : ""
+            }`,
+        )
+        .join("\n")}`,
       response,
       json.errors,
     );
@@ -1401,12 +1526,9 @@ export async function deleteObject(
 }
 
 export async function createMultipartUploadApi(
-  api: CloudflareApi,
-  {
-    bucketName,
-    key,
-    options = {},
-  }: {
+  _api: CloudflareApi,
+  s3: R2S3Client,
+  { bucketName, key, options = {} }: {
     bucketName: string;
     key: string;
     options?: R2MultipartOptions;
@@ -1414,57 +1536,17 @@ export async function createMultipartUploadApi(
 ): Promise<{ key: string; uploadId: string }> {
   return await withExponentialBackoff(
     async () => {
-      const headers: Record<string, string> = {
-        "Content-Type": "application/json",
-      };
+      const headers = buildCreateMultipartHeaders(options);
+      const url = buildMultipartBaseUrl(s3.endpoint, bucketName, key);
+      url.search = "?uploads";
 
-      if (options.httpMetadata) {
-        if (options.httpMetadata instanceof Headers) {
-          options.httpMetadata.forEach((value, key) => {
-            headers[key] = value;
-          });
-        } else {
-          if (options.httpMetadata.contentType) {
-            headers["Content-Type"] = options.httpMetadata.contentType;
-          }
-          if (options.httpMetadata.contentLanguage) {
-            headers["Content-Language"] = options.httpMetadata.contentLanguage;
-          }
-          if (options.httpMetadata.contentDisposition) {
-            headers["Content-Disposition"] =
-              options.httpMetadata.contentDisposition;
-          }
-          if (options.httpMetadata.contentEncoding) {
-            headers["Content-Encoding"] = options.httpMetadata.contentEncoding;
-          }
-          if (options.httpMetadata.cacheControl) {
-            headers["Cache-Control"] = options.httpMetadata.cacheControl;
-          }
-        }
-      }
-
-      if (options.customMetadata) {
-        for (const [key, value] of Object.entries(options.customMetadata)) {
-          headers[`x-amz-meta-${key}`] = value;
-        }
-      }
-
-      if (options.storageClass) {
-        headers["x-amz-storage-class"] = options.storageClass;
-      }
-
-      if (options.ssecKey) {
-        headers["x-amz-server-side-encryption-customer-algorithm"] = "AES256";
-      }
-
-      const response = await api.post(
-        `/accounts/${api.accountId}/r2/buckets/${bucketName}/objects/${key}/multipart`,
-        {},
-        { headers },
-      );
+      const response = await s3.client.fetch(url.toString(), {
+        method: "POST",
+        headers,
+      });
 
       if (!response.ok) {
-        throw await handleApiError(
+        await handleApiError(
           response,
           "create multipart upload",
           "object",
@@ -1472,29 +1554,37 @@ export async function createMultipartUploadApi(
         );
       }
 
-      const result = await extractCloudflareResult<{
-        key: string;
-        uploadId: string;
-      }>(`create multipart upload for "${key}"`, Promise.resolve(response));
+      const xml = await response.text();
+      const parsed = parseXml<{
+        InitiateMultipartUploadResult?: {
+          UploadId?: string;
+          Key?: string;
+        };
+      }>(xml);
+      const result = parsed.InitiateMultipartUploadResult;
+      const uploadId = result?.UploadId;
+      if (!uploadId || !result?.Key) {
+        throw new Error(
+          `Failed to parse upload ID when creating multipart upload for "${key}".`,
+        );
+      }
 
-      return result;
+      const responseKey = result.Key ?? key;
+      return {
+        key: responseKey || key,
+        uploadId,
+      };
     },
-    isRetryableError,
+    isRetryableS3Error,
     5,
     1000,
   );
 }
 
 export async function uploadPartApi(
-  api: CloudflareApi,
-  {
-    bucketName,
-    key,
-    uploadId,
-    partNumber,
-    value,
-    options = {},
-  }: {
+  _api: CloudflareApi,
+  s3: R2S3Client,
+  { bucketName, key, uploadId, partNumber, value, options = {} }: {
     bucketName: string;
     key: string;
     uploadId: string;
@@ -1511,22 +1601,31 @@ export async function uploadPartApi(
 
   return await withExponentialBackoff(
     async () => {
+      const { body, size } = await toS3Body(value);
       const headers: Record<string, string> = {
         "Content-Type": "application/octet-stream",
       };
+
+      if (size !== undefined) {
+        headers["Content-Length"] = size.toString();
+      }
 
       if (options.ssecKey) {
         headers["x-amz-server-side-encryption-customer-algorithm"] = "AES256";
       }
 
-      const response = await api.put(
-        `/accounts/${api.accountId}/r2/buckets/${bucketName}/objects/${key}/multipart/${uploadId}/${partNumber}`,
-        value,
-        { headers },
-      );
+      const url = buildMultipartBaseUrl(s3.endpoint, bucketName, key);
+      url.searchParams.set("partNumber", String(partNumber));
+      url.searchParams.set("uploadId", uploadId);
+
+      const response = await s3.client.fetch(url.toString(), {
+        method: "PUT",
+        headers,
+        body,
+      });
 
       if (!response.ok) {
-        throw await handleApiError(
+        await handleApiError(
           response,
           "upload part",
           `object ${key} part ${partNumber}`,
@@ -1544,7 +1643,7 @@ export async function uploadPartApi(
         etag,
       };
     },
-    isRetryableError,
+    isRetryableS3Error,
     5,
     1000,
   );
@@ -1552,37 +1651,43 @@ export async function uploadPartApi(
 
 export async function completeMultipartUploadApi(
   api: CloudflareApi,
-  {
-    bucketName,
-    key,
-    uploadId,
-    parts,
-  }: {
+  s3: R2S3Client,
+  { bucketName, key, uploadId, parts }: {
     bucketName: string;
     key: string;
     uploadId: string;
     parts: R2UploadedPart[];
   },
 ): Promise<R2ObjectContent> {
+  if (parts.length === 0) {
+    throw new Error(
+      `Multipart upload for "${key}" requires at least one uploaded part.`,
+    );
+  }
+
+  const sortedParts = [...parts].sort((a, b) => a.partNumber - b.partNumber);
+  const xmlBody = `<CompleteMultipartUpload>${sortedParts
+    .map(
+      (part) =>
+        `<Part><PartNumber>${part.partNumber}</PartNumber><ETag>"${part.etag}"</ETag></Part>`,
+    )
+    .join("")}</CompleteMultipartUpload>`;
+
   return await withExponentialBackoff(
     async () => {
-      const response = await api.post(
-        `/accounts/${api.accountId}/r2/buckets/${bucketName}/objects/${key}/multipart/${uploadId}/complete`,
-        {
-          parts: parts.map((p) => ({
-            partNumber: p.partNumber,
-            etag: p.etag,
-          })),
+      const url = buildMultipartBaseUrl(s3.endpoint, bucketName, key);
+      url.searchParams.set("uploadId", uploadId);
+
+      const response = await s3.client.fetch(url.toString(), {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/xml",
         },
-        {
-          headers: {
-            "Content-Type": "application/json",
-          },
-        },
-      );
+        body: xmlBody,
+      });
 
       if (!response.ok) {
-        throw await handleApiError(
+        await handleApiError(
           response,
           "complete multipart upload",
           "object",
@@ -1590,21 +1695,41 @@ export async function completeMultipartUploadApi(
         );
       }
 
-      return parseR2Object(key, response);
+      const xmlResponse = await response.text();
+      const parsed = parseXml<{
+        CompleteMultipartUploadResult?: {
+          ETag?: string;
+        };
+      }>(xmlResponse);
+
+      const etag = parsed.CompleteMultipartUploadResult?.ETag;
+      if (!etag) {
+        throw new Error(
+          `Failed to complete multipart upload for "${key}": missing ETag in response.`,
+        );
+      }
+
+      const objectResponse = await getObject(api, {
+        bucketName,
+        key,
+      });
+
+      if (!objectResponse.ok) {
+        await handleApiError(objectResponse, "get", "object", key);
+      }
+
+      return parseR2Object(key, objectResponse);
     },
-    isRetryableError,
+    isRetryableS3Error,
     5,
     1000,
   );
 }
 
 export async function abortMultipartUploadApi(
-  api: CloudflareApi,
-  {
-    bucketName,
-    key,
-    uploadId,
-  }: {
+  _api: CloudflareApi,
+  s3: R2S3Client,
+  { bucketName, key, uploadId }: {
     bucketName: string;
     key: string;
     uploadId: string;
@@ -1612,23 +1737,257 @@ export async function abortMultipartUploadApi(
 ): Promise<void> {
   await withExponentialBackoff(
     async () => {
-      const response = await api.delete(
-        `/accounts/${api.accountId}/r2/buckets/${bucketName}/objects/${key}/multipart/${uploadId}`,
-      );
+      const url = buildMultipartBaseUrl(s3.endpoint, bucketName, key);
+      url.searchParams.set("uploadId", uploadId);
+
+      const response = await s3.client.fetch(url.toString(), {
+        method: "DELETE",
+      });
 
       if (!response.ok && response.status !== 404) {
-        throw await handleApiError(
-          response,
-          "abort multipart upload",
-          "object",
-          key,
-        );
+        await handleApiError(response, "abort multipart upload", "object", key);
       }
     },
-    isRetryableError,
+    isRetryableS3Error,
     5,
     1000,
   );
+}
+
+export async function listMultipartUploadsApi(
+  _api: CloudflareApi,
+  s3: R2S3Client,
+  { bucketName, keyMarker, uploadIdMarker }: {
+    bucketName: string;
+    keyMarker?: string;
+    uploadIdMarker?: string;
+  },
+): Promise<{
+  uploads: { key: string; uploadId: string }[];
+  truncated: boolean;
+  nextKeyMarker?: string;
+  nextUploadIdMarker?: string;
+}> {
+  return await withExponentialBackoff(
+    async () => {
+      const url = buildBucketUrl(s3.endpoint, bucketName);
+      url.search = "?uploads";
+
+      if (keyMarker) {
+        url.searchParams.set("key-marker", keyMarker);
+      }
+
+      if (uploadIdMarker) {
+        url.searchParams.set("upload-id-marker", uploadIdMarker);
+      }
+
+      const response = await s3.client.fetch(url.toString(), {
+        method: "GET",
+      });
+
+      if (response.status === 404) {
+        // Bucket already deleted or not yet consistent; treat as no uploads.
+        return {
+          uploads: [],
+          truncated: false,
+          nextKeyMarker: undefined,
+          nextUploadIdMarker: undefined,
+        };
+      }
+
+      if (!response.ok) {
+        await handleApiError(response, "list multipart uploads", "bucket", bucketName);
+      }
+
+      const xml = await response.text();
+      const parsed = parseXml<ListMultipartUploadsXml>(xml);
+      const result = parsed.ListMultipartUploadsResult ?? {};
+      const uploads = normalizeToArray(result.Upload)
+        .map((upload) => ({
+          key: upload.Key ?? "",
+          uploadId: upload.UploadId ?? "",
+        }))
+        .filter((upload) => upload.key && upload.uploadId);
+
+      return {
+        uploads,
+        truncated: parseBoolean(result.IsTruncated),
+        nextKeyMarker: result.NextKeyMarker,
+        nextUploadIdMarker: result.NextUploadIdMarker,
+      };
+    },
+    isRetryableS3Error,
+    5,
+    1000,
+  );
+}
+
+interface MultipartUploadXmlItem {
+  Key?: string;
+  UploadId?: string;
+}
+
+interface ListMultipartUploadsXml {
+  ListMultipartUploadsResult?: {
+    Upload?: MultipartUploadXmlItem | MultipartUploadXmlItem[];
+    IsTruncated?: string | boolean;
+    NextKeyMarker?: string;
+    NextUploadIdMarker?: string;
+  };
+}
+
+function buildBucketUrl(endpoint: string, bucketName: string): URL {
+  const url = new URL(endpoint);
+  const basePath = url.pathname.endsWith("/")
+    ? url.pathname.slice(0, -1)
+    : url.pathname;
+  url.pathname = `${basePath}/${encodeURIComponent(bucketName)}`;
+  return url;
+}
+
+function buildMultipartBaseUrl(
+  endpoint: string,
+  bucketName: string,
+  key: string,
+): URL {
+  const url = buildBucketUrl(endpoint, bucketName);
+  url.pathname = `${url.pathname}/${encodeR2ObjectKey(key)}`;
+  return url;
+}
+
+function encodeR2ObjectKey(key: string): string {
+  return key
+    .split("/")
+    .map((segment) => encodeURIComponent(segment))
+    .join("/");
+}
+
+function normalizeToArray<T>(value: T | T[] | undefined): T[] {
+  if (!value) {
+    return [];
+  }
+  return Array.isArray(value) ? value : [value];
+}
+
+function parseBoolean(value: unknown): boolean {
+  if (typeof value === "boolean") {
+    return value;
+  }
+  if (typeof value === "string") {
+    const normalized = value.trim().toLowerCase();
+    return normalized === "true" || normalized === "1";
+  }
+  return false;
+}
+
+function isRetryableS3Error(error: unknown): boolean {
+  if (isRetryableError(error)) {
+    return true;
+  }
+  if (error instanceof CloudflareApiError) {
+    if (error.status === 404) {
+      // Buckets and uploads can take a moment to propagate; retry a few times.
+      return (
+        error.message.includes("NoSuchBucket") ||
+        error.message.includes("NoSuchUpload") ||
+        error.message.includes("NoSuchKey")
+      );
+    }
+    if (error.status === 409) {
+      return true;
+    }
+  }
+  if (error instanceof TypeError) {
+    // Bun/undici throw TypeError for network transport failures.
+    const cause: any = error.cause;
+    const code = cause?.code ?? cause?.errno ?? cause;
+    if (typeof cause === "object") {
+      if (cause?.code === "EPIPE" || cause?.code === "ECONNRESET" || cause?.code === "ETIMEDOUT") {
+        return true;
+      }
+      if (cause?.errno === -32 || cause?.errno === -104 || cause?.errno === -110) {
+        return true;
+      }
+    }
+    if (typeof code === "string") {
+      const normalized = code.toUpperCase();
+      if (["EPIPE", "ECONNRESET", "ETIMEDOUT"].includes(normalized)) {
+        return true;
+      }
+    }
+    const message = String(error.message || "").toLowerCase();
+    if (
+      message.includes("fetch failed") ||
+      message.includes("socket hang up") ||
+      message.includes("timed out")
+    ) {
+      return true;
+    }
+  }
+  return false;
+}
+
+function buildCreateMultipartHeaders(
+  options: R2MultipartOptions = {},
+): Record<string, string> {
+  const headers: Record<string, string> = {};
+
+  if (options.httpMetadata) {
+    Object.assign(headers, mapHttpMetadataToHeaders(options.httpMetadata));
+  }
+
+  if (options.customMetadata) {
+    for (const [key, value] of Object.entries(options.customMetadata)) {
+      headers[`x-amz-meta-${key}`] = value;
+    }
+  }
+
+  if (options.storageClass) {
+    headers["x-amz-storage-class"] = options.storageClass;
+  }
+
+  if (options.ssecKey) {
+    headers["x-amz-server-side-encryption-customer-algorithm"] = "AES256";
+  }
+
+  return headers;
+}
+
+async function toS3Body(
+  value: ReadableStream | ArrayBuffer | ArrayBufferView | string | Blob,
+): Promise<{ body: BodyInit; size: number | undefined }> {
+  if (value instanceof ReadableStream) {
+    const buffer = await streamToBuffer(value);
+    return { body: new Uint8Array(buffer) as BodyInit, size: buffer.length };
+  }
+
+  if (value instanceof ArrayBuffer) {
+    const uint8 = new Uint8Array(value);
+    return { body: uint8, size: uint8.byteLength };
+  }
+
+  if (ArrayBuffer.isView(value)) {
+    const view = value as ArrayBufferView;
+    const uint8 = new Uint8Array(view.buffer, view.byteOffset, view.byteLength);
+    return { body: uint8 as BodyInit, size: uint8.byteLength };
+  }
+
+  if (typeof value === "string") {
+    const buffer = Buffer.from(value);
+    return { body: buffer, size: buffer.byteLength };
+  }
+
+  if (typeof Blob !== "undefined" && value instanceof Blob) {
+    const arrayBuffer = await value.arrayBuffer();
+    const uint8 = new Uint8Array(arrayBuffer);
+    return { body: uint8, size: uint8.byteLength };
+  }
+
+  throw new Error("Unsupported body type for multipart upload");
+}
+
+function parseXml<T>(xml: string): T {
+  return xmlParser.parse(xml) as T;
 }
 
 export async function enableDataCatalog(

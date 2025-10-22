@@ -5,6 +5,10 @@ description: Learn how to create, configure, and manage Cloudflare R2 Buckets us
 
 Creates and manages [Cloudflare R2 Buckets](https://developers.cloudflare.com/r2/buckets/) for object storage with S3 compatibility.
 
+:::info Credentials
+Alchemy can provision R2 buckets using either an API token or an API key + email. Multipart uploads additionally require S3-compatible credentials — an **R2 Access Key ID** and **R2 Secret Access Key** (and optional session token). Provide them via `accessKeyId` / `secretAccessKey` props or set the environment variables `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, and `R2_SESSION_TOKEN`. Without these credentials multipart helpers and dashboard cleanup cannot run.
+:::
+
 ## Minimal Example
 
 Create a basic R2 bucket with default settings:
@@ -96,8 +100,11 @@ import { R2Bucket } from "alchemy/cloudflare";
 const tempBucket = await R2Bucket("temp-storage", {
   name: "temp-storage",
   empty: true, // All objects will be deleted when this resource is destroyed
+  adopt: true, // optional: adopt an existing bucket with the same name
 });
 ```
+
+When `empty` is enabled and S3 credentials are available, Alchemy now clears objects **and** aborts any outstanding multipart uploads before deletion. This prevents lingering "ongoing uploads" in the Cloudflare dashboard.
 
 ## With Lifecycle Rules
 
@@ -255,3 +262,60 @@ List objects in the bucket.
 const list = await bucket.list();
 console.log(list.objects.length);
 ```
+
+## Multipart Uploads
+
+Use multipart uploads for files larger than 5 MiB. Alchemy automatically retries transient Cloudflare consistency errors (for example, `NoSuchBucket`, `NoSuchUpload`) and network hiccups (`EPIPE`, `ECONNRESET`, `ETIMEDOUT`). Ensure each part except the final one is ≥ 5 MiB; smaller parts will be rejected by R2.
+
+### Create, Upload, Complete
+
+```ts
+import { Buffer } from "node:buffer";
+import { R2Bucket } from "alchemy/cloudflare";
+
+const bucket = await R2Bucket("multipart-basic", {
+  name: "my-large-files",
+  adopt: true,
+  empty: true,
+});
+
+const partSize = 5 * 1024 * 1024; // 5 MiB
+const makePart = (fill: string) => Buffer.alloc(partSize, fill);
+
+const upload = await bucket.createMultipartUpload("large-file.bin", {
+  httpMetadata: { contentType: "application/octet-stream" },
+  customMetadata: { uploadedBy: "alchemy" },
+});
+
+const part1 = await upload.uploadPart(1, makePart("A"));
+const part2 = await upload.uploadPart(2, makePart("B"));
+const part3 = await upload.uploadPart(3, Buffer.from("tail")); // final part can be smaller
+
+const object = await upload.complete([part1, part2, part3]);
+console.log(object.size); // total size
+```
+
+### Resume an Upload
+
+Persist the `uploadId` to resume later:
+
+```ts
+const firstChunk = await bucket.createMultipartUpload("resumable.bin");
+const uploadId = firstChunk.uploadId;
+const part1 = await firstChunk.uploadPart(1, makePart("R"));
+
+// later…
+const resumed = bucket.resumeMultipartUpload("resumable.bin", uploadId);
+const part2 = await resumed.uploadPart(2, Buffer.from("final chunk"));
+await resumed.complete([part1, part2]);
+```
+
+### Abort an Upload
+
+```ts
+const upload = await bucket.createMultipartUpload("temporary.bin");
+await upload.uploadPart(1, makePart("X"));
+await upload.abort(); // deletes uploaded parts
+```
+
+If you adopt an existing bucket with `adopt: true` and enable `empty: true`, Alchemy aborts any leftover multipart uploads during destroy, keeping the dashboard clean.

@@ -1,4 +1,4 @@
-import { Provider, type Credentials } from "../auth.ts";
+import { type Credentials, Provider } from "../auth.ts";
 import { Scope } from "../scope.ts";
 import type { Secret } from "../secret.ts";
 import { isBinary } from "../serde.ts";
@@ -39,6 +39,24 @@ export interface CloudflareApiOptions {
    * API Token to use (overrides CLOUDFLARE_API_TOKEN env var)
    */
   apiToken?: Secret;
+
+  /**
+   * Access Key ID to use for S3-compatible R2 operations
+   * @see https://developers.cloudflare.com/r2/api/tokens
+   */
+  accessKeyId?: Secret;
+
+  /**
+   * Secret Access Key to use for S3-compatible R2 operations
+   * @see https://developers.cloudflare.com/r2/api/tokens
+   */
+  secretAccessKey?: Secret;
+
+  /**
+   * Session Token to use for S3-compatible R2 operations using temporary account credentials
+   * @see https://developers.cloudflare.com/r2/api/tokens
+   */
+  sessionToken?: Secret;
 
   /**
    * Account ID to use (overrides CLOUDFLARE_ACCOUNT_ID env var)

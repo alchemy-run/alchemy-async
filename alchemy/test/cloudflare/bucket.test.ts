@@ -1,4 +1,5 @@
 import { AwsClient } from "aws4fetch";
+import { Buffer } from "node:buffer";
 import { describe, expect } from "vitest";
 import { alchemy } from "../../src/alchemy.ts";
 import { createCloudflareApi } from "../../src/cloudflare/api.ts";
@@ -244,12 +245,12 @@ describe("R2 Bucket Resource", async () => {
       expect(worker.id).toBeTruthy();
       expect(worker.name).toEqual(workerName);
       expect(worker.bindings).toBeDefined();
-      expect(worker.bindings!.STORAGE).toBeDefined();
+      expect(worker.bindings?.STORAGE).toBeDefined();
 
       // Test that the R2 binding is accessible in the worker (poll for eventual consistency)
       const data = (await waitFor(
         async () => {
-          const response = await fetchAndExpectOK(`${worker!.url}/r2-info`);
+          const response = await fetchAndExpectOK(`${worker?.url}/r2-info`);
           return response.json();
         },
         (d: any) => d?.hasR2 === true,
@@ -541,7 +542,7 @@ describe("R2 Bucket Resource", async () => {
   test("bucket put operation with headers", async (scope) => {
     const bucketName = `${BRANCH_PREFIX.toLowerCase()}-test-bucket-put-with-headers`;
     try {
-      let bucket = await R2Bucket(bucketName, {
+      const bucket = await R2Bucket(bucketName, {
         name: bucketName,
         adopt: true,
         empty: true,
@@ -556,7 +557,7 @@ describe("R2 Bucket Resource", async () => {
         },
       });
 
-      let obj = await bucket.head(testKey);
+      const obj = await bucket.head(testKey);
       expect(obj?.httpMetadata?.contentType).toEqual("application/json");
 
       const getObj = await bucket.get(testKey);
@@ -579,9 +580,10 @@ describe("R2 Bucket Resource", async () => {
       });
 
       const key = "large-file.bin";
-      const part1Data = "Part 1 data - first chunk of the file\n";
-      const part2Data = "Part 2 data - second chunk of the file\n";
-      const part3Data = "Part 3 data - final chunk of the file\n";
+      const partSize = 5 * 1024 * 1024;
+      const part1Data = createAsciiPart(partSize, "A");
+      const part2Data = createAsciiPart(partSize, "B");
+      const part3Data = createAsciiPart(partSize, "C");
 
       const upload = await bucket.createMultipartUpload(key, {
         httpMetadata: {
@@ -611,11 +613,16 @@ describe("R2 Bucket Resource", async () => {
       const obj = await upload.complete([part1, part2, part3]);
       expect(obj.key).toBe(key);
       expect(obj.etag).toBeTruthy();
+      expect(obj.size).toBe(
+        part1Data.length + part2Data.length + part3Data.length,
+      );
 
       const retrievedObj = await bucket.get(key);
       expect(retrievedObj).toBeTruthy();
-      const text = await retrievedObj!.text();
-      expect(text).toBe(part1Data + part2Data + part3Data);
+      const bytes = Buffer.from(await retrievedObj?.bytes());
+      const expected = Buffer.concat([part1Data, part2Data, part3Data]);
+      expect(bytes.length).toBe(expected.length);
+      expect(Buffer.compare(bytes, expected)).toBe(0);
     } finally {
       await destroy(scope);
     }
@@ -633,8 +640,9 @@ describe("R2 Bucket Resource", async () => {
       });
 
       const key = "resumable-file.bin";
-      const part1Data = "First part uploaded initially\n";
-      const part2Data = "Second part uploaded after resume\n";
+      const partSize = 5 * 1024 * 1024;
+      const part1Data = createAsciiPart(partSize, "R");
+      const part2Data = Buffer.from("Second part uploaded after resume\n");
 
       const initialUpload = await bucket.createMultipartUpload(key);
       const uploadId = initialUpload.uploadId;
@@ -649,8 +657,13 @@ describe("R2 Bucket Resource", async () => {
       expect(obj.key).toBe(key);
 
       const retrievedObj = await bucket.get(key);
-      const text = await retrievedObj!.text();
-      expect(text).toBe(part1Data + part2Data);
+      expect(retrievedObj).toBeTruthy();
+      const bytes = Buffer.from(await retrievedObj?.bytes());
+      expect(bytes.length).toBe(part1Data.length + part2Data.length);
+      expect(bytes.subarray(0, part1Data.length)).toEqual(part1Data);
+      expect(bytes.subarray(-part2Data.length).toString()).toBe(
+        part2Data.toString(),
+      );
     } finally {
       await destroy(scope);
     }
@@ -760,7 +773,7 @@ describe("R2 Bucket Resource", async () => {
 
       const metadata = await bucket.head(key);
       expect(metadata).toBeTruthy();
-      expect(metadata!.size).toBe(partSize * numParts);
+      expect(metadata?.size).toBe(partSize * numParts);
     } finally {
       await destroy(scope);
     }
@@ -797,12 +810,22 @@ describe("R2 Bucket Resource", async () => {
 
       const obj = await bucket.get(key);
       expect(obj).toBeTruthy();
-      expect(obj!.key).toBe(key);
+      expect(obj?.key).toBe(key);
     } finally {
       await destroy(scope);
     }
   });
 });
+
+/**
+ * Creates a buffer of the specified size filled with the specified character.
+ */
+function createAsciiPart(size: number, char: string): Buffer {
+  if (char.length !== 1) {
+    throw new Error("createAsciiPart requires a single character fill");
+  }
+  return Buffer.alloc(size, char);
+}
 
 /**
  * Creates an aws4fetch client configured for Cloudflare R2.
