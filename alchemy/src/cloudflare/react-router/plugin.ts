@@ -15,7 +15,8 @@ const alchemy = (config?: PluginConfig) => {
       JSON.stringify(
         {
           name: "dummy",
-          compatibility_date: "2025-09-23",
+          compatibility_date: "2025-10-23",
+          compatibility_flags: ["nodejs_compat"],
         },
         null,
         2,
