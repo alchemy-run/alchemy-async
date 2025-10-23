@@ -18,14 +18,28 @@ const alchemy = (config?: PluginConfig): PluginOption => {
   if (typeof persistState === "object" && persistState.path.endsWith("v3")) {
     persistState.path = path.dirname(persistState.path);
   }
-  return cloudflare({
-    ...config,
-    configPath: validateConfigPath(
-      // config path doesn't need to be in the root, it can be in the app dir
-      config?.configPath ?? getDefaultConfigPath(),
-    ),
-    persistState,
-  }) as PluginOption;
+  return [
+    cloudflare({
+      ...config,
+      configPath: validateConfigPath(
+        // config path doesn't need to be in the root, it can be in the app dir
+        config?.configPath ?? getDefaultConfigPath(),
+      ),
+      persistState,
+    }),
+    {
+      name: "alchemy-supress-watch",
+      config() {
+        return {
+          server: {
+            watch: {
+              ignored: ["**/.alchemy/**"],
+            },
+          },
+        };
+      },
+    },
+  ] as PluginOption;
 };
 
 export default alchemy;
