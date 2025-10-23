@@ -1,4 +1,4 @@
-import esbuild from "esbuild";
+import esbuild, { formatMessages } from "esbuild";
 import { globIterate } from "glob";
 import { err, ok, type Result } from "neverthrow";
 import fs from "node:fs/promises";
@@ -308,6 +308,17 @@ export namespace WorkerBundleSource {
 
       for await (const result of hotReload.iterator) {
         count++;
+        if (result.errors.length > 0) {
+          const formatted = await formatMessages(result.errors, {
+            kind: "error",
+            color: true,
+            terminalWidth: 100,
+          });
+          logger.error(
+            `Error bundling worker \`${this.props.id}\`: ${formatted.join("\n")}`,
+          );
+          continue;
+        }
         const { entrypoint, root, modules } = await this.formatBuildOutput(
           result.metafile!,
         );
