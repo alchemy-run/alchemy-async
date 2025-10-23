@@ -309,13 +309,8 @@ export namespace WorkerBundleSource {
       for await (const result of hotReload.iterator) {
         count++;
         if (result.errors.length > 0) {
-          const formatted = await formatMessages(result.errors, {
-            kind: "error",
-            color: true,
-            terminalWidth: 100,
-          });
           logger.error(
-            `Error bundling worker \`${this.props.id}\`: ${formatted.join("\n")}`,
+            `Error bundling worker \`${this.props.id}\`, see detailed logs above.`,
           );
           continue;
         }
