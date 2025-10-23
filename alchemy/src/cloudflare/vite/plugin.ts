@@ -25,9 +25,6 @@ const alchemy = (config?: PluginConfig): PluginOption => {
       config?.configPath ?? getDefaultConfigPath(),
     ),
     persistState,
-    experimental: config?.experimental ?? {
-      remoteBindings: true,
-    },
   }) as PluginOption;
 };
 
