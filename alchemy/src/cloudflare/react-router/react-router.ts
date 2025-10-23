@@ -33,7 +33,7 @@ export async function ReactRouter<B extends Bindings>(
       props.dev ??
       `${runner} react-router typegen && ${runner} react-router dev`,
     spa: !ssr,
-    compatibilityFlags: ["nodejs_compat"],
+    compatibilityFlags: props.compatibilityFlags ?? ["nodejs_compat"],
     entrypoint: props.entrypoint ?? (ssr ? "build/server/index.js" : undefined),
     noBundle: props.noBundle ?? true,
     assets: props.assets ?? "build/client",
