@@ -28,7 +28,7 @@ const alchemy = (config?: PluginConfig): PluginOption => {
     experimental: config?.experimental ?? {
       remoteBindings: true,
     },
-  });
+  }) as PluginOption;
 };
 
 export default alchemy;
