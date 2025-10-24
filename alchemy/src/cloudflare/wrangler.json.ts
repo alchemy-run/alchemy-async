@@ -162,9 +162,11 @@ export async function WranglerJson(
         }
       : undefined,
     placement: worker.placement,
-    limits: worker.limits ? {
-      cpu_ms: worker.limits.cpu_ms ?? 30_000,
-    } : undefined,
+    limits: worker.limits
+      ? {
+          cpu_ms: worker.limits.cpu_ms ?? 30_000,
+        }
+      : undefined,
     logpush: worker.logpush,
   };
 
@@ -214,7 +216,7 @@ export async function WranglerJson(
     // but do not modify `finalSpec` so that way secrets aren't written to state unencrypted.
     const withSecretsUnwrapped = {
       ...finalSpec,
-      vars: unencryptSecrets(finalSpec.vars as Record<string, string> ?? {}),
+      vars: unencryptSecrets((finalSpec.vars as Record<string, string>) ?? {}),
     };
     await writeJSON(filePath, withSecretsUnwrapped);
   } else {
@@ -252,7 +254,7 @@ function processBindings(
   local: boolean,
 ): void {
   // Arrays to collect different binding types
-  const kvNamespaces: WranglerJsonConfig['kv_namespaces'] = [];
+  const kvNamespaces: WranglerJsonConfig["kv_namespaces"] = [];
   const durableObjects: WranglerJsonConfig["durable_objects"]["bindings"] = [];
   const r2Buckets: WranglerJsonConfig["r2_buckets"] = [];
   const services: WranglerJsonConfig["services"] = [];
@@ -266,10 +268,13 @@ function processBindings(
     producers: [],
     consumers: [],
   };
-  const new_sqlite_classes: WranglerJsonConfig["migrations"][number]["new_sqlite_classes"] = [];
-  const new_classes: WranglerJsonConfig["migrations"][number]["new_classes"] = [];
+  const new_sqlite_classes: WranglerJsonConfig["migrations"][number]["new_sqlite_classes"] =
+    [];
+  const new_classes: WranglerJsonConfig["migrations"][number]["new_classes"] =
+    [];
   const vectorizeIndexes: WranglerJsonConfig["vectorize"] = [];
-  const analyticsEngineDatasets: WranglerJsonConfig["analytics_engine_datasets"] = [];
+  const analyticsEngineDatasets: WranglerJsonConfig["analytics_engine_datasets"] =
+    [];
   const hyperdrive: WranglerJsonConfig["hyperdrive"] = [];
   const pipelines: WranglerJsonConfig["pipelines"] = [];
   const secretsStoreSecrets: WranglerJsonConfig["secrets_store_secrets"] = [];
