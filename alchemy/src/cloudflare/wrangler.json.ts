@@ -6,7 +6,9 @@ import { Resource } from "../resource.ts";
 import { Scope } from "../scope.ts";
 import { isSecret } from "../secret.ts";
 import { assertNever } from "../util/assert-never.ts";
+import { createCloudflareApi } from "./api.ts";
 import type { Bindings, WorkerBindingRateLimit } from "./bindings.ts";
+import { getCloudflareRegistryWithAccountNamespace } from "./container.ts";
 import type { DurableObjectNamespace } from "./durable-object-namespace.ts";
 import type { EventSource } from "./event-source.ts";
 import { isQueueEventSource } from "./event-source.ts";
@@ -172,7 +174,7 @@ export async function WranglerJson(
 
   // Process bindings if they exist
   if (worker.bindings) {
-    processBindings(
+    await processBindings(
       spec,
       worker.bindings,
       worker.eventSources,
@@ -244,7 +246,7 @@ export interface WranglerJsonSpec extends Partial<WranglerJsonConfig> {}
 /**
  * Process worker bindings into wrangler.json format
  */
-function processBindings(
+async function processBindings(
   spec: WranglerJsonSpec,
   bindings: Bindings,
   eventSources: EventSource[] | undefined,
@@ -252,7 +254,7 @@ function processBindings(
   workerCwd: string,
   writeSecrets: boolean,
   local: boolean,
-): void {
+): Promise<void> {
   // Arrays to collect different binding types
   const kvNamespaces: WranglerJsonConfig["kv_namespaces"] = [];
   const durableObjects: WranglerJsonConfig["durable_objects"]["bindings"] = [];
@@ -500,9 +502,24 @@ function processBindings(
         class_name: binding.className,
         script_name: binding.scriptName,
       });
+      new_sqlite_classes.push(binding.className);
+      // If there are build options, use the local image path, otherwise use the image reference
+      const api = await createCloudflareApi();
+      const image = binding.image.build
+        ? path.resolve(
+            workerCwd,
+            path.join(
+              binding.image.build.context ?? process.cwd(),
+              binding.image.build.dockerfile ?? "Dockerfile",
+            ),
+          )
+        : getCloudflareRegistryWithAccountNamespace(
+            api.accountId,
+            binding.image.imageRef,
+          );
       containers.push({
         class_name: binding.className,
-        image: binding.image.imageRef,
+        image,
       });
     } else if (binding.type === "worker_loader") {
       workerLoaders.push({
