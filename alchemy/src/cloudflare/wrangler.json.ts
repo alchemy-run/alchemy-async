@@ -182,6 +182,8 @@ export async function WranglerJson(
       cwd,
       props.secrets ?? false,
       Scope.current.local && !props.worker.dev?.remote,
+      async () =>
+        worker.accountId ?? (await createCloudflareApi(worker)).accountId,
     );
   }
 
@@ -254,6 +256,7 @@ async function processBindings(
   workerCwd: string,
   writeSecrets: boolean,
   local: boolean,
+  getAccountId: () => Promise<string>,
 ): Promise<void> {
   // Arrays to collect different binding types
   const kvNamespaces: WranglerJsonConfig["kv_namespaces"] = [];
@@ -504,7 +507,6 @@ async function processBindings(
       });
       new_sqlite_classes.push(binding.className);
       // If there are build options, use the local image path, otherwise use the image reference
-      const api = await createCloudflareApi();
       const image = binding.image.build
         ? path.resolve(
             workerCwd,
@@ -514,7 +516,7 @@ async function processBindings(
             ),
           )
         : getCloudflareRegistryWithAccountNamespace(
-            api.accountId,
+            await getAccountId(),
             binding.image.imageRef,
           );
       containers.push({
