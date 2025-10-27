@@ -7,7 +7,7 @@ import { Scope } from "../scope.ts";
 import { isSecret } from "../secret.ts";
 import { assertNever } from "../util/assert-never.ts";
 import { createCloudflareApi } from "./api.ts";
-import type { Bindings, WorkerBindingRateLimit } from "./bindings.ts";
+import type { Bindings } from "./bindings.ts";
 import { getCloudflareRegistryWithAccountNamespace } from "./container.ts";
 import type { DurableObjectNamespace } from "./durable-object-namespace.ts";
 import type { EventSource } from "./event-source.ts";
@@ -15,10 +15,6 @@ import { isQueueEventSource } from "./event-source.ts";
 import { isQueue } from "./queue.ts";
 import { unencryptSecrets } from "./util/filter-env-bindings.ts";
 import { isWorker, type Worker, type WorkerProps } from "./worker.ts";
-
-type WranglerJsonRateLimit = Omit<WorkerBindingRateLimit, "type"> & {
-  type: "rate_limit";
-};
 
 /**
  * Properties for wrangler.json configuration file
@@ -284,7 +280,7 @@ async function processBindings(
   const pipelines: WranglerJsonConfig["pipelines"] = [];
   const secretsStoreSecrets: WranglerJsonConfig["secrets_store_secrets"] = [];
   const dispatchNamespaces: WranglerJsonConfig["dispatch_namespaces"] = [];
-  const unsafeBindings: WranglerJsonRateLimit[] = [];
+  const ratelimits: WranglerJsonConfig["ratelimits"] = [];
   const containers: WranglerJsonConfig["containers"] = [];
   const workerLoaders: WranglerJsonConfig["worker_loaders"] = [];
 
@@ -491,9 +487,8 @@ async function processBindings(
         remote: true,
       });
     } else if (binding.type === "ratelimit") {
-      unsafeBindings.push({
+      ratelimits.push({
         name: bindingName,
-        type: "rate_limit",
         namespace_id: binding.namespace_id.toString(),
         simple: binding.simple,
       });
@@ -605,10 +600,8 @@ async function processBindings(
     spec.containers = containers;
   }
 
-  if (unsafeBindings.length > 0) {
-    spec.unsafe = {
-      bindings: unsafeBindings,
-    };
+  if (ratelimits.length > 0) {
+    spec.ratelimits = ratelimits;
   }
 
   if (workerLoaders.length > 0) {
