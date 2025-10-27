@@ -1,6 +1,6 @@
 import fs from "node:fs/promises";
 import path from "pathe";
-import { type Unstable_Config as WranglerJsonConfig } from "wrangler";
+import type { Unstable_Config as WranglerJsonConfig } from "wrangler";
 import type { Context } from "../context.ts";
 import { Resource } from "../resource.ts";
 import { Scope } from "../scope.ts";
