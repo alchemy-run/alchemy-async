@@ -4,9 +4,9 @@
   "private": true,
   "scripts": {
     "build": "react-router build",
-    "deploy": "alchemy deploy",
-    "destroy": "alchemy destroy",
-    "dev": "alchemy dev",
+    "deploy": "alchemy deploy --env-file .env",
+    "destroy": "alchemy destroy --env-file .env",
+    "dev": "alchemy dev --env-file .env",
     "preview": "bun run build && vite preview",
     "typecheck": "react-router typegen && tsc -b"
   },

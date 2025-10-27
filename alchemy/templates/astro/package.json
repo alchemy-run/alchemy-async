@@ -5,9 +5,9 @@
   "scripts": {
     "astro": "astro",
     "build": "astro check && astro build",
-    "deploy": "alchemy deploy",
-    "destroy": "alchemy destroy",
-    "dev": "alchemy dev",
+    "deploy": "alchemy deploy --env-file .env",
+    "destroy": "alchemy destroy --env-file .env",
+    "dev": "alchemy dev --env-file .env",
     "preview": "astro preview"
   },
   "dependencies": {

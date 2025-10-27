@@ -7,9 +7,9 @@
     "build": "vite build",
     "check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
     "check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
-    "deploy": "alchemy deploy",
-    "destroy": "alchemy destroy",
-    "dev": "alchemy dev",
+    "deploy": "alchemy deploy --env-file .env",
+    "destroy": "alchemy destroy --env-file .env",
+    "dev": "alchemy dev --env-file .env",
     "prepare": "svelte-kit sync || echo ''",
     "preview": "vite preview"
   },

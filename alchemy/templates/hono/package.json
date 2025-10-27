@@ -3,9 +3,9 @@
   "type": "module",
   "scripts": {
     "check": "tsc --noEmit",
-    "dev": "alchemy dev",
-    "deploy": "alchemy deploy",
-    "destroy": "alchemy destroy"
+    "deploy": "alchemy deploy --env-file .env",
+    "destroy": "alchemy destroy --env-file .env",
+    "dev": "alchemy dev --env-file .env"
   },
   "dependencies": {
     "hono": "^4.9.2"
