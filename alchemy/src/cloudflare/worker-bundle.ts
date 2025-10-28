@@ -308,8 +308,14 @@ export namespace WorkerBundleSource {
 
       for await (const result of hotReload.iterator) {
         count++;
+        if (result.errors.length > 0 || result.metafile == null) {
+          logger.error(
+            `Error bundling worker \`${this.props.id}\`, see detailed logs above.`,
+          );
+          continue;
+        }
         const { entrypoint, root, modules } = await this.formatBuildOutput(
-          result.metafile!,
+          result.metafile,
         );
         yield {
           entrypoint,

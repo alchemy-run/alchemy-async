@@ -140,8 +140,17 @@ export async function execAlchemy(
     execArgs.push("--watch");
     args.push("--watch");
   }
-  if (envFile && (await exists(envFile))) {
+  if (envFile) {
+    if (!(await exists(envFile))) {
+      log.error(pc.red(`Environment file ${envFile} does not exist.`));
+      throw new ExitSignal(1);
+    }
     execArgs.push(`--env-file ${envFile}`);
+  } else {
+    const envFile = resolve(cwd, ".env");
+    if (await exists(envFile)) {
+      execArgs.push(`--env-file ${envFile}`);
+    }
   }
   if (dev) args.push("--dev");
   if (inspect) execArgs.push("--inspect");
