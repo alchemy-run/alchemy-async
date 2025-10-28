@@ -26,6 +26,7 @@ console.log({
 });
 
 if (process.env.ALCHEMY_E2E) {
+  await new Promise((resolve) => setTimeout(resolve, 1000));
   const { test } = await import("./test/e2e.js");
   await test({
     url: website.url,
