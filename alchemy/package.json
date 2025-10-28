@@ -15,8 +15,8 @@
     "alchemy": "bin/alchemy.js"
   },
   "scripts": {
-    "dev:cli": "tsdown --watch",
     "build": "rm -rf ./*.tsbuildinfo && rm -rf ./lib && tsc -b && tsdown",
+    "dev": "tsdown --watch",
     "drizzle:generate": "bun run scripts/drizzle-generate.ts",
     "postbuild": "cpx 'src/**/*/types.d.ts' lib && cpx 'src/**/*.txt' lib",
     "publish:npm": "cp ../README.md . && bun run build && tsdown && bun publish && rm README.md"
