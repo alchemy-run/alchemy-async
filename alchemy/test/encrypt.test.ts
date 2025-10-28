@@ -34,7 +34,7 @@ describe("encrypt", () => {
     ).rejects.toThrow();
   });
 
-  it("fails to decrypt from scrypt with incorrect passphrase", async () => {
+  it("fails to decrypt from aes-256-gcm with incorrect passphrase", async () => {
     const passphrase = crypto.randomUUID();
     const value = "test-value";
     const encrypted = await encrypt(value, passphrase);
