@@ -2,12 +2,13 @@ import type { Context } from "../context";
 import { Resource } from "../resource";
 import { diff } from "../util/diff";
 import { createCloudflareApi, type CloudflareApiOptions } from "./api";
+import { CloudflareApiError } from "./api-error";
 import { extractCloudflareResult } from "./api-response";
 import { withJurisdiction, type R2BucketJurisdiction } from "./bucket";
 import { inferZoneIdFromPattern } from "./route";
 import type { Zone } from "./zone";
 
-export interface R2BucketCustomDomainOptions {
+export interface R2BucketCustomDomainProps extends CloudflareApiOptions {
   /**
    * The domain name to attach to the bucket.
    */
@@ -33,11 +34,7 @@ export interface R2BucketCustomDomainOptions {
    * The minimum TLS version to support.
    */
   minTLS?: "1.0" | "1.1" | "1.2" | "1.3" | (string & {});
-}
 
-export interface R2BucketCustomDomainProps
-  extends CloudflareApiOptions,
-    R2BucketCustomDomainOptions {
   /**
    * The bucket to attach the domain to.
    */
@@ -48,6 +45,14 @@ export interface R2BucketCustomDomainProps
    * @default "default"
    */
   jurisdiction?: R2BucketJurisdiction;
+
+  /**
+   * Development mode properties
+   * @internal
+   */
+  dev?: {
+    remote?: boolean;
+  };
 }
 
 export type R2BucketCustomDomain = {
@@ -80,6 +85,18 @@ export const R2BucketCustomDomain = Resource(
     _id: string,
     props: R2BucketCustomDomainProps,
   ): Promise<R2BucketCustomDomain> {
+    if (this.scope.local && !props.dev?.remote && this.phase !== "delete") {
+      return {
+        domain: props.domain,
+        enabled: props.enabled ?? false,
+        zoneId:
+          typeof props.zone === "string"
+            ? props.zone
+            : (props.zone?.id ?? "noop-zone"),
+        ciphers: props.ciphers,
+        minTLS: props.minTLS,
+      };
+    }
     const api = await createCloudflareApi(props);
     const payload: R2BucketCustomDomain = {
       domain: props.domain,
@@ -123,13 +140,19 @@ export const R2BucketCustomDomain = Resource(
         return payload;
       }
       case "delete": {
-        await extractCloudflareResult(
-          `detach custom domain from bucket "${props.bucketName}"`,
-          api.delete(
-            `/accounts/${api.accountId}/r2/buckets/${props.bucketName}/domains/custom/${encodeURIComponent(props.domain)}`,
-            { headers: withJurisdiction(props) },
-          ),
-        );
+        try {
+          await extractCloudflareResult(
+            `detach custom domain from bucket "${props.bucketName}"`,
+            api.delete(
+              `/accounts/${api.accountId}/r2/buckets/${props.bucketName}/domains/custom/${encodeURIComponent(props.domain)}`,
+              { headers: withJurisdiction(props) },
+            ),
+          );
+        } catch (error) {
+          if (!(error instanceof CloudflareApiError && error.status === 404)) {
+            throw error;
+          }
+        }
         return this.destroy();
       }
     }

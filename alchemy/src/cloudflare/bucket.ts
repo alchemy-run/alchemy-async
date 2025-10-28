@@ -17,10 +17,12 @@ import {
   type CloudflareApi,
   type CloudflareApiOptions,
 } from "./api.ts";
+import {
+  R2BucketCustomDomain,
+  type R2BucketCustomDomainProps,
+} from "./bucket-custom-domain.ts";
 import { deleteMiniflareBinding } from "./miniflare/delete.ts";
 import { getDefaultPersistPath } from "./miniflare/paths.ts";
-import { inferZoneIdFromPattern } from "./route.ts";
-import type { Zone } from "./zone.ts";
 
 export type R2BucketJurisdiction = "default" | "eu" | "fedramp";
 
@@ -64,7 +66,12 @@ export interface BucketProps extends CloudflareApiOptions {
   /**
    * The custom domain to attach to the bucket.
    */
-  domain?: string | R2BucketCustomDomain;
+  customDomain?:
+    | string
+    | Omit<
+        R2BucketCustomDomainProps,
+        keyof CloudflareApiOptions | "bucketName" | "jurisdiction"
+      >;
 
   /**
    * Whether to delete the bucket.
@@ -121,30 +128,6 @@ export interface BucketProps extends CloudflareApiOptions {
      */
     force?: boolean;
   };
-}
-
-interface R2BucketCustomDomain {
-  /**
-   * The domain name.
-   */
-  domain: string;
-  /**
-   * Whether the domain is enabled.
-   * @default true
-   */
-  enabled?: boolean;
-  /**
-   * The zone to attach the domain to.
-   */
-  zone?: string | Zone;
-  /**
-   * An allowlist of ciphers for TLS termination. These ciphers must be in the BoringSSL format.
-   */
-  ciphers?: string[];
-  /**
-   * The minimum TLS version to support.
-   */
-  minTLS?: "1.0" | "1.1" | "1.2" | "1.3" | (string & {});
 }
 
 interface R2BucketLifecycleRule {
@@ -365,6 +348,11 @@ type _R2Bucket = Omit<BucketProps, "delete" | "dev"> & {
   domain: string | undefined;
 
   /**
+   * The custom domain for the bucket, if one is attached
+   */
+  customDomain: R2BucketCustomDomain | undefined;
+
+  /**
    * Development mode properties
    * @internal
    */
@@ -543,7 +531,9 @@ export async function R2Bucket(
       options?: Pick<R2PutOptions, "httpMetadata">,
     ): Promise<PutR2ObjectResponse> => {
       if (isLocal) {
-        return await (await localBucket()).put(
+        return await (
+          await localBucket()
+        ).put(
           key,
           typeof value === "string"
             ? value
@@ -633,6 +623,23 @@ const _R2Bucket = Resource(
     } satisfies _R2Bucket["dev"];
     const adopt = props.adopt ?? this.scope.adopt;
 
+    async function createDomain(
+      domain: NonNullable<BucketProps["customDomain"]>,
+    ) {
+      return await R2BucketCustomDomain(`${id}-domain`, {
+        ...(typeof domain === "string" ? { domain } : domain),
+        accountId: props.accountId,
+        apiKey: props.apiKey,
+        apiToken: props.apiToken,
+        email: props.email,
+        baseUrl: props.baseUrl,
+        profile: props.profile,
+        bucketName: bucketName,
+        jurisdiction: props.jurisdiction,
+        dev,
+      });
+    }
+
     if (isLocal) {
       return {
         name: bucketName,
@@ -641,6 +648,9 @@ const _R2Bucket = Resource(
         jurisdiction: this.output?.jurisdiction ?? "default",
         allowPublicAccess,
         domain: this.output?.domain,
+        customDomain: props.customDomain
+          ? await createDomain(props.customDomain)
+          : undefined,
         type: "r2_bucket",
         accountId: this.output?.accountId ?? "",
         cors: props.cors,
@@ -704,6 +714,7 @@ const _R2Bucket = Resource(
       if (props.dataCatalog) {
         dataCatalog = await enableDataCatalog(api, bucketName);
       }
+
       return {
         name: bucketName,
         location: bucket.location,
@@ -711,6 +722,9 @@ const _R2Bucket = Resource(
         jurisdiction: bucket.jurisdiction,
         allowPublicAccess,
         domain,
+        customDomain: props.customDomain
+          ? await createDomain(props.customDomain)
+          : undefined,
         type: "r2_bucket",
         accountId: api.accountId,
         lifecycle: props.lifecycle,
@@ -760,6 +774,9 @@ const _R2Bucket = Resource(
         lifecycle: props.lifecycle,
         lock: props.lock,
         domain,
+        customDomain: props.customDomain
+          ? await createDomain(props.customDomain)
+          : undefined,
       };
     }
   },
@@ -1295,7 +1312,12 @@ function mapHeadersToHttpMetadata(headers: Headers): R2HTTPMetadata {
 
 export async function putObject(
   api: CloudflareApi,
-  { bucketName, key, object, options }: {
+  {
+    bucketName,
+    key,
+    object,
+    options,
+  }: {
     bucketName: string;
     key: string;
     object: PutObjectObject;
@@ -1368,69 +1390,4 @@ export async function disableDataCatalog(
     `/accounts/${api.accountId}/r2-catalog/${bucketName}/disable`,
     {},
   );
-}
-
-export async function createR2BucketCustomDomain(
-  api: CloudflareApi,
-  bucket: string,
-  domain: R2BucketCustomDomain,
-  jurisdiction?: R2BucketJurisdiction,
-) {
-  const payload = {
-    domain: domain.domain,
-    enabled: domain.enabled ?? true,
-    zoneId:
-      typeof domain.zone === "string"
-        ? domain.zone
-        : (domain.zone?.id ??
-          (await inferZoneIdFromPattern(api, domain.domain))),
-    ciphers: domain.ciphers,
-    minTLS: domain.minTLS,
-  };
-  await extractCloudflareResult(
-    `create custom domain "${domain}" for bucket "${bucket}"`,
-    api.post(
-      `/accounts/${api.accountId}/r2/buckets/${bucket}/domains/custom`,
-      payload,
-      { headers: withJurisdiction({ jurisdiction }) },
-    ),
-  );
-}
-
-export async function getR2BucketCustomDomain(
-  api: CloudflareApi,
-  bucket: string,
-  domain: string,
-  jurisdiction?: R2BucketJurisdiction,
-): Promise<R2BucketCustomDomain | null> {
-  const response = await extractCloudflareResult<R2BucketCustomDomain>(
-    `get custom domain "${domain}" for bucket "${bucket}"`,
-    api.get(
-      `/accounts/${api.accountId}/r2/buckets/${bucket}/domains/custom/${encodeURIComponent(domain)}`,
-      { headers: withJurisdiction({ jurisdiction }) },
-    ),
-  );
-  return response;
-}
-
-export async function deleteR2BucketCustomDomain(
-  api: CloudflareApi,
-  bucket: string,
-  domain: string,
-  jurisdiction?: R2BucketJurisdiction,
-) {
-  try {
-    await extractCloudflareResult(
-      `delete custom domain from bucket "${bucket}"`,
-      api.delete(
-        `/accounts/${api.accountId}/r2/buckets/${bucket}/domains/custom/${encodeURIComponent(domain)}`,
-        { headers: withJurisdiction({ jurisdiction }) },
-      ),
-    );
-  } catch (error) {
-    if (error instanceof CloudflareApiError && error.status === 404) {
-      return;
-    }
-    throw error;
-  }
 }
