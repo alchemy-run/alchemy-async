@@ -17,6 +17,21 @@ interface Encrypted {
 }
 
 /**
+ * Decrypts a value encrypted with a symmetric key.
+ * For backwards compatibility, uses the legacy libsodium implementation if the value is a string.
+ * Otherwise, uses the AES-256-GCM implementation with scrypt key derivation.
+ */
+export function decryptWithKey(
+  value: string | Encrypted,
+  key: string,
+): Promise<string> {
+  if (typeof value === "string") {
+    return libsodiumDecrypt(value, key);
+  }
+  return aes256Decrypt(value, key);
+}
+
+/**
  * Encrypt a value with a symmetric key using AES-256-GCM with scrypt key derivation.
  */
 export async function encrypt(
@@ -41,21 +56,6 @@ export async function encrypt(
     salt: salt.toString("base64"),
     tag: tag.toString("base64"),
   };
-}
-
-/**
- * Decrypts a value encrypted with a symmetric key.
- * For backwards compatibility, uses the legacy libsodium implementation if the value is a string.
- * Otherwise, uses the AES-256-GCM implementation with scrypt key derivation.
- */
-export function decryptWithKey(
-  value: string | Encrypted,
-  key: string,
-): Promise<string> {
-  if (typeof value === "string") {
-    return libsodiumDecrypt(value, key);
-  }
-  return aes256Decrypt(value, key);
 }
 
 /**
