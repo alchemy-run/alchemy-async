@@ -1,7 +1,11 @@
 import type { Context } from "../context";
 import { Resource } from "../resource";
 import { diff } from "../util/diff";
-import { createCloudflareApi, type CloudflareApiOptions } from "./api";
+import {
+  CloudflareApi,
+  createCloudflareApi,
+  type CloudflareApiOptions,
+} from "./api";
 import { CloudflareApiError } from "./api-error";
 import { extractCloudflareResult } from "./api-response";
 import { withJurisdiction, type R2BucketJurisdiction } from "./bucket";
@@ -34,6 +38,21 @@ export interface R2BucketCustomDomainProps extends CloudflareApiOptions {
    * The minimum TLS version to support.
    */
   minTLS?: "1.0" | "1.1" | "1.2" | "1.3" | (string & {});
+
+  /**
+   * Whether to adopt an existing custom domain binding during creation.
+   * If false and the domain already exists, creation will fail.
+   * This only applies during the create phase.
+   * @default false
+   */
+  adopt?: boolean;
+
+  /**
+   * Whether to delete the custom domain binding during deletion.
+   * If false, the custom domain binding will remain but the resource will be removed from state
+   * @default true
+   */
+  delete?: boolean;
 
   /**
    * The bucket to attach the domain to.
@@ -97,6 +116,7 @@ export const R2BucketCustomDomain = Resource(
         minTLS: props.minTLS,
       };
     }
+    const adopt = props.adopt ?? this.scope.adopt;
     const api = await createCloudflareApi(props);
     const payload: R2BucketCustomDomain = {
       domain: props.domain,
@@ -111,14 +131,26 @@ export const R2BucketCustomDomain = Resource(
     };
     switch (this.phase) {
       case "create": {
-        await extractCloudflareResult(
-          `attach custom domain to bucket "${props.bucketName}"`,
-          api.post(
-            `/accounts/${api.accountId}/r2/buckets/${props.bucketName}/domains/custom`,
-            payload,
-            { headers: withJurisdiction(props) },
-          ),
-        );
+        await createBucketCustomDomain(
+          api,
+          props.bucketName,
+          props.jurisdiction,
+          payload,
+        ).catch(async (error) => {
+          if (
+            error instanceof CloudflareApiError &&
+            error.status === 409 &&
+            adopt
+          ) {
+            return await updateBucketCustomDomain(
+              api,
+              props.bucketName,
+              props.jurisdiction,
+              payload,
+            );
+          }
+          throw error;
+        });
         return payload;
       }
       case "update": {
@@ -129,32 +161,117 @@ export const R2BucketCustomDomain = Resource(
         ) {
           return this.replace();
         }
-        await extractCloudflareResult<R2BucketCustomDomain>(
-          `update custom domain for bucket "${props.bucketName}"`,
-          api.put(
-            `/accounts/${api.accountId}/r2/buckets/${props.bucketName}/domains/custom/${encodeURIComponent(props.domain)}`,
-            payload,
-            { headers: withJurisdiction(props) },
-          ),
+        await updateBucketCustomDomain(
+          api,
+          props.bucketName,
+          props.jurisdiction,
+          payload,
         );
         return payload;
       }
       case "delete": {
-        try {
-          await extractCloudflareResult(
-            `detach custom domain from bucket "${props.bucketName}"`,
-            api.delete(
-              `/accounts/${api.accountId}/r2/buckets/${props.bucketName}/domains/custom/${encodeURIComponent(props.domain)}`,
-              { headers: withJurisdiction(props) },
-            ),
+        if (props.delete !== false) {
+          await deleteBucketCustomDomain(
+            api,
+            props.bucketName,
+            props.domain,
+            props.jurisdiction,
           );
-        } catch (error) {
-          if (!(error instanceof CloudflareApiError && error.status === 404)) {
-            throw error;
-          }
         }
         return this.destroy();
       }
     }
   },
 );
+
+async function createBucketCustomDomain(
+  api: CloudflareApi,
+  bucket: string,
+  jurisdiction: R2BucketJurisdiction | undefined,
+  payload: R2BucketCustomDomain,
+) {
+  return await extractCloudflareResult(
+    `create custom domain for bucket "${bucket}"`,
+    api.post(
+      `/accounts/${api.accountId}/r2/buckets/${bucket}/domains/custom`,
+      payload,
+      { headers: withJurisdiction({ jurisdiction }) },
+    ),
+  );
+}
+
+async function updateBucketCustomDomain(
+  api: CloudflareApi,
+  bucket: string,
+  jurisdiction: R2BucketJurisdiction | undefined,
+  payload: R2BucketCustomDomain,
+) {
+  return await extractCloudflareResult(
+    `update custom domain for bucket "${bucket}"`,
+    api.put(
+      `/accounts/${api.accountId}/r2/buckets/${bucket}/domains/custom/${encodeURIComponent(payload.domain)}`,
+      payload,
+      { headers: withJurisdiction({ jurisdiction }) },
+    ),
+  );
+}
+
+export async function deleteBucketCustomDomain(
+  api: CloudflareApi,
+  bucket: string,
+  domain: string,
+  jurisdiction: R2BucketJurisdiction | undefined,
+) {
+  return await extractCloudflareResult(
+    `delete custom domain for bucket "${bucket}"`,
+    api.delete(
+      `/accounts/${api.accountId}/r2/buckets/${bucket}/domains/custom/${encodeURIComponent(domain)}`,
+      { headers: withJurisdiction({ jurisdiction }) },
+    ),
+  ).catch((error) => {
+    if (!(error instanceof CloudflareApiError && error.status === 404)) {
+      throw error;
+    }
+  });
+}
+
+export async function getBucketCustomDomain(
+  api: CloudflareApi,
+  bucket: string,
+  domain: string,
+  jurisdiction: R2BucketJurisdiction | undefined,
+) {
+  return await extractCloudflareResult<
+    R2BucketCustomDomain & {
+      zoneName?: string;
+      status: {
+        ownership:
+          | "pending"
+          | "active"
+          | "deactivated"
+          | "blocked"
+          | "error"
+          | "unknown";
+        ssl:
+          | "initializing"
+          | "pending"
+          | "active"
+          | "deactivated"
+          | "error"
+          | "unknown";
+      };
+    }
+  >(
+    `get custom domain for bucket "${bucket}"`,
+    api.get(
+      `/accounts/${api.accountId}/r2/buckets/${bucket}/domains/custom/${encodeURIComponent(domain)}`,
+      {
+        headers: withJurisdiction({ jurisdiction }),
+      },
+    ),
+  ).catch((error) => {
+    if (!(error instanceof CloudflareApiError && error.status === 404)) {
+      throw error;
+    }
+  });
+}

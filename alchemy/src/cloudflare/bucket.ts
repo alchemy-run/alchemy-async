@@ -609,7 +609,10 @@ const _R2Bucket = Resource(
       props.name ?? (this.output?.name || this.scope.createPhysicalName(id));
 
     if (this.phase === "update" && this.output?.name !== bucketName) {
-      this.replace();
+      this.replace(
+        // force replacement if custom domain is enabled; otherwise, replace will fail because the bucket has child resources
+        !!this.output?.customDomain,
+      );
     }
 
     const allowPublicAccess = props.allowPublicAccess === true;
@@ -625,7 +628,13 @@ const _R2Bucket = Resource(
       domain: NonNullable<BucketProps["customDomain"]>,
     ) {
       return await R2BucketCustomDomain(`${id}-domain`, {
-        ...(typeof domain === "string" ? { domain } : domain),
+        ...(typeof domain === "string"
+          ? { domain, adopt, delete: props.delete }
+          : {
+              ...domain,
+              adopt: domain.adopt ?? adopt,
+              delete: domain.delete ?? props.delete,
+            }),
         accountId: props.accountId,
         apiKey: props.apiKey,
         apiToken: props.apiToken,
