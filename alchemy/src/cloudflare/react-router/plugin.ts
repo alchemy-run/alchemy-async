@@ -1,5 +1,4 @@
 import type { PluginConfig } from "@cloudflare/vite-plugin";
-import { getDefaultConfigPath } from "../miniflare/paths.ts";
 import alchemyVite from "../vite/plugin.ts";
 
 const alchemy = (config: PluginConfig = {}) => {
@@ -12,14 +11,11 @@ const alchemy = (config: PluginConfig = {}) => {
       name: "alchemy-noop",
     };
   }
-  if (!config.configPath) {
-    config.configPath = getDefaultConfigPath();
-  }
   return alchemyVite({
-    ...config,
     viteEnvironment: {
       name: "ssr",
     },
+    ...config,
   });
 };
 
