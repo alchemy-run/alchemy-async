@@ -422,11 +422,15 @@ export namespace WorkerBundleSource {
       );
       const paths: string[] = [];
       let entrypoint: string | undefined;
+      let sourcemap: string | undefined;
       for (const [key, value] of Object.entries(metafile.outputs)) {
         const name = path.relative(outdir, path.resolve(this.props.cwd, key));
         paths.push(name);
         if (value.entryPoint === this.props.entrypoint) {
           entrypoint = name;
+        }
+        if (name.endsWith(".map")) {
+          sourcemap = name;
         }
       }
       if (!entrypoint) {
@@ -437,6 +441,23 @@ export namespace WorkerBundleSource {
             .map((v) => v.entryPoint)
             .filter((v) => v !== undefined)
             .join(", ")}`,
+        );
+      }
+      if (sourcemap != null) {
+        const map = JSON.parse(
+          await fs.readFile(path.join(outdir, sourcemap), "utf-8"),
+        ) as { sources: Array<string> };
+        map.sources = map.sources.map((source) => {
+          const originalPath = path.join(outdir, source);
+          const entrypointDir = path.dirname(
+            path.resolve(this.props.cwd, this.props.entrypoint),
+          );
+          return path.relative(entrypointDir, originalPath);
+        });
+        await fs.writeFile(
+          path.join(outdir, sourcemap),
+          JSON.stringify(map),
+          "utf-8",
         );
       }
       return {
