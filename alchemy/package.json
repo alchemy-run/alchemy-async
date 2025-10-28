@@ -52,6 +52,10 @@
       "bun": "./src/aws/index.ts",
       "import": "./lib/aws/index.js"
     },
+    "./aws/ec2": {
+      "bun": "./src/aws/ec2/index.ts",
+      "import": "./lib/aws/ec2/index.js"
+    },
     "./aws/control": {
       "bun": "./src/aws/control/index.ts",
       "import": "./lib/aws/control/index.js"
