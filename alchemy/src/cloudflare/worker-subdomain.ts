@@ -126,7 +126,6 @@ export async function getWorkerSubdomain(
       `/accounts/${api.accountId}/workers/scripts/${scriptName}/subdomain`,
     ),
   ).catch((error): SubdomainResponse => {
-    console.log("error", error);
     if (error.status === 404) {
       return { enabled: false, previews_enabled: false };
     }
