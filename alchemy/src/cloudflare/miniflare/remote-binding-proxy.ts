@@ -1,6 +1,5 @@
 import type { RemoteProxyConnectionString } from "miniflare";
 import { WebSocket } from "ws";
-import { alchemy } from "../../alchemy.ts";
 import { Scope } from "../../scope.ts";
 import { HTTPServer } from "../../util/http.ts";
 import { memoize } from "../../util/memoize.ts";
@@ -205,11 +204,11 @@ const getAccessToken = memoize(async (hostname: string) => {
     return undefined;
   }
   const result = await Scope.current
-    .exec(`access-${hostname}`, `cloudflare access login ${hostname}`)
+    .exec(`access-${hostname}`, `cloudflared access login ${hostname}`)
     .catch(() => {
       throw new Error(
         [
-          `The \`cloudflare\` CLI is not installed, but is required to access the domain "${hostname}".`,
+          `The \`cloudflared\` CLI is not installed, but is required to access the domain "${hostname}".`,
           `Please install it from https://developers.cloudflare.com/cloudflare-one/connections/connect-apps/install-and-setup/installation and run \`cloudflare access login ${hostname}\`.`,
         ].join("\n"),
       );
@@ -242,7 +241,3 @@ async function domainUsesAccess(hostname: string) {
     return false;
   }
 }
-
-await alchemy("app");
-
-await getAccessToken("delicate-dew-6380.johnroyal.workers.dev");
