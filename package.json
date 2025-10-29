@@ -13,7 +13,6 @@
     "build:clean": "git clean -fqdx . && bun i && bun run build && bun i && bun build:monorepo && bun download:env",
     "build:monorepo": "cd ./example-monorepo && bun i && cp .env.example .env && cd ..",
     "build": "bun run --filter alchemy build && bun types:generate && bun tsc -b",
-    "build:cli": "bun run --filter alchemy build:cli",
     "check": "bun tsc -b && bun run format:check",
     "clean:vite": "rm -rf node_modules/.bin node_modules/.bun node_modules/.cache node_modules/.vite-temp && bun i",
     "deploy:repo": "bun ./stacks/src/repo.run.ts",

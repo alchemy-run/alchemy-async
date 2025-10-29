@@ -60,12 +60,12 @@ jobs:
           bun install # to install the built `alchemy` CLI
           bun deploy:website
         env:
-          ALCHEMY_PASSWORD: ${{ env.ALCHEMY_PASSWORD }}
+          ALCHEMY_PASSWORD: ${{ secrets.ALCHEMY_PASSWORD }}
           ALCHEMY_STATE_STORE: cloudflare
-          ALCHEMY_STATE_TOKEN: ${{ env.ALCHEMY_STATE_TOKEN }}
+          ALCHEMY_STATE_TOKEN: ${{ secrets.ALCHEMY_STATE_TOKEN }}
           AWS_REGION: us-west-2
-          CLOUDFLARE_ACCOUNT_ID: ${{ env.CLOUDFLARE_ACCOUNT_ID }}
-          CLOUDFLARE_API_KEY: ${{ env.CLOUDFLARE_API_KEY }}
-          CLOUDFLARE_EMAIL: ${{ env.CLOUDFLARE_EMAIL }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          CLOUDFLARE_API_KEY: ${{ secrets.CLOUDFLARE_API_KEY }}
+          CLOUDFLARE_EMAIL: ${{ secrets.CLOUDFLARE_EMAIL }}
           GENERATE_OG_IMAGES: true
           STAGE: prod
