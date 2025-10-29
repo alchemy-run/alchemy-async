@@ -381,7 +381,7 @@ async function fetchNoResponse(
         logger.warn("Telemetry request timed out");
       }
       reject(new Error("Request timed out"));
-    }, options?.timeout ?? 1000);
+    }, options?.timeout ?? 3000);
 
     const req = client.request(requestOptions);
 
