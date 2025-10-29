@@ -230,6 +230,7 @@ const getAccessToken = memoize(async (hostname: string) => {
 async function domainUsesAccess(hostname: string) {
   try {
     const response = await fetch(`https://${hostname}`, {
+      method: "HEAD",
       redirect: "manual",
       signal: AbortSignal.timeout(1000),
     });
