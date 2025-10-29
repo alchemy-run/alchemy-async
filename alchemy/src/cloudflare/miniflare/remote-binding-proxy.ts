@@ -1,7 +1,7 @@
 import type { RemoteProxyConnectionString } from "miniflare";
-import { spawn } from "node:child_process";
-import { once } from "node:events";
 import { WebSocket } from "ws";
+import { alchemy } from "../../alchemy.ts";
+import { Scope } from "../../scope.ts";
 import { HTTPServer } from "../../util/http.ts";
 import { memoize } from "../../util/memoize.ts";
 import { extractCloudflareResult } from "../api-response.ts";
@@ -204,34 +204,24 @@ const getAccessToken = memoize(async (hostname: string) => {
   if (!(await domainUsesAccess(hostname))) {
     return undefined;
   }
-  const child = spawn("cloudflared", ["access", "login", hostname], {
-    stdio: "pipe",
-  });
-  let stdout: string;
-  try {
-    [stdout] = await Promise.all([
-      child.stdout
-        .toArray()
-        .then((chunks) => chunks.map((chunk) => chunk.toString()).join("")),
-      once(child, "close"), // throws an error if the command fails
-    ]);
-  } catch (error) {
-    throw new Error(
-      [
-        `The \`cloudflared\` CLI is not installed, but is required to access the domain "${hostname}".`,
-        `Please install it from https://developers.cloudflare.com/cloudflare-one/connections/connect-apps/install-and-setup/installation and run \`cloudflared access login ${hostname}\`.`,
-      ].join("\n"),
-      { cause: error },
-    );
-  }
-  const matches = stdout.match(/fetched your token:\n\n(.*)/m);
+  const result = await Scope.current
+    .exec(`access-${hostname}`, `cloudflare access login ${hostname}`)
+    .catch(() => {
+      throw new Error(
+        [
+          `The \`cloudflare\` CLI is not installed, but is required to access the domain "${hostname}".`,
+          `Please install it from https://developers.cloudflare.com/cloudflare-one/connections/connect-apps/install-and-setup/installation and run \`cloudflare access login ${hostname}\`.`,
+        ].join("\n"),
+      );
+    });
+  const matches = result.stdout.match(/fetched your token:\n\n(.*)/m);
   if (matches?.[1]) {
     return matches[1];
   }
   const error = new Error(
     `Failed to get access token for domain "${hostname}".`,
   );
-  Object.assign(error, { stdout });
+  Object.assign(error, result);
   throw error;
 });
 
@@ -252,3 +242,7 @@ async function domainUsesAccess(hostname: string) {
     return false;
   }
 }
+
+await alchemy("app");
+
+await getAccessToken("delicate-dew-6380.johnroyal.workers.dev");

@@ -1,4 +1,7 @@
 import { AsyncLocalStorage } from "node:async_hooks";
+import { spawn } from "node:child_process";
+import { once } from "node:events";
+import fs from "node:fs/promises";
 import util from "node:util";
 import path from "pathe";
 import pc from "picocolors";
@@ -355,6 +358,30 @@ export class Scope {
     });
     this.onCleanup(result.stop);
     return result.extracted as any;
+  }
+
+  public async exec(
+    id: string,
+    command: string,
+  ): Promise<{ exitCode: number; stdout: string; stderr: string }> {
+    const logFilePath = path.join(this.dotAlchemy, "logs", `${id}.log`);
+    const [cmd, ...args] = command.split(/\s+/);
+    const child = spawn(cmd, args, { stdio: "pipe" });
+    await once(child, "spawn"); // throws if command not found
+    await fs.mkdir(path.dirname(logFilePath), { recursive: true });
+    const logFile = await fs.open(logFilePath, "w");
+    let stdout = "";
+    let stderr = "";
+    child.stdout.on("data", (chunk) => {
+      stdout += chunk.toString();
+      logFile.write(chunk);
+    });
+    child.stderr.on("data", (chunk) => {
+      stderr += chunk.toString();
+      logFile.write(chunk);
+    });
+    const [exitCode] = (await once(child, "exit")) as [number];
+    return { exitCode, stdout, stderr };
   }
 
   /**
