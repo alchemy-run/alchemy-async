@@ -354,6 +354,7 @@ async function fetchNoResponse(
     body?: string;
     headers?: Record<string, string>;
     method?: string;
+    timeout?: number;
   } = {},
 ) {
   const parsedUrl = new URL(url);
@@ -375,6 +376,13 @@ async function fetchNoResponse(
   };
 
   await new Promise<void>((resolve, reject) => {
+    setTimeout(() => {
+      if (!SUPPRESS_TELEMETRY_ERRORS) {
+        logger.warn("Telemetry request timed out");
+      }
+      reject(new Error("Request timed out"));
+    }, options?.timeout ?? 1000);
+
     const req = client.request(requestOptions);
 
     req.on("error", (error) => {
