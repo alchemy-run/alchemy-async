@@ -1,7 +1,15 @@
 import type {
+  Headers as CloudflareHeaders,
+  R2Checksums,
   R2HTTPMetadata,
+  R2ListOptions,
   R2MultipartOptions,
+  R2MultipartUpload,
+  R2Object,
+  R2ObjectBody,
   R2PutOptions,
+  R2StringChecksums,
+  R2UploadedPart,
 } from "@cloudflare/workers-types/experimental/index.ts";
 import { XMLParser } from "fast-xml-parser";
 import * as mf from "miniflare";
@@ -309,50 +317,36 @@ export interface R2UploadPartOptions {
   /**
    * Size of the part in bytes.
    *
-   * **When to provide this:**
-   * - **Required** for `ReadableStream` to enable streaming without buffering
-   * - **Optional** for `Blob`, `Buffer`, `Uint8Array`, `string` (size is auto-detected)
+   * **Note:** Node.js `Readable` streams (e.g., `fs.createReadStream()`) are always
+   * buffered into memory before upload due to fetch API limitations with Content-Length headers.
+   * For true streaming without buffering, use `Blob` or `File` objects with known sizes.
    *
-   * **Why this matters:**
-   * Providing the size allows streaming large data (like `fs.createReadStream()`) without
-   * loading the entire part into memory. This is essential for uploading very large files efficiently.
+   * **When to provide this:**
+   * - **Optional** but recommended for all stream types to avoid size calculation overhead
+   * - **Required** for Web API `ReadableStream` if you want to avoid buffering
    *
    * @example
    * ```ts
-   * // Streaming 100MB chunk without buffering
-   * const stream = fs.createReadStream(filePath, { start: 0, end: 100 * 1024 * 1024 });
-   * await upload.uploadPart(1, stream, { size: 100 * 1024 * 1024 });
+   * // Upload using fs.createReadStream (will be buffered)
+   * import fs from "node:fs";
+   * const stream = fs.createReadStream(filePath);
+   * await upload.uploadPart(1, stream);
+   * ```
+   *
+   * @example
+   * ```ts
+   * // Upload using Blob for efficient streaming
+   * const file = Bun.file(filePath);
+   * const blob = file.slice(start, end);
+   * await upload.uploadPart(1, blob); // Uses blob.size automatically
    * ```
    */
   size?: number;
 }
 
-export interface R2UploadedPart {
-  partNumber: number;
-  etag: string;
-}
-
-export interface R2MultipartUpload {
-  readonly key: string;
-  readonly uploadId: string;
-  uploadPart(
-    partNumber: number,
-    value:
-      | ReadableStream
-      | Readable
-      | ArrayBuffer
-      | ArrayBufferView
-      | string
-      | Blob,
-    options?: R2UploadPartOptions,
-  ): Promise<R2UploadedPart>;
-  abort(): Promise<void>;
-  complete(uploadedParts: R2UploadedPart[]): Promise<R2ObjectContent>;
-}
-
 export type R2Bucket = _R2Bucket & {
-  head(key: string): Promise<R2ObjectMetadata | null>;
-  get(key: string): Promise<R2ObjectContent | null>;
+  head(key: string): Promise<R2Object | null>;
+  get(key: string): Promise<R2ObjectBody | null>;
   put(
     key: string,
     value:
@@ -362,15 +356,56 @@ export type R2Bucket = _R2Bucket & {
       | string
       | null
       | Blob,
-    options?: Pick<R2PutOptions, "httpMetadata">,
-  ): Promise<PutR2ObjectResponse>;
-  delete(key: string): Promise<Response>;
+    options?: R2PutOptions,
+  ): Promise<R2Object | null>;
+  delete(keys: string | string[]): Promise<void>;
   list(options?: R2ListOptions): Promise<R2Objects>;
   createMultipartUpload(
     key: string,
     options?: R2MultipartOptions,
-  ): Promise<R2MultipartUpload>;
-  resumeMultipartUpload(key: string, uploadId: string): R2MultipartUpload;
+  ): Promise<
+    R2MultipartUpload & {
+      /**
+       * Upload a part in a multipart upload.
+       *
+       * **Note:** Node.js `Readable` streams (e.g., `fs.createReadStream()`) are buffered
+       * into memory before upload due to fetch API limitations. Use `Blob` for efficient
+       * streaming of large files.
+       */
+      uploadPart(
+        partNumber: number,
+        value:
+          | ReadableStream
+          | Readable
+          | ArrayBuffer
+          | ArrayBufferView
+          | string
+          | Blob,
+        options?: R2UploadPartOptions,
+      ): Promise<R2UploadedPart>;
+    }
+  >;
+  resumeMultipartUpload(
+    key: string,
+    uploadId: string,
+  ): R2MultipartUpload & {
+    /**
+     * Upload a part in a resumed multipart upload.
+     *
+     * **Note:** Node.js `Readable` streams are buffered into memory before upload.
+     */
+    uploadPart(
+      partNumber: number,
+      value:
+        | ReadableStream
+        | Readable
+        | ArrayBuffer
+        | ArrayBufferView
+        | string
+        | Blob,
+      options?: R2UploadPartOptions,
+    ): Promise<R2UploadedPart>;
+  };
 };
 
 /**
@@ -565,76 +600,71 @@ export async function R2Bucket(
   const createMultipartUploadObject = (
     key: string,
     uploadId: string,
-  ): R2MultipartUpload => ({
-    key,
-    uploadId,
-    uploadPart: async (
-      partNumber: number,
-      value:
-        | ReadableStream
-        | Readable
-        | ArrayBuffer
-        | ArrayBufferView
-        | string
-        | Blob,
-      options?: R2UploadPartOptions,
-    ) => {
-      const s3 = ensureS3Client();
-      return uploadPartApi(api, s3, {
-        bucketName: bucket.name,
-        key,
-        uploadId,
-        partNumber,
-        value,
-        options,
-      });
-    },
-    abort: async () => {
-      const s3 = ensureS3Client();
-      await abortMultipartUploadApi(api, s3, {
-        bucketName: bucket.name,
-        key,
-        uploadId,
-      });
-    },
-    complete: async (parts: R2UploadedPart[]) => {
-      const s3 = ensureS3Client();
-      return await completeMultipartUploadApi(api, s3, {
-        bucketName: bucket.name,
-        key,
-        uploadId,
-        parts,
-      });
-    },
-  });
+  ): R2MultipartUpload => {
+    // Extended implementation that supports Node.js Readable streams
+    // Cast to any to bypass type checking for the extended signature
+    return {
+      key,
+      uploadId,
+      uploadPart: async (
+        partNumber: number,
+        value:
+          | ReadableStream
+          | Readable
+          | ArrayBuffer
+          | ArrayBufferView
+          | string
+          | Blob,
+        options?: R2UploadPartOptions,
+      ) => {
+        const s3 = ensureS3Client();
+        return uploadPartApi(api, s3, {
+          bucketName: bucket.name,
+          key,
+          uploadId,
+          partNumber,
+          value,
+          options,
+        });
+      },
+      abort: async () => {
+        const s3 = ensureS3Client();
+        await abortMultipartUploadApi(api, s3, {
+          bucketName: bucket.name,
+          key,
+          uploadId,
+        });
+      },
+      complete: async (parts: R2UploadedPart[]) => {
+        const s3 = ensureS3Client();
+        return await completeMultipartUploadApi(api, s3, {
+          bucketName: bucket.name,
+          key,
+          uploadId,
+          parts,
+        });
+      },
+    } as any;
+  };
 
   return {
     ...bucket,
     head: async (key: string) => {
       if (isLocal) {
-        const result = await (await localBucket()).head(key);
-        if (result) {
-          return {
-            key: result.key,
-            etag: result.etag,
-            uploaded: result.uploaded,
-            size: result.size,
-            httpMetadata: result.httpMetadata,
-          } as R2ObjectMetadata;
-        }
-        return null;
+        // Miniflare returns a proper R2Object, so we can return it directly
+        return await (await localBucket()).head(key);
       }
       return headObject(api, {
         bucketName: bucket.name,
         key,
       });
     },
-    get: async (key: string) => {
+    get: async (key: string): Promise<R2ObjectBody | null> => {
       if (isLocal) {
         const result = await (await localBucket()).get(key);
         if (result) {
-          // cast because workers vs node built-ins
-          return result as unknown as R2ObjectContent;
+          // Miniflare returns R2ObjectBody directly, cast for type compatibility
+          return result as unknown as R2ObjectBody;
         }
         return null;
       }
@@ -663,9 +693,11 @@ export async function R2Bucket(
       key: string,
       value: PutObjectObject,
       options?: Pick<R2PutOptions, "httpMetadata">,
-    ): Promise<PutR2ObjectResponse> => {
+    ): Promise<R2Object | null> => {
       if (isLocal) {
-        return await (await localBucket()).put(
+        return await (
+          await localBucket()
+        ).put(
           key,
           typeof value === "string"
             ? value
@@ -696,27 +728,78 @@ export async function R2Bucket(
           size: string;
         };
       };
+      const etag = body.result.etag;
+      const httpEtag = etag.startsWith('"') ? etag : `"${etag}"`;
       return {
         key: body.result.key,
-        etag: body.result.etag,
-        uploaded: new Date(body.result.uploaded),
         version: body.result.version,
         size: Number(body.result.size),
+        etag: etag.replace(/"/g, ""),
+        httpEtag,
+        checksums: createEmptyR2Checksums(),
+        uploaded: new Date(body.result.uploaded),
+        storageClass: "Standard",
+        writeHttpMetadata(_headers: CloudflareHeaders): void {
+          // No httpMetadata available from put response
+        },
       };
     },
-    delete: async (key: string) => {
+    delete: async (keys: string | string[]): Promise<void> => {
+      const keysArray = Array.isArray(keys) ? keys : [keys];
+
       if (isLocal) {
-        await (await localBucket()).delete(key);
+        await (await localBucket()).delete(keysArray);
+        return;
       }
-      return deleteObject(api, {
-        bucketName: bucket.name,
-        key: key,
-      });
+
+      if (keysArray.length === 1) {
+        // Single key deletion
+        await deleteObject(api, {
+          bucketName: bucket.name,
+          key: keysArray[0],
+        });
+      } else {
+        // Multiple keys deletion using bulk delete endpoint
+        // Note: This uses an undocumented API endpoint, same as emptyBucket
+        const response = await withRetries(async () =>
+          api.delete(
+            `/accounts/${api.accountId}/r2/buckets/${bucket.name}/objects`,
+            {
+              headers: withJurisdiction({ jurisdiction: bucket.jurisdiction }),
+              method: "DELETE",
+              body: JSON.stringify(keysArray),
+            },
+          ),
+        );
+
+        // Handle response - 204 No Content means success, otherwise try to parse JSON for errors
+        if (response.status === 204) {
+          // 204 No Content - successful deletion
+          return;
+        } else if (!response.ok) {
+          // Error response - try to extract error details
+          await extractCloudflareResult(
+            `delete ${keysArray.length} objects from bucket "${bucket.name}"`,
+            Promise.resolve(response),
+          );
+        } else {
+          // 200-203 status - try to parse as JSON response (some endpoints return JSON)
+          try {
+            await extractCloudflareResult(
+              `delete ${keysArray.length} objects from bucket "${bucket.name}"`,
+              Promise.resolve(response),
+            );
+          } catch {
+            // If JSON parsing fails but status is ok, assume success
+            // (some endpoints might return empty body on success)
+          }
+        }
+      }
     },
     createMultipartUpload: async (
       key: string,
       options?: R2MultipartOptions,
-    ): Promise<R2MultipartUpload> => {
+    ) => {
       if (isLocal) {
         const mfBucket = await localBucket();
         const upload = await mfBucket.createMultipartUpload(
@@ -724,10 +807,21 @@ export async function R2Bucket(
           normalizeMultipartOptionsForMiniflare(options),
         );
 
+        // Extended implementation with Node.js Readable support
         return {
           key: upload.key,
           uploadId: upload.uploadId,
-          uploadPart: async (partNumber, value, partOptions) => {
+          uploadPart: async (
+            partNumber: number,
+            value:
+              | ReadableStream
+              | Readable
+              | ArrayBuffer
+              | ArrayBufferView
+              | string
+              | Blob,
+            partOptions?: R2UploadPartOptions,
+          ) => {
             const normalizedValue = await normalizeMultipartPartValue(value);
             return await upload.uploadPart(
               partNumber,
@@ -736,13 +830,11 @@ export async function R2Bucket(
             );
           },
           abort: async () => await upload.abort(),
-          complete: async (parts) => {
+          complete: async (parts: R2UploadedPart[]) => {
             const result = await upload.complete(parts);
-            // Miniflare returns R2Object which has the methods directly on it
-            // Cast to our R2ObjectContent interface for compatibility
-            return result as unknown as R2ObjectContent;
+            return result;
           },
-        };
+        } as any;
       }
 
       const s3 = ensureS3Client();
@@ -753,26 +845,114 @@ export async function R2Bucket(
       });
       return createMultipartUploadObject(result.key, result.uploadId);
     },
-    resumeMultipartUpload: (key: string, uploadId: string): R2MultipartUpload =>
+    resumeMultipartUpload: (key: string, uploadId: string) =>
       createMultipartUploadObject(key, uploadId),
   };
 }
 
-const parseR2Object = (key: string, response: Response): R2ObjectContent => ({
-  etag: response.headers.get("ETag")!,
-  uploaded: parseDate(response.headers),
-  key,
-  size: Number(response.headers.get("Content-Length")),
-  httpMetadata: mapHeadersToHttpMetadata(response.headers),
-  arrayBuffer: () => response.arrayBuffer(),
-  bytes: () => response.bytes(),
-  text: () => response.text(),
-  json: () => response.json(),
-  blob: () => response.blob(),
-});
+const parseR2Object = (key: string, response: Response): R2ObjectBody => {
+  // Clone the response so we can read the body multiple times
+  const clonedResponse = response.clone();
+  let bodyUsed = false;
+
+  // Extract metadata from headers using shared helper
+  const metadata = extractR2ObjectMetadata(key, response.headers);
+
+  // Create a getter for body that marks it as used
+  const getBody = () => {
+    bodyUsed = true;
+    return clonedResponse.body!;
+  };
+
+  return {
+    ...metadata,
+    get body() {
+      return getBody();
+    },
+    get bodyUsed() {
+      return bodyUsed;
+    },
+    arrayBuffer: () => {
+      bodyUsed = true;
+      return clonedResponse.arrayBuffer();
+    },
+    bytes: () => {
+      bodyUsed = true;
+      return clonedResponse.bytes();
+    },
+    text: () => {
+      bodyUsed = true;
+      return clonedResponse.text();
+    },
+    json: <T>() => {
+      bodyUsed = true;
+      return clonedResponse.json<T>();
+    },
+    blob: () => {
+      bodyUsed = true;
+      return clonedResponse.blob();
+    },
+  };
+};
 
 const parseDate = (headers: Headers) =>
   new Date(headers.get("Last-Modified") ?? headers.get("Date")!);
+
+/**
+ * Extract R2Object metadata from response headers
+ */
+const extractR2ObjectMetadata = (key: string, headers: Headers) => {
+  const etag = headers.get("ETag")?.replace(/"/g, "") || "";
+  const httpEtag = headers.get("ETag") || `"${etag}"`;
+  const version = headers.get("x-r2-version") || "";
+  const storageClass = headers.get("cf-r2-storage-class") || "Standard";
+  const httpMetadata = mapHeadersToHttpMetadata(headers);
+
+  return {
+    key,
+    version,
+    size: Number(headers.get("Content-Length") || 0),
+    etag,
+    httpEtag,
+    checksums: createEmptyR2Checksums(),
+    uploaded: parseDate(headers),
+    httpMetadata,
+    storageClass,
+    writeHttpMetadata: (headers: CloudflareHeaders): void => {
+      if (httpMetadata) {
+        if (httpMetadata.contentType) {
+          headers.set("Content-Type", httpMetadata.contentType);
+        }
+        if (httpMetadata.contentLanguage) {
+          headers.set("Content-Language", httpMetadata.contentLanguage);
+        }
+        if (httpMetadata.contentDisposition) {
+          headers.set("Content-Disposition", httpMetadata.contentDisposition);
+        }
+        if (httpMetadata.contentEncoding) {
+          headers.set("Content-Encoding", httpMetadata.contentEncoding);
+        }
+        if (httpMetadata.cacheControl) {
+          headers.set("Cache-Control", httpMetadata.cacheControl);
+        }
+        if (httpMetadata.cacheExpiry) {
+          headers.set("Expires", httpMetadata.cacheExpiry.toUTCString());
+        }
+      }
+    },
+  };
+};
+
+/**
+ * Creates an empty R2Checksums object with toJSON method
+ */
+function createEmptyR2Checksums(): R2Checksums {
+  return {
+    toJSON(): R2StringChecksums {
+      return {};
+    },
+  };
+}
 
 const _R2Bucket = Resource(
   "cloudflare::R2Bucket",
@@ -1069,8 +1249,7 @@ async function emptyBucket(
     });
     if (result.objects.length) {
       // Another undocumented API! But it lets us delete multiple objects at once instead of one by one.
-      await extractCloudflareResult(
-        `delete ${result.objects.length} objects from bucket "${bucketName}"`,
+      const response = await withRetries(async () =>
         api.delete(
           `/accounts/${api.accountId}/r2/buckets/${bucketName}/objects`,
           {
@@ -1079,6 +1258,10 @@ async function emptyBucket(
             body: JSON.stringify(result.objects.map((object) => object.key)),
           },
         ),
+      );
+      await extractCloudflareResult(
+        `delete ${result.objects.length} objects from bucket "${bucketName}"`,
+        Promise.resolve(response),
       );
       if (result.cursor) {
         cursor = result.cursor;
@@ -1177,10 +1360,15 @@ export async function listObjects(
   if (props.limit) {
     params.set("limit", props.limit.toString());
   }
-  const response = await api.get(
-    `/accounts/${api.accountId}/r2/buckets/${bucketName}/objects?${params.toString()}`,
-    { headers: withJurisdiction(props) },
-  );
+  // Wrap API call with retries to catch both transport and API error responses
+  const response = await withRetries(async () => {
+    return await api.get(
+      `/accounts/${api.accountId}/r2/buckets/${bucketName}/objects?${params.toString()}`,
+      { headers: withJurisdiction(props) },
+    );
+  });
+
+  // Parse and transform response after retry logic completes
   const json: {
     result: {
       key: string;
@@ -1197,14 +1385,6 @@ export async function listObjects(
     errors: CloudflareApiErrorPayload[];
   } = await response.json();
   if (!json.success) {
-    // 10006 indicates that the bucket does not exist, so there are no objects to list
-    if (json.errors.some((e) => e.code === 10006)) {
-      return {
-        objects: [],
-        cursor: undefined,
-        truncated: false,
-      };
-    }
     throw new CloudflareApiError(
       `Failed to list objects in bucket "${bucketName}": ${json.errors
         .map(
@@ -1219,7 +1399,6 @@ export async function listObjects(
     );
   }
   return {
-    // keys: json.result.map((object) => object.key),
     objects: json.result.map((object) => ({
       key: object.key,
       etag: object.etag,
@@ -1425,7 +1604,7 @@ export async function getBucketLockRules(
 export async function headObject(
   api: CloudflareApi,
   { bucketName, key }: { bucketName: string; key: string },
-): Promise<R2ObjectMetadata | null> {
+): Promise<R2Object | null> {
   const response = await withRetries(
     async () =>
       await api.get(
@@ -1439,13 +1618,9 @@ export async function headObject(
   } else if (!response.ok) {
     throw await handleApiError(response, "head", "object", key);
   }
-  return {
-    key,
-    etag: response.headers.get("ETag")?.replace(/"/g, "")!,
-    uploaded: parseDate(response.headers),
-    size: Number(response.headers.get("Content-Length")),
-    httpMetadata: mapHeadersToHttpMetadata(response.headers),
-  };
+
+  // Extract metadata from headers using shared helper
+  return extractR2ObjectMetadata(key, response.headers);
 }
 
 const withRetries = (f: () => Promise<Response>) => {
@@ -1626,7 +1801,12 @@ function mapHeadersToHttpMetadata(headers: Headers): R2HTTPMetadata {
 
 export async function putObject(
   api: CloudflareApi,
-  { bucketName, key, object, options }: {
+  {
+    bucketName,
+    key,
+    object,
+    options,
+  }: {
     bucketName: string;
     key: string;
     object: PutObjectObject;
@@ -1641,7 +1821,6 @@ export async function putObject(
         ? mapHttpMetadataToHeaders(options?.httpMetadata)
         : {}),
     };
-
 
     const response = await api.put(
       `/accounts/${api.accountId}/r2/buckets/${bucketName}/objects/${key}`,
@@ -1677,7 +1856,11 @@ export async function deleteObject(
 export async function createMultipartUploadApi(
   _api: CloudflareApi,
   s3: R2S3Client,
-  { bucketName, key, options = {} }: {
+  {
+    bucketName,
+    key,
+    options = {},
+  }: {
     bucketName: string;
     key: string;
     options?: R2MultipartOptions;
@@ -1733,7 +1916,14 @@ export async function createMultipartUploadApi(
 export async function uploadPartApi(
   _api: CloudflareApi,
   s3: R2S3Client,
-  { bucketName, key, uploadId, partNumber, value, options = {} }: {
+  {
+    bucketName,
+    key,
+    uploadId,
+    partNumber,
+    value,
+    options = {},
+  }: {
     bucketName: string;
     key: string;
     uploadId: string;
@@ -1808,13 +1998,18 @@ export async function uploadPartApi(
 export async function completeMultipartUploadApi(
   api: CloudflareApi,
   s3: R2S3Client,
-  { bucketName, key, uploadId, parts }: {
+  {
+    bucketName,
+    key,
+    uploadId,
+    parts,
+  }: {
     bucketName: string;
     key: string;
     uploadId: string;
     parts: R2UploadedPart[];
   },
-): Promise<R2ObjectContent> {
+): Promise<R2Object> {
   if (parts.length === 0) {
     throw new Error(
       `Multipart upload for "${key}" requires at least one uploaded part.`,
@@ -1885,7 +2080,11 @@ export async function completeMultipartUploadApi(
 export async function abortMultipartUploadApi(
   _api: CloudflareApi,
   s3: R2S3Client,
-  { bucketName, key, uploadId }: {
+  {
+    bucketName,
+    key,
+    uploadId,
+  }: {
     bucketName: string;
     key: string;
     uploadId: string;
@@ -1913,7 +2112,11 @@ export async function abortMultipartUploadApi(
 export async function listMultipartUploadsApi(
   _api: CloudflareApi,
   s3: R2S3Client,
-  { bucketName, keyMarker, uploadIdMarker }: {
+  {
+    bucketName,
+    keyMarker,
+    uploadIdMarker,
+  }: {
     bucketName: string;
     keyMarker?: string;
     uploadIdMarker?: string;
@@ -2157,16 +2360,14 @@ async function toS3Body(
   }
 
   if (value instanceof Readable) {
-    if (sizeHint !== undefined) {
-      return {
-        // Return the original Node stream so aws4fetch can sign without disturbing it.
-        body: value as unknown as BodyInit,
-        size: sizeHint,
-      };
-    }
-    const buffer = await streamToBuffer(
-      Readable.toWeb(value) as unknown as ReadableStream,
-    );
+    // Convert Node.js Readable to Web API ReadableStream
+    const webStream = Readable.toWeb(
+      value,
+    ) as unknown as ReadableStream<Uint8Array>;
+
+    // Always buffer the stream to ensure fetch can send Content-Length header
+    // fetch implementations may ignore Content-Length when body is a ReadableStream
+    const buffer = await streamToBuffer(webStream);
     return { body: new Uint8Array(buffer), size: buffer.length };
   }
 

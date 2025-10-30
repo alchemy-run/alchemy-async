@@ -333,13 +333,25 @@ export class R2RestStateStore implements StateStore {
 
 export function isRetryableError(error: any): boolean {
   if (error instanceof CloudflareApiError) {
-    return (
+    // Retry server errors and timeouts
+    if (
       error.status === 500 ||
       error.status === 502 ||
       error.status === 503 ||
       error.message.includes("timeout") ||
       error.message.includes("internal error")
-    );
+    ) {
+      return true;
+    }
+
+    // Retry 404 errors for buckets that may not have propagated yet
+    // Error code 10006: "The specified bucket does not exist"
+    if (error.status === 404) {
+      return (
+        error.message.includes("10006") ||
+        error.message.includes("specified bucket does not exist")
+      );
+    }
   }
   return false;
 }
