@@ -3,7 +3,7 @@ title: Prisma Postgres
 description: Learn how to manage Prisma Postgres databases, connections, and projects using Alchemy.
 ---
 
-[Prisma Postgres](https://www.prisma.io/docs/platform/about#overview) provides a managed postgres database service. Alchemy provides resource to manage Prisma databases, connections, and projects programmatically.
+[Prisma Postgres](https://prisma.io/postgres?utm_source=alchemy&utm_medium=docs&via=alchemy) provides a managed Postgres database service. Alchemy provides resource to manage Prisma Postgres databases, connections, and projects programmatically.
 
 ## Resources
 
@@ -22,7 +22,7 @@ The service token can be set directly by setting the `PRISMA_SERVICE_TOKEN` envi
 
 ### Overriding per Resource
 
-To support multiple accounts, alchemy allows you to override the authentication token for a resource by setting the `serviceToken` property on prisma resources.
+To support multiple accounts, Alchemy allows you to override the authentication token for a resource by setting the `serviceToken` property on Prisma resources.
 
 ## Cloudflare Workers Hyperdrive Example
 

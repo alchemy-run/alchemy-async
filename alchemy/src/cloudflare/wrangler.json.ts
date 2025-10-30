@@ -1,22 +1,20 @@
 import fs from "node:fs/promises";
 import path from "pathe";
+import type { Unstable_Config as WranglerJsonConfig } from "wrangler";
 import type { Context } from "../context.ts";
 import { Resource } from "../resource.ts";
 import { Scope } from "../scope.ts";
 import { isSecret } from "../secret.ts";
 import { assertNever } from "../util/assert-never.ts";
-import type { Bindings, WorkerBindingRateLimit } from "./bindings.ts";
-import type { R2BucketJurisdiction } from "./bucket.ts";
+import { createCloudflareApi } from "./api.ts";
+import type { Bindings } from "./bindings.ts";
+import { getCloudflareRegistryWithAccountNamespace } from "./container.ts";
 import type { DurableObjectNamespace } from "./durable-object-namespace.ts";
 import type { EventSource } from "./event-source.ts";
 import { isQueueEventSource } from "./event-source.ts";
 import { isQueue } from "./queue.ts";
 import { unencryptSecrets } from "./util/filter-env-bindings.ts";
 import { isWorker, type Worker, type WorkerProps } from "./worker.ts";
-
-type WranglerJsonRateLimit = Omit<WorkerBindingRateLimit, "type"> & {
-  type: "rate_limit";
-};
 
 /**
  * Properties for wrangler.json configuration file
@@ -162,13 +160,17 @@ export async function WranglerJson(
         }
       : undefined,
     placement: worker.placement,
-    limits: worker.limits,
+    limits: worker.limits
+      ? {
+          cpu_ms: worker.limits.cpu_ms ?? 30_000,
+        }
+      : undefined,
     logpush: worker.logpush,
   };
 
   // Process bindings if they exist
   if (worker.bindings) {
-    processBindings(
+    await processBindings(
       spec,
       worker.bindings,
       worker.eventSources,
@@ -176,6 +178,8 @@ export async function WranglerJson(
       cwd,
       props.secrets ?? false,
       Scope.current.local && !props.worker.dev?.remote,
+      async () =>
+        worker.accountId ?? (await createCloudflareApi(worker)).accountId,
     );
   }
 
@@ -197,7 +201,7 @@ export async function WranglerJson(
     spec.triggers = { crons: worker.crons };
   }
 
-  if (spec.assets) {
+  if (spec.assets && spec.assets.directory) {
     spec.assets.directory = path.relative(dirname, spec.assets.directory);
   }
 
@@ -212,7 +216,7 @@ export async function WranglerJson(
     // but do not modify `finalSpec` so that way secrets aren't written to state unencrypted.
     const withSecretsUnwrapped = {
       ...finalSpec,
-      vars: unencryptSecrets(finalSpec.vars ?? {}),
+      vars: unencryptSecrets((finalSpec.vars as Record<string, string>) ?? {}),
     };
     await writeJSON(filePath, withSecretsUnwrapped);
   } else {
@@ -235,317 +239,12 @@ const writeJSON = async (filePath: string, content: any) => {
 /**
  * Wrangler.json configuration specification based on Cloudflare's schema
  */
-export interface WranglerJsonSpec {
-  /**
-   * The name of the worker
-   */
-  name: string;
-
-  /**
-   * Main entry point for the worker
-   */
-  main?: string;
-
-  /**
-   * A date in the form yyyy-mm-dd used to determine Workers runtime version
-   */
-  compatibility_date?: string;
-
-  /**
-   * A list of flags that enable features from upcoming Workers runtime
-   */
-  compatibility_flags?: string[];
-
-  /**
-   * The placement mode for the worker
-   */
-  placement?: {
-    mode: "smart";
-  };
-
-  /**
-   * The CPU time limit for the worker
-   */
-  limits?: {
-    cpu_ms?: number;
-  };
-
-  /**
-   * Send Trace Events from this Worker to Workers Logpush.
-   *
-   * This will not configure a corresponding Logpush job automatically.
-   *
-   * @default false
-   */
-  logpush?: boolean;
-
-  /**
-   * Whether to enable a workers.dev URL for this worker
-   */
-  workers_dev?: boolean;
-
-  /**
-   * Routes to attach to the worker
-   */
-  routes?: string[];
-
-  /**
-   * Scheduled triggers for the worker
-   */
-  triggers?: {
-    crons: string[];
-  };
-
-  /**
-   * AI bindings
-   */
-  ai?: {
-    binding: string;
-    remote?: boolean;
-  };
-
-  /**
-   * Browser bindings
-   */
-  browser?: {
-    binding: string;
-    remote?: boolean;
-  };
-
-  /**
-   * Images bindings
-   */
-  images?: {
-    binding: string;
-    remote?: boolean;
-  };
-
-  /**
-   * KV Namespace bindings
-   */
-  kv_namespaces?: {
-    binding: string;
-    id: string;
-    /**
-     * The ID of the KV namespace used during `wrangler dev`
-     */
-    preview_id?: string;
-    remote?: boolean;
-  }[];
-
-  /**
-   * Durable Object bindings
-   */
-  durable_objects?: {
-    bindings: {
-      name: string;
-      class_name: string;
-      script_name?: string;
-      environment?: string;
-    }[];
-  };
-
-  /**
-   * R2 bucket bindings
-   */
-  r2_buckets?: {
-    binding: string;
-    bucket_name: string;
-    /**
-     * The preview name of this R2 bucket at the edge.
-     */
-    preview_bucket_name?: string;
-    remote?: boolean;
-  }[];
-
-  /**
-   * Queue bindings
-   */
-  queues?: {
-    producers?: { queue: string; binding: string }[];
-    consumers?: QueueConsumerWranglerJson[];
-  };
-
-  /**
-   * Service bindings
-   */
-  services?: {
-    binding: string;
-    service: string;
-    environment?: string;
-    entrypoint?: string;
-  }[];
-
-  worker_loaders?: {
-    binding: string;
-  }[];
-
-  /**
-   * Workflow bindings
-   */
-  workflows?: {
-    name: string;
-    binding: string;
-    class_name: string;
-    script_name?: string;
-  }[];
-
-  /**
-   * Vectorize index bindings
-   */
-  vectorize?: {
-    binding: string;
-    index_name: string;
-    remote?: boolean;
-  }[];
-
-  /**
-   * Plain text bindings (vars)
-   */
-  vars?: Record<string, string>;
-
-  /**
-   * D1 database bindings
-   */
-  d1_databases?: {
-    binding: string;
-    database_id: string;
-    database_name: string;
-    migrations_dir?: string;
-    /**
-     * The ID of the D1 database used during `wrangler dev`
-     */
-    preview_database_id?: string;
-    remote?: boolean;
-  }[];
-
-  /**
-   * Assets bindings
-   */
-  assets?: {
-    directory: string;
-    binding: string;
-    not_found_handling?: "none" | "404-page" | "single-page-application";
-    html_handling?:
-      | "auto-trailing-slash"
-      | "drop-trailing-slash"
-      | "force-trailing-slash"
-      | "none";
-    run_worker_first?: boolean | string[];
-  };
-
-  /**
-   * Migrations
-   */
-  migrations?: {
-    tag: string;
-    new_sqlite_classes?: string[];
-    new_classes?: string[];
-  }[];
-
-  /**
-   * Workflow bindings
-   */
-  wasm_modules?: Record<string, string>;
-
-  /**
-   * Safe mode configuration
-   */
-  node_compat?: boolean;
-
-  /**
-   * Whether to minify the worker script
-   */
-  minify?: boolean;
-
-  /**
-   * Analytics Engine datasets
-   */
-  analytics_engine_datasets?: { binding: string; dataset: string }[];
-
-  /**
-   * Hyperdrive bindings
-   */
-  hyperdrive?: {
-    binding: string;
-    id: string;
-    localConnectionString?: string;
-  }[];
-
-  /**
-   * Pipelines
-   */
-  pipelines?: { binding: string; pipeline: string }[];
-
-  /**
-   * Secrets Store bindings
-   */
-  secrets_store_secrets?: {
-    binding: string;
-    store_id: string;
-    secret_name: string;
-  }[];
-
-  /**
-   * Version metadata bindings
-   */
-  version_metadata?: {
-    binding: string;
-  };
-
-  /**
-   * Dispatch namespace bindings
-   */
-  dispatch_namespaces?: {
-    binding: string;
-    namespace: string;
-    remote?: boolean;
-  }[];
-
-  /**
-   * Tail consumers that will receive execution logs from this worker
-   */
-  tail_consumers?: Array<{ service: string }>;
-
-  /**
-   * Unsafe bindings section for experimental features
-   */
-  unsafe?: {
-    bindings: WranglerJsonRateLimit[];
-  };
-}
-
-/**
- * Queue consumer bindings for wrangler.json
- */
-interface QueueConsumerWranglerJson {
-  queue: string;
-  /**
-   * The maximum number of messages allowed in each batch.
-   */
-  max_batch_size?: number;
-  /**
-   * The maximum number of concurrent consumers allowed to run at once. Leaving this unset will mean that the number of invocations will scale to the currently supported maximum.
-   */
-  max_concurrency?: number;
-  /**
-   * The maximum number of retries for a message, if it fails or `retryAll()` is invoked.
-   */
-  max_retries?: number;
-  /**
-   * The maximum number of seconds to wait for messages to fill a batch before the batch is sent to the consumer Worker.
-   */
-  max_batch_timeout?: number;
-  /**
-   * The number of seconds to delay retried messages for by default, before they are re-delivered to the consumer. This can be overridden on a per-message or per-batch basis when retrying messages.
-   */
-  retry_delay?: number;
-}
+export interface WranglerJsonSpec extends Partial<WranglerJsonConfig> {}
 
 /**
  * Process worker bindings into wrangler.json format
  */
-function processBindings(
+async function processBindings(
   spec: WranglerJsonSpec,
   bindings: Bindings,
   eventSources: EventSource[] | undefined,
@@ -553,87 +252,37 @@ function processBindings(
   workerCwd: string,
   writeSecrets: boolean,
   local: boolean,
-): void {
+  getAccountId: () => Promise<string>,
+): Promise<void> {
   // Arrays to collect different binding types
-  const kvNamespaces: {
-    binding: string;
-    id: string;
-    preview_id: string;
-    remote?: boolean;
-  }[] = [];
-  const durableObjects: {
-    name: string;
-    class_name: string;
-    script_name?: string;
-    environment?: string;
-  }[] = [];
-  const r2Buckets: {
-    binding: string;
-    bucket_name: string;
-    preview_bucket_name: string;
-    jurisdiction?: R2BucketJurisdiction;
-  }[] = [];
-  const services: {
-    binding: string;
-    service: string;
-    environment?: string;
-    entrypoint?: string;
-  }[] = [];
+  const kvNamespaces: WranglerJsonConfig["kv_namespaces"] = [];
+  const durableObjects: WranglerJsonConfig["durable_objects"]["bindings"] = [];
+  const r2Buckets: WranglerJsonConfig["r2_buckets"] = [];
+  const services: WranglerJsonConfig["services"] = [];
   const secrets: string[] = [];
-  const workflows: {
-    name: string;
-    binding: string;
-    class_name: string;
-    script_name?: string;
-  }[] = [];
-  const d1Databases: {
-    binding: string;
-    database_id: string;
-    database_name: string;
-    migrations_dir?: string;
-    preview_database_id: string;
-    remote?: boolean;
-  }[] = [];
+  const workflows: WranglerJsonConfig["workflows"] = [];
+  const d1Databases: WranglerJsonConfig["d1_databases"] = [];
   const queues: {
-    producers: { queue: string; binding: string }[];
-    consumers: QueueConsumerWranglerJson[];
+    producers: WranglerJsonConfig["queues"]["producers"] & {};
+    consumers: WranglerJsonConfig["queues"]["consumers"] & {};
   } = {
     producers: [],
     consumers: [],
   };
-
-  const new_sqlite_classes: string[] = [];
-  const new_classes: string[] = [];
-
-  const vectorizeIndexes: {
-    binding: string;
-    index_name: string;
-    remote?: boolean;
-  }[] = [];
-  const analyticsEngineDatasets: { binding: string; dataset: string }[] = [];
-  const hyperdrive: {
-    binding: string;
-    id: string;
-    localConnectionString?: string;
-  }[] = [];
-  const pipelines: { binding: string; pipeline: string }[] = [];
-  const secretsStoreSecrets: {
-    binding: string;
-    store_id: string;
-    secret_name: string;
-  }[] = [];
-  const dispatchNamespaces: {
-    binding: string;
-    namespace: string;
-    remote?: boolean;
-  }[] = [];
-  const unsafeBindings: WranglerJsonRateLimit[] = [];
-  const containers: {
-    class_name: string;
-  }[] = [];
-  const workerLoaders: {
-    binding: string;
-  }[] = [];
+  const new_sqlite_classes: WranglerJsonConfig["migrations"][number]["new_sqlite_classes"] =
+    [];
+  const new_classes: WranglerJsonConfig["migrations"][number]["new_classes"] =
+    [];
+  const vectorizeIndexes: WranglerJsonConfig["vectorize"] = [];
+  const analyticsEngineDatasets: WranglerJsonConfig["analytics_engine_datasets"] =
+    [];
+  const hyperdrive: WranglerJsonConfig["hyperdrive"] = [];
+  const pipelines: WranglerJsonConfig["pipelines"] = [];
+  const secretsStoreSecrets: WranglerJsonConfig["secrets_store_secrets"] = [];
+  const dispatchNamespaces: WranglerJsonConfig["dispatch_namespaces"] = [];
+  const ratelimits: WranglerJsonConfig["ratelimits"] = [];
+  const containers: WranglerJsonConfig["containers"] = [];
+  const workerLoaders: WranglerJsonConfig["worker_loaders"] = [];
 
   for (const eventSource of eventSources ?? []) {
     if (isQueueEventSource(eventSource)) {
@@ -838,9 +487,8 @@ function processBindings(
         remote: true,
       });
     } else if (binding.type === "ratelimit") {
-      unsafeBindings.push({
+      ratelimits.push({
         name: bindingName,
-        type: "rate_limit",
         namespace_id: binding.namespace_id.toString(),
         simple: binding.simple,
       });
@@ -852,8 +500,23 @@ function processBindings(
         class_name: binding.className,
         script_name: binding.scriptName,
       });
+      new_sqlite_classes.push(binding.className);
+      // If there are build options, use the local image path, otherwise use the image reference
+      const image = binding.image.build
+        ? path.resolve(
+            workerCwd,
+            path.join(
+              binding.image.build.context ?? process.cwd(),
+              binding.image.build.dockerfile ?? "Dockerfile",
+            ),
+          )
+        : getCloudflareRegistryWithAccountNamespace(
+            await getAccountId(),
+            binding.image.imageRef,
+          );
       containers.push({
         class_name: binding.className,
+        image,
       });
     } else if (binding.type === "worker_loader") {
       workerLoaders.push({
@@ -933,10 +596,12 @@ function processBindings(
     spec.dispatch_namespaces = dispatchNamespaces;
   }
 
-  if (unsafeBindings.length > 0) {
-    spec.unsafe = {
-      bindings: unsafeBindings,
-    };
+  if (containers.length > 0) {
+    spec.containers = containers;
+  }
+
+  if (ratelimits.length > 0) {
+    spec.ratelimits = ratelimits;
   }
 
   if (workerLoaders.length > 0) {

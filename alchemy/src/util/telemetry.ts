@@ -354,6 +354,7 @@ async function fetchNoResponse(
     body?: string;
     headers?: Record<string, string>;
     method?: string;
+    timeout?: number;
   } = {},
 ) {
   const parsedUrl = new URL(url);
@@ -372,12 +373,16 @@ async function fetchNoResponse(
     path: parsedUrl.pathname + parsedUrl.search,
     method: options.method || "GET",
     headers,
+    signal: AbortSignal.timeout(options?.timeout ?? 3000),
   };
 
   await new Promise<void>((resolve, reject) => {
     const req = client.request(requestOptions);
 
     req.on("error", (error) => {
+      if (error.name === "AbortError" && !SUPPRESS_TELEMETRY_ERRORS) {
+        logger.warn("Telemetry request timed out");
+      }
       reject(error);
     });
 

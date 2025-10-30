@@ -56,6 +56,7 @@ export function createPrismaApi(
       throwOnError: true,
       headers: {
         Authorization: `Bearer ${serviceToken}`,
+        "User-Agent": "alchemy/1.0",
       },
     }),
   );

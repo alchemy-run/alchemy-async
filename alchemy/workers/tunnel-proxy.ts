@@ -5,7 +5,7 @@ interface Env {
   TUNNEL_HOST: string;
 }
 
-declare const ALCHEMY_VERSION: string; // injected during `bun run build:workers`
+declare const ALCHEMY_VERSION: string; // injected during build
 
 export default {
   async fetch(request: Request, env: Env) {
