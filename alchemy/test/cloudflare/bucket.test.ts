@@ -43,7 +43,7 @@ describe("R2 Bucket Resource", async () => {
         adopt: true,
       });
       expect(bucket.name).toEqual(testId);
-      expect(bucket.domain).toBeUndefined();
+      expect(bucket.devDomain).toBeUndefined();
 
       // Check if bucket exists by getting it explicitly
       const gotBucket = await getBucket(api, testId);
@@ -52,9 +52,9 @@ describe("R2 Bucket Resource", async () => {
       // Update the bucket to enable public access
       bucket = await R2Bucket(testId, {
         name: testId,
-        allowPublicAccess: true,
+        devDomain: true,
       });
-      expect(bucket.domain).toBeDefined();
+      expect(bucket.devDomain).toMatch(/.*\.r2\.dev$/);
 
       const publicAccessResponse = await api.get(
         `/accounts/${api.accountId}/r2/buckets/${testId}/domains/managed`,
@@ -271,7 +271,7 @@ describe("R2 Bucket Resource", async () => {
       const bucket = await R2Bucket(bucketName, {
         name: bucketName,
         adopt: true,
-        allowPublicAccess: true,
+        devDomain: true,
         empty: true,
         cors: [
           {
@@ -282,8 +282,8 @@ describe("R2 Bucket Resource", async () => {
           },
         ],
       });
-      expect(bucket.allowPublicAccess).toEqual(true);
-      expect(bucket.domain).toBeDefined();
+      expect(bucket.devDomain).toMatch(/.*\.r2\.dev$/);
+      expect(bucket.domains).toBeUndefined();
       expect(bucket.cors).toEqual([
         {
           allowed: {
@@ -302,7 +302,7 @@ describe("R2 Bucket Resource", async () => {
       // Loop for up to 60s until CORS headers are properly propagated (eventually consistent)
       for (let i = 0; i < 60; i++) {
         const getResponse = await fetch(
-          `https://${bucket.domain}/test-file.txt`,
+          `https://${bucket.devDomain}/test-file.txt`,
           {
             method: "OPTIONS",
             headers: {
@@ -364,10 +364,7 @@ describe("R2 Bucket Resource", async () => {
       });
 
       await new Promise((r) => setTimeout(r, 1000));
-      const rules = await getBucketLifecycleRules(api, bucketName, {
-        ...bucket,
-        delete: true,
-      });
+      const rules = await getBucketLifecycleRules(api, bucketName, bucket);
 
       const ids = rules.map((r: any) => r.id).filter(Boolean);
       expect(ids).toContain("abort-mpu-7d");
@@ -381,10 +378,7 @@ describe("R2 Bucket Resource", async () => {
         lifecycle: [],
       });
       await new Promise((r) => setTimeout(r, 1000));
-      const cleared = await getBucketLifecycleRules(api, bucketName, {
-        ...bucket,
-        delete: true,
-      });
+      const cleared = await getBucketLifecycleRules(api, bucketName, bucket);
       expect(cleared.length).toEqual(0);
     } finally {
       await destroy(scope);
@@ -419,10 +413,7 @@ describe("R2 Bucket Resource", async () => {
       });
 
       await new Promise((r) => setTimeout(r, 1000));
-      const rules = await getBucketLockRules(api, bucketName, {
-        ...bucket,
-        delete: true,
-      });
+      const rules = await getBucketLockRules(api, bucketName, bucket);
 
       const ids = rules.map((r: any) => r.id).filter(Boolean);
       expect(ids).toContain("retain-7d");
@@ -436,10 +427,7 @@ describe("R2 Bucket Resource", async () => {
         lock: [],
       });
       await new Promise((r) => setTimeout(r, 1000));
-      const cleared = await getBucketLockRules(api, bucketName, {
-        ...bucket,
-        delete: true,
-      });
+      const cleared = await getBucketLockRules(api, bucketName, bucket);
       expect(cleared.length).toEqual(0);
     } finally {
       await destroy(scope);

@@ -27,13 +27,10 @@ describe("Bucket Custom Domain", () => {
     try {
       bucket = await R2Bucket("bucket", {
         name: `${BRANCH_PREFIX}-bucket-custom-domain`,
-        customDomain: domain,
+        domains: domain,
         adopt: true,
       });
-      expect(bucket.customDomain).toMatchObject({
-        domain,
-        enabled: true,
-      });
+      expect(bucket.domains).toMatchObject([domain]);
       const customDomain = await getBucketCustomDomain(
         api,
         bucket.name,
@@ -64,7 +61,7 @@ describe("Bucket Custom Domain", () => {
     try {
       bucket = await R2Bucket("bucket-delete-false", {
         name: `${BRANCH_PREFIX}-bucket-custom-domain-delete-false`,
-        customDomain: domain,
+        domains: domain,
         adopt: true,
         delete: false,
       });

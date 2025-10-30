@@ -73,7 +73,7 @@ export interface BucketProps extends CloudflareApiOptions {
   /**
    * The custom domain(s) to attach to the bucket.
    */
-  domain?:
+  domains?:
     | string
     | R2BucketCustomDomainOptions
     | string[]
@@ -327,7 +327,10 @@ export type R2Bucket = _R2Bucket & {
 /**
  * Output returned after R2 Bucket creation/update
  */
-type _R2Bucket = Omit<BucketProps, "delete" | "dev"> & {
+type _R2Bucket = Omit<
+  BucketProps,
+  "delete" | "dev" | "domains" | "devDomain"
+> & {
   /**
    * Resource type identifier
    */
@@ -357,12 +360,12 @@ type _R2Bucket = Omit<BucketProps, "delete" | "dev"> & {
   /**
    * The `r2.dev` subdomain for the bucket, if `devDomain` is true
    */
-  devUrl: string | undefined;
+  devDomain: string | undefined;
 
   /**
    * The custom domains for the bucket, if applicable
    */
-  urls: string[] | undefined;
+  domains: string[] | undefined;
 
   /**
    * Development mode properties
@@ -623,11 +626,11 @@ const _R2Bucket = Resource(
     if (this.phase === "update" && this.output?.name !== bucketName) {
       this.replace(
         // force replacement if custom domain is enabled; otherwise, replace will fail because the bucket has child resources
-        !!this.output?.devUrl,
+        !!this.output?.devDomain,
       );
     }
 
-    const devDomain =
+    const isDevDomainEnabled =
       props.devDomain === true || props.allowPublicAccess === true;
     const isLocal = this.scope.local && !props.dev?.remote;
     const dev = {
@@ -637,7 +640,7 @@ const _R2Bucket = Resource(
     } satisfies _R2Bucket["dev"];
     const adopt = props.adopt ?? this.scope.adopt;
 
-    async function createDomains(domain: NonNullable<BucketProps["domain"]>) {
+    async function createDomains(domain: NonNullable<BucketProps["domains"]>) {
       return Promise.all(
         (Array.isArray(domain) ? domain : [domain]).map(async (domain) => {
           const options: R2BucketCustomDomainOptions =
@@ -671,8 +674,8 @@ const _R2Bucket = Resource(
         location: this.output?.location ?? "",
         creationDate: this.output?.creationDate ?? new Date(),
         jurisdiction: this.output?.jurisdiction ?? "default",
-        devUrl: this.output?.devUrl ?? this.output?.domain,
-        urls: props.domain ? await createDomains(props.domain) : undefined,
+        devDomain: this.output?.devDomain ?? this.output?.domain,
+        domains: props.domains ? await createDomains(props.domains) : undefined,
         type: "r2_bucket",
         accountId: this.output?.accountId ?? "",
         cors: props.cors,
@@ -711,10 +714,10 @@ const _R2Bucket = Resource(
           throw err;
         },
       );
-      const devUrl = await putManagedDomain(
+      const devDomain = await putManagedDomain(
         api,
         bucketName,
-        devDomain,
+        isDevDomainEnabled,
         props.jurisdiction,
       );
       if (props.cors?.length) {
@@ -742,9 +745,8 @@ const _R2Bucket = Resource(
         location: bucket.location,
         creationDate: new Date(bucket.creation_date),
         jurisdiction: bucket.jurisdiction,
-        devDomain: devDomain,
-        devUrl: devUrl,
-        urls: props.domain ? await createDomains(props.domain) : undefined,
+        devDomain,
+        domains: props.domains ? await createDomains(props.domains) : undefined,
         type: "r2_bucket",
         accountId: api.accountId,
         lifecycle: props.lifecycle,
@@ -766,12 +768,12 @@ const _R2Bucket = Resource(
       if (!this.output.catalog && props.dataCatalog) {
         this.output.catalog = await enableDataCatalog(api, bucketName);
       }
-      let devUrl = this.output.devUrl ?? this.output.domain;
-      if (!!devUrl !== devDomain) {
-        devUrl = await putManagedDomain(
+      let devDomain = this.output.devDomain ?? this.output.domain;
+      if (!!devDomain !== isDevDomainEnabled) {
+        devDomain = await putManagedDomain(
           api,
           bucketName,
-          devDomain,
+          isDevDomainEnabled,
           props.jurisdiction,
         );
       }
@@ -788,8 +790,8 @@ const _R2Bucket = Resource(
       }
       return {
         ...this.output,
-        devUrl,
-        urls: props.domain ? await createDomains(props.domain) : undefined,
+        devDomain,
+        domains: props.domains ? await createDomains(props.domains) : undefined,
         dev,
         cors: props.cors,
         lifecycle: props.lifecycle,
@@ -1152,7 +1154,7 @@ export async function putBucketLifecycleRules(
 export async function getBucketLifecycleRules(
   api: CloudflareApi,
   bucketName: string,
-  props: BucketProps = {},
+  props: { jurisdiction?: string },
 ): Promise<R2BucketLifecycleRule[]> {
   const res = await api.get(
     `/accounts/${api.accountId}/r2/buckets/${bucketName}/lifecycle`,
@@ -1205,7 +1207,7 @@ export async function putBucketLockRules(
 export async function getBucketLockRules(
   api: CloudflareApi,
   bucketName: string,
-  props: BucketProps = {},
+  props: { jurisdiction?: R2BucketJurisdiction },
 ): Promise<R2BucketLockRule[]> {
   const res = await api.get(
     `/accounts/${api.accountId}/r2/buckets/${bucketName}/lock`,
