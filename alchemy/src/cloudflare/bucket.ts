@@ -543,9 +543,7 @@ export async function R2Bucket(
       options?: Pick<R2PutOptions, "httpMetadata">,
     ): Promise<PutR2ObjectResponse> => {
       if (isLocal) {
-        return await (
-          await localBucket()
-        ).put(
+        return await (await localBucket()).put(
           key,
           typeof value === "string"
             ? value
@@ -1331,12 +1329,7 @@ function mapHeadersToHttpMetadata(headers: Headers): R2HTTPMetadata {
 
 export async function putObject(
   api: CloudflareApi,
-  {
-    bucketName,
-    key,
-    object,
-    options,
-  }: {
+  { bucketName, key, object, options }: {
     bucketName: string;
     key: string;
     object: PutObjectObject;
