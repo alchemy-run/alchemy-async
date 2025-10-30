@@ -1,3 +1,5 @@
+import "../../src/test/vitest.ts";
+
 import { describe, expect } from "vitest";
 import { alchemy } from "../../src/alchemy.ts";
 import { createCloudflareApi } from "../../src/cloudflare/api.ts";
@@ -5,11 +7,15 @@ import {
   deleteBucketCustomDomain,
   getBucketCustomDomain,
 } from "../../src/cloudflare/bucket-custom-domain.ts";
-import { R2Bucket } from "../../src/cloudflare/bucket.ts";
+import {
+  getBucket,
+  R2Bucket,
+  type R2BucketJurisdiction,
+} from "../../src/cloudflare/bucket.ts";
+import { Worker } from "../../src/cloudflare/worker.ts";
 import { destroy } from "../../src/destroy.ts";
 import { BRANCH_PREFIX } from "../util.ts";
-
-import "../../src/test/vitest.ts";
+import { CloudflareApiError } from "../../src/cloudflare/api-error.ts";
 
 const test = alchemy.test(import.meta, {
   prefix: BRANCH_PREFIX,
@@ -44,13 +50,11 @@ describe("Bucket Custom Domain", () => {
     } finally {
       await destroy(scope);
       if (bucket) {
-        const customDomain = await getBucketCustomDomain(
-          api,
+        await assertCustomDomainDeleted(
           bucket.name,
           domain,
           bucket.jurisdiction,
         );
-        expect(customDomain).toBeUndefined();
       }
     }
   });
@@ -87,4 +91,62 @@ describe("Bucket Custom Domain", () => {
       }
     }
   });
+
+  test("does not error on replace when bound to worker", async (scope) => {
+    const domain = `bucket-custom-domain-replace-worker-${Date.now()}.${testDomain}`;
+    try {
+      const bucket1 = await R2Bucket("bucket-replace", {
+        name: `${BRANCH_PREFIX}-bucket-custom-domain-replace-1`,
+        domains: [domain, `1-${domain}`],
+        adopt: true,
+      });
+      await Worker("worker", {
+        name: `${BRANCH_PREFIX}-bucket-custom-domain-replace-worker`,
+        script: `export default { async fetch(request, env) { return Response.json(await env.R2.list()) } }`,
+        bindings: {
+          R2: bucket1,
+        },
+      });
+      await R2Bucket("bucket-replace", {
+        name: `${BRANCH_PREFIX}-bucket-custom-domain-replace-2`,
+        domains: [domain, `2-${domain}`],
+        adopt: true,
+      });
+      await assertBucketDeleted(bucket1); // verify that bucket was replaced
+      await assertCustomDomainDeleted(
+        bucket1.name,
+        domain,
+        bucket1.jurisdiction,
+      );
+    } finally {
+      await destroy(scope);
+    }
+  });
 });
+
+async function assertBucketDeleted(bucket: R2Bucket) {
+  expect(
+    getBucket(api, bucket.name, {
+      jurisdiction: bucket.jurisdiction,
+    }).catch((error) => {
+      if (error instanceof CloudflareApiError && error.status === 404) {
+        return null;
+      }
+      throw error;
+    }),
+  ).resolves.toBeNull();
+}
+
+async function assertCustomDomainDeleted(
+  bucket: string,
+  domain: string,
+  jurisdiction: R2BucketJurisdiction | undefined,
+) {
+  const customDomain = await getBucketCustomDomain(
+    api,
+    bucket,
+    domain,
+    jurisdiction,
+  );
+  expect(customDomain).toBeUndefined();
+}
