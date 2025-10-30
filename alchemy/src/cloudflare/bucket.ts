@@ -626,7 +626,7 @@ const _R2Bucket = Resource(
     if (this.phase === "update" && this.output?.name !== bucketName) {
       this.replace(
         // force replacement if custom domain is enabled; otherwise, replace will fail because the bucket has child resources
-        !!this.output?.devDomain,
+        !!this.output.domains?.length,
       );
     }
 
