@@ -66,7 +66,13 @@ describe("serde", async () => {
 
       const serialized = await serialize(scope, secret);
       expect(serialized).toHaveProperty("@secret");
-      expect(typeof serialized["@secret"]).toBe("string");
+      expect(serialized["@secret"]).toMatchObject({
+        version: "v1",
+        ciphertext: expect.any(String),
+        iv: expect.any(String),
+        salt: expect.any(String),
+        tag: expect.any(String),
+      });
       expect(serialized["@secret"]).not.toContain("sensitive-data");
 
       const deserialized = await deserialize(scope, serialized);
@@ -91,9 +97,15 @@ describe("serde", async () => {
 
       const serialized = await serialize(scope, secret);
       expect(serialized).toHaveProperty("@secret");
-      expect(typeof serialized["@secret"]).toBe("object");
-      expect(serialized["@secret"]).toHaveProperty("data");
-      expect(typeof serialized["@secret"].data).toBe("string");
+      expect(serialized["@secret"]).toMatchObject({
+        data: {
+          version: "v1",
+          ciphertext: expect.any(String),
+          iv: expect.any(String),
+          salt: expect.any(String),
+          tag: expect.any(String),
+        },
+      });
       expect(serialized["@secret"].data).not.toContain("sk-1234567890abcdef");
 
       const deserialized = await deserialize(scope, serialized);
@@ -144,6 +156,54 @@ describe("serde", async () => {
 
       const serialized = await serialize(scope, complexObj);
       const deserialized = await deserialize(scope, serialized);
+
+      // Verify structure
+      expect(deserialized).toHaveProperty("name", "test");
+      expect(deserialized.credentials.username).toBe("user");
+      expect(deserialized.credentials.password).toBeInstanceOf(Secret);
+      expect(deserialized.credentials.password.unencrypted).toBe(
+        "super-secret",
+      );
+      expect(deserialized.credentials.apiKey.unencrypted).toBe("api-key-123");
+      expect(deserialized.settings.enabled).toBe(true);
+
+      expect(deserialized.settings.tokens[0].unencrypted).toBe("token1");
+      expect(deserialized.settings.tokens[1].unencrypted).toBe("token2");
+    } finally {
+      await destroy(scope);
+    }
+  });
+
+  test("decrypts complex objects with secrets encoded by libsodium", async (scope) => {
+    try {
+      const encrypted = {
+        name: "test",
+        credentials: {
+          username: "user",
+          password: {
+            "@secret":
+              "yGFwMrw2A2ZOuDNgg3S/aDJTYeDSO3KRxC/QrICkznZZsVKAib+VlLmwv6NbLOpFOIbXoA==",
+          },
+          apiKey: {
+            "@secret":
+              "VHD8Lt+5vTse5Qh5U5cgzFuAd31zLmWkbPlPTn6lrn15ux4KOQAjoi+ml/4CNHknw81H",
+          },
+        },
+        settings: {
+          enabled: true,
+          tokens: [
+            {
+              "@secret":
+                "d5RfcYaucutM6Vy2sixa3MihNmu76ordWlPz+koWj9wQmSqZYOXdPSVZv97Ogw==",
+            },
+            {
+              "@secret":
+                "gC9xHgqvEg3Bt30X3DUPD1Kcqa91Xe99/tIrmqu1HjfHcdO+6qsas9GuxuvtWQ==",
+            },
+          ],
+        },
+      };
+      const deserialized = await deserialize(scope, encrypted);
 
       // Verify structure
       expect(deserialized).toHaveProperty("name", "test");

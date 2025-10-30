@@ -15,13 +15,11 @@
     "alchemy": "bin/alchemy.js"
   },
   "scripts": {
-    "build:cli": "tsdown",
-    "dev:cli": "tsdown --watch",
-    "build:workers": "bun ./scripts/build-workers.ts",
-    "build": "rm -rf ./*.tsbuildinfo && rm -rf ./lib && tsc -b && bun run build:cli && bun run build:workers",
+    "build": "rm -rf ./*.tsbuildinfo && rm -rf ./lib && tsc -b && tsdown",
+    "dev": "tsdown --watch",
     "drizzle:generate": "bun run scripts/drizzle-generate.ts",
     "postbuild": "cpx 'src/**/*/types.d.ts' lib && cpx 'src/**/*.txt' lib",
-    "publish:npm": "cp ../README.md . && bun run build && bun run build:cli && bun publish && rm README.md"
+    "publish:npm": "cp ../README.md . && bun run build && tsdown && bun publish && rm README.md"
   },
   "files": [
     "bin",
@@ -51,6 +49,10 @@
     "./aws": {
       "bun": "./src/aws/index.ts",
       "import": "./lib/aws/index.js"
+    },
+    "./aws/ec2": {
+      "bun": "./src/aws/ec2/index.ts",
+      "import": "./lib/aws/ec2/index.js"
     },
     "./aws/control": {
       "bun": "./src/aws/control/index.ts",
@@ -211,7 +213,7 @@
     "@aws-sdk/client-sqs": "^3.0.0",
     "@aws-sdk/client-ssm": "^3.0.0",
     "@aws-sdk/client-sts": "^3.0.0",
-    "@cloudflare/vite-plugin": "^1.10.1",
+    "@cloudflare/vite-plugin": "catalog:",
     "@libsql/client": "^0.15.12",
     "@opennextjs/cloudflare": "^1.6.5",
     "astro": "^5.13.2",

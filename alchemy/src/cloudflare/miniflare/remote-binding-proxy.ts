@@ -1,6 +1,8 @@
 import type { RemoteProxyConnectionString } from "miniflare";
 import { WebSocket } from "ws";
+import { Scope } from "../../scope.ts";
 import { HTTPServer } from "../../util/http.ts";
+import { memoize } from "../../util/memoize.ts";
 import { extractCloudflareResult } from "../api-response.ts";
 import type { CloudflareApi } from "../api.ts";
 import type { WorkerBindingSpec } from "../bindings.ts";
@@ -37,7 +39,7 @@ export async function createRemoteProxyWorker(input: {
   bindings: WorkerBindingSpec[];
 }): Promise<RemoteBindingProxy> {
   const script = await getInternalWorkerBundle("remote-binding-proxy");
-  const [token, subdomain] = await Promise.all([
+  const [token, { host, accessToken }] = await Promise.all([
     createWorkersPreviewToken(input.api, {
       name: input.name,
       metadata: {
@@ -52,18 +54,27 @@ export async function createRemoteProxyWorker(input: {
         minimal_mode: true,
       },
     }),
-    getAccountSubdomain(input.api),
+    getAccountSubdomain(input.api).then(async (subdomain) => {
+      const host = `${input.name}.${subdomain}.workers.dev`;
+      return {
+        host,
+        accessToken: await getAccessToken(host),
+      };
+    }),
   ]);
 
-  const host = `${input.name}.${subdomain}.workers.dev`;
+  const baseHeaders: Record<string, string> = {
+    "cf-workers-preview-token": token,
+    host,
+    ...(accessToken ? { cookie: `CF_Authorization=${accessToken}` } : {}),
+  };
 
   const server = new HTTPServer({
     websocket: async (req) => {
       const input = new URL(req.url);
       const proxied = new URL(input.pathname + input.search, `https://${host}`);
       const headers: Record<string, string> = {
-        "cf-workers-preview-token": token,
-        host,
+        ...baseHeaders,
       };
       // We don't want to include all headers because some can mess with websocket connections.
       // However, it's important to include `mf-` prefixed headers to configure bindings for miniflare to work.
@@ -81,8 +92,9 @@ export async function createRemoteProxyWorker(input: {
       const proxied = new URL(url.pathname + url.search, `https://${host}`);
 
       const headers = new Headers(req.headers);
-      headers.set("cf-workers-preview-token", token);
-      headers.set("host", host);
+      for (const [key, value] of Object.entries(baseHeaders)) {
+        headers.set(key, value);
+      }
       headers.delete("cf-connecting-ip");
 
       const res = await fetch(proxied, {
@@ -146,8 +158,13 @@ async function createWorkersPreviewToken(
 
 async function prewarm(url: string, previewToken: string) {
   try {
+    const accessToken = await getAccessToken(new URL(url).hostname);
     await fetch(url, {
-      headers: { "cf-workers-preview-token": previewToken },
+      method: "POST",
+      headers: {
+        "cf-workers-preview-token": previewToken,
+        ...(accessToken ? { cookie: `CF_Authorization=${accessToken}` } : {}),
+      },
     });
   } catch {
     // Ignore prewarm errors
@@ -162,7 +179,12 @@ async function createWorkersPreviewSession(api: CloudflareApi) {
     "create workers preview session",
     api.get(`/accounts/${api.accountId}/workers/subdomain/edge-preview`),
   );
-  const res = await fetch(exchange_url);
+  const accessToken = await getAccessToken(new URL(exchange_url).hostname);
+  const res = await fetch(exchange_url, {
+    headers: {
+      ...(accessToken ? { cookie: `CF_Authorization=${accessToken}` } : {}),
+    },
+  });
   if (!res.ok) {
     throw new Error(
       `Failed to create workers preview session: ${res.status} ${res.statusText}`,
@@ -170,4 +192,53 @@ async function createWorkersPreviewSession(api: CloudflareApi) {
   }
   const json: WorkersPreviewSession = await res.json();
   return json;
+}
+
+/**
+ * If the given domain uses Cloudflare Access, fetches the access token for the domain.
+ * Otherwise, returns undefined.
+ * @see https://github.com/cloudflare/workers-sdk/blob/a5eb5134f73d3983655d325a4de71c6370c57faa/packages/wrangler/src/user/access.ts#L10
+ */
+const getAccessToken = memoize(async (hostname: string) => {
+  if (!(await domainUsesAccess(hostname))) {
+    return undefined;
+  }
+  const result = await Scope.current
+    .exec(`access-${hostname}`, `cloudflared access login ${hostname}`)
+    .catch(() => {
+      throw new Error(
+        [
+          `The \`cloudflared\` CLI is not installed, but is required to access the domain "${hostname}".`,
+          `Please install it from https://developers.cloudflare.com/cloudflare-one/connections/connect-apps/install-and-setup/installation and run \`cloudflare access login ${hostname}\`.`,
+        ].join("\n"),
+      );
+    });
+  const matches = result.stdout.match(/fetched your token:\n\n(.*)/m);
+  if (matches?.[1]) {
+    return matches[1];
+  }
+  const error = new Error(
+    `Failed to get access token for domain "${hostname}".`,
+  );
+  Object.assign(error, result);
+  throw error;
+});
+
+/**
+ * Returns true if the domain uses Cloudflare Access.
+ */
+async function domainUsesAccess(hostname: string) {
+  try {
+    const response = await fetch(`https://${hostname}`, {
+      method: "HEAD",
+      redirect: "manual",
+      signal: AbortSignal.timeout(1000),
+    });
+    return !!(
+      response.status === 302 &&
+      response.headers.get("location")?.includes("cloudflareaccess.com")
+    );
+  } catch {
+    return false;
+  }
 }
