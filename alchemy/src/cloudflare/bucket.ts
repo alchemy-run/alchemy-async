@@ -19,7 +19,7 @@ import {
 } from "./api.ts";
 import {
   R2BucketCustomDomain,
-  type R2BucketCustomDomainProps,
+  type R2BucketCustomDomainOptions,
 } from "./bucket-custom-domain.ts";
 import { deleteMiniflareBinding } from "./miniflare/delete.ts";
 import { getDefaultPersistPath } from "./miniflare/paths.ts";
@@ -60,18 +60,24 @@ export interface BucketProps extends CloudflareApiOptions {
   /**
    * Whether to allow public access through the r2.dev subdomain
    * Only for development purposes - use custom domains for production
+   * @deprecated Use `devDomain` instead
    */
   allowPublicAccess?: boolean;
 
   /**
-   * The custom domain to attach to the bucket.
+   * Whether to allow public access through the r2.dev subdomain
+   * Only for development purposes - use custom domains for production
    */
-  customDomain?:
+  devDomain?: boolean;
+
+  /**
+   * The custom domain(s) to attach to the bucket.
+   */
+  domain?:
     | string
-    | Omit<
-        R2BucketCustomDomainProps,
-        keyof CloudflareApiOptions | "bucketName" | "jurisdiction"
-      >;
+    | R2BucketCustomDomainOptions
+    | string[]
+    | R2BucketCustomDomainOptions[];
 
   /**
    * Whether to delete the bucket.
@@ -344,13 +350,19 @@ type _R2Bucket = Omit<BucketProps, "delete" | "dev"> & {
 
   /**
    * The `r2.dev` subdomain for the bucket, if `allowPublicAccess` is true
+   * @deprecated Use the `devDomain` prop and `devUrl` output instead
    */
-  domain: string | undefined;
+  domain?: string;
 
   /**
-   * The custom domain for the bucket, if one is attached
+   * The `r2.dev` subdomain for the bucket, if `devDomain` is true
    */
-  customDomain: R2BucketCustomDomain | undefined;
+  devUrl: string | undefined;
+
+  /**
+   * The custom domains for the bucket, if applicable
+   */
+  urls: string[] | undefined;
 
   /**
    * Development mode properties
@@ -531,7 +543,9 @@ export async function R2Bucket(
       options?: Pick<R2PutOptions, "httpMetadata">,
     ): Promise<PutR2ObjectResponse> => {
       if (isLocal) {
-        return await (await localBucket()).put(
+        return await (
+          await localBucket()
+        ).put(
           key,
           typeof value === "string"
             ? value
@@ -611,11 +625,12 @@ const _R2Bucket = Resource(
     if (this.phase === "update" && this.output?.name !== bucketName) {
       this.replace(
         // force replacement if custom domain is enabled; otherwise, replace will fail because the bucket has child resources
-        !!this.output?.customDomain,
+        !!this.output?.devUrl,
       );
     }
 
-    const allowPublicAccess = props.allowPublicAccess === true;
+    const devDomain =
+      props.devDomain === true || props.allowPublicAccess === true;
     const isLocal = this.scope.local && !props.dev?.remote;
     const dev = {
       id: this.output?.dev?.id ?? bucketName,
@@ -624,27 +639,32 @@ const _R2Bucket = Resource(
     } satisfies _R2Bucket["dev"];
     const adopt = props.adopt ?? this.scope.adopt;
 
-    async function createDomain(
-      domain: NonNullable<BucketProps["customDomain"]>,
-    ) {
-      return await R2BucketCustomDomain(`${id}-domain`, {
-        ...(typeof domain === "string"
-          ? { domain, adopt, delete: props.delete }
-          : {
-              ...domain,
-              adopt: domain.adopt ?? adopt,
-              delete: domain.delete ?? props.delete,
-            }),
-        accountId: props.accountId,
-        apiKey: props.apiKey,
-        apiToken: props.apiToken,
-        email: props.email,
-        baseUrl: props.baseUrl,
-        profile: props.profile,
-        bucketName: bucketName,
-        jurisdiction: props.jurisdiction,
-        dev,
-      });
+    async function createDomains(domain: NonNullable<BucketProps["domain"]>) {
+      return Promise.all(
+        (Array.isArray(domain) ? domain : [domain]).map(async (domain) => {
+          const options: R2BucketCustomDomainOptions =
+            typeof domain === "string"
+              ? { domain, adopt, delete: props.delete }
+              : {
+                  ...domain,
+                  adopt: domain.adopt ?? adopt,
+                  delete: domain.delete ?? props.delete,
+                };
+          const output = await R2BucketCustomDomain(options.domain, {
+            ...options,
+            accountId: props.accountId,
+            apiKey: props.apiKey,
+            apiToken: props.apiToken,
+            email: props.email,
+            baseUrl: props.baseUrl,
+            profile: props.profile,
+            bucketName: bucketName,
+            jurisdiction: props.jurisdiction,
+            dev,
+          });
+          return output.domain;
+        }),
+      );
     }
 
     if (isLocal) {
@@ -653,11 +673,8 @@ const _R2Bucket = Resource(
         location: this.output?.location ?? "",
         creationDate: this.output?.creationDate ?? new Date(),
         jurisdiction: this.output?.jurisdiction ?? "default",
-        allowPublicAccess,
-        domain: this.output?.domain,
-        customDomain: props.customDomain
-          ? await createDomain(props.customDomain)
-          : undefined,
+        devUrl: this.output?.devUrl ?? this.output?.domain,
+        urls: props.domain ? await createDomains(props.domain) : undefined,
         type: "r2_bucket",
         accountId: this.output?.accountId ?? "",
         cors: props.cors,
@@ -696,10 +713,10 @@ const _R2Bucket = Resource(
           throw err;
         },
       );
-      const domain = await putManagedDomain(
+      const devUrl = await putManagedDomain(
         api,
         bucketName,
-        allowPublicAccess,
+        devDomain,
         props.jurisdiction,
       );
       if (props.cors?.length) {
@@ -727,11 +744,9 @@ const _R2Bucket = Resource(
         location: bucket.location,
         creationDate: new Date(bucket.creation_date),
         jurisdiction: bucket.jurisdiction,
-        allowPublicAccess,
-        domain,
-        customDomain: props.customDomain
-          ? await createDomain(props.customDomain)
-          : undefined,
+        devDomain: devDomain,
+        devUrl: devUrl,
+        urls: props.domain ? await createDomains(props.domain) : undefined,
         type: "r2_bucket",
         accountId: api.accountId,
         lifecycle: props.lifecycle,
@@ -753,12 +768,12 @@ const _R2Bucket = Resource(
       if (!this.output.catalog && props.dataCatalog) {
         this.output.catalog = await enableDataCatalog(api, bucketName);
       }
-      let domain = this.output.domain;
-      if (!!domain !== allowPublicAccess) {
-        domain = await putManagedDomain(
+      let devUrl = this.output.devUrl ?? this.output.domain;
+      if (!!devUrl !== devDomain) {
+        devUrl = await putManagedDomain(
           api,
           bucketName,
-          allowPublicAccess,
+          devDomain,
           props.jurisdiction,
         );
       }
@@ -775,15 +790,12 @@ const _R2Bucket = Resource(
       }
       return {
         ...this.output,
-        allowPublicAccess,
+        devUrl,
+        urls: props.domain ? await createDomains(props.domain) : undefined,
         dev,
         cors: props.cors,
         lifecycle: props.lifecycle,
         lock: props.lock,
-        domain,
-        customDomain: props.customDomain
-          ? await createDomain(props.customDomain)
-          : undefined,
       };
     }
   },
@@ -1319,7 +1331,12 @@ function mapHeadersToHttpMetadata(headers: Headers): R2HTTPMetadata {
 
 export async function putObject(
   api: CloudflareApi,
-  { bucketName, key, object, options }: {
+  {
+    bucketName,
+    key,
+    object,
+    options,
+  }: {
     bucketName: string;
     key: string;
     object: PutObjectObject;

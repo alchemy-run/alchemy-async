@@ -12,7 +12,30 @@ import { withJurisdiction, type R2BucketJurisdiction } from "./bucket";
 import { inferZoneIdFromPattern } from "./route";
 import type { Zone } from "./zone";
 
-export interface R2BucketCustomDomainProps extends CloudflareApiOptions {
+export interface R2BucketCustomDomainProps
+  extends CloudflareApiOptions,
+    R2BucketCustomDomainOptions {
+  /**
+   * The bucket to attach the domain to.
+   */
+  bucketName: string;
+
+  /**
+   * The jurisdiction of the bucket.
+   * @default "default"
+   */
+  jurisdiction?: R2BucketJurisdiction;
+
+  /**
+   * Development mode properties
+   * @internal
+   */
+  dev?: {
+    remote?: boolean;
+  };
+}
+
+export interface R2BucketCustomDomainOptions {
   /**
    * The domain name to attach to the bucket.
    */
@@ -53,25 +76,6 @@ export interface R2BucketCustomDomainProps extends CloudflareApiOptions {
    * @default true
    */
   delete?: boolean;
-
-  /**
-   * The bucket to attach the domain to.
-   */
-  bucketName: string;
-
-  /**
-   * The jurisdiction of the bucket.
-   * @default "default"
-   */
-  jurisdiction?: R2BucketJurisdiction;
-
-  /**
-   * Development mode properties
-   * @internal
-   */
-  dev?: {
-    remote?: boolean;
-  };
 }
 
 export type R2BucketCustomDomain = {
