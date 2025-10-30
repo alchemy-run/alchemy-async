@@ -58,9 +58,9 @@ import { R2Bucket } from "alchemy/cloudflare";
 
 const publicBucket = await R2Bucket("public-assets", {
   name: "public-assets",
-  allowPublicAccess: true,
+  devDomain: true,
 });
-console.log(publicBucket.domain); // [random-id].r2.dev
+console.log(publicBucket.devDomain); // [random-id].r2.dev
 ```
 
 This enables the `r2.dev` domain for the bucket. This URL is rate-limited and not recommended for production use.
@@ -74,7 +74,7 @@ import { R2Bucket } from "alchemy/cloudflare";
 
 const customDomainBucket = await R2Bucket("custom-domain-bucket", {
   name: "custom-domain-bucket",
-  customDomain: "custom-domain.com",
+  domains: "custom-domain.com", // or ["custom-domain-1.com", "custom-domain-2.com"] to set more than one
 });
 ```
 
