@@ -353,7 +353,7 @@ type _R2Bucket = Omit<
 
   /**
    * The `r2.dev` subdomain for the bucket, if `allowPublicAccess` is true
-   * @deprecated Use the `devDomain` prop and `devUrl` output instead
+   * @deprecated Use `devDomain` instead
    */
   domain?: string;
 
