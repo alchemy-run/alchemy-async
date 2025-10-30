@@ -312,7 +312,10 @@ export async function prepareWorkerMetadata(
         // let's now apply a herusitic based on binding name (assume binding name is consistent)
         // TODO(sam): this has a chance of being wrong, is that OK? Users should be encouraged to upgrade alchemy version and re-deploy
         const object = props.bindings?.[oldBinding.name];
-        if (object && isDurableObjectNamespace(object)) {
+        if (
+          object &&
+          (isDurableObjectNamespace(object) || isContainer(object))
+        ) {
           if (object.className === oldBinding.class_name) {
             // this is relatively safe to assume is the right match, do not delete
             return [];
