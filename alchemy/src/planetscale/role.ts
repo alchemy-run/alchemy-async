@@ -51,6 +51,12 @@ export interface RoleProps extends PlanetScaleProps {
    * @default true
    */
   delete?: boolean;
+
+  /**
+   * successor role
+   * @default postgres
+   */
+  successor?: string | Role;
 }
 
 /**
@@ -123,6 +129,11 @@ export interface Role extends Omit<RoleProps, "inheritedRoles"> {
    * The roles that this role inherits from.
    */
   inheritedRoles: InheritedRole[];
+
+  /**
+   * The successor role
+   */
+  successor: string;
 }
 
 /**
@@ -198,10 +209,18 @@ export const Role = Resource(
       : props.inheritedRoles.inheritedRoles;
     const shouldDelete = props.delete ?? false;
 
+    const successorRole =
+      typeof props.successor === "string"
+        ? props.successor
+        : (props.successor?.name ?? "postgres");
+
     switch (this.phase) {
       case "delete": {
         if (shouldDelete && this.output?.id) {
           const res = await api.deleteRole({
+            body: {
+              successor: successorRole,
+            },
             path: {
               organization,
               database,
@@ -275,6 +294,7 @@ export const Role = Resource(
           expiresAt: data.expires_at,
           databaseName: data.database_name,
           inheritedRoles,
+          successor: successorRole,
           connectionUrl: alchemy.secret(
             `postgresql://${data.username}:${data.password}@${data.access_host_url}:5432/${data.database_name}?sslmode=verify-full`,
           ),
@@ -284,9 +304,16 @@ export const Role = Resource(
         };
       }
       case "update": {
-        // According to the types, the only property that can be updated is the name.
-        // However, I was getting 500 errors when trying to update the name, so we'll just replace.
-        return this.replace();
+        if (successorRole !== this.output.successor) {
+          // According to the types, the only property that can be updated is the name.
+          // However, I was getting 500 errors when trying to update the name, so we'll just replace.
+          return this.replace();
+        } else {
+          return {
+            ...this.output,
+            successor: successorRole,
+          };
+        }
       }
     }
   },
