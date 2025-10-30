@@ -1,4 +1,5 @@
 import type { PluginConfig } from "@cloudflare/vite-plugin";
+import type { PluginOption } from "vite";
 import alchemyVite from "../vite/plugin.ts";
 
 const alchemy = (config: PluginConfig = {}): PluginOption => {
@@ -6,7 +7,7 @@ const alchemy = (config: PluginConfig = {}): PluginOption => {
   if (
     process.argv.some((arg) => arg.includes("react-router")) &&
     process.argv.includes("typegen")
-  )
+  ) {
     return null;
   }
   return alchemyVite({
