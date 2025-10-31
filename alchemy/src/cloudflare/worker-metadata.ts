@@ -686,10 +686,11 @@ export async function prepareWorkerMetadata(
 
 export function bumpMigrationTagVersion(tag?: string) {
   if (tag) {
-    if (!tag.match(/^v\d+$/)) {
-      throw new Error(`Invalid tag format: ${tag}. Expected format: v<number>`);
+    const version = tag.match(/^(alchemy:)?v(\d+)$/)?.[2];
+    if (!version) {
+      return "alchemy:v1";
     }
-    return `v${Number.parseInt(tag.slice(1), 10) + 1}`;
+    return `alchemy:v${Number.parseInt(version, 10) + 1}`;
   }
   return undefined;
 }
