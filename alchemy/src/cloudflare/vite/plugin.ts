@@ -26,9 +26,6 @@ const alchemy = (config?: PluginConfig): PluginOption => {
         config?.configPath ?? getDefaultConfigPath(),
       ),
       persistState,
-      experimental: config?.experimental ?? {
-        remoteBindings: true,
-      },
     }),
     {
       name: "alchemy-supress-watch",

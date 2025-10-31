@@ -39,9 +39,6 @@ export const getPlatformProxyOptions = (
     ...input,
     configPath: validateConfigPath(input.configPath ?? getDefaultConfigPath()),
     persist,
-    experimental: (input as any).experimental ?? {
-      remoteBindings: true,
-    },
   };
 };
 

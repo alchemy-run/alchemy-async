@@ -213,7 +213,7 @@
     "@aws-sdk/client-sqs": "^3.0.0",
     "@aws-sdk/client-ssm": "^3.0.0",
     "@aws-sdk/client-sts": "^3.0.0",
-    "@cloudflare/vite-plugin": "^1.10.1",
+    "@cloudflare/vite-plugin": "catalog:",
     "@libsql/client": "^0.15.12",
     "@opennextjs/cloudflare": "^1.6.5",
     "astro": "^5.13.2",

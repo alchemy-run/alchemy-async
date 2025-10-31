@@ -49,21 +49,34 @@ const euBucket = await R2Bucket("eu-bucket", {
 });
 ```
 
-## With Public Access
+## With `r2.dev` Domain
 
-Create a development bucket with public access enabled:
+Create a development bucket with the `r2.dev` domain enabled:
 
 ```ts
 import { R2Bucket } from "alchemy/cloudflare";
 
 const publicBucket = await R2Bucket("public-assets", {
   name: "public-assets",
-  allowPublicAccess: true,
+  devDomain: true,
 });
-console.log(publicBucket.domain); // [random-id].r2.dev
+console.log(publicBucket.devDomain); // [random-id].r2.dev
 ```
 
 This enables the `r2.dev` domain for the bucket. This URL is rate-limited and not recommended for production use.
+
+## With Custom Domain
+
+Create a bucket with a custom domain:
+
+```ts
+import { R2Bucket } from "alchemy/cloudflare";
+
+const customDomainBucket = await R2Bucket("custom-domain-bucket", {
+  name: "custom-domain-bucket",
+  domains: "custom-domain.com", // or ["custom-domain-1.com", "custom-domain-2.com"] to set more than one
+});
+```
 
 ## With CORS
 

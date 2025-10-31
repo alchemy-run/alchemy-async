@@ -15,6 +15,7 @@ export * from "./astro/astro.ts";
 export * from "./bindings.ts";
 export * from "./bound.ts";
 export * from "./browser-rendering.ts";
+export * from "./bucket-custom-domain.ts";
 export * from "./bucket-object.ts";
 export * from "./bucket.ts";
 export * from "./bun-spa/bun-spa.ts";
