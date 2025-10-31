@@ -61,6 +61,7 @@ import { Workflow, isWorkflow, upsertWorkflow } from "./workflow.ts";
 // This import is here to avoid errors when destroying the `Bundle` resource.
 import "../esbuild/bundle.ts";
 import { Scope } from "../scope.ts";
+import { extractCloudflareResult } from "./api-response.ts";
 import type { WorkerRef } from "./worker-ref.ts";
 import { createEmptyWorker, exists } from "./worker-stub.ts";
 
@@ -1586,54 +1587,40 @@ export async function putWorker(
   return withExponentialBackoff(
     async () => {
       const { body, endpoint, method } = await prepareWorkerUpload(api, props);
-      const uploadResponse = await api.fetch(endpoint, {
-        method,
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-        body,
-      });
-
-      // Check if the upload was successful
-      if (!uploadResponse.ok) {
-        try {
-          return await handleApiError(
-            uploadResponse,
-            version ? "uploading worker version" : "uploading worker script",
-            "worker",
-            workerName,
-          );
-        } catch (error) {
-          if (error instanceof CloudflareApiError && error.status === 412) {
-            // this happens when adopting a Worker managed with Wrangler
-            // because wrangler includes a migration tag and we do not
-            // currently, the only way to discover the old_tag is through the error message
-            // Get Worker Script Settings is meant to return it (according to the docs)
-            // but it doesn't work at runtime
-            //
-            // so, we catch the error and parse out the tag and then retry
-            if (error.message.includes("when expected tag is")) {
-              const newTag = error.message.match(
-                /when expected tag is ['"]?(v\d+)['"]?/,
-              )?.[1];
-              if (newTag) {
-                return await putWorker(api, {
-                  ...props,
-                  migrationTag: newTag,
-                });
-              }
-            } else {
-              throw error;
-            }
-          } else {
-            throw error;
+      try {
+        return await extractCloudflareResult<PutWorkerResult>(
+          version
+            ? `upload version for worker "${workerName}"`
+            : `upload worker script "${workerName}"`,
+          api.fetch(endpoint, {
+            method,
+            headers: {
+              "Content-Type": "multipart/form-data",
+            },
+            body,
+          }),
+        );
+      } catch (error) {
+        if (error instanceof CloudflareApiError && error.status === 412) {
+          // this happens when adopting a Worker managed with Wrangler
+          // because wrangler includes a migration tag and we do not
+          // currently, the only way to discover the old_tag is through the error message
+          // Get Worker Script Settings is meant to return it (according to the docs)
+          // but it doesn't work at runtime
+          //
+          // so, we catch the error and parse out the tag and then retry
+          const newTag = error.message.match(
+            /when expected tag is ['"]?([^'"]+)['"]?/,
+          )?.[1];
+          if (newTag) {
+            return await putWorker(api, {
+              ...props,
+              migrationTag: newTag,
+            });
           }
         }
+        throw error;
       }
-      const responseData = (await uploadResponse.json()) as {
-        result: PutWorkerResult;
-      };
-      return responseData.result;
     },
     (err) =>
       err.status === 404 ||
