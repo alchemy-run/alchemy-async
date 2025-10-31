@@ -18,7 +18,7 @@
       "alchemy": "link:alchemy",
       "@cloudflare/workers-types": "^4.20250805.0",
       "@cloudflare/vite-plugin": "^1.13.14",
-      "vite": "^6.3.5",
+      "vite": "^7.1.9",
       "typescript": "^5.8.3"
     }
   },
