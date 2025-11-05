@@ -31,7 +31,7 @@ export async function safeFetch(
   throw latestErr;
 }
 
-function isTransientNetworkError(err: any) {
+export function isTransientNetworkError(err: any) {
   return (
     err?.code === "UND_ERR_SOCKET" ||
     err?.code === "ECONNRESET" ||

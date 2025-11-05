@@ -12,6 +12,7 @@ import { Scope } from "../scope.ts";
 import { parseOption } from "./cli-args.ts";
 import { logger } from "./logger.ts";
 import { memoize } from "./memoize.ts";
+import { isTransientNetworkError } from "./safe-fetch.ts";
 
 const ALCHEMY_DIR = path.join(os.homedir(), ".alchemy");
 const ID_PATH = path.join(ALCHEMY_DIR, "id");
@@ -299,25 +300,43 @@ export async function createAndSendEvent(
   if (await isTelemetryDisabled()) {
     return;
   }
-  try {
-    const eventData = {
-      ...data,
-      ...("duration" in data
-        ? { duration: Math.round(data.duration * 1000) }
-        : {}),
-      ...(await collectData()),
-      ...serializeError(error),
-    };
-    await fetchNoResponse(TELEMETRY_API_URL, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(eventData),
-    });
-  } catch (error) {
-    if (!SUPPRESS_TELEMETRY_ERRORS) {
-      logger.warn("Failed to send telemetry event:", error);
+
+  const maxRetries = 3;
+
+  let telemetryErrors = [];
+
+  for (let attempt = 0; attempt < maxRetries; attempt++) {
+    try {
+      const eventData = {
+        ...data,
+        ...("duration" in data
+          ? { duration: Math.round(data.duration * 1000) }
+          : {}),
+        ...(await collectData()),
+        ...serializeError(error),
+        telemetryErrors: JSON.stringify(
+          telemetryErrors.map((e) => serializeError(e)),
+        ),
+      };
+      await fetchNoResponse(TELEMETRY_API_URL, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(eventData),
+      });
+    } catch (error: any) {
+      telemetryErrors.push(error);
+
+      const shouldRetry =
+        isTransientNetworkError(error) || isTransientNetworkError(error.cause);
+
+      if (!shouldRetry || attempt === maxRetries - 1) {
+        if (!SUPPRESS_TELEMETRY_ERRORS) {
+          logger.warn("Failed to send telemetry event:", error);
+        }
+        return;
+      }
     }
   }
 }
