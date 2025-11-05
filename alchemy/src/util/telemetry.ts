@@ -325,6 +325,7 @@ export async function createAndSendEvent(
         },
         body: JSON.stringify(eventData),
       });
+      return;
     } catch (error: any) {
       telemetryErrors.push(error);
 
