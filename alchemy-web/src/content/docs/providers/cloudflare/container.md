@@ -7,8 +7,9 @@ description: Deploy Docker containers on Cloudflare's global network
 
 A Container is a running Docker image running in Cloudflare's global network, managed by a Cloudflare Durable Object.
 
-> [!CAUTION]
-> Cloudflare Containers is still in [Beta](https://blog.cloudflare.com/containers-are-available-in-public-beta-for-simple-global-and-programmable/).
+:::caution
+Cloudflare Containers is still in [Beta](https://blog.cloudflare.com/containers-are-available-in-public-beta-for-simple-global-and-programmable/).
+:::
 
 You'll need:
 
@@ -68,20 +69,43 @@ const container = await Container<MyContainer>("my-container", {
 
 This will build your Dockerfile and prepare it for publishing to Cloudflare's Image Registry.
 
-> [!TIP]
-> The default behavior is effectively `docker build . -t my-container` but you can customize the configuration:
->
-> ```ts
-> const container = await Container<MyContainer>("my-container", {
->   className: "MyContainer",
->   name: "your-container",
->   tag: "some-tag",
->   build: {
->     context: import.meta.dir,
->     dockerfile: "Dockerfile.dev",
->   },
-> });
-> ```
+:::tip
+The default behavior is effectively `docker build . -t my-container` but you can customize the configuration:
+
+```ts
+const container = await Container<MyContainer>("my-container", {
+  className: "MyContainer",
+  name: "your-container",
+  tag: "some-tag",
+  build: {
+    context: import.meta.dir,
+    dockerfile: "Dockerfile.dev",
+  },
+});
+```
+:::
+
+## Pre-built Images
+
+You can use a pre-built image by passing an `Image` resource to the `image` property:
+
+By reference:
+```ts
+const container = await Container<MyContainer>("my-container", {
+  className: "MyContainer",
+  image: "alpine:latest",
+});
+```
+
+Or pass in an `Image` resource:
+```ts
+const container = await Container<MyContainer>("my-container", {
+  className: "MyContainer",
+  image: await Image("alpine", { 
+    image: "alpine:latest" 
+  }),
+});
+```
 
 ## Adopting Existing Containers
 
