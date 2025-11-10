@@ -87,9 +87,10 @@ const container = await Container<MyContainer>("my-container", {
 
 ## Pre-built Images
 
-You can use a pre-built image by passing an `Image` resource to the `image` property:
+You can use a pre-built image by passing an image reference to the `image` property:
 
-By reference:
+### Pull an Image by reference
+
 ```ts
 const container = await Container<MyContainer>("my-container", {
   className: "MyContainer",
@@ -97,13 +98,33 @@ const container = await Container<MyContainer>("my-container", {
 });
 ```
 
-Or pass in an `Image` resource:
+### Build an Image first
+
 ```ts
+const image = await Image("my-image", { 
+  name: "my-image",
+  tag: "latest",
+  build: {
+    context: path.join(import.meta.dirname, "container"),
+  },
+});
+
 const container = await Container<MyContainer>("my-container", {
   className: "MyContainer",
-  image: await Image("alpine", { 
-    image: "alpine:latest" 
-  }),
+  image,
+});
+```
+
+### Pull a RemoteImage explcictly
+
+```ts
+const remoteImage =  await RemoteImage("alpine", { 
+  image: "alpine:latest" 
+});
+
+const container = await Container<MyContainer>("my-container", {
+  className: "MyContainer",
+  image: remoteImage,
 });
 ```
 
