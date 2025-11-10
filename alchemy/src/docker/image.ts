@@ -147,6 +147,11 @@ export interface Image {
    * Tag for the image
    */
   tag: string;
+
+  /**
+   * Build configuration
+   */
+  build: DockerBuildOptions | undefined;
 }
 
 /**
@@ -343,6 +348,7 @@ export const Image = Resource(
       imageId,
       repoDigest,
       builtAt: Date.now(),
+      build: props.build,
     };
   },
 );

@@ -501,12 +501,22 @@ async function processBindings(
         script_name: binding.scriptName,
       });
       new_sqlite_classes.push(binding.className);
+      // If there are build options, use the local image path, otherwise use the image reference
+      const image = binding.image.build
+        ? path.resolve(
+            workerCwd,
+            path.join(
+              binding.image.build.context ?? process.cwd(),
+              binding.image.build.dockerfile ?? "Dockerfile",
+            ),
+          )
+        : getCloudflareRegistryWithAccountNamespace(
+            await getAccountId(),
+            binding.image.imageRef,
+          );
       containers.push({
         class_name: binding.className,
-        image: getCloudflareRegistryWithAccountNamespace(
-          await getAccountId(),
-          binding.image.imageRef,
-        ),
+        image,
       });
     } else if (binding.type === "worker_loader") {
       workerLoaders.push({
