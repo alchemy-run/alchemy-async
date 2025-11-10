@@ -11,6 +11,7 @@ import {
   createDatabase,
   D1Database,
   deleteDatabase,
+  getDatabase,
   listDatabases,
 } from "../../src/cloudflare/d1-database.ts";
 import {
@@ -576,7 +577,7 @@ describe("D1 Database Resource", async () => {
 
       await fs.writeFile(
         path.join(tempDir, "0004_add_users_data.sql"),
-        `INSERT INTO users (name, email) VALUES 
+        `INSERT INTO users (name, email) VALUES
           ('Alice', 'alice@example.com'),
           ('Bob', 'bob@example.com');`,
       );
@@ -612,7 +613,7 @@ describe("D1 Database Resource", async () => {
       );
 
       // Step 3: Insert some fake migration records into the legacy table (simulating old migrations)
-      const insertLegacySQL = `INSERT INTO ${legacyMigrationsTable} (id, applied_at) VALUES 
+      const insertLegacySQL = `INSERT INTO ${legacyMigrationsTable} (id, applied_at) VALUES
         ('0000_initial_setup.sql', datetime('now', '-1 day')),
         ('0001_add_indexes.sql', datetime('now', '-1 hour'));`;
 
@@ -703,7 +704,7 @@ describe("D1 Database Resource", async () => {
       // Step 9: Add a new migration file after initial adoption to test subsequent updates
       await fs.writeFile(
         path.join(tempDir, "0005_add_posts_data.sql"),
-        `INSERT INTO posts (user_id, title, content) VALUES 
+        `INSERT INTO posts (user_id, title, content) VALUES
           (1, 'First Post', 'This is Alice first post'),
           (2, 'Welcome Post', 'Bob welcomes everyone');`,
       );
@@ -790,7 +791,7 @@ describe("D1 Database Resource", async () => {
       // Step 14: Add another migration file and verify ID continues sequentially
       await fs.writeFile(
         path.join(tempDir, "0006_add_more_data.sql"),
-        `INSERT INTO posts (user_id, title, content) VALUES 
+        `INSERT INTO posts (user_id, title, content) VALUES
           (1, 'Second Post', 'Alice second post'),
           (2, 'Another Post', 'Bob another post');`,
       );
@@ -852,6 +853,32 @@ describe("D1 Database Resource", async () => {
       }
     }
   }, 120000); // Extended timeout for complex migration operations
+
+  test("d1 with jurisdiction", async (scope) => {
+    const api = await createCloudflareApi();
+    const euD1Name = `${testId}-eu`;
+    let euD1: D1Database | undefined;
+
+    try {
+      euD1 = await D1Database(euD1Name, {
+        name: euD1Name,
+        jurisdiction: "eu",
+        adopt: true,
+      });
+      expect(euD1.name).toEqual(euD1Name);
+      expect(euD1.jurisdiction).toEqual("eu");
+
+      const gotD1 = await getDatabase(api, euD1Name, {
+        jurisdiction: "eu",
+      });
+      expect(gotD1.result.name).toEqual(euD1Name);
+    } finally {
+      await alchemy.destroy(scope);
+      if (euD1) {
+        await assertDatabaseDeleted(euD1);
+      }
+    }
+  });
 });
 
 async function getResults(
