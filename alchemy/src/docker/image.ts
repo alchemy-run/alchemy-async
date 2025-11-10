@@ -5,6 +5,7 @@ import type { Context } from "../context.ts";
 import { Resource } from "../resource.ts";
 import type { Secret } from "../secret.ts";
 import { DockerApi } from "./api.ts";
+import type { RemoteImage } from "./remote-image.ts";
 
 /**
  * Options for building a Docker image
@@ -93,7 +94,7 @@ export type ImageProps = {
       /**
        * Image name or reference (e.g., "nginx:alpine")
        */
-      image: string | Image;
+      image: string | Image | RemoteImage;
       build?: never;
       name?: never;
     }
@@ -117,6 +118,7 @@ export type ImageProps = {
  * Docker Image resource
  */
 export interface Image {
+  kind: "Image";
   /**
    * Image name
    */
@@ -194,12 +196,14 @@ export const Image = Resource(
       const image =
         typeof props.image === "string" ? props.image : props.image.imageRef;
 
-      // Pull the source image if not already local
-      await api.pullImage(image);
-
-      // Tag the image for Cloudflare registry
-      await api.exec(["tag", image, imageRef]);
-
+      const kind =
+        typeof props.image === "object" && props.image.kind === "Image"
+          ? "local"
+          : "remote";
+      if (kind === "remote") {
+        await api.pullImage(image);
+      }
+      await api.tagImage(image, imageRef);
       // TODO: Extract image ID from pull output if available
     } else {
       let context: string;
@@ -331,6 +335,7 @@ export const Image = Resource(
       }
     }
     return {
+      kind: "Image",
       ...props,
       tag,
       name,

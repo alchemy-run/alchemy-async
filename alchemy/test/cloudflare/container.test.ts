@@ -10,6 +10,7 @@ import {
 import { Worker } from "../../src/cloudflare/worker.ts";
 import { destroy } from "../../src/destroy.ts";
 import { Image } from "../../src/docker/image.ts";
+import { RemoteImage } from "../../src/docker/remote-image.ts";
 import "../../src/test/vitest.ts";
 import { BRANCH_PREFIX } from "../util.ts";
 
@@ -184,12 +185,61 @@ describe.sequential("Container Resource", () => {
     }
   });
 
-  test("pull and push pre-built Image to CF", async (scope) => {
+  test("pull and push pulled Image to CF", async (scope) => {
     const containerName = `${BRANCH_PREFIX}-external-image`;
 
     try {
       const image = await Image("image", {
         image: "nginx:alpine",
+      });
+      // Use a small external image - automatically pushed to CF
+      const container = await Container(containerName, {
+        className: "TestContainer",
+        name: containerName,
+        image,
+        adopt: true,
+      });
+
+      expect(container.image.imageRef).toContain("registry.cloudflare.com");
+      expect(container.image.name).toBeTruthy();
+    } finally {
+      await destroy(scope);
+    }
+  });
+
+  test("pull and push pulled RemoteImage to CF", async (scope) => {
+    const containerName = `${BRANCH_PREFIX}-external-image`;
+
+    try {
+      const image = await RemoteImage("image", {
+        name: "nginx",
+        tag: "alpine",
+      });
+      // Use a small external image - automatically pushed to CF
+      const container = await Container(containerName, {
+        className: "TestContainer",
+        name: containerName,
+        image,
+        adopt: true,
+      });
+
+      expect(container.image.imageRef).toContain("registry.cloudflare.com");
+      expect(container.image.name).toBeTruthy();
+    } finally {
+      await destroy(scope);
+    }
+  });
+
+  test("pull and push pre-built Image to CF", async (scope) => {
+    const containerName = `${BRANCH_PREFIX}-external-image`;
+
+    try {
+      const image = await Image("image", {
+        name: "my-image",
+        tag: "latest",
+        build: {
+          context: path.join(import.meta.dirname, "container"),
+        },
       });
       // Use a small external image - automatically pushed to CF
       const container = await Container(containerName, {
