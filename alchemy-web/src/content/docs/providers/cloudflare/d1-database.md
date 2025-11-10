@@ -76,6 +76,19 @@ const db = await D1Database("eu-db", {
 });
 ```
 
+## With Jurisdiction
+
+Create a database with a specific jurisdiction.
+
+```ts
+import { D1Database } from "alchemy/cloudflare";
+
+const db = await D1Database("eu-db", {
+  name: "eu-db",
+  jurisdiction: "eu",
+});
+```
+
 ## Cloning Databases
 
 Create a database by cloning data from an existing database. There are three ways to specify the source database:
