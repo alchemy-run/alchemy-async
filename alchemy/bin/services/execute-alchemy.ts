@@ -226,7 +226,7 @@ export async function execAlchemy(
       break;
     case "pnpm":
       command = isTypeScript
-        ? `pnpm dlx tsx ${execArgsString} ${main} ${argsString}`
+        ? `pnpm dlx tsx -- ${execArgsString} ${main} ${argsString}`
         : `pnpm node ${execArgsString} ${main} ${argsString}`;
       break;
     case "yarn":
