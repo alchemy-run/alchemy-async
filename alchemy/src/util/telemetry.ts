@@ -10,9 +10,9 @@ import pkg from "../../package.json" with { type: "json" };
 import type { Phase } from "../alchemy.ts";
 import { Scope } from "../scope.ts";
 import { parseOption } from "./cli-args.ts";
+import { isTransientNetworkError } from "./is-transient-error.ts";
 import { logger } from "./logger.ts";
 import { memoize } from "./memoize.ts";
-import { isTransientNetworkError } from "./safe-fetch.ts";
 
 const ALCHEMY_DIR = path.join(os.homedir(), ".alchemy");
 const ID_PATH = path.join(ALCHEMY_DIR, "id");

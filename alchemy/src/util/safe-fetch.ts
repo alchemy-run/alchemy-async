@@ -1,4 +1,5 @@
 import type { Agent } from "undici";
+import { isTransientNetworkError } from "./is-transient-error.ts";
 import { logger } from "./logger.ts";
 
 export async function safeFetch(
@@ -29,16 +30,6 @@ export async function safeFetch(
     }
   }
   throw latestErr;
-}
-
-export function isTransientNetworkError(err: any) {
-  return (
-    err?.code === "UND_ERR_SOCKET" ||
-    err?.code === "ECONNRESET" ||
-    err?.code === "UND_ERR_CONNECT_TIMEOUT" ||
-    err?.code === "EPIPE" ||
-    err?.name === "FetchError"
-  );
 }
 
 let agent:
