@@ -1,22 +1,17 @@
-import fs from "node:fs";
-import { useCallback, useState } from "react";
 import { createFileRoute, useRouter } from "@tanstack/react-router";
 import { createServerFn } from "@tanstack/react-start";
+import { env } from "cloudflare:workers";
+import { useCallback, useState } from "react";
 
-const filePath = "todos.json";
+const key = "todos.json";
 
-async function readTodos() {
-  return JSON.parse(
-    await fs.promises.readFile(filePath, "utf-8").catch(() =>
-      JSON.stringify(
-        [
-          { id: 1, name: "Get groceries" },
-          { id: 2, name: "Buy a new phone" },
-        ],
-        null,
-        2,
-      ),
-    ),
+async function readTodos(): Promise<{ id: number; name: string }[]> {
+  const todos = await env.R2.get(key);
+  return (
+    (await todos?.json()) ?? [
+      { id: 1, name: "Get groceries" },
+      { id: 2, name: "Buy a new phone" },
+    ]
   );
 }
 
@@ -29,7 +24,7 @@ const addTodo = createServerFn({ method: "POST" })
   .handler(async ({ data }) => {
     const todos = await readTodos();
     todos.push({ id: todos.length + 1, name: data });
-    await fs.promises.writeFile(filePath, JSON.stringify(todos, null, 2));
+    await env.R2.put(key, JSON.stringify(todos, null, 2));
     return todos;
   });
 
