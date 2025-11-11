@@ -122,7 +122,6 @@ async function getBranchName() {
 }
 
 function getRuntime() {
-  // @ts-expect-error
   if (globalThis.Bun) return { name: "bun", version: Bun.version };
   // @ts-expect-error
   if (globalThis.Deno)
