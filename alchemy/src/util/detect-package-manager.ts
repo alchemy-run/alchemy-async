@@ -12,6 +12,7 @@ export async function detectPackageManager(
   )
     return "deno";
   if (await exists(`${path}/bun.lockb`)) return "bun";
+  if (await exists(`${path}/bun.lock`)) return "bun";
   if (await exists(`${path}/pnpm-lock.yaml`)) return "pnpm";
   if (await exists(`${path}/yarn.lock`)) return "yarn";
 
