@@ -15,6 +15,8 @@ import { deleteMiniflareBinding } from "./miniflare/delete.ts";
 
 const DEFAULT_MIGRATIONS_TABLE = "d1_migrations";
 
+export type D1DatabaseJurisdiction = "default" | "eu" | "fedramp";
+
 type PrimaryLocationHint =
   | "wnam"
   | "enam"
@@ -115,6 +117,12 @@ export interface D1DatabaseProps extends CloudflareApiOptions {
      */
     force?: boolean;
   };
+
+  /**
+   * Optional jurisdiction for the bucket
+   * Determines the regulatory jurisdiction the bucket data falls under
+   */
+  jurisdiction?: D1DatabaseJurisdiction;
 }
 
 export function isD1Database(resource: any): resource is D1Database {
@@ -157,6 +165,12 @@ export type D1Database = Pick<
      */
     remote: boolean;
   };
+
+  /**
+   * Optional jurisdiction for the bucket
+   * Determines the regulatory jurisdiction the bucket data falls under
+   */
+  jurisdiction: D1DatabaseJurisdiction;
 };
 
 /**
@@ -264,6 +278,7 @@ const _D1Database = Resource(
   ): Promise<D1Database> {
     const databaseName =
       props.name ?? this.output?.name ?? this.scope.createPhysicalName(id);
+    const jurisdiction = props.jurisdiction ?? "default";
 
     if (this.phase === "update" && this.output?.name !== databaseName) {
       this.replace();
@@ -294,6 +309,7 @@ const _D1Database = Resource(
         migrationsDir: props.migrationsDir,
         migrationsTable: props.migrationsTable ?? DEFAULT_MIGRATIONS_TABLE,
         dev,
+        jurisdiction,
       };
     }
 
@@ -370,6 +386,12 @@ const _D1Database = Resource(
           `Cannot update primaryLocationHint from '${this.output.primaryLocationHint}' to '${props.primaryLocationHint}' after database creation.`,
         );
       }
+      if (
+        props.jurisdiction &&
+        props.jurisdiction !== this.output?.jurisdiction
+      ) {
+        return this.replace();
+      }
       // Update the database with new properties
       dbData = await updateDatabase(api, this.output.id, props);
     } else {
@@ -413,6 +435,7 @@ const _D1Database = Resource(
       dev,
       migrationsDir: props.migrationsDir,
       migrationsTable: props.migrationsTable ?? DEFAULT_MIGRATIONS_TABLE,
+      jurisdiction,
     };
   },
 );
@@ -428,6 +451,7 @@ interface CloudflareD1Response {
     read_replication?: {
       mode: "auto" | "disabled";
     };
+    jurisdiction?: string;
   };
   success: boolean;
   errors: Array<{ code: number; message: string }>;
@@ -445,6 +469,7 @@ export async function createDatabase(
   // Create new D1 database
   const createPayload: any = {
     name: databaseName,
+    jurisdiction: props.jurisdiction,
   };
 
   if (props.primaryLocationHint) {
