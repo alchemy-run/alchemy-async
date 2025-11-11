@@ -177,6 +177,13 @@ export class DockerApi {
     return this.exec(["pull", image]);
   }
 
+  async tagImage(
+    source: string,
+    target: string,
+  ): Promise<{ stdout: string; stderr: string }> {
+    return this.exec(["tag", source, target]);
+  }
+
   /**
    * Build Docker image
    *

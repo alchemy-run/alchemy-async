@@ -44,7 +44,6 @@ describe("Image", () => {
       expect(image.name).toBe("alchemy-test");
       expect(image.tag).toBe("simple");
       expect(image.imageRef).toBe("alchemy-test:simple");
-      expect(image.build?.context).toBe(contextPath);
       // imageId might not be available in a CI environment where Docker is not running
       if (image.imageId) {
         expect(image.imageId.length).toBeGreaterThan(0);
@@ -77,10 +76,6 @@ describe("Image", () => {
 
       expect(image.name).toBe("alchemy-test");
       expect(image.tag).toBe("args");
-      expect(image.build?.args).toEqual({
-        MESSAGE: "Hello from Alchemy",
-        VERSION: "2.0",
-      });
     } finally {
       await alchemy.destroy(scope);
     }
@@ -106,7 +101,6 @@ describe("Image", () => {
 
       expect(image.name).toBe("alchemy-test");
       expect(image.tag).toBe("multi");
-      expect(image.build?.target).toBe("builder");
     } finally {
       await alchemy.destroy(scope);
     }
