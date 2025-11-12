@@ -45,7 +45,7 @@ export const util = t.router({
   "create-cloudflare-token": createCloudflareToken,
 });
 
-function createTokenPolicies(
+function formatTokenPolicies(
   accountIds: string[],
   predicate: (group: PermissionGroup) => boolean = () => true,
 ): TokenPolicy[] {
@@ -191,7 +191,7 @@ async function createCloudflareGodToken() {
 
   const apiToken = await createToken(
     "GOD-TOKEN",
-    createTokenPolicies(accountIds),
+    formatTokenPolicies(accountIds),
     {
       apiKey,
       accountEmail,
@@ -234,7 +234,7 @@ async function createCloudflareProfileToken(input: { profile?: string }) {
       (scope) => CLOUDFLARE_OAUTH_SCOPES_TO_PERMISSION_GROUP_NAMES[scope] ?? [],
     ),
   );
-  const policies = createTokenPolicies([provider.metadata.id], (group) =>
+  const policies = formatTokenPolicies([provider.metadata.id], (group) =>
     groupNames.has(group.name),
   );
 
