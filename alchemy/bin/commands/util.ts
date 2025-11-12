@@ -196,10 +196,7 @@ async function createCloudflareGodToken() {
       apiKey,
       accountEmail,
     },
-  ).catch((err) => {
-    log.error(pc.red(`Error creating cloudflare god token: ${err.message}`));
-    throw new CancelSignal();
-  });
+  );
 
   outro(`Cloudflare god token created: ${pc.magenta(apiToken)}`);
 }
