@@ -117,6 +117,7 @@ export namespace CloudflareAuth {
     "workers_tail:read": "See Cloudflare Workers tail and script data",
     "zone:read": "Grants read level access to account zone",
   } as const;
+  export type Scope = keyof typeof ALL_SCOPES;
   export const DEFAULT_SCOPES = [
     "account:read",
     "user:read",
