@@ -360,6 +360,18 @@ export const PERMISSION_GROUPS = [
     scopes: ["com.cloudflare.api.account"],
   },
   {
+    id: "ece81d7757ff406cad61f221a4920d55",
+    name: "Account Security Center Insights Read",
+    description: "Grants read access to Security Center Insights",
+    scopes: ["com.cloudflare.api.account"],
+  },
+  {
+    id: "cfa2e2893226455c9b945914969dff7c",
+    name: "Account Security Center Insights Write",
+    description: "Grants write access to Security Center Insights",
+    scopes: ["com.cloudflare.api.account"],
+  },
+  {
     id: "c1fde68c7bcc44588cbb6ddbc16d6480",
     name: "Account Settings Read",
     description:
@@ -525,6 +537,18 @@ export const PERMISSION_GROUPS = [
     id: "adddda876faa4a0590f1b23a038976e4",
     name: "Browser Rendering Write",
     description: "Grants write access to Browser Rendering API",
+    scopes: ["com.cloudflare.api.account"],
+  },
+  {
+    id: "da5fe84b9c5446a0a5955b673fafa288",
+    name: "CASB Read",
+    description: "Grants read access to Cloudflare CASB",
+    scopes: ["com.cloudflare.api.account"],
+  },
+  {
+    id: "b9ed086b20864ad89c5aac24cdd02365",
+    name: "CASB Write",
+    description: "Grants write access to Cloudflare CASB",
     scopes: ["com.cloudflare.api.account"],
   },
   {
@@ -969,6 +993,18 @@ export const PERMISSION_GROUPS = [
     name: "Email Security DMARC Reports Write",
     description: "Grants full access to Email Security dmarc reports\n",
     scopes: ["com.cloudflare.api.account.zone"],
+  },
+  {
+    id: "2d5b4b1f6c89487bb7184c2c1dcd3bf1",
+    name: "Email Sending Read",
+    description: "Grants access to reading data from Email Sending",
+    scopes: ["com.cloudflare.api.account"],
+  },
+  {
+    id: "5df633d6b41c42bcaf5b4a62b9d14b64",
+    name: "Email Sending Write",
+    description: "Grants access to reading and writing data from Email Sending",
+    scopes: ["com.cloudflare.api.account"],
   },
   {
     id: "4ec32dfcb35641c5bb32d5ef1ab963b4",
@@ -1424,6 +1460,12 @@ export const PERMISSION_GROUPS = [
     id: "ba6ce7d23a9544ccad0816691ba38e21",
     name: "Realtime Admin",
     description: "Grants admin access to Realtime configuration",
+    scopes: ["com.cloudflare.api.account"],
+  },
+  {
+    id: "9bb90620717647a39679e1d951f140d6",
+    name: "Registrar Domains Read",
+    description: "Grants read access to Cloudflare Registrar domains",
     scopes: ["com.cloudflare.api.account"],
   },
   {

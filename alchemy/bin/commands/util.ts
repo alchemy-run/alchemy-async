@@ -10,6 +10,8 @@ import {
 import pc from "picocolors";
 import z from "zod";
 import { Profile, Provider } from "../../src/auth.ts";
+import type { CloudflareAuth } from "../../src/cloudflare/auth.ts";
+import type { PERMISSION_GROUPS } from "../../src/cloudflare/permission-groups.ts";
 import { CancelSignal, loggedProcedure, t } from "../trpc.ts";
 import { promptForProfileName } from "./configure.ts";
 
@@ -280,7 +282,10 @@ async function createCloudflareProfileToken(input: { profile?: string }) {
   );
 }
 
-export const CLOUDFLARE_OAUTH_SCOPES_TO_PERMISSION_GROUP_IDS = {
+export const CLOUDFLARE_OAUTH_SCOPES_TO_PERMISSION_GROUP_IDS: Record<
+  keyof (typeof CloudflareAuth)["ALL_SCOPES"],
+  (typeof PERMISSION_GROUPS)[number]["id"][]
+> = {
   "access:read": [
     "eb258a38ea634c86a0c89da6b27cb6b6",
     "7ea222f6d5064cfa89ea366d7c1fee89",
@@ -395,7 +400,7 @@ export const CLOUDFLARE_OAUTH_SCOPES_TO_PERMISSION_GROUP_IDS = {
     "95d69e8d6d5144bfb0923667355d9f11",
   ],
   "dns_settings:read": ["cfa964bcdafc4ab39704e7476154e41b"],
-  "firstpartytags:write": [], //??
+  "firstpartytags:write": ["89d5bf002389496e9994b8c30608b5d0"],
   "lb:edit": [
     "59059f0c977b44f8b1c18e0aaf91c369",
     "419ec42810af4659ade77716dbe47bc6",
@@ -487,6 +492,10 @@ export const CLOUDFLARE_OAUTH_SCOPES_TO_PERMISSION_GROUP_IDS = {
     "28f4b596e7d643029c524985477ae49a",
     "1a71c399035b4950a1bd1466bbe4f420",
     "e086da7e2179491d91ee5f35b3ca210a",
+    "8b47d2786a534c08a1f94ee8f9f599ef",
+    "f7f0eda5697f475c90846e879bab8666",
+    "bf7481a1826f439697cb59a20b22293e",
+    "b4992e1108244f5d8bfbd5744320c2e1",
   ],
   "workers_builds:read": ["ad99c5ae555e45c4bef5bdf2678388ba"],
   "workers_builds:write": ["2e095cf436e2455fa62c9a9c2e18c478"],
@@ -495,13 +504,9 @@ export const CLOUDFLARE_OAUTH_SCOPES_TO_PERMISSION_GROUP_IDS = {
     "f7f0eda5697f475c90846e879bab8666",
   ],
   "workers_observability:read": ["66c1ed49f4ed46098b75696a6d4ee3c9"],
-  "workers_observability:write": [
-    "66c1ed49f4ed46098b75696a6d4ee3c9",
-    "82c075da3f4647a2a03becd0fe240f8a",
-  ],
   "workers_observability_telemetry:write": ["29c629fb7b5e4c408ca0f7b545724fcc"],
-  "workers_routes:write": [], //??
-  "workers_scripts:write": [], //??
+  "workers_routes:write": ["28f4b596e7d643029c524985477ae49a"],
+  "workers_scripts:write": ["e086da7e2179491d91ee5f35b3ca210a"],
   "workers_tail:read": ["05880cd1bdc24d8bae0be2136972816b"],
   "zone:read": [
     "c8fed203ed3043cba015a93ad1616f1f",
@@ -510,5 +515,18 @@ export const CLOUDFLARE_OAUTH_SCOPES_TO_PERMISSION_GROUP_IDS = {
     "1b1ea24cf0904d33903f0cc7e54e280f",
     "dbc512b354774852af2b5a5f4ba3d470",
   ],
-  offline_access: [],
-} as const;
+  "agw:write": [
+    "4dc8917b4b40457d88d3035d5dadb054",
+    "644535f4ed854494a59cb289d634b257",
+    "6c8a3737f07f46369c1ea1f22138daaf",
+  ],
+  "connectivity:admin": ["77efc2c0724d4c4eb94bfd9656247130"],
+  "connectivity:bind": ["95fa65ba51fd49c4a6ac4c8c78ebac93"],
+  "connectivity:read": ["8764961c1edb4274be129d630b0b2671"],
+  "workers:read": [
+    "1a71c399035b4950a1bd1466bbe4f420",
+    "8b47d2786a534c08a1f94ee8f9f599ef",
+    "b4992e1108244f5d8bfbd5744320c2e1",
+    "2072033d694d415a936eaeb94e6405b8",
+  ],
+};

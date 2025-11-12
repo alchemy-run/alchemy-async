@@ -116,7 +116,7 @@ export namespace CloudflareAuth {
       "See and change Cloudflare Workers scripts, durable objects, subdomains, triggers, and tail data",
     "workers_tail:read": "See Cloudflare Workers tail and script data",
     "zone:read": "Grants read level access to account zone",
-  };
+  } as const;
   export const DEFAULT_SCOPES = [
     "account:read",
     "user:read",
