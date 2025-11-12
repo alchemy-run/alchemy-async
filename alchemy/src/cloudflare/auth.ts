@@ -23,6 +23,7 @@ export namespace CloudflareAuth {
     "access:write": "Write Cloudflare Access", //*
     "account:read":
       "See your account info such as account details, analytics, and memberships.",
+    "agw:write": "Write API Gateway", //*
     "agw:read": "Read API Gateway", //*
     "agw:run": "Run API Gateway", //*
     "ai:read": "Read access to Workers AI catalog and assets",
@@ -96,9 +97,12 @@ export namespace CloudflareAuth {
       "See and change Cloudflare Workers scripts, durable objects, subdomains, triggers, and tail data.",
     "workers_tail:read": "See Cloudflare Workers tail and script data.",
     "zone:read": "Grants read level access to account zone.",
-    // Not granted yet
-    // "connectivity:admin":
-    //   "See, change, and bind to Connectivity Directory services, including creating services targeting Cloudflare Tunnel.",
+    "connectivity:admin":
+      "See, change, and bind to Connectivity Directory services, including creating services targeting Cloudflare Tunnel.",
+    "connectivity:bind":
+      "Bind to Connectivity Directory services, including creating services targeting Cloudflare Tunnel.",
+    "connectivity:read":
+      "Read Connectivity Directory services, including creating services targeting Cloudflare Tunnel.",
   };
   export const DEFAULT_SCOPES = [
     "account:read",
@@ -119,6 +123,7 @@ export namespace CloudflareAuth {
     "containers:write",
     "cloudchamber:write",
     "vectorize:write",
+    "connectivity:admin",
   ];
 
   /**
