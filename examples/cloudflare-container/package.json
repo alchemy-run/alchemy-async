@@ -10,7 +10,7 @@
     "dev": "alchemy dev --env-file ../../.env"
   },
   "devDependencies": {
-    "@cloudflare/containers": "^0.0.25",
+    "@cloudflare/containers": "catalog:",
     "@cloudflare/workers-types": "catalog:",
     "@types/node": "^24.0.1",
     "alchemy": "workspace:*",

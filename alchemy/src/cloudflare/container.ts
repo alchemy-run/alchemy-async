@@ -221,6 +221,10 @@ export async function Container<T>(
       ...props,
       name: `cloudflare-dev/${name}`, // prefix used by Miniflare
       tag,
+      build: props.build ?? {
+        platform: "linux/amd64",
+        context: process.cwd(),
+      },
     } as ImageProps);
 
     return {
