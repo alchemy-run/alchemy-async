@@ -468,7 +468,8 @@ export async function createDatabase(
   // Create new D1 database
   const createPayload: any = {
     name: databaseName,
-    jurisdiction: props.jurisdiction,
+    jurisdiction:
+      props.jurisdiction !== "default" ? props.jurisdiction : undefined,
   };
 
   if (props.primaryLocationHint) {
