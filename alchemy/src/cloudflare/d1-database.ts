@@ -386,7 +386,10 @@ const _D1Database = Resource(
           `Cannot update primaryLocationHint from '${this.output.primaryLocationHint}' to '${props.primaryLocationHint}' after database creation.`,
         );
       }
-      if (props.jurisdiction !== this.output?.jurisdiction) {
+      if (
+        (props.jurisdiction ?? "default") !==
+        (this.output?.jurisdiction ?? "default")
+      ) {
         throw new Error(
           `Cannot update jurisdiction from '${this.output.jurisdiction}' to '${props.jurisdiction}' after database creation.`,
         );

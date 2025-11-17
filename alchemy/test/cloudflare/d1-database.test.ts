@@ -885,6 +885,31 @@ describe("D1 Database Resource", async () => {
       }
     }
   });
+
+  test("d1 with default jurisdiction", async (scope) => {
+    const api = await createCloudflareApi();
+    const defaultD1Name = `${testId}-default`;
+    let defaultD1: D1Database | undefined;
+
+    try {
+      defaultD1 = await D1Database(defaultD1Name, {
+        name: defaultD1Name,
+        jurisdiction: "default",
+        adopt: true,
+      });
+      expect(defaultD1.name).toEqual(defaultD1Name);
+      expect(defaultD1.jurisdiction).toEqual("default");
+
+      const gotD1 = await getDatabase(api, defaultD1Name);
+      expect(gotD1.result.name).toEqual(defaultD1Name);
+      expect(gotD1.result.jurisdiction).toEqual(null);
+    } finally {
+      await alchemy.destroy(scope);
+      if (defaultD1) {
+        await assertDatabaseDeleted(defaultD1);
+      }
+    }
+  });
 });
 
 async function getResults(
