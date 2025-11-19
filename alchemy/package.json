@@ -159,6 +159,10 @@
       "bun": "./src/test/vite.ts",
       "import": "./lib/test/vite.js"
     },
+    "./test/bun": {
+      "bun": "./src/test/bun.ts",
+      "import": "./lib/test/bun.js"
+    },
     "./upstash": {
       "bun": "./src/upstash/index.ts",
       "import": "./lib/upstash/index.js"
