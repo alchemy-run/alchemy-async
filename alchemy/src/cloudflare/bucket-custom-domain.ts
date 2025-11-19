@@ -1,16 +1,16 @@
-import type { Context } from "../context";
-import { Resource } from "../resource";
-import { diff } from "../util/diff";
+import type { Context } from "../context.ts";
+import { Resource } from "../resource.ts";
+import { diff } from "../util/diff.ts";
+import { CloudflareApiError } from "./api-error.ts";
+import { extractCloudflareResult } from "./api-response.ts";
 import {
   CloudflareApi,
   createCloudflareApi,
   type CloudflareApiOptions,
-} from "./api";
-import { CloudflareApiError } from "./api-error";
-import { extractCloudflareResult } from "./api-response";
-import { withJurisdiction, type R2BucketJurisdiction } from "./bucket";
-import { inferZoneIdFromPattern } from "./route";
-import type { Zone } from "./zone";
+} from "./api.ts";
+import { withJurisdiction, type R2BucketJurisdiction } from "./bucket.ts";
+import { inferZoneIdFromPattern } from "./route.ts";
+import type { Zone } from "./zone.ts";
 
 export interface R2BucketCustomDomainProps
   extends CloudflareApiOptions,

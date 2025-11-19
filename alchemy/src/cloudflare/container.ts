@@ -218,10 +218,10 @@ export async function Container<T>(
   const isDev = scope.local && !props.dev?.remote;
   if (isDev) {
     const image = await Image(id, {
+      ...props,
       name: `cloudflare-dev/${name}`, // prefix used by Miniflare
       tag,
-      build: props.build,
-    });
+    } as ImageProps);
 
     return {
       ...output,
@@ -235,16 +235,19 @@ export async function Container<T>(
   const image = await Image(id, {
     name: `${api.accountId}/${name}`,
     tag,
-    build: {
-      platform: props.build?.platform ?? "linux/amd64",
-      ...props.build,
-    },
+    build: props.build
+      ? {
+          platform: props.build?.platform ?? "linux/amd64",
+          ...props.build,
+        }
+      : undefined,
+    image: props.image,
     registry: {
       server: "registry.cloudflare.com",
       username: credentials.username || credentials.user!,
       password: secret(credentials.password),
     },
-  });
+  } as ImageProps);
 
   return {
     ...output,

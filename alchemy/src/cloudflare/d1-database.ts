@@ -386,6 +386,14 @@ const _D1Database = Resource(
           `Cannot update primaryLocationHint from '${this.output.primaryLocationHint}' to '${props.primaryLocationHint}' after database creation.`,
         );
       }
+      if (
+        (props.jurisdiction ?? "default") !==
+        (this.output?.jurisdiction ?? "default")
+      ) {
+        throw new Error(
+          `Cannot update jurisdiction from '${this.output.jurisdiction}' to '${props.jurisdiction}' after database creation.`,
+        );
+      }
       // Update the database with new properties
       dbData = await updateDatabase(api, this.output.id, props);
     } else {
@@ -424,7 +432,7 @@ const _D1Database = Resource(
       type: "d1",
       id: dbData.result.uuid!,
       name: databaseName,
-      readReplication: dbData.result.read_replication,
+      readReplication: props.readReplication,
       primaryLocationHint: props.primaryLocationHint,
       dev,
       migrationsDir: props.migrationsDir,
@@ -445,6 +453,7 @@ interface CloudflareD1Response {
     read_replication?: {
       mode: "auto" | "disabled";
     };
+    jurisdiction?: string;
   };
   success: boolean;
   errors: Array<{ code: number; message: string }>;
@@ -462,6 +471,8 @@ export async function createDatabase(
   // Create new D1 database
   const createPayload: any = {
     name: databaseName,
+    jurisdiction:
+      props.jurisdiction !== "default" ? props.jurisdiction : undefined,
   };
 
   if (props.primaryLocationHint) {

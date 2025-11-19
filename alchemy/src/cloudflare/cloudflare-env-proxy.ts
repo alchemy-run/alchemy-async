@@ -16,6 +16,7 @@ export const getCloudflareEnvProxy = async <E>(
 
 export const getPlatformProxyOptions = (
   input: GetPlatformProxyOptions = {},
+  throws: boolean = true,
 ): GetPlatformProxyOptions => {
   const persist =
     input.persist === false
@@ -37,7 +38,10 @@ export const getPlatformProxyOptions = (
   }
   return {
     ...input,
-    configPath: validateConfigPath(input.configPath ?? getDefaultConfigPath()),
+    configPath: validateConfigPath(
+      input.configPath ?? getDefaultConfigPath(),
+      throws,
+    ),
     persist,
   };
 };

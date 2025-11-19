@@ -10,6 +10,9 @@ import {
 import pc from "picocolors";
 import z from "zod";
 import { Profile, Provider } from "../../src/auth.ts";
+import { extractCloudflareResult } from "../../src/cloudflare/api-response.ts";
+import type { CloudflareAuth } from "../../src/cloudflare/auth.ts";
+import { PERMISSION_GROUPS } from "../../src/cloudflare/permission-groups.ts";
 import { CancelSignal, loggedProcedure, t } from "../trpc.ts";
 import { promptForProfileName } from "./configure.ts";
 
@@ -42,60 +45,63 @@ export const util = t.router({
   "create-cloudflare-token": createCloudflareToken,
 });
 
-async function createToken(
-  keyName: string,
-  accountIds: Array<string>,
-  permissionGroupIds: Array<string> | undefined,
-  credentials: { apiKey: string; accountEmail: string },
-) {
-  type PermissionGroup = {
-    id: string;
-    name: string;
-    description: string;
-    scopes: Array<string>;
-  };
-
-  const permissionGroups = await fetch(
-    "https://api.cloudflare.com/client/v4/user/tokens/permission_groups",
-    {
-      headers: {
-        "Content-Type": "application/json",
-        "X-Auth-Key": credentials.apiKey,
-        "X-Auth-Email": credentials.accountEmail,
+function formatTokenPolicies(
+  accountIds: string[],
+  predicate: (group: PermissionGroup) => boolean = () => true,
+): TokenPolicy[] {
+  const policies: Record<PermissionGroup["scopes"][number], TokenPolicy> = {
+    "com.cloudflare.api.account": {
+      effect: "allow",
+      permission_groups: [],
+      resources: Object.fromEntries(
+        accountIds.map((id) => [`com.cloudflare.api.account.${id}`, "*"]),
+      ),
+    },
+    "com.cloudflare.api.account.zone": {
+      effect: "allow",
+      permission_groups: [],
+      resources: {
+        "com.cloudflare.api.account.zone.*": "*",
       },
     },
-  )
-    .then((res) => res.json())
-    .then((data) => data.result as Array<PermissionGroup>)
-    .then((data) => {
-      //* filter permissions and group by scope
-      const groupedByScope = data.reduce(
-        (acc, group) => {
-          if (
-            permissionGroupIds != null &&
-            !permissionGroupIds.includes(group.id)
-          ) {
-            return acc;
-          }
-          const scope = group.scopes[0];
-          if (!acc[scope]) {
-            acc[scope] = [];
-          }
-          acc[scope].push(group);
-          return acc;
-        },
-        {} as Record<string, Array<PermissionGroup>>,
-      );
-      return groupedByScope;
-    })
-    .catch((err) => {
-      log.error(pc.red(`Error fetching permission groups: ${err.message}`));
-      throw new CancelSignal();
+    "com.cloudflare.edge.r2.bucket": {
+      effect: "allow",
+      permission_groups: [],
+      resources: {
+        "com.cloudflare.edge.r2.bucket.*": "*",
+      },
+    },
+  };
+  for (const group of PERMISSION_GROUPS) {
+    if (!predicate(group)) continue;
+    policies[group.scopes[0]].permission_groups.push({
+      id: group.id,
     });
+  }
+  return Object.values(policies).filter(
+    (policy) => policy.permission_groups.length > 0,
+  );
+}
 
-  const apiToken = await fetch(
-    "https://api.cloudflare.com/client/v4/user/tokens",
-    {
+interface TokenPolicy {
+  id?: string;
+  effect: "allow" | "deny";
+  permission_groups: {
+    id: string;
+    meta?: { key: string; value: string };
+    name?: string;
+  }[];
+  resources: Record<string, string> | Record<string, Record<string, string>>;
+}
+
+async function createToken(
+  name: string,
+  policies: TokenPolicy[],
+  credentials: { apiKey: string; accountEmail: string },
+) {
+  const apiToken = await extractCloudflareResult<{ value: string }>(
+    "create cloudflare token",
+    fetch("https://api.cloudflare.com/client/v4/user/tokens", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -103,38 +109,13 @@ async function createToken(
         "X-Auth-Email": credentials.accountEmail,
       },
       body: JSON.stringify({
-        name: `Alchemy Token - ${keyName}`,
+        name: `Alchemy Token - ${name}`,
         status: "active",
-        policies: [
-          {
-            effect: "allow",
-            resources: accountIds.reduce((acc, id) => {
-              acc[`com.cloudflare.api.account.${id}`] = "*";
-              return acc;
-            }, {}),
-            permission_groups: permissionGroups[
-              "com.cloudflare.api.account"
-            ].map((group) => ({ id: group.id })),
-          },
-          {
-            effect: "allow",
-            resources: { "com.cloudflare.api.account.zone.*": "*" },
-            permission_groups: permissionGroups[
-              "com.cloudflare.api.account.zone"
-            ].map((group) => ({ id: group.id })),
-          },
-        ],
+        policies,
       }),
-    },
-  )
-    .then((res) => res.json())
-    .then((data) => data.result.value)
-    .catch((err) => {
-      log.error(pc.red(`Error creating cloudflare token: ${err.message}`));
-      throw new CancelSignal();
-    });
-
-  return apiToken;
+    }),
+  );
+  return apiToken.value;
 }
 
 async function createCloudflareGodToken() {
@@ -208,13 +189,14 @@ async function createCloudflareGodToken() {
     throw new CancelSignal();
   }
 
-  const apiToken = await createToken("GOD-TOKEN", accountIds, undefined, {
-    apiKey,
-    accountEmail,
-  }).catch((err) => {
-    log.error(pc.red(`Error creating cloudflare god token: ${err.message}`));
-    throw new CancelSignal();
-  });
+  const apiToken = await createToken(
+    "GOD-TOKEN",
+    formatTokenPolicies(accountIds),
+    {
+      apiKey,
+      accountEmail,
+    },
+  );
 
   outro(`Cloudflare god token created: ${pc.magenta(apiToken)}`);
 }
@@ -244,13 +226,14 @@ async function createCloudflareProfileToken(input: { profile?: string }) {
     );
   }
 
-  const permissionGroupIds: Array<string> = [];
-  for (const scope of provider.scopes) {
-    const ids = CLOUDFLARE_OAUTH_SCOPES_TO_PERMISSION_GROUP_IDS[scope];
-    if (ids != null) {
-      permissionGroupIds.push(...ids);
-    }
-  }
+  const groupNames = new Set(
+    provider.scopes.flatMap(
+      (scope) => CLOUDFLARE_OAUTH_SCOPES_TO_PERMISSION_GROUP_NAMES[scope] ?? [],
+    ),
+  );
+  const policies = formatTokenPolicies([provider.metadata.id], (group) =>
+    groupNames.has(group.name),
+  );
 
   const apiKey = await password({
     message:
@@ -268,247 +251,183 @@ async function createCloudflareProfileToken(input: { profile?: string }) {
     throw new CancelSignal();
   }
 
-  const apiToken = await createToken(
-    name,
-    [provider.metadata.id],
-    permissionGroupIds,
-    { apiKey, accountEmail },
-  );
+  const apiToken = await createToken(name, policies, { apiKey, accountEmail });
 
   outro(
     `Cloudflare token created for profile ${pc.bold(name)}: ${pc.magenta(apiToken)}`,
   );
 }
 
-export const CLOUDFLARE_OAUTH_SCOPES_TO_PERMISSION_GROUP_IDS = {
+type PermissionGroup = (typeof PERMISSION_GROUPS)[number];
+
+export const CLOUDFLARE_OAUTH_SCOPES_TO_PERMISSION_GROUP_NAMES: Record<
+  CloudflareAuth.Scope,
+  Array<PermissionGroup["name"]>
+> = {
   "access:read": [
-    "eb258a38ea634c86a0c89da6b27cb6b6",
-    "7ea222f6d5064cfa89ea366d7c1fee89",
-    "08e61dabe81a422dab0dea6fdef1a98a",
-    "0f4841f80adb4bada5a09493300e7f8d",
-    "4f3196a5c95747b6ad82e34e1d0a694f",
-    "26bc23f853634eb4bff59983b9064fde",
-    "b8b7514ce5364cd8ac0455f3eb16eb5f",
-    "de99c87e48d642ce8c985d027905b475",
-    "91f7ce32fa614d73b7e1fc8f0e78582b",
-    "99ff99e4e30247a99d3777a8c4c18541",
-    "e985ca9351db460faebbe8681c48e560",
+    "Access: Apps and Policies Read",
+    "Access: Custom Pages Read",
+    "Access: Device Posture Read",
+    "Access: Mutual TLS Certificates Read",
+    "Access: Organizations, Identity Providers, and Groups Read",
+    "Access: Policy Test Read",
+    "Access: Population Read",
+    "Access: Service Tokens Read",
+    "Access: SSH Auditing Read",
+    "Access: SCIM logs read",
   ],
   "access:write": [
-    "a1c0fec57cf94af79479a6d827fa518c",
-    "d30c9ad8b5224e7cb8d41bcb4757effc",
-    "bc783549a3a741aaa10556faf8b485bb",
-    "6d23f290472f4e6fad5c4398c057c356",
-    "bfe0d8686a584fa680f4c53b5eb0de6d",
-    "7121a0c7e9ed46e3829f9cca2bb572aa",
-    "29d3afbfd4054af9accdd1118815ed05",
-    "2fc1072ee6b743828db668fcb3f9dee7",
-    "4e5fd8ac327b4a358e48c66fcbeb856d",
-    "1e13c5124ca64b72b1969a67e8829049",
-    "959972745952452f8be2452be8cbb9f2",
-    "6c9d1cfcfc6840a987d1b5bfb880a841",
-    "6db4e222e21248ac96a3f4c2a81e3b41",
-    "eb258a38ea634c86a0c89da6b27cb6b6",
-    "7ea222f6d5064cfa89ea366d7c1fee89",
-    "08e61dabe81a422dab0dea6fdef1a98a",
-    "0f4841f80adb4bada5a09493300e7f8d",
-    "4f3196a5c95747b6ad82e34e1d0a694f",
-    "26bc23f853634eb4bff59983b9064fde",
-    "b8b7514ce5364cd8ac0455f3eb16eb5f",
-    "de99c87e48d642ce8c985d027905b475",
-    "91f7ce32fa614d73b7e1fc8f0e78582b",
-    "99ff99e4e30247a99d3777a8c4c18541",
-    "e985ca9351db460faebbe8681c48e560",
+    "Access: Service Tokens Write",
+    "Access: SSH Auditing Write",
+    "Access: Population Write",
+    "Access: Policy Test Write",
+    "Access: Organizations, Identity Providers, and Groups Write",
+    "Access: Organizations, Identity Providers, and Groups Revoke",
+    "Access: Mutual TLS Certificates Write",
+    "Access: Device Posture Write",
+    "Access: Custom Pages Write",
+    "Access: Apps and Policies Write",
+    "Access: Apps and Policies Revoke",
+    "Access: Apps and Policies Read",
+    "Access: Custom Pages Read",
+    "Access: Device Posture Read",
+    "Access: Mutual TLS Certificates Read",
+    "Access: Organizations, Identity Providers, and Groups Read",
+    "Access: Policy Test Read",
+    "Access: Population Read",
+    "Access: Service Tokens Read",
+    "Access: SSH Auditing Read",
+    "Access: SCIM logs read",
   ],
-  "account:read": ["c1fde68c7bcc44588cbb6ddbc16d6480"],
-  "agw:read": ["05a2a65760a546439ed29762b163cece"],
-  "agw:run": [
-    "05a2a65760a546439ed29762b163cece",
-    "5e5d3e8efeec49f3afb67bafecbcd511",
-  ],
-  "ai:read": ["a92d2450e05d4e7bb7d0a64968f83d11"],
-  "ai:write": [
-    "a92d2450e05d4e7bb7d0a64968f83d11",
-    "bacc64e0f6c34fc0883a1223f938a104",
-  ],
-  "aiaudit:read": ["19637fbb73d242c0a92845d8db0b95b1"],
-  "aiaudit:write": [
-    "19637fbb73d242c0a92845d8db0b95b1",
-    "1ba6ab4cacdb454b913bbb93e1b8cb8c",
-  ],
-  "aig:read": ["4dc8917b4b40457d88d3035d5dadb054"],
-  "aig:write": [
-    "4dc8917b4b40457d88d3035d5dadb054",
-    "644535f4ed854494a59cb289d634b257",
-    "6c8a3737f07f46369c1ea1f22138daaf",
-  ],
-  "auditlogs:read": ["b05b28e839c54467a7d6cba5d3abb5a3"],
-  "browser:read": ["374b03fa229f4eb6b011bb1cd7f235ee"],
-  "browser:write": [
-    "374b03fa229f4eb6b011bb1cd7f235ee",
-    "adddda876faa4a0590f1b23a038976e4",
-  ],
+  "account:read": ["Account Settings Read"],
+  "agw:read": ["Account API Gateway Read"],
+  "agw:run": ["Account API Gateway Read", "Account API Gateway"],
+  "ai:read": ["Workers AI Read"],
+  "ai:write": ["Workers AI Read", "Workers AI Write"],
+  "aiaudit:read": ["AI Audit Read"],
+  "aiaudit:write": ["AI Audit Read", "AI Audit Write"],
+  "aig:read": ["AI Gateway Read"],
+  "aig:write": ["AI Gateway Read", "AI Gateway Run", "AI Gateway Write"],
+  "auditlogs:read": ["Access: Audit Logs Read"],
+  "browser:read": ["Browser Rendering Read"],
+  "browser:write": ["Browser Rendering Read", "Browser Rendering Write"],
   "cfone:read": [
-    "1cd960c063a0448481343372c963d8c7",
-    "c1968d31028d4239976ec3bc4750bbf6",
-    "07cf1c1952a84b13b2cd542f3d2f29ab",
+    "Cloudflare One Connector: WARP Read",
+    "Cloudflare One Connector: cloudflared Read",
+    "Cloudflare One Connectors Read",
   ],
   "cfone:write": [
-    "5b5c774a5d174ca88d046c8889648b3f",
-    "037b9e348b3b42d4b46ea2fcb1cfb3e7",
-    "a7030c9c98d544e092d8b099fabb1f06",
-    "1cd960c063a0448481343372c963d8c7",
-    "c1968d31028d4239976ec3bc4750bbf6",
-    "07cf1c1952a84b13b2cd542f3d2f29ab",
+    "Cloudflare One Connector: WARP Write",
+    "Cloudflare One Connector: cloudflared Write",
+    "Cloudflare One Connectors Write",
+    "Cloudflare One Connector: WARP Read",
+    "Cloudflare One Connector: cloudflared Read",
+    "Cloudflare One Connectors Read",
   ],
-  "cloudchamber:write": [
-    "65ec50cbde3d4c838bbe7500024d5745",
-    "26ce6c7d18a346528e7b905d5e269866",
-  ],
-  "constellation:write": [
-    "eeffa4d16812430cb4a0ae9e7f46fc24",
-    "7c81856725af47ce89a790d5fb36f362",
-  ],
-  "containers:write": [
-    "cfd39eebc07c4e3ea849e4b3d2644637",
-    "bdbcd690c763475a985e8641dddc09f7",
-  ],
-  "d1:write": [
-    "192192df92ee43ac90f2aeeffce67e35",
-    "09b2857d1c31407795e75e3fed8617a1",
-  ],
-  "dex:read": ["3b376e0aa52c41cbb6afc9cab945afa8"],
+  "cloudchamber:write": ["Cloudchamber Read", "Cloudchamber Write"],
+  "constellation:write": ["Constellation Read", "Constellation Write"],
+  "containers:write": ["Workers Containers Read", "Workers Containers Write"],
+  "d1:write": ["D1 Read", "D1 Write"],
+  "dex:read": ["Cloudflare DEX Read"],
   "dex:write": [
-    "3a1e1ef09dd34271bb44fc4c6a419952",
-    "3b376e0aa52c41cbb6afc9cab945afa8",
-    "92c8dcd551cc42a6a57a54e8f8d3f3e3",
+    "Cloudflare DEX",
+    "Cloudflare DEX Read",
+    "Cloudflare DEX Write",
   ],
-  "dns_analytics:read": [], //??
+  "dns_analytics:read": [],
   "dns_records:edit": [
-    "82e64a83756745bbbb1c9c2701bf816b",
-    "95d69e8d6d5144bfb0923667355d9f11",
-    "5b7aedd821a548b9bf5a2acabbce98c7",
-    "4755a26eedb94da69e1066d98aa820be",
+    "DNS Read",
+    "DNS View Read",
+    "DNS View Write",
+    "DNS Write",
   ],
-  "dns_records:read": [
-    "82e64a83756745bbbb1c9c2701bf816b",
-    "95d69e8d6d5144bfb0923667355d9f11",
-  ],
-  "dns_settings:read": ["cfa964bcdafc4ab39704e7476154e41b"],
-  "firstpartytags:write": [], //??
+  "dns_records:read": ["DNS Read", "DNS View Read"],
+  "dns_settings:read": ["Account DNS Settings Read"],
+  "firstpartytags:write": ["Zaraz Edit"],
   "lb:edit": [
-    "59059f0c977b44f8b1c18e0aaf91c369",
-    "419ec42810af4659ade77716dbe47bc6",
-    "6d7f2f5f5b1d4a0e9081fdc98d432fd1",
-    "9d24387c6e8544e2bc4024a03991339f",
-    "d2a1802cc9a34e30852f8b33869b2f3c",
+    "Load Balancers Account Read",
+    "Load Balancers Account Write",
+    "Load Balancers Write",
+    "Load Balancing: Monitors and Pools Read",
+    "Load Balancing: Monitors and Pools Write",
   ],
   "lb:read": [
-    "59059f0c977b44f8b1c18e0aaf91c369",
-    "9d24387c6e8544e2bc4024a03991339f",
-    "e9a975f628014f1d85b723993116f7d5",
+    "Load Balancers Account Read",
+    "Load Balancing: Monitors and Pools Read",
+    "Load Balancers Read",
   ],
-  "logpush:read": [
-    "6a315a56f18441e59ed03352369ae956",
-    "c4a30cd58c5d42619c86a3c36c441e2d",
-  ],
-  "logpush:write": [
-    "6a315a56f18441e59ed03352369ae956",
-    "c4a30cd58c5d42619c86a3c36c441e2d",
-    "96163bd1b0784f62b3e44ed8c2ab1eb6",
-    "3e0b5820118e47f3922f7c989e673882",
-  ],
-  "notification:read": ["ce18edbdcebf465e9d6d1d2fc80ffd42"],
-  "notification:write": [
-    "ce18edbdcebf465e9d6d1d2fc80ffd42",
-    "c3c847c5802d4ce3ba00e3e97b3c8555",
-  ],
-  "pages:read": ["e247aedd66bd41cc9193af0213416666"],
-  "pages:write": [
-    "e247aedd66bd41cc9193af0213416666",
-    "8d28297797f24fb8a0c332fe0866ec89",
-  ],
-  "pipelines:read": ["14b9cf2f410f4c0c9a16bb10a81c0e0b"],
-  "pipelines:setup": ["5606e7405dc542949d949d59993d321f"],
-  "pipelines:write": [
-    "14b9cf2f410f4c0c9a16bb10a81c0e0b",
-    "5606e7405dc542949d949d59993d321f",
-    "e34111af393449539859485aa5ddd5bd",
-  ],
+  "logpush:read": ["Logs Read"],
+  "logpush:write": ["Logs Read", "Logs Write"],
+  "notification:read": ["Notifications Read"],
+  "notification:write": ["Notifications Read", "Notifications Write"],
+  "pages:read": ["Pages Read"],
+  "pages:write": ["Pages Read", "Pages Write"],
+  "pipelines:read": ["Pipelines Read"],
+  "pipelines:setup": ["Pipelines Send"],
+  "pipelines:write": ["Pipelines Read", "Pipelines Send", "Pipelines Write"],
   "query_cache:write": [],
-  "queues:write": [
-    "84a7755d54c646ca87cd50682a34bf7c",
-    "366f57075ffc42689627bcf8242a1b6d",
-  ],
+  "queues:write": ["Queues Read", "Queues Write"],
   "r2_catalog:write": [
-    "45db74139a62490b9b60eb7c4f34994b",
-    "d229766a2f7f4d299f20eaa8c9b1fde9",
-    "f45430d92e2b4a6cb9f94f2594c141b8",
+    "Workers R2 Data Catalog Read",
+    "Workers R2 Data Catalog Write",
+    "Workers R2 SQL Read",
   ],
-  "radar:read": ["dfe525ec7b07472c827d8d009178b2ac"],
-  "rag:read": ["d7887c7a417e4cf2a69f1d01c1a1dc3b"],
-  "rag:write": [
-    "d7887c7a417e4cf2a69f1d01c1a1dc3b",
-    "7fb8d27511b34d02994d005b520b679f",
-    "234108c786084936a381bb19b7f4ea65",
-  ],
-  "secrets_store:read": ["5e33b7d77788455c9fdf18cbd38ee5a0"],
-  "secrets_store:write": [
-    "5e33b7d77788455c9fdf18cbd38ee5a0",
-    "adc8fa2bc6124928a8b3314dc63a1235",
-  ],
-  "sso-connector:read": ["1d80f6f165ea47f2b55d4a393fd697de"],
-  "sso-connector:write": [
-    "1d80f6f165ea47f2b55d4a393fd697de",
-    "901ca5e292584c6aa1b4cdb39248bb07",
-  ],
+  "radar:read": ["Radar Read"],
+  "rag:read": ["Auto Rag Read"],
+  "rag:write": ["Auto Rag Read", "Auto Rag Write", "Auto Rag Write Run Engine"],
+  "secrets_store:read": ["Secrets Store Read"],
+  "secrets_store:write": ["Secrets Store Read", "Secrets Store Write"],
+  "sso-connector:read": ["SSO Connector Read"],
+  "sso-connector:write": ["SSO Connector Read", "SSO Connector Write"],
   "ssl_certs:write": [
-    "a7a233f9604845c787d4c8c39ac09c21",
-    "db37e5f1cb1a4e1aabaef8deaea43575",
-    "7b7216b327b04b8fbc8f524e1f9b7531",
-    "c03055bc037c4ea9afb9a9f104b7b721",
+    "Account: SSL and Certificates Read",
+    "Account: SSL and Certificates Write",
+    "SSL and Certificates Read",
+    "SSL and Certificates Write",
   ],
-  "teams:pii": [], //??
-  "teams:read": [], //??
-  "teams:secure_location": [], //??
-  "teams:write": [], //??
-  "url_scanner:read": ["5d613a610b294788a29572aaac2f254d"],
-  "url_scanner:write": [
-    "5d613a610b294788a29572aaac2f254d",
-    "2a400bcb29154daab509fe07e3facab0",
-  ],
-  "user:read": [], //??
-  "vectorize:write": [
-    "1799edaae5db489294430e20d9b519e0",
-    "64156ba5be47441096c83c7fc17c488b",
-  ],
+  "teams:pii": [],
+  "teams:read": [],
+  "teams:secure_location": [],
+  "teams:write": [],
+  "url_scanner:read": ["URL Scanner Read"],
+  "url_scanner:write": ["URL Scanner Read", "URL Scanner Write"],
+  "user:read": [],
+  "vectorize:write": ["Vectorize Read", "Vectorize Write"],
   "workers:write": [
-    "2072033d694d415a936eaeb94e6405b8",
-    "28f4b596e7d643029c524985477ae49a",
-    "1a71c399035b4950a1bd1466bbe4f420",
-    "e086da7e2179491d91ee5f35b3ca210a",
+    "Workers Routes Read",
+    "Workers Routes Write",
+    "Workers Scripts Read",
+    "Workers Scripts Write",
+    "Workers KV Storage Read",
+    "Workers KV Storage Write",
+    "Workers R2 Storage Write",
+    "Workers R2 Storage Read",
   ],
-  "workers_builds:read": ["ad99c5ae555e45c4bef5bdf2678388ba"],
-  "workers_builds:write": ["2e095cf436e2455fa62c9a9c2e18c478"],
-  "workers_kv:write": [
-    "8b47d2786a534c08a1f94ee8f9f599ef",
-    "f7f0eda5697f475c90846e879bab8666",
+  "workers_builds:read": ["Workers CI Read"],
+  "workers_builds:write": ["Workers CI Write"],
+  "workers_kv:write": ["Workers KV Storage Read", "Workers KV Storage Write"],
+  "workers_observability:read": ["Workers Observability Read"],
+  "workers_observability_telemetry:write": [
+    "Workers Observability Telemetry Write",
   ],
-  "workers_observability:read": ["66c1ed49f4ed46098b75696a6d4ee3c9"],
-  "workers_observability:write": [
-    "66c1ed49f4ed46098b75696a6d4ee3c9",
-    "82c075da3f4647a2a03becd0fe240f8a",
-  ],
-  "workers_observability_telemetry:write": ["29c629fb7b5e4c408ca0f7b545724fcc"],
-  "workers_routes:write": [], //??
-  "workers_scripts:write": [], //??
-  "workers_tail:read": ["05880cd1bdc24d8bae0be2136972816b"],
+  "workers_routes:write": ["Workers Routes Write"],
+  "workers_scripts:write": ["Workers Scripts Write"],
+  "workers_tail:read": ["Workers Tail Read"],
   "zone:read": [
-    "c8fed203ed3043cba015a93ad1616f1f",
-    "517b21aee92c4d89936c976ba6e4be55",
-    "211a4c0feb3e43b3a2d41f1443a433e7",
-    "1b1ea24cf0904d33903f0cc7e54e280f",
-    "dbc512b354774852af2b5a5f4ba3d470",
+    "Zone Read",
+    "Zone Settings Read",
+    "Zone Transform Rules Read",
+    "Zone Versioning Read",
+    "Zone WAF Read",
   ],
-  offline_access: [],
-} as const;
+  "agw:write": ["AI Gateway Read", "AI Gateway Run", "AI Gateway Write"],
+  "connectivity:admin": ["Connectivity Directory Admin"],
+  "connectivity:bind": ["Connectivity Directory Bind"],
+  "connectivity:read": ["Connectivity Directory Read"],
+  "workers:read": [
+    "Workers Scripts Read",
+    "Workers KV Storage Read",
+    "Workers R2 Storage Read",
+    "Workers Routes Read",
+  ],
+};

@@ -1,3 +1,57 @@
+## v0.77.5
+
+### &nbsp;&nbsp;&nbsp;🐞 Bug Fixes
+
+- **cloudflare**: Error if D1 jurisdiction changes &nbsp;-&nbsp; by **Sam Goodwin** [<samp>(4e116)</samp>](https://github.com/alchemy-run/alchemy/commit/4e11613e)
+
+##### &nbsp;&nbsp;&nbsp;&nbsp;[View changes on GitHub](https://github.com/alchemy-run/alchemy/compare/v0.77.4...v0.77.5)
+
+---
+
+## v0.77.4
+
+### &nbsp;&nbsp;&nbsp;🐞 Bug Fixes
+
+- **cloudflare**: Fix d1 jursidiction &nbsp;-&nbsp; by **Michael K** in https://github.com/alchemy-run/alchemy/issues/1206 [<samp>(12875)</samp>](https://github.com/alchemy-run/alchemy/commit/128757e6)
+
+##### &nbsp;&nbsp;&nbsp;&nbsp;[View changes on GitHub](https://github.com/alchemy-run/alchemy/compare/v0.77.3...v0.77.4)
+
+---
+
+## v0.77.3
+
+### &nbsp;&nbsp;&nbsp;🐞 Bug Fixes
+
+- **cli**: Do not import undici into CLI &nbsp;-&nbsp; by **Sam Goodwin** in https://github.com/alchemy-run/alchemy/issues/1205 [<samp>(f8f15)</samp>](https://github.com/alchemy-run/alchemy/commit/f8f15626)
+
+##### &nbsp;&nbsp;&nbsp;&nbsp;[View changes on GitHub](https://github.com/alchemy-run/alchemy/compare/v0.77.2...v0.77.3)
+
+---
+
+## v0.77.2
+
+### &nbsp;&nbsp;&nbsp;🐞 Bug Fixes
+
+- **cloudflare**: Use .ts suffix in bucket-custom-domain.ts &nbsp;-&nbsp; by **Sam Goodwin** [<samp>(977c2)</samp>](https://github.com/alchemy-run/alchemy/commit/977c2200)
+
+##### &nbsp;&nbsp;&nbsp;&nbsp;[View changes on GitHub](https://github.com/alchemy-run/alchemy/compare/v0.77.1...v0.77.2)
+
+---
+
+## v0.77.1
+
+### &nbsp;&nbsp;&nbsp;🚀 Features
+
+- **cloudflare**:
+  - Add jurisdiction property to d1 &nbsp;-&nbsp; by **Michael K** in https://github.com/alchemy-run/alchemy/issues/1201 [<samp>(cd49a)</samp>](https://github.com/alchemy-run/alchemy/commit/cd49ac6b)
+  - Support pre-built Images for Containers &nbsp;-&nbsp; by **Sam Goodwin** in https://github.com/alchemy-run/alchemy/issues/1199 [<samp>(966d8)</samp>](https://github.com/alchemy-run/alchemy/commit/966d8553)
+- **docker**:
+  - Add build.cacheTo and build.options escape hatch to docker image &nbsp;-&nbsp; by **Erik Müller** in https://github.com/alchemy-run/alchemy/issues/1198 [<samp>(568fa)</samp>](https://github.com/alchemy-run/alchemy/commit/568fa554)
+
+##### &nbsp;&nbsp;&nbsp;&nbsp;[View changes on GitHub](https://github.com/alchemy-run/alchemy/compare/v0.77.0...v0.77.1)
+
+---
+
 ## v0.77.0
 
 ### &nbsp;&nbsp;&nbsp;🚀 Features

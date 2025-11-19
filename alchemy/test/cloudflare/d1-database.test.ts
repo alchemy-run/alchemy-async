@@ -19,7 +19,7 @@ import {
   getAppliedMigrations,
 } from "../../src/cloudflare/d1-migrations.ts";
 import { Worker } from "../../src/cloudflare/worker.ts";
-import { BRANCH_PREFIX } from "../util.ts";
+import { BRANCH_PREFIX, waitFor } from "../util.ts";
 
 import { destroy } from "../../src/destroy.ts";
 import "../../src/test/vitest.ts";
@@ -112,8 +112,15 @@ describe("D1 Database Resource", async () => {
       );
       expect(getResponse.ok).toBe(true);
 
-      const dbData: any = await getResponse.json();
-      expect(dbData.result.read_replication?.mode).toEqual("auto");
+      await waitFor(
+        async () =>
+          (
+            await api.get(
+              `/accounts/${api.accountId}/d1/database/${database.id}`,
+            )
+          ).json(),
+        (dbData: any) => dbData.result.read_replication?.mode === "auto",
+      );
     } finally {
       await alchemy.destroy(scope);
     }
@@ -868,14 +875,38 @@ describe("D1 Database Resource", async () => {
       expect(euD1.name).toEqual(euD1Name);
       expect(euD1.jurisdiction).toEqual("eu");
 
-      const gotD1 = await getDatabase(api, euD1Name, {
-        jurisdiction: "eu",
-      });
+      const gotD1 = await getDatabase(api, euD1Name);
       expect(gotD1.result.name).toEqual(euD1Name);
+      expect(gotD1.result.jurisdiction).toEqual("eu");
     } finally {
       await alchemy.destroy(scope);
       if (euD1) {
         await assertDatabaseDeleted(euD1);
+      }
+    }
+  });
+
+  test("d1 with default jurisdiction", async (scope) => {
+    const api = await createCloudflareApi();
+    const defaultD1Name = `${testId}-default`;
+    let defaultD1: D1Database | undefined;
+
+    try {
+      defaultD1 = await D1Database(defaultD1Name, {
+        name: defaultD1Name,
+        jurisdiction: "default",
+        adopt: true,
+      });
+      expect(defaultD1.name).toEqual(defaultD1Name);
+      expect(defaultD1.jurisdiction).toEqual("default");
+
+      const gotD1 = await getDatabase(api, defaultD1Name);
+      expect(gotD1.result.name).toEqual(defaultD1Name);
+      expect(gotD1.result.jurisdiction).toEqual(null);
+    } finally {
+      await alchemy.destroy(scope);
+      if (defaultD1) {
+        await assertDatabaseDeleted(defaultD1);
       }
     }
   });

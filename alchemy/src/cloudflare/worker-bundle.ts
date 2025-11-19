@@ -351,6 +351,7 @@ export namespace WorkerBundleSource {
           ".js": "jsx",
           ".mjs": "jsx",
           ".cjs": "jsx",
+          ".sql": "text",
         },
         format,
         sourceRoot: this.props.outdir,
