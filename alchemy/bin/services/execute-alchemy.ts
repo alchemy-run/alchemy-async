@@ -214,41 +214,16 @@ export async function execAlchemy(
   const argsString = args.join(" ");
   const execArgsString = execArgs.join(" ");
   // Determine the command to run based on package manager and file extension
-  let command: string;
   const isTypeScript = main.endsWith("ts");
 
-  switch (packageManager) {
-    case "bun":
-      command = `bun ${execArgsString} ${main} ${argsString}`;
-      break;
-    case "deno":
-      command = `deno run -A ${execArgsString} ${main} ${argsString}`;
-      break;
-    case "pnpm":
-      command = isTypeScript
-        ? `pnpm dlx tsx ${execArgsString} ${main} ${argsString}`
-        : `pnpm node ${execArgsString} ${main} ${argsString}`;
-      break;
-    case "yarn":
-      command = isTypeScript
-        ? `yarn tsx ${execArgsString} ${main} ${argsString}`
-        : `yarn node ${execArgsString} ${main} ${argsString}`;
-      break;
-    default:
-      switch (runtime) {
-        case "bun":
-          command = `bun ${execArgsString} ${main} ${argsString}`;
-          break;
-        case "deno":
-          command = `deno run -A ${execArgsString} ${main} ${argsString}`;
-          break;
-        case "node":
-          command = isTypeScript
-            ? `npx tsx ${execArgsString} ${main} ${argsString}`
-            : `node ${execArgsString} ${main} ${argsString}`;
-          break;
-      }
-  }
+  const node = isTypeScript
+    ? `npx tsx ${execArgsString} ${main} ${argsString}`
+    : `node ${execArgsString} ${main} ${argsString}`;
+  const commands = {
+    bun: `bun ${execArgsString} ${main} ${argsString}`,
+    deno: `deno run -A ${execArgsString} ${main} ${argsString}`,
+  };
+  const command = commands[packageManager] ?? commands[runtime] ?? node;
 
   const childRuntime = command.split(" ")[0];
 

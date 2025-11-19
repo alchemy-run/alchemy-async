@@ -566,9 +566,6 @@ export const ContainerApplication = Resource(
         logs: {
           enabled: true,
         },
-        logging: {
-          enabled: true,
-        },
       },
     };
     if (this.phase === "update" && this.output?.id) {
@@ -1041,9 +1038,6 @@ interface CreateRolloutApplicationResponse {
     image: string;
     observability?: {
       logs?: {
-        enabled: boolean;
-      };
-      logging?: {
         enabled: boolean;
       };
     };

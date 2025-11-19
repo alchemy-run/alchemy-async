@@ -1,20 +1,24 @@
+import path from "pathe";
 import { exists } from "./exists.ts";
+import { findWorkspaceRoot } from "./find-workspace-root.ts";
 
 export type PackageManager = "bun" | "pnpm" | "yarn" | "npm" | "deno";
 
 export async function detectPackageManager(
-  path: string = process.cwd(),
+  root: string = process.cwd(),
 ): Promise<PackageManager> {
-  if (await exists(`${path}/deno.lock`)) return "deno";
+  root = await findWorkspaceRoot(root);
+
+  if (await exists(path.resolve(root, "deno.lock"))) return "deno";
   if (
-    (await exists(`${path}/deno.json`)) ||
-    (await exists(`${path}/deno.jsonc`))
+    (await exists(path.resolve(root, "deno.json"))) ||
+    (await exists(path.resolve(root, "deno.jsonc")))
   )
     return "deno";
-  if (await exists(`${path}/bun.lockb`)) return "bun";
-  if (await exists(`${path}/bun.lock`)) return "bun";
-  if (await exists(`${path}/pnpm-lock.yaml`)) return "pnpm";
-  if (await exists(`${path}/yarn.lock`)) return "yarn";
+  if (await exists(path.resolve(root, "bun.lockb"))) return "bun";
+  if (await exists(path.resolve(root, "bun.lock"))) return "bun";
+  if (await exists(path.resolve(root, "pnpm-lock.yaml"))) return "pnpm";
+  if (await exists(path.resolve(root, "yarn.lock"))) return "yarn";
 
   if (process.env.npm_execpath?.includes("bun")) {
     return "bun";
