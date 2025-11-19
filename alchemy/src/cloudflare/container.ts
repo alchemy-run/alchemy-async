@@ -222,6 +222,7 @@ export async function Container<T>(
       name: `cloudflare-dev/${name}`, // prefix used by Miniflare
       tag,
       build: props.build ?? {
+        dockerfile: "Dockerfile",
         platform: "linux/amd64",
         context: process.cwd(),
       },
@@ -244,7 +245,11 @@ export async function Container<T>(
           platform: props.build?.platform ?? "linux/amd64",
           ...props.build,
         }
-      : undefined,
+      : {
+          dockerfile: "Dockerfile",
+          platform: "linux/amd64",
+          context: process.cwd(),
+        },
     image: props.image,
     registry: {
       server: "registry.cloudflare.com",

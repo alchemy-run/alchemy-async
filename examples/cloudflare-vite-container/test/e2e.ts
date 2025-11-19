@@ -1,60 +1,29 @@
-import { fetchAndExpectOK, fetchAndExpectStatus } from "alchemy/util";
+import { fetchAndExpectOK } from "alchemy/util";
 import assert from "node:assert";
 
-export async function test({
-  url,
-  env,
-}: {
-  url: string | undefined;
-  env: Record<string, string>;
-}) {
-  console.log("Running Vite E2E test...");
+export async function test({ url }: { url: string | undefined }) {
+  console.log("Running container E2E test...");
 
   assert(url, "URL is not set");
 
   await pollUntilReady(url);
 
-  const envRes = await fetchAndExpectOK(`${url}/api/test/env`);
-  assert.deepStrictEqual(
-    await envRes.json(),
-    env,
-    "Unexpected response from /api/test/env",
+  const id = crypto.randomUUID();
+  const res = await fetchAndExpectOK(`${url}/container/${id}`);
+  assert.equal(
+    res.status,
+    200,
+    `Unexpected status from /container/${id}: ${res.status}`,
+  );
+  const text = await res.text();
+  assert(
+    text.startsWith(
+      `Hi, I'm a container and this is my message: "I was passed in via the container class!", my instance ID is:`,
+    ),
+    `Unexpected response from /container/${id}: ${text}`,
   );
 
-  const key = crypto.randomUUID();
-  const value = crypto.randomUUID();
-
-  const putRes = await fetchAndExpectStatus(
-    `${url}/api/test/kv/${key}`,
-    {
-      method: "PUT",
-      body: value,
-    },
-    201,
-  );
-  assert.equal(putRes.status, 201, "Failed to put key-value pair");
-
-  const getRes = await fetchAndExpectOK(`${url}/api/test/kv/${key}`);
-  assert.equal(getRes.status, 200, "Failed to get key-value pair");
-  assert.equal(await getRes.text(), value, "Value is not correct");
-
-  const deleteRes = await fetchAndExpectStatus(
-    `${url}/api/test/kv/${key}`,
-    {
-      method: "DELETE",
-    },
-    204,
-  );
-  assert.equal(deleteRes.status, 204, "Failed to delete key-value pair");
-
-  const getRes2 = await fetchAndExpectStatus(
-    `${url}/api/test/kv/${key}`,
-    undefined,
-    404,
-  );
-  assert.equal(getRes2.status, 404, "Key-value pair is not deleted");
-
-  console.log("Vite E2E test passed");
+  console.log("Container E2E test passed");
 }
 
 async function pollUntilReady(url: string) {
