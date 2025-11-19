@@ -71,11 +71,13 @@ import { createEmptyWorker, exists } from "./worker-stub.ts";
 export interface AssetsConfig {
   /**
    * The contents of a _headers file (used to attach custom headers on asset responses)
+   * @default the `_headers` file in the assets directory, if present
    */
   _headers?: string;
 
   /**
    * The contents of a _redirects file (used to apply redirects or proxy paths ahead of asset serving)
+   * @default the `_redirects` file in the assets directory, if present
    */
   _redirects?: string;
 
