@@ -1,4 +1,5 @@
 import fs from "node:fs/promises";
+import path from "pathe";
 import { AsyncQueue } from "../util/async-queue.ts";
 import { withExponentialBackoff } from "../util/retry.ts";
 import { extractCloudflareResult } from "./api-response.ts";
@@ -38,7 +39,10 @@ export async function uploadAssets(
   },
 ): Promise<AssetUploadResult> {
   // Process the assets configuration once at the beginning
-  const processedConfig = createAssetConfig(assetConfig);
+  const processedConfig = await createAssetConfigWithFiles(
+    assets.path,
+    assetConfig,
+  );
 
   const manifest: Record<string, FileMetadata> = {};
   const filesByHash = new Map<string, Assets.FileMetadata>();
@@ -93,6 +97,35 @@ export async function uploadAssets(
     completionToken,
     assetConfig: processedConfig,
   };
+}
+
+async function createAssetConfigWithFiles(
+  assetsPath: string,
+  config: AssetsConfig = {},
+): Promise<AssetsConfig> {
+  const [_headers, _redirects] = await Promise.all([
+    readFileOrProperty("_headers"),
+    readFileOrProperty("_redirects"),
+  ]);
+  return createAssetConfig({
+    ...config,
+    _headers,
+    _redirects,
+  });
+
+  async function readFileOrProperty(
+    property: "_headers" | "_redirects",
+  ): Promise<string | undefined> {
+    const content = await fs
+      .readFile(path.join(assetsPath, property), "utf-8")
+      .catch(() => undefined);
+    if (content && config[property]) {
+      throw new Error(
+        `Cannot use both ${property} file and ${property} property`,
+      );
+    }
+    return content ?? config[property];
+  }
 }
 
 /**
