@@ -51,11 +51,17 @@ import {
 import {
   type WorkerScriptMetadata,
   bumpMigrationTagVersion,
+  getWorkerSettings,
   prepareWorkerMetadata,
 } from "./worker-metadata.ts";
 import { WorkerSubdomain, disableWorkerSubdomain } from "./worker-subdomain.ts";
 import { createTail } from "./worker-tail.ts";
-import { Workflow, isWorkflow, upsertWorkflow } from "./workflow.ts";
+import {
+  Workflow,
+  deleteWorkflow,
+  isWorkflow,
+  upsertWorkflow,
+} from "./workflow.ts";
 
 // Previous versions of `Worker` used the `Bundle` resource.
 // This import is here to avoid errors when destroying the `Bundle` resource.
@@ -951,7 +957,10 @@ const _Worker = Resource(
             await createEmptyWorker(api, options.name, props.version);
           }
         } else {
-          await deleteQueueConsumers(api, options.name);
+          await Promise.all([
+            deleteQueueConsumers(api, options.name),
+            deleteWorkflows(api, options.name),
+          ]);
           await deleteWorker(api, {
             scriptName: options.name,
             dispatchNamespace: options.dispatchNamespace,
@@ -1704,6 +1713,20 @@ async function deleteQueueConsumers(api: CloudflareApi, scriptName: string) {
   await Promise.all(
     consumers.map(async (consumer) => {
       await deleteQueueConsumer(api, consumer.queueId, consumer.consumerId);
+    }),
+  );
+}
+
+async function deleteWorkflows(api: CloudflareApi, scriptName: string) {
+  const settings = await getWorkerSettings(api, scriptName);
+  await Promise.all(
+    (settings?.bindings ?? []).map(async (binding) => {
+      if (
+        binding.type === "workflow" &&
+        (binding.script_name === scriptName || !binding.script_name)
+      ) {
+        await deleteWorkflow(api, binding.workflow_name);
+      }
     }),
   );
 }
