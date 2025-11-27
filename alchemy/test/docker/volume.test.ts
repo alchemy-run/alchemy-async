@@ -1,5 +1,6 @@
 import { describe, expect } from "vitest";
 import { alchemy } from "../../src/alchemy.ts";
+import { DockerApi } from "../../src/docker/api.ts";
 import { Volume } from "../../src/docker/volume.ts";
 import { BRANCH_PREFIX } from "../util.ts";
 
@@ -88,6 +89,56 @@ describe("Volume", () => {
       expect(volume.labels).toBeUndefined();
     } finally {
       await alchemy.destroy(scope);
+    }
+  });
+
+  test("should fail to create a volume when name already exists without adopt", async (scope) => {
+    const api = new DockerApi();
+    const volumeName = `${BRANCH_PREFIX}-adopt-test-no-adopt`;
+
+    try {
+      // Manually create a volume outside of Alchemy
+      await api.createVolume(volumeName, "local", {}, {});
+
+      // Attempt to create a volume with the same name without adopt flag
+      await expect(
+        Volume("adopt-test-no-adopt", {
+          name: volumeName,
+        }),
+      ).rejects.toThrow(
+        `Volume "${volumeName}" already exists. Use adopt: true to adopt it.`,
+      );
+    } finally {
+      // Clean up manually created volume
+      await api.removeVolume(volumeName);
+      await alchemy.destroy(scope);
+    }
+  });
+
+  test("should adopt an existing volume when adopt is true", async (scope) => {
+    const api = new DockerApi();
+    const volumeName = `${BRANCH_PREFIX}-adopt-test-with-adopt`;
+
+    try {
+      // Manually create a volume outside of Alchemy
+      await api.createVolume(volumeName, "local", {}, {});
+
+      // Adopt the volume with Alchemy
+      const volume = await Volume("adopt-test-with-adopt", {
+        name: volumeName,
+        adopt: true,
+      });
+
+      // Verify the volume was adopted (same name)
+      expect(volume.id).toBe(volumeName);
+      expect(volume.name).toBe(volumeName);
+      expect(volume.driver).toBe("local");
+    } finally {
+      await alchemy.destroy(scope);
+
+      // Verify volume was removed
+      const exists = await api.volumeExists(volumeName);
+      expect(exists).toBe(false);
     }
   });
 });
