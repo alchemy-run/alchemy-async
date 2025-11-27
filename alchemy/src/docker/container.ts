@@ -176,6 +176,12 @@ export interface ContainerProps {
    * Healthcheck configuration
    */
   healthcheck?: HealthcheckConfig;
+
+  /**
+   * Whether to adopt the container if it already exists
+   * @default false
+   */
+  adopt?: boolean;
 }
 
 /**
@@ -303,71 +309,96 @@ export const Container = Resource(
 
       // Return destroyed state
       return this.destroy();
-    } else {
-      let containerState: NonNullable<Container["state"]> = "created";
-
-      if (this.phase === "update") {
-        // Check if container already exists (for update)
-        const containerExists = await api.containerExists(containerName);
-
-        if (containerExists) {
-          // Remove existing container for update
-          await api.removeContainer(containerName, true);
-        }
-      }
-
-      // Prepare port mappings
-      const portMappings: Record<string, string> = {};
-      if (props.ports) {
-        for (const port of props.ports) {
-          const protocol = port.protocol || "tcp";
-          portMappings[`${port.external}`] = `${port.internal}/${protocol}`;
-        }
-      }
-
-      // Prepare volume mappings
-      const volumeMappings: Record<string, string> = {};
-      if (props.volumes) {
-        for (const volume of props.volumes) {
-          const readOnlyFlag = volume.readOnly ? ":ro" : "";
-          volumeMappings[volume.hostPath] =
-            `${volume.containerPath}${readOnlyFlag}`;
-        }
-      }
-
-      // Create new container
-      const containerId = await api.createContainer(imageRef, containerName, {
-        ports: portMappings,
-        env: props.environment,
-        volumes: volumeMappings,
-        cmd: props.command,
-        healthcheck: props.healthcheck,
-      });
-
-      // Connect to networks if specified
-      if (props.networks) {
-        for (const network of props.networks) {
-          const networkId =
-            typeof network === "string" ? network : network.name;
-          await api.connectNetwork(containerId, networkId, {
-            aliases: network.aliases,
-          });
-        }
-      }
-
-      // Start container if requested
-      if (props.start) {
-        await api.startContainer(containerId);
-        containerState = "running";
-      }
-
-      return {
-        ...props,
-        id: containerId,
-        name: containerName,
-        state: containerState,
-        createdAt: Date.now(),
-      };
     }
+
+    let containerState: NonNullable<Container["state"]> = "created";
+
+    // Check if container already exists
+    const containerExists = await api.containerExists(containerName);
+
+    if (containerExists) {
+      if (this.phase === "update") {
+        // Remove existing container for update
+        await api.removeContainer(containerName, true);
+      } else {
+        // Create phase - check for adoption
+        if (!props.adopt) {
+          throw new Error(
+            `Container "${containerName}" already exists. Use adopt: true to adopt it.`,
+          );
+        }
+
+        // Adopt existing container
+        const containerInfos = await api.inspectContainer(containerName);
+        const containerInfo = containerInfos[0];
+        let adoptedState = containerInfo.State.Status;
+
+        // Optionally start the container if requested
+        if (props.start && containerInfo.State.Status !== "running") {
+          await api.startContainer(containerName);
+          adoptedState = "running";
+        }
+
+        return {
+          ...props,
+          id: containerInfo.Id,
+          name: containerName,
+          state: adoptedState,
+          createdAt: new Date(containerInfo.Created).getTime(),
+        };
+      }
+    }
+
+    // Prepare port mappings
+    const portMappings: Record<string, string> = {};
+    if (props.ports) {
+      for (const port of props.ports) {
+        const protocol = port.protocol || "tcp";
+        portMappings[`${port.external}`] = `${port.internal}/${protocol}`;
+      }
+    }
+
+    // Prepare volume mappings
+    const volumeMappings: Record<string, string> = {};
+    if (props.volumes) {
+      for (const volume of props.volumes) {
+        const readOnlyFlag = volume.readOnly ? ":ro" : "";
+        volumeMappings[volume.hostPath] =
+          `${volume.containerPath}${readOnlyFlag}`;
+      }
+    }
+
+    // Create new container
+    const containerId = await api.createContainer(imageRef, containerName, {
+      ports: portMappings,
+      env: props.environment,
+      volumes: volumeMappings,
+      cmd: props.command,
+      healthcheck: props.healthcheck,
+    });
+
+    // Connect to networks if specified
+    if (props.networks) {
+      for (const network of props.networks) {
+        const networkId = typeof network === "string" ? network : network.name;
+        await api.connectNetwork(containerId, networkId, {
+          aliases: network.aliases,
+        });
+      }
+    }
+
+    // Start container if requested
+    if (props.start) {
+      await api.startContainer(containerId);
+      containerState = "running";
+    }
+
+    return {
+      ...props,
+      id: containerId,
+      name: containerName,
+      state: containerState,
+      createdAt: Date.now(),
+    };
   },
 );
