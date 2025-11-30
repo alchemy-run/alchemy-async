@@ -98,7 +98,7 @@ export function DeployWorkflow({ manager = "bun" }) {
     },
     env: {
       STAGE:
-        "${{ github.ref == 'refs/heads/main' && 'prod' || format('pr-{0}', github.event.number) }}",
+        "${{ github.event_name == 'pull_request' && format('pr-{0}', github.event.number) || (github.ref == 'refs/heads/main' && 'prod' || github.ref_name) }}",
     },
     jobs: {
       deploy: {
@@ -148,6 +148,13 @@ export function DeployWorkflow({ manager = "bun" }) {
           {
             name: "Install dependencies",
             run: cfg.install,
+          },
+          {
+            name: "Safety Check",
+            run: `if [ "\${{ env.STAGE }}" = "prod" ]; then
+  echo "ERROR: Cannot destroy prod environment in cleanup job"
+  exit 1
+fi`,
           },
           {
             name: "Destroy Preview Environment",
@@ -255,4 +262,21 @@ As part of this guide, we'll:
      </TabItem>
    </Tabs>
 
+   :::note[Important: STAGE Variable Logic]
+   The workflow uses a specific `STAGE` environment variable logic to ensure preview environments are correctly identified:
+   
+   ```yaml
+   env:
+     STAGE: ${{ github.event_name == 'pull_request' && format('pr-{0}', github.event.number) || (github.ref == 'refs/heads/main' && 'prod' || github.ref_name) }}
+   ```
+   
+   This ensures that:
+   - All pull request events (including when merged/closed) use `pr-{number}` format
+   - Pushes to `main` branch use `prod`
+   - Other branches use the branch name
+   
+   Additionally, the cleanup job includes a safety check to prevent accidental destruction of the production environment.
+   :::
+
 </Steps>
+

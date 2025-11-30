@@ -1,3 +1,19 @@
+## v0.79.0
+
+### &nbsp;&nbsp;&nbsp;🐞 Bug Fixes
+
+- **cloudflare**:
+  - Delete workflows on worker delete &nbsp;-&nbsp; by **John Royal** in https://github.com/alchemy-run/alchemy/issues/1226 [<samp>(fba20)</samp>](https://github.com/alchemy-run/alchemy/commit/fba20b59)
+- **docker**:
+  - Retry 502 Bad Gateway &nbsp;-&nbsp; by **Sam Goodwin** in https://github.com/alchemy-run/alchemy/issues/1231 [<samp>(6dbce)</samp>](https://github.com/alchemy-run/alchemy/commit/6dbce478)
+- **util**:
+  - Preserve primitive arrays in `camelToSnakeObjectDeep` &nbsp;-&nbsp; by **Riley Tomasek** and **CharlieHelps** in https://github.com/alchemy-run/alchemy/issues/1232 [<samp>(f236a)</samp>](https://github.com/alchemy-run/alchemy/commit/f236a510)
+  - CamelToSnake return nested primitives and add tests &nbsp;-&nbsp; by **bjorntechCarl** and **Sam Goodwin** in https://github.com/alchemy-run/alchemy/issues/1229 [<samp>(b571f)</samp>](https://github.com/alchemy-run/alchemy/commit/b571f57b)
+
+##### &nbsp;&nbsp;&nbsp;&nbsp;[View changes on GitHub](https://github.com/alchemy-run/alchemy/compare/v0.78.0...v0.79.0)
+
+---
+
 ## v0.78.0
 
 ### &nbsp;&nbsp;&nbsp;🐞 Bug Fixes

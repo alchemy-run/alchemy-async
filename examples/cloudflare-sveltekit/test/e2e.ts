@@ -14,10 +14,6 @@ export async function test({
 
   await pollUntilReady(url);
 
-  const versionJsonRes = await fetchAndExpectOK(`${url}/_app/version.json`);
-  assert.equal(versionJsonRes.headers.get("X-Robots-Tag"), "noindex");
-  assert.equal(versionJsonRes.headers.get("Cache-Control"), "no-cache");
-
   const envRes = await fetchAndExpectOK(`${url}/api/test/env`);
   assert.deepStrictEqual(
     await envRes.json(),

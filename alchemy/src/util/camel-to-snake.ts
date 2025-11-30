@@ -2,26 +2,41 @@ export interface LogPushProps {
   maxFooBar: string;
 }
 
-export function camelToSnakeObjectDeep<T extends object | undefined>(
+export function camelToSnakeObjectDeep<T>(
   obj: T,
-): T extends undefined ? undefined : CamelToSnake<T> {
-  return (
-    obj
-      ? Object.fromEntries(
-          Object.entries(obj).map(([key, value]) => [
-            key
-              .replace(/([A-Z]+)([A-Z][a-z])/g, "$1_$2") // Handle consecutive capitals: "FOOBar" -> "FOO_Bar"
-              .replace(/([a-z])([A-Z])/g, "$1_$2") // Handle normal camelCase: "fooBar" -> "foo_Bar"
-              .toLowerCase(),
-            Array.isArray(value)
-              ? value.map(camelToSnakeObjectDeep)
-              : typeof value === "object" && value !== null
-                ? camelToSnakeObjectDeep(value)
-                : value,
-          ]),
-        )
-      : undefined
-  ) as T extends undefined ? undefined : CamelToSnake<T>;
+): T extends undefined ? undefined : T extends object ? CamelToSnake<T> : T {
+  if (obj === undefined || obj === null) {
+    return obj as any;
+  }
+
+  // If it's not an object (primitive types), return as-is
+  if (typeof obj !== "object") {
+    return obj as any;
+  }
+
+  if (obj instanceof RegExp) {
+    return obj as any;
+  }
+
+  // Handle arrays
+  if (Array.isArray(obj)) {
+    return obj.map(camelToSnakeObjectDeep) as any;
+  }
+
+  // Handle objects
+  return Object.fromEntries(
+    Object.entries(obj).map(([key, value]) => [
+      key
+        .replace(/([A-Z]+)([A-Z][a-z])/g, "$1_$2") // Handle consecutive capitals: "FOOBar" -> "FOO_Bar"
+        .replace(/([a-z])([A-Z])/g, "$1_$2") // Handle normal camelCase: "fooBar" -> "foo_Bar"
+        .toLowerCase(),
+      Array.isArray(value)
+        ? value.map(camelToSnakeObjectDeep)
+        : typeof value === "object" && value !== null
+          ? camelToSnakeObjectDeep(value)
+          : value,
+    ]),
+  ) as any;
 }
 
 // Helper to check if a character is uppercase
