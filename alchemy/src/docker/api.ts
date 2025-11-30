@@ -134,7 +134,8 @@ export class DockerApi {
     } catch (error: any) {
       const message = stderr || error.message || "Command failed";
       if (
-        message.includes("unexpected status from HEAD request") &&
+        (message.includes("unexpected status from HEAD request") ||
+          message.includes("502 Bad Gateway")) &&
         remainingAttempts > 0
       ) {
         await new Promise((resolve) => setTimeout(resolve, 1000));
