@@ -146,9 +146,7 @@ export const Volume = Resource(
 
     if (volumeExists) {
       if (this.phase === "update") {
-        throw new Error(
-          `Volume "${volumeName}" cannot be updated. Volumes cannot be updated after creation.`,
-        );
+        this.replace();
       } else {
         // Create phase - check for adoption
         if (!props.adopt) {
