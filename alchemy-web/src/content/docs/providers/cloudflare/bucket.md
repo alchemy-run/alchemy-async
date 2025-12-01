@@ -69,7 +69,9 @@ console.log(publicBucket.devDomain); // [random-id].r2.dev
 
 This enables the `r2.dev` domain for the bucket. This URL is rate-limited and not recommended for production use.
 
+:::caution
 In order to use the `r2.dev` domain during local development mode, you must use a deployed R2 bucket instead of local emulation.
+:::
 
 ## With Custom Domain
 
