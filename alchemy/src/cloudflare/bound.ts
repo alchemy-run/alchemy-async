@@ -26,15 +26,16 @@ import type { WorkerStub } from "./worker-stub.ts";
 import type { Worker as _Worker } from "./worker.ts";
 import type { Workflow as _Workflow } from "./workflow.ts";
 
-type BoundWorker<RPC extends Rpc.WorkerEntrypointBranded = Rpc.WorkerEntrypointBranded> =
-  Service<RPC> & {
-    // cloudflare's Rpc.Provider type loses mapping between properties (jump to definition)
-    // we fix that using Pick to re-connect mappings
-    [property in keyof Pick<
-      RPC,
-      Extract<keyof Rpc.Provider<RPC, "fetch" | "connect">, keyof RPC>
-    >]: Rpc.Provider<RPC, "fetch" | "connect">[property];
-  };
+type BoundWorker<
+  RPC extends Rpc.WorkerEntrypointBranded = Rpc.WorkerEntrypointBranded,
+> = Service<RPC> & {
+  // cloudflare's Rpc.Provider type loses mapping between properties (jump to definition)
+  // we fix that using Pick to re-connect mappings
+  [property in keyof Pick<
+    RPC,
+    Extract<keyof Rpc.Provider<RPC, "fetch" | "connect">, keyof RPC>
+  >]: Rpc.Provider<RPC, "fetch" | "connect">[property];
+};
 
 export type Bound<T extends Binding> =
   T extends _DurableObjectNamespace<infer O>
@@ -87,15 +88,22 @@ export type Bound<T extends Binding> =
                                                   ? ImagesBinding
                                                   : T extends _VersionMetadata
                                                     ? WorkerVersionMetadata
-                                                    : T extends _Worker.DevDomain | _Worker.DevUrl
+                                                    : T extends
+                                                          | _Worker.DevDomain
+                                                          | _Worker.DevUrl
                                                       ? string
                                                       : T extends Self
                                                         ? Service
-                                                        : T extends Json<infer T>
+                                                        : T extends Json<
+                                                              infer T
+                                                            >
                                                           ? T
-                                                          : T extends _Container<infer Obj>
+                                                          : T extends _Container<
+                                                                infer Obj
+                                                              >
                                                             ? DurableObjectNamespace<
-                                                                Obj & Rpc.DurableObjectBranded
+                                                                Obj &
+                                                                  Rpc.DurableObjectBranded
                                                               >
                                                             : T extends undefined
                                                               ? undefined

@@ -4,7 +4,11 @@ import { memoize } from "../util/memoize.ts";
 import { withExponentialBackoff } from "../util/retry.ts";
 import { CloudflareApiError } from "./api-error.ts";
 import { extractCloudflareResult } from "./api-response.ts";
-import { createCloudflareApi, type CloudflareApi, type CloudflareApiOptions } from "./api.ts";
+import {
+  createCloudflareApi,
+  type CloudflareApi,
+  type CloudflareApiOptions,
+} from "./api.ts";
 
 interface WorkerSubdomainProps extends CloudflareApiOptions {
   /**
@@ -42,7 +46,11 @@ export interface WorkerSubdomain {
 
 export const WorkerSubdomain = Resource(
   "cloudflare::WorkerSubdomain",
-  async function (this: Context<WorkerSubdomain>, _id: string, props: WorkerSubdomainProps) {
+  async function (
+    this: Context<WorkerSubdomain>,
+    _id: string,
+    props: WorkerSubdomainProps,
+  ) {
     if (this.scope.local && props.dev) {
       return {
         url: this.output?.url ?? "https://unavailable.alchemy.run",
@@ -71,12 +79,18 @@ export const WorkerSubdomain = Resource(
   },
 );
 
-export async function disableWorkerSubdomain(api: CloudflareApi, scriptName: string) {
+export async function disableWorkerSubdomain(
+  api: CloudflareApi,
+  scriptName: string,
+) {
   await extractCloudflareResult<SubdomainResponse>(
     `disable subdomain for "${scriptName}"`,
-    api.post(`/accounts/${api.accountId}/workers/scripts/${scriptName}/subdomain`, {
-      enabled: false,
-    }),
+    api.post(
+      `/accounts/${api.accountId}/workers/scripts/${scriptName}/subdomain`,
+      {
+        enabled: false,
+      },
+    ),
   ).catch((error) => {
     if (error.status === 404) {
       return;
@@ -85,15 +99,21 @@ export async function disableWorkerSubdomain(api: CloudflareApi, scriptName: str
   });
 }
 
-export async function enableWorkerSubdomain(api: CloudflareApi, scriptName: string) {
+export async function enableWorkerSubdomain(
+  api: CloudflareApi,
+  scriptName: string,
+) {
   await withExponentialBackoff(
     () =>
       extractCloudflareResult<SubdomainResponse>(
         `enable subdomain for "${scriptName}"`,
-        api.post(`/accounts/${api.accountId}/workers/scripts/${scriptName}/subdomain`, {
-          enabled: true,
-          previews_enabled: true,
-        }),
+        api.post(
+          `/accounts/${api.accountId}/workers/scripts/${scriptName}/subdomain`,
+          {
+            enabled: true,
+            previews_enabled: true,
+          },
+        ),
       ),
     (error) => error instanceof CloudflareApiError && error.status === 404,
     20,
@@ -101,14 +121,22 @@ export async function enableWorkerSubdomain(api: CloudflareApi, scriptName: stri
   );
 }
 
-export async function computeWorkerDevDomain(api: CloudflareApi, scriptName: string) {
+export async function computeWorkerDevDomain(
+  api: CloudflareApi,
+  scriptName: string,
+) {
   return `${scriptName}.${await getAccountSubdomain(api)}.workers.dev`;
 }
 
-export async function getWorkerSubdomain(api: CloudflareApi, scriptName: string) {
+export async function getWorkerSubdomain(
+  api: CloudflareApi,
+  scriptName: string,
+) {
   return await extractCloudflareResult<SubdomainResponse>(
     `get subdomain for "${scriptName}"`,
-    api.get(`/accounts/${api.accountId}/workers/scripts/${scriptName}/subdomain`),
+    api.get(
+      `/accounts/${api.accountId}/workers/scripts/${scriptName}/subdomain`,
+    ),
   ).catch((error): SubdomainResponse => {
     if (error.status === 404) {
       return { enabled: false, previews_enabled: false };

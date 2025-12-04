@@ -10,12 +10,16 @@ import { Assets } from "./assets.ts";
 import type { Bindings } from "./bindings.ts";
 import { DEFAULT_COMPATIBILITY_DATE } from "./compatibility-date.gen.ts";
 import { unionCompatibilityFlags } from "./compatibility-presets.ts";
-import { extractStringAndSecretBindings, unencryptSecrets } from "./util/filter-env-bindings.ts";
+import {
+  extractStringAndSecretBindings,
+  unencryptSecrets,
+} from "./util/filter-env-bindings.ts";
 import { computeWorkerDevDomain } from "./worker-subdomain.ts";
 import { type AssetsConfig, Worker, type WorkerProps } from "./worker.ts";
 import { WranglerJson, type WranglerJsonSpec } from "./wrangler.json.ts";
 
-export interface WebsiteProps<B extends Bindings> extends Omit<WorkerProps<B>, "assets" | "dev"> {
+export interface WebsiteProps<B extends Bindings>
+  extends Omit<WorkerProps<B>, "assets" | "dev"> {
   /**
    * Configuration for the build command
    *
@@ -115,7 +119,9 @@ export interface WebsiteProps<B extends Bindings> extends Omit<WorkerProps<B>, "
      * @param spec - The generated wrangler.json specification
      * @returns The modified wrangler.json specification
      */
-    transform?: (spec: WranglerJsonSpec) => WranglerJsonSpec | Promise<WranglerJsonSpec>;
+    transform?: (
+      spec: WranglerJsonSpec,
+    ) => WranglerJsonSpec | Promise<WranglerJsonSpec>;
     /**
      * Whether to include secrets in the wrangler.json file
      *
@@ -145,7 +151,10 @@ export type Website<B extends Bindings> = B extends { ASSETS: any }
   ? never
   : Worker<B & { ASSETS: Assets }>;
 
-export async function Website<B extends Bindings>(id: string, props: WebsiteProps<B>) {
+export async function Website<B extends Bindings>(
+  id: string,
+  props: WebsiteProps<B>,
+) {
   const {
     name = Scope.current.createPhysicalName(id),
     build: buildProps,
@@ -159,15 +168,24 @@ export async function Website<B extends Bindings>(id: string, props: WebsiteProp
     ...workerProps
   } = props;
 
-  assert(!workerProps.bindings?.ASSETS, "ASSETS binding is reserved for internal use");
+  assert(
+    !workerProps.bindings?.ASSETS,
+    "ASSETS binding is reserved for internal use",
+  );
   if (command) {
-    logger.warnOnce("[website] The `command` prop is deprecated. Use `build.command` instead.");
+    logger.warnOnce(
+      "[website] The `command` prop is deprecated. Use `build.command` instead.",
+    );
   }
   if (commandEnv) {
-    logger.warnOnce("[website] The `commandEnv` prop is deprecated. Use `build.env` instead.");
+    logger.warnOnce(
+      "[website] The `commandEnv` prop is deprecated. Use `build.env` instead.",
+    );
   }
   if (memoize) {
-    logger.warnOnce("[website] The `memoize` prop is deprecated. Use `build.memoize` instead.");
+    logger.warnOnce(
+      "[website] The `memoize` prop is deprecated. Use `build.memoize` instead.",
+    );
   }
 
   const build = (() => {
@@ -195,11 +213,19 @@ export async function Website<B extends Bindings>(id: string, props: WebsiteProp
         typeof assets === "string" ? assets : (assets?.directory ?? "dist"),
       ),
       local: path.resolve(cwd, ".alchemy/local"),
-      entrypoint: path.resolve(cwd, props.entrypoint ?? ".alchemy/local/worker.js"),
+      entrypoint: path.resolve(
+        cwd,
+        props.entrypoint ?? ".alchemy/local/worker.js",
+      ),
       get wrangler() {
         return {
-          path: path.resolve(cwd, props.wrangler?.path ?? ".alchemy/local/wrangler.jsonc"),
-          main: props.wrangler?.main ? path.resolve(cwd, props.wrangler.main) : this.entrypoint,
+          path: path.resolve(
+            cwd,
+            props.wrangler?.path ?? ".alchemy/local/wrangler.jsonc",
+          ),
+          main: props.wrangler?.main
+            ? path.resolve(cwd, props.wrangler.main)
+            : this.entrypoint,
         };
       },
     };
@@ -230,11 +256,17 @@ export async function Website<B extends Bindings>(id: string, props: WebsiteProp
               "You must set `dev.domain` when running in local development mode and a Worker.DevDomain binding",
             );
           }
-          env[key] = value.type === "cloudflare::Worker::DevDomain" ? domain : `http://${domain}`;
+          env[key] =
+            value.type === "cloudflare::Worker::DevDomain"
+              ? domain
+              : `http://${domain}`;
         } else {
           const api = await createCloudflareApi(props);
           const domain = await computeWorkerDevDomain(api, name);
-          env[key] = value.type === "cloudflare::Worker::DevDomain" ? domain : `https://${domain}`;
+          env[key] =
+            value.type === "cloudflare::Worker::DevDomain"
+              ? domain
+              : `https://${domain}`;
         }
       }
     }
@@ -247,7 +279,8 @@ export async function Website<B extends Bindings>(id: string, props: WebsiteProp
       workerProps.compatibility,
       workerProps.compatibilityFlags,
     ),
-    compatibilityDate: workerProps.compatibilityDate ?? DEFAULT_COMPATIBILITY_DATE,
+    compatibilityDate:
+      workerProps.compatibilityDate ?? DEFAULT_COMPATIBILITY_DATE,
     assets: {
       html_handling: "auto-trailing-slash",
       not_found_handling: spa ? "single-page-application" : "none",
@@ -309,7 +342,9 @@ export async function Website<B extends Bindings>(id: string, props: WebsiteProp
       extract: (line) => {
         const URL_REGEX =
           /http:\/\/(localhost|0\.0\.0\.0|127\.0\.0\.1|\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}):\d+\/?/;
-        const match = line.replace(/\x1B\[[0-9;]*[a-zA-Z]/g, "").match(URL_REGEX);
+        const match = line
+          .replace(/\x1B\[[0-9;]*[a-zA-Z]/g, "")
+          .match(URL_REGEX);
         if (match) {
           return match[0];
         }

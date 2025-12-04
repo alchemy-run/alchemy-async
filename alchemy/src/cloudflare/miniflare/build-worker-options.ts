@@ -5,7 +5,12 @@ import { reservePort } from "../../util/find-open-port.ts";
 import type { HTTPServer } from "../../util/http.ts";
 import { logger } from "../../util/logger.ts";
 import type { CloudflareApi } from "../api.ts";
-import type { Binding, Bindings, WorkerBindingService, WorkerBindingSpec } from "../bindings.ts";
+import type {
+  Binding,
+  Bindings,
+  WorkerBindingService,
+  WorkerBindingSpec,
+} from "../bindings.ts";
 import { isQueueEventSource, type EventSource } from "../event-source.ts";
 import type { WorkerBundle, WorkerBundleSource } from "../worker-bundle.ts";
 import type { AssetsConfig } from "../worker.ts";
@@ -32,7 +37,12 @@ type RemoteOnlyBindingType =
   | "dispatch_namespace"
   | "mtls_certificate"
   | "vectorize";
-type RemoteOptionalBindingType = "d1" | "images" | "kv_namespace" | "queue" | "r2_bucket";
+type RemoteOptionalBindingType =
+  | "d1"
+  | "images"
+  | "kv_namespace"
+  | "queue"
+  | "r2_bucket";
 
 type RemoteBinding =
   | (Extract<
@@ -46,7 +56,9 @@ type RemoteBinding =
   | WorkerBindingService;
 
 type BaseWorkerOptions = {
-  [K in keyof miniflare.WorkerOptions]: K extends "compatibilityFlags" | "routes"
+  [K in keyof miniflare.WorkerOptions]: K extends
+    | "compatibilityFlags"
+    | "routes"
     ? miniflare.WorkerOptions[K]
     : Exclude<miniflare.WorkerOptions[K], string[]>;
 };
@@ -208,11 +220,13 @@ export const buildWorkerOptions = async (
           remoteBindings.push({
             type: "kv_namespace",
             name: key,
-            namespace_id: "namespaceId" in binding ? binding.namespaceId : binding.id,
+            namespace_id:
+              "namespaceId" in binding ? binding.namespaceId : binding.id,
             raw: true,
           });
         } else {
-          (options.kvNamespaces ??= {})[key] = "dev" in binding ? binding.dev.id : binding.id;
+          (options.kvNamespaces ??= {})[key] =
+            "dev" in binding ? binding.dev.id : binding.id;
         }
         break;
       }
@@ -266,7 +280,10 @@ export const buildWorkerOptions = async (
             type: "r2_bucket",
             name: key,
             bucket_name: binding.name,
-            jurisdiction: binding.jurisdiction === "default" ? undefined : binding.jurisdiction,
+            jurisdiction:
+              binding.jurisdiction === "default"
+                ? undefined
+                : binding.jurisdiction,
             raw: true,
           });
         } else {
@@ -280,7 +297,8 @@ export const buildWorkerOptions = async (
           type: "service",
           name: key,
           service,
-          environment: "environment" in binding ? binding.environment : undefined,
+          environment:
+            "environment" in binding ? binding.environment : undefined,
         };
         if (isRemoteBinding(binding)) {
           remoteBindings.push(normalized);
@@ -471,7 +489,10 @@ const normalizeBundle = (bundle: WorkerBundle) => {
 };
 
 const isRemoteBinding = (binding: Binding) => {
-  if (typeof binding === "string" || binding.type === "cloudflare::Worker::Self") {
+  if (
+    typeof binding === "string" ||
+    binding.type === "cloudflare::Worker::Self"
+  ) {
     return false;
   }
   return (

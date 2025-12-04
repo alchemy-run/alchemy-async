@@ -174,7 +174,9 @@ describe("WranglerJson Resource", () => {
           adopt: true,
         });
 
-        await expect(async () => await WranglerJson({ worker })).rejects.toThrow(
+        await expect(
+          async () => await WranglerJson({ worker }),
+        ).rejects.toThrow(
           "Worker must have an entrypoint to generate a wrangler.json",
         );
       } finally {
@@ -272,11 +274,14 @@ describe("WranglerJson Resource", () => {
           sqlite: false,
         });
 
-        const sqliteCounterNamespace = DurableObjectNamespace("sqlite-counter", {
-          className: "SqliteCounter",
-          scriptName: name,
-          sqlite: true,
-        });
+        const sqliteCounterNamespace = DurableObjectNamespace(
+          "sqlite-counter",
+          {
+            className: "SqliteCounter",
+            scriptName: name,
+            sqlite: true,
+          },
+        );
 
         const worker = await Worker(name, {
           name,
@@ -494,10 +499,13 @@ describe("WranglerJson Resource", () => {
         await fs.mkdir(tempDir, { recursive: true });
         await fs.writeFile(entrypoint, esmWorkerScript);
 
-        const r2Bucket = await R2Bucket(`${BRANCH_PREFIX}-test-r2-bucket-preview`, {
-          name: `${BRANCH_PREFIX}-test-r2-bucket-preview`,
-          adopt: true,
-        });
+        const r2Bucket = await R2Bucket(
+          `${BRANCH_PREFIX}-test-r2-bucket-preview`,
+          {
+            name: `${BRANCH_PREFIX}-test-r2-bucket-preview`,
+            adopt: true,
+          },
+        );
 
         const worker = await Worker(name, {
           name,
@@ -532,11 +540,14 @@ describe("WranglerJson Resource", () => {
         await fs.mkdir(tempDir, { recursive: true });
         await fs.writeFile(entrypoint, esmWorkerScript);
 
-        const r2Bucket = await R2Bucket(`${BRANCH_PREFIX}-test-r2-bucket-jurisdiction`, {
-          name: `${BRANCH_PREFIX}-test-r2-bucket-jurisdiction`,
-          jurisdiction: "eu",
-          adopt: true,
-        });
+        const r2Bucket = await R2Bucket(
+          `${BRANCH_PREFIX}-test-r2-bucket-jurisdiction`,
+          {
+            name: `${BRANCH_PREFIX}-test-r2-bucket-jurisdiction`,
+            jurisdiction: "eu",
+            adopt: true,
+          },
+        );
 
         const worker = await Worker(name, {
           name,
@@ -597,7 +608,9 @@ describe("WranglerJson Resource", () => {
           directory: "assets",
           binding: "ASSETS",
         });
-        await expect(fs.access(path.join(tempDir, "wrangler.jsonc"))).resolves.toBeUndefined();
+        await expect(
+          fs.access(path.join(tempDir, "wrangler.jsonc")),
+        ).resolves.toBeUndefined();
         await expect(fs.access(entrypoint)).resolves.toBeUndefined();
         await expect(fs.access(indexHtml)).resolves.toBeUndefined();
       } finally {

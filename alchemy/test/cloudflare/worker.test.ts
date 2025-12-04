@@ -17,7 +17,10 @@ import {
   type WorkerObservability,
 } from "../../src/cloudflare/worker.ts";
 import { destroy } from "../../src/destroy.ts";
-import { fetchAndExpectOK, fetchAndExpectStatus } from "../../src/util/safe-fetch.ts";
+import {
+  fetchAndExpectOK,
+  fetchAndExpectStatus,
+} from "../../src/util/safe-fetch.ts";
 import { BRANCH_PREFIX, waitFor } from "../util.ts";
 import { fetchAndExpect } from "./fetch-utils.ts";
 import { assertWorkerDoesNotExist } from "./test-helpers.ts";
@@ -28,7 +31,8 @@ import { DispatchNamespace, Queue } from "../../src/cloudflare/index.ts";
 import "../../src/test/vitest.ts";
 
 const ENABLE_WFP_TESTS = process.env.CLOUDFLARE_ACCOUNT_ENABLE_WFP !== "false";
-const ENABLE_PAID_TESTS = process.env.CLOUDFLARE_ACCOUNT_ENABLE_PAID !== "false";
+const ENABLE_PAID_TESTS =
+  process.env.CLOUDFLARE_ACCOUNT_ENABLE_PAID !== "false";
 
 const test = alchemy.test(import.meta, {
   prefix: BRANCH_PREFIX,
@@ -337,10 +341,13 @@ describe("Worker Resource", () => {
 `;
 
       // Create a Durable Object namespace
-      const counterNamespace = DurableObjectNamespace("test-counter-namespace", {
-        className: "Counter",
-        scriptName: workerName,
-      });
+      const counterNamespace = DurableObjectNamespace(
+        "test-counter-namespace",
+        {
+          className: "Counter",
+          scriptName: workerName,
+        },
+      );
 
       // Create a KV namespace
       const testKv = await KVNamespace("test-kv-namespace", {
@@ -625,7 +632,8 @@ describe("Worker Resource", () => {
         </html>
       `;
 
-      const cssContent = "body { font-family: Arial; color: #333; padding: 20px; }";
+      const cssContent =
+        "body { font-family: Arial; color: #333; padding: 20px; }";
       const spaContent = `
         <!DOCTYPE html>
         <html>
@@ -729,7 +737,9 @@ describe("Worker Resource", () => {
       // expect(worker.assets?._headers).toEqual(headersConfig);
       // expect(worker.assets?._redirects).toEqual(redirectsConfig);
       expect(worker.assets?.html_handling).toEqual("auto-trailing-slash");
-      expect(worker.assets?.not_found_handling).toEqual("single-page-application");
+      expect(worker.assets?.not_found_handling).toEqual(
+        "single-page-application",
+      );
       expect(worker.assets?.run_worker_first).toEqual(false);
 
       // Test that the static assets are accessible
@@ -739,11 +749,15 @@ describe("Worker Resource", () => {
       // Test HTML headers
       expect(indexResponse.headers.get("ABC")).toEqual("456");
       expect(indexResponse.headers.get("X-Frame-Options")).toEqual("DENY");
-      expect(indexResponse.headers.get("X-Content-Type-Options")).toEqual("nosniff");
+      expect(indexResponse.headers.get("X-Content-Type-Options")).toEqual(
+        "nosniff",
+      );
 
       // Test that custom headers are applied
       const cssResponse = await fetchAndExpectOK(`${worker.url}/styles.css`);
-      expect(cssResponse.headers.get("Cache-Control")).toEqual("public, max-age=86400");
+      expect(cssResponse.headers.get("Cache-Control")).toEqual(
+        "public, max-age=86400",
+      );
       expect(cssResponse.headers.get("XYZ")).toEqual("123");
 
       // Test auto-trailing-slash behavior
@@ -864,12 +878,16 @@ describe("Worker Resource", () => {
       expect(worker.url).toBeTruthy();
 
       // Test the echo endpoint
-      const echoResponse = await fetchAndExpectOK(`${worker.url}/echo/hello-world`);
+      const echoResponse = await fetchAndExpectOK(
+        `${worker.url}/echo/hello-world`,
+      );
       const echoText = await echoResponse.text();
       expect(echoText).toEqual("Echo: hello-world");
 
       // Test the recursive endpoint with a count of 3
-      const recursiveResponse = await fetchAndExpectOK(`${worker.url}/recursive/start/3`);
+      const recursiveResponse = await fetchAndExpectOK(
+        `${worker.url}/recursive/start/3`,
+      );
       const recursiveText = await recursiveResponse.text();
       expect(recursiveText).toEqual("Final result: start-3-2-1");
     } finally {
@@ -992,7 +1010,8 @@ describe("Worker Resource", () => {
           async () => {
             return (await fetchAndExpectOK(`${worker.url}/data`)).json() as any;
           },
-          (response) => response.message === "Hello from updated bundled worker!",
+          (response) =>
+            response.message === "Hello from updated bundled worker!",
         );
 
         expect(data.message).toEqual("Hello from updated bundled worker!");
@@ -1046,7 +1065,9 @@ describe("Worker Resource", () => {
       expect(worker.crons?.length).toEqual(2);
 
       // Verify the worker exists via API
-      const getResponse = await api.get(`/accounts/${api.accountId}/workers/scripts/${workerName}`);
+      const getResponse = await api.get(
+        `/accounts/${api.accountId}/workers/scripts/${workerName}`,
+      );
       expect(getResponse.status).toEqual(200);
 
       // Verify cron triggers were created correctly
@@ -1230,24 +1251,32 @@ describe("Worker Resource", () => {
       expect(targetText).toEqual("Target Worker is running!");
 
       // Test caller worker can access the target worker through binding
-      const callerResponse = await fetchAndExpectOK(`${callerWorker.url}/call-target`);
+      const callerResponse = await fetchAndExpectOK(
+        `${callerWorker.url}/call-target`,
+      );
       const callerData: any = await callerResponse.json();
 
       expect(callerData.success).toEqual(true);
       expect(callerData.callerName).toEqual(callerWorkerName);
       expect(callerData.targetResponse).toBeDefined();
       expect(callerData.targetResponse.workerName).toEqual(targetWorkerName);
-      expect(callerData.targetResponse.message).toEqual("Hello from target worker!");
+      expect(callerData.targetResponse.message).toEqual(
+        "Hello from target worker!",
+      );
 
       // Test echo functionality to verify data passing works
-      const echoResponse = await fetchAndExpectOK(`${callerWorker.url}/echo-test`);
+      const echoResponse = await fetchAndExpectOK(
+        `${callerWorker.url}/echo-test`,
+      );
       const echoData: any = await echoResponse.json();
 
       expect(echoData.success).toEqual(true);
       expect(echoData.echoResponse).toBeDefined();
       expect(echoData.echoResponse.workerName).toEqual(targetWorkerName);
       expect(echoData.echoResponse.received).toEqual(true);
-      expect(echoData.echoResponse.echo.message).toEqual("Test message from caller");
+      expect(echoData.echoResponse.echo.message).toEqual(
+        "Test message from caller",
+      );
     } finally {
       await destroy(scope);
       // Verify both workers were deleted
@@ -1269,7 +1298,9 @@ describe("Worker Resource", () => {
       });
 
       expect(dataset.id).toBeTruthy();
-      expect(dataset.dataset).toEqual(`${BRANCH_PREFIX}-test-analytics-dataset`);
+      expect(dataset.dataset).toEqual(
+        `${BRANCH_PREFIX}-test-analytics-dataset`,
+      );
 
       // Create a worker with the analytics engine binding
       worker = await Worker(workerName, {
@@ -1505,7 +1536,10 @@ describe("Worker Resource", () => {
       expect(versionWorker.bindings?.ASSETS).toBeDefined();
 
       // the live worker should not have the new content
-      await fetchAndExpect(`${baseWorker.url!}/test.txt`, "Hello from base worker!");
+      await fetchAndExpect(
+        `${baseWorker.url!}/test.txt`,
+        "Hello from base worker!",
+      );
 
       // the versioned worker should have the new content
       await fetchAndExpect(`${versionWorker.url!}/test.txt`, testContent);
@@ -1520,18 +1554,20 @@ describe("Worker Resource", () => {
     }
   });
 
-  test.skipIf(!ENABLE_PAID_TESTS)("adopt worker with existing migration tag", async (scope) => {
-    const scriptName = `${BRANCH_PREFIX}-test-worker-adopt-migration`;
+  test.skipIf(!ENABLE_PAID_TESTS)(
+    "adopt worker with existing migration tag",
+    async (scope) => {
+      const scriptName = `${BRANCH_PREFIX}-test-worker-adopt-migration`;
 
-    try {
-      await deleteWorker(api, {
-        scriptName,
-      });
+      try {
+        await deleteWorker(api, {
+          scriptName,
+        });
 
-      const formData = new FormData();
-      formData.append(
-        "worker.js",
-        `
+        const formData = new FormData();
+        formData.append(
+          "worker.js",
+          `
           export class MyDO {}
           export default {
             async fetch(request, env, ctx) {
@@ -1539,44 +1575,47 @@ describe("Worker Resource", () => {
             }
           };
         `,
-      );
-      formData.append(
-        "metadata",
-        new Blob([
-          JSON.stringify({
-            compatibility_date: "2025-05-18",
-            bindings: [
-              {
-                type: "durable_object_namespace",
-                class_name: "MyDO",
-                name: "MY_DO",
+        );
+        formData.append(
+          "metadata",
+          new Blob([
+            JSON.stringify({
+              compatibility_date: "2025-05-18",
+              bindings: [
+                {
+                  type: "durable_object_namespace",
+                  class_name: "MyDO",
+                  name: "MY_DO",
+                },
+              ],
+              observability: {
+                enabled: true,
               },
-            ],
-            observability: {
-              enabled: true,
-            },
-            main_module: "worker.js",
-            migrations: {
-              new_tag: "v1",
-              old_tag: undefined,
-              new_classes: ["MyDO"],
-              deleted_classes: [],
-              renamed_classes: [],
-              transferred_classes: [],
-              new_sqlite_classes: [],
-            } satisfies SingleStepMigration,
-          }),
-        ]),
-      );
+              main_module: "worker.js",
+              migrations: {
+                new_tag: "v1",
+                old_tag: undefined,
+                new_classes: ["MyDO"],
+                deleted_classes: [],
+                renamed_classes: [],
+                transferred_classes: [],
+                new_sqlite_classes: [],
+              } satisfies SingleStepMigration,
+            }),
+          ]),
+        );
 
-      // Put the worker with migration tag v1
-      await api.post(`/accounts/${api.accountId}/workers/scripts/${scriptName}/versions`, formData);
+        // Put the worker with migration tag v1
+        await api.post(
+          `/accounts/${api.accountId}/workers/scripts/${scriptName}/versions`,
+          formData,
+        );
 
-      // Now adopt the worker using the Worker resource
-      await Worker(scriptName, {
-        name: scriptName,
-        adopt: true,
-        script: `
+        // Now adopt the worker using the Worker resource
+        await Worker(scriptName, {
+          name: scriptName,
+          adopt: true,
+          script: `
           export class MyDO2 {}
           export default {
             async fetch(request, env, ctx) {
@@ -1584,19 +1623,19 @@ describe("Worker Resource", () => {
             }
           };
         `,
-        format: "esm",
-        bindings: {
-          MY_DO: DurableObjectNamespace("test-counter-migration", {
-            className: "MyDO2",
-            scriptName: scriptName,
-          }),
-        },
-      });
+          format: "esm",
+          bindings: {
+            MY_DO: DurableObjectNamespace("test-counter-migration", {
+              className: "MyDO2",
+              scriptName: scriptName,
+            }),
+          },
+        });
 
-      await Worker(scriptName, {
-        name: scriptName,
-        adopt: true,
-        script: `
+        await Worker(scriptName, {
+          name: scriptName,
+          adopt: true,
+          script: `
           export class MyDO3 {}
           export default {
             async fetch(request, env, ctx) {
@@ -1604,19 +1643,20 @@ describe("Worker Resource", () => {
             }
           };
         `,
-        format: "esm",
-        bindings: {
-          MY_DO: DurableObjectNamespace("test-counter-migration", {
-            className: "MyDO3",
-            scriptName: scriptName,
-          }),
-        },
-      });
-    } finally {
-      await destroy(scope);
-      await assertWorkerDoesNotExist(api, scriptName);
-    }
-  });
+          format: "esm",
+          bindings: {
+            MY_DO: DurableObjectNamespace("test-counter-migration", {
+              className: "MyDO3",
+              scriptName: scriptName,
+            }),
+          },
+        });
+      } finally {
+        await destroy(scope);
+        await assertWorkerDoesNotExist(api, scriptName);
+      }
+    },
+  );
 
   test("create worker with url false and verify no workers.dev subdomain", async (scope) => {
     const workerName = `${BRANCH_PREFIX}-test-worker-no-url`;
@@ -2021,7 +2061,9 @@ describe("Worker Resource", () => {
   ) {
     // If we've exhausted retries and worker still exists, fail the test
     expect(
-      (await listWorkersInNamespace(api, namespaceName)).some((worker) => worker.id === workerName),
+      (await listWorkersInNamespace(api, namespaceName)).some(
+        (worker) => worker.id === workerName,
+      ),
     ).toBeFalsy();
   }
 
@@ -2031,10 +2073,13 @@ describe("Worker Resource", () => {
     const namespaceName = `${BRANCH_PREFIX}-rename-wfp-worker`;
 
     try {
-      const dispatchNamespace = await DispatchNamespace("test-dispatch-namespace", {
-        namespace: namespaceName,
-        adopt: true,
-      });
+      const dispatchNamespace = await DispatchNamespace(
+        "test-dispatch-namespace",
+        {
+          namespace: namespaceName,
+          adopt: true,
+        },
+      );
 
       await Worker("rename-worker", {
         name: originalWorkerName,
@@ -2049,7 +2094,11 @@ describe("Worker Resource", () => {
       });
 
       // Verify the worker exists via API
-      await assertWorkerExistsInNamespace(api, namespaceName, originalWorkerName);
+      await assertWorkerExistsInNamespace(
+        api,
+        namespaceName,
+        originalWorkerName,
+      );
 
       await Worker("rename-worker", {
         name: newWorkerName,
@@ -2069,7 +2118,11 @@ describe("Worker Resource", () => {
       await assertWorkerExistsInNamespace(api, namespaceName, newWorkerName);
 
       // Verify the old worker does not exist via API
-      await assertWorkerNotExistsInNamespace(api, namespaceName, originalWorkerName);
+      await assertWorkerNotExistsInNamespace(
+        api,
+        namespaceName,
+        originalWorkerName,
+      );
     } finally {
       await destroy(scope);
     }

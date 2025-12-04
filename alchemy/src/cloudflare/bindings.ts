@@ -84,7 +84,9 @@ export type Binding =
   | Self
   | Json;
 
-export type Self<RPC extends Rpc.WorkerEntrypointBranded = Rpc.WorkerEntrypointBranded> = {
+export type Self<
+  RPC extends Rpc.WorkerEntrypointBranded = Rpc.WorkerEntrypointBranded,
+> = {
   type: "cloudflare::Worker::Self";
   __entrypoint__?: string;
   __rpc__?: RPC;
@@ -353,7 +355,14 @@ export interface WorkerBindingSecretKey {
   format: "raw" | "pkcs8" | "spki" | "jwk";
   /** Allowed operations with the key */
   usages: Array<
-    "encrypt" | "decrypt" | "sign" | "verify" | "deriveKey" | "deriveBits" | "wrapKey" | "unwrapKey"
+    | "encrypt"
+    | "decrypt"
+    | "sign"
+    | "verify"
+    | "deriveKey"
+    | "deriveBits"
+    | "wrapKey"
+    | "unwrapKey"
   >;
   /** Base64-encoded key data. Required if format is "raw", "pkcs8", or "spki" */
   key_base64?: string;
