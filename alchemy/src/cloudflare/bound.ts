@@ -87,7 +87,7 @@ export type Bound<T extends Binding> =
                                                   ? ImagesBinding
                                                   : T extends _VersionMetadata
                                                     ? WorkerVersionMetadata
-                                                    : T extends _Worker.DevDomain
+                                                    : T extends _Worker.DevDomain | _Worker.DevUrl
                                                       ? string
                                                       : T extends Self
                                                         ? Service

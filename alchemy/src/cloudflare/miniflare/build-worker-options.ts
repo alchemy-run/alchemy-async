@@ -86,6 +86,10 @@ export const buildWorkerOptions = async (
       (options.bindings ??= {})[key] = `localhost:${port}`;
       continue;
     }
+    if (binding.type === "cloudflare::Worker::DevUrl") {
+      (options.bindings ??= {})[key] = `http://localhost:${port}`;
+      continue;
+    }
     switch (binding.type) {
       case "ai": {
         const existing = remoteBindings.find((b) => b.type === "ai");

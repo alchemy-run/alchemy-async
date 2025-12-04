@@ -864,6 +864,7 @@ describe("WranglerJson Resource", () => {
         entrypoint,
         bindings: {
           DEV_DOMAIN: Worker.DevDomain,
+          DEV_URL: Worker.DevUrl,
         },
       });
 
@@ -873,6 +874,7 @@ describe("WranglerJson Resource", () => {
         name: workerName,
         vars: {
           DEV_DOMAIN: worker.url!.replace("https://", ""),
+          DEV_URL: worker.url!,
         },
       });
     } finally {

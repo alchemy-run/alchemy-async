@@ -424,6 +424,12 @@ export async function prepareWorkerMetadata(
         name: bindingName,
         text: await computeWorkerDevDomain(api, props.workerName),
       });
+    } else if (binding.type === "cloudflare::Worker::DevUrl") {
+      meta.bindings.push({
+        type: "plain_text",
+        name: bindingName,
+        text: `https://${await computeWorkerDevDomain(api, props.workerName)}`,
+      });
     } else if (binding.type === "d1") {
       meta.bindings.push({
         type: "d1",

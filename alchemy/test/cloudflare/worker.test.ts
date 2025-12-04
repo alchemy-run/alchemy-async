@@ -2335,20 +2335,24 @@ describe("Worker Resource", () => {
             async fetch(request, env, ctx) {
               return Response.json({
                 domain: env.DEV_DOMAIN,
+                url: env.DEV_URL,
               });
             }
           };
         `,
         bindings: {
           DEV_DOMAIN: Worker.DevDomain,
+          DEV_URL: Worker.DevUrl,
         },
       });
 
       const response = await fetchAndExpectOK(worker.url!);
-      const { domain } = (await response.json()) as {
+      const { domain, url } = (await response.json()) as {
         domain: string;
+        url: string;
       };
       expect(`https://${domain}`).toEqual(worker.url);
+      expect(url).toEqual(worker.url);
     } finally {
       await destroy(scope);
       await assertWorkerDoesNotExist(api, workerName);

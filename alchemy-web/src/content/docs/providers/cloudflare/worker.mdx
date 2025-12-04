@@ -636,7 +636,7 @@ E.g.
 ${workerName}.${subdomain}.workers.dev
 ```
 
-Use the `Worker.DevDomain` binding to inject a Worker's own subdomain into its script.
+Use the `Worker.DevDomain` or `Worker.DevUrl` binding to inject a Worker's own subdomain or URL into its script.
 
 ```ts
 import { Worker } from "alchemy/cloudflare";
@@ -649,6 +649,8 @@ const worker = await Worker("api", {
   bindings: {
     // ${workerName}.${subdomain}.workers.dev
     DEV_DOMAIN: Worker.DevDomain,
+    // https://${workerName}.${subdomain}.workers.dev
+    DEV_URL: Worker.DevUrl,
   },
 });
 ```

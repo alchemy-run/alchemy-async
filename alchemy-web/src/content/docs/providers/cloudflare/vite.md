@@ -37,6 +37,21 @@ const app = await Vite("my-vite-app", {
 });
 ```
 
+## Worker.DevUrl
+
+Use the `Worker.DevUrl` binding to inject the Worker's own dev domain URL into the compiled Vite SPA.
+
+```ts
+import { Vite, Worker } from "alchemy/cloudflare";
+
+const app = await Vite("my-vite-app", {
+  name: "my-vite-app",
+  bindings: {
+    VITE_PUBLIC_URL: Worker.DevUrl,
+  },
+});
+```
+
 ## With Custom Build Configuration
 
 Customize the build command and output paths.

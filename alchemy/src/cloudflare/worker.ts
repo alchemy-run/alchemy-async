@@ -791,6 +791,10 @@ export namespace Worker {
   export const DevDomain = {
     type: "cloudflare::Worker::DevDomain" as const,
   };
+  export type DevUrl = typeof DevUrl;
+  export const DevUrl = {
+    type: "cloudflare::Worker::DevUrl" as const,
+  };
 }
 
 Worker.experimentalEntrypoint = <RPC extends Rpc.WorkerEntrypointBranded>(

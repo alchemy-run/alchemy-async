@@ -73,6 +73,7 @@ export type Binding =
   | VectorizeIndex
   | Worker
   | Worker.DevDomain
+  | Worker.DevUrl
   | WorkerStub
   | WorkerRef
   | WorkerEntrypoint

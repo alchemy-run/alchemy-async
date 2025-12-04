@@ -317,6 +317,10 @@ async function processBindings(
       const subdomain = await getAccountSubdomain();
       // Subdomain binding
       (spec.vars ??= {})[bindingName] = `${workerName}.${subdomain}.workers.dev`;
+    } else if (binding.type === "cloudflare::Worker::DevUrl") {
+      const subdomain = await getAccountSubdomain();
+      // Subdomain binding
+      (spec.vars ??= {})[bindingName] = `https://${workerName}.${subdomain}.workers.dev`;
     } else if (binding.type === "service") {
       // Service binding
       services.push({

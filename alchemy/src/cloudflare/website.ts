@@ -214,18 +214,27 @@ export async function Website<B extends Bindings>(id: string, props: WebsiteProp
   if (props.bindings) {
     for (const [key, value] of Object.entries(props.bindings)) {
       if (typeof value !== "object") continue;
-      if (value.type === "cloudflare::Worker::DevDomain") {
+      if (
+        value.type === "cloudflare::Worker::DevDomain" ||
+        value.type === "cloudflare::Worker::DevUrl"
+      ) {
         if (Scope.current.local) {
           const domain = typeof dev === "object" ? dev.domain : undefined;
           if (!domain) {
+            // we can't know which port the local web server (e.g. vite dev) will use
+            // vite dev # default to 5173 or configured in vite.config.ts
+            // vite dev --port XYZ
+            // next dev # who fucking knows
+            // for now: we require the user tell us the local domain
             throw new Error(
               "You must set `dev.domain` when running in local development mode and a Worker.DevDomain binding",
             );
           }
-          env[key] = domain;
+          env[key] = value.type === "cloudflare::Worker::DevDomain" ? domain : `http://${domain}`;
         } else {
           const api = await createCloudflareApi(props);
-          env[key] = await computeWorkerDevDomain(api, name);
+          const domain = await computeWorkerDevDomain(api, name);
+          env[key] = value.type === "cloudflare::Worker::DevDomain" ? domain : `https://${domain}`;
         }
       }
     }
