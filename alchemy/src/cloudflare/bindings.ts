@@ -26,10 +26,10 @@ import type { SecretRef as CloudflareSecretRef } from "./secret-ref.ts";
 import type { Secret as CloudflareSecret } from "./secret.ts";
 import type { VectorizeIndex } from "./vectorize-index.ts";
 import type { VersionMetadata } from "./version-metadata.ts";
+import type { WorkerLoader } from "./worker-loader.ts";
 import type { WorkerRef } from "./worker-ref.ts";
 import type { WorkerStub } from "./worker-stub.ts";
 import type { Worker } from "./worker.ts";
-import type { WorkerLoader } from "./worker-loader.ts";
 import type { Workflow } from "./workflow.ts";
 
 export type Bindings = {
@@ -72,6 +72,7 @@ export type Binding =
   | string
   | VectorizeIndex
   | Worker
+  | Worker.DevDomain
   | WorkerStub
   | WorkerRef
   | WorkerEntrypoint
@@ -82,9 +83,7 @@ export type Binding =
   | Self
   | Json;
 
-export type Self<
-  RPC extends Rpc.WorkerEntrypointBranded = Rpc.WorkerEntrypointBranded,
-> = {
+export type Self<RPC extends Rpc.WorkerEntrypointBranded = Rpc.WorkerEntrypointBranded> = {
   type: "cloudflare::Worker::Self";
   __entrypoint__?: string;
   __rpc__?: RPC;
@@ -353,14 +352,7 @@ export interface WorkerBindingSecretKey {
   format: "raw" | "pkcs8" | "spki" | "jwk";
   /** Allowed operations with the key */
   usages: Array<
-    | "encrypt"
-    | "decrypt"
-    | "sign"
-    | "verify"
-    | "deriveKey"
-    | "deriveBits"
-    | "wrapKey"
-    | "unwrapKey"
+    "encrypt" | "decrypt" | "sign" | "verify" | "deriveKey" | "deriveBits" | "wrapKey" | "unwrapKey"
   >;
   /** Base64-encoded key data. Required if format is "raw", "pkcs8", or "spki" */
   key_base64?: string;

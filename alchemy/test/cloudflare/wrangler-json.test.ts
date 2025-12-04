@@ -174,9 +174,7 @@ describe("WranglerJson Resource", () => {
           adopt: true,
         });
 
-        await expect(
-          async () => await WranglerJson({ worker }),
-        ).rejects.toThrow(
+        await expect(async () => await WranglerJson({ worker })).rejects.toThrow(
           "Worker must have an entrypoint to generate a wrangler.json",
         );
       } finally {
@@ -274,14 +272,11 @@ describe("WranglerJson Resource", () => {
           sqlite: false,
         });
 
-        const sqliteCounterNamespace = DurableObjectNamespace(
-          "sqlite-counter",
-          {
-            className: "SqliteCounter",
-            scriptName: name,
-            sqlite: true,
-          },
-        );
+        const sqliteCounterNamespace = DurableObjectNamespace("sqlite-counter", {
+          className: "SqliteCounter",
+          scriptName: name,
+          sqlite: true,
+        });
 
         const worker = await Worker(name, {
           name,
@@ -499,13 +494,10 @@ describe("WranglerJson Resource", () => {
         await fs.mkdir(tempDir, { recursive: true });
         await fs.writeFile(entrypoint, esmWorkerScript);
 
-        const r2Bucket = await R2Bucket(
-          `${BRANCH_PREFIX}-test-r2-bucket-preview`,
-          {
-            name: `${BRANCH_PREFIX}-test-r2-bucket-preview`,
-            adopt: true,
-          },
-        );
+        const r2Bucket = await R2Bucket(`${BRANCH_PREFIX}-test-r2-bucket-preview`, {
+          name: `${BRANCH_PREFIX}-test-r2-bucket-preview`,
+          adopt: true,
+        });
 
         const worker = await Worker(name, {
           name,
@@ -540,14 +532,11 @@ describe("WranglerJson Resource", () => {
         await fs.mkdir(tempDir, { recursive: true });
         await fs.writeFile(entrypoint, esmWorkerScript);
 
-        const r2Bucket = await R2Bucket(
-          `${BRANCH_PREFIX}-test-r2-bucket-jurisdiction`,
-          {
-            name: `${BRANCH_PREFIX}-test-r2-bucket-jurisdiction`,
-            jurisdiction: "eu",
-            adopt: true,
-          },
-        );
+        const r2Bucket = await R2Bucket(`${BRANCH_PREFIX}-test-r2-bucket-jurisdiction`, {
+          name: `${BRANCH_PREFIX}-test-r2-bucket-jurisdiction`,
+          jurisdiction: "eu",
+          adopt: true,
+        });
 
         const worker = await Worker(name, {
           name,
@@ -608,9 +597,7 @@ describe("WranglerJson Resource", () => {
           directory: "assets",
           binding: "ASSETS",
         });
-        await expect(
-          fs.access(path.join(tempDir, "wrangler.jsonc")),
-        ).resolves.toBeUndefined();
+        await expect(fs.access(path.join(tempDir, "wrangler.jsonc"))).resolves.toBeUndefined();
         await expect(fs.access(entrypoint)).resolves.toBeUndefined();
         await expect(fs.access(indexHtml)).resolves.toBeUndefined();
       } finally {
@@ -843,6 +830,52 @@ describe("WranglerJson Resource", () => {
       });
     } finally {
       await fs.rm(tempDir, { recursive: true, force: true });
+      await destroy(scope);
+    }
+  });
+
+  test("create worker with subdomain binding", async (scope) => {
+    const workerName = `${BRANCH_PREFIX}-test-worker-subdomain-binding`;
+
+    const tempDir = path.join(".out", "alchemy-direct-queue-test");
+    const entrypoint = path.join(tempDir, "worker.ts");
+
+    let worker: Worker | undefined;
+    try {
+      // Create a temporary directory for the entrypoint file
+      await fs.rm(tempDir, { recursive: true, force: true });
+      await fs.mkdir(tempDir, { recursive: true });
+      await fs.writeFile(
+        entrypoint,
+        `
+          export default {
+            async fetch(request, env, ctx) {
+              return Response.json({
+                domain: env.DEV_DOMAIN,
+              });
+            }
+          };
+        `,
+      );
+
+      worker = await Worker(workerName, {
+        name: workerName,
+        adopt: true,
+        entrypoint,
+        bindings: {
+          DEV_DOMAIN: Worker.DevDomain,
+        },
+      });
+
+      const { spec } = await WranglerJson({ worker });
+
+      expect(spec).toMatchObject({
+        name: workerName,
+        vars: {
+          DEV_DOMAIN: worker.url!.replace("https://", ""),
+        },
+      });
+    } finally {
       await destroy(scope);
     }
   });

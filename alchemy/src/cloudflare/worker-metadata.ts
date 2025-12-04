@@ -15,11 +15,9 @@ import {
   type DurableObjectNamespace,
 } from "./durable-object-namespace.ts";
 import { createAssetConfig } from "./worker-assets.ts";
-import type {
-  MultiStepMigration,
-  SingleStepMigration,
-} from "./worker-migration.ts";
-import { isWorker, type AssetsConfig, type WorkerProps } from "./worker.ts";
+import type { MultiStepMigration, SingleStepMigration } from "./worker-migration.ts";
+import { computeWorkerDevDomain } from "./worker-subdomain.ts";
+import { isWorker, Worker, type AssetsConfig, type WorkerProps } from "./worker.ts";
 
 /**
  * Metadata returned by Cloudflare API for a worker script
@@ -240,9 +238,7 @@ export async function prepareWorkerMetadata(
   },
 ): Promise<WorkerMetadata> {
   const oldSettings = await (
-    props.unstable_cacheWorkerSettings
-      ? getWorkerSettingsWithCache
-      : getWorkerSettings
+    props.unstable_cacheWorkerSettings ? getWorkerSettingsWithCache : getWorkerSettings
   )(api, props.workerName);
   const oldTags: string[] | undefined = Array.from(
     new Set([
@@ -297,8 +293,7 @@ export async function prepareWorkerMetadata(
         // try and find the DO binding by stable id
         const object = Object.values(props.bindings).find(
           (binding): binding is DurableObjectNamespace | Container =>
-            (isDurableObjectNamespace(binding) || isContainer(binding)) &&
-            binding.id === stableId,
+            (isDurableObjectNamespace(binding) || isContainer(binding)) && binding.id === stableId,
         );
         if (object) {
           // we found the corresponding object, it should not be deleted
@@ -312,10 +307,7 @@ export async function prepareWorkerMetadata(
         // let's now apply a herusitic based on binding name (assume binding name is consistent)
         // TODO(sam): this has a chance of being wrong, is that OK? Users should be encouraged to upgrade alchemy version and re-deploy
         const object = props.bindings?.[oldBinding.name];
-        if (
-          object &&
-          (isDurableObjectNamespace(object) || isContainer(object))
-        ) {
+        if (object && (isDurableObjectNamespace(object) || isContainer(object))) {
           if (object.className === oldBinding.class_name) {
             // this is relatively safe to assume is the right match, do not delete
             return [];
@@ -353,12 +345,11 @@ export async function prepareWorkerMetadata(
     tags: [
       // encode a mapping table of Durable Object stable ID -> binding name
       // we use this to reliably compute class migrations based on server-side state
-      ...Object.entries(props.bindings ?? {}).flatMap(
-        ([bindingName, binding]) =>
-          isDurableObjectNamespace(binding) || isContainer(binding)
-            ? // TODO(sam): base64 encode if contains `:`?
-              [`alchemy:do:${binding.id}:${bindingName}`]
-            : [],
+      ...Object.entries(props.bindings ?? {}).flatMap(([bindingName, binding]) =>
+        isDurableObjectNamespace(binding) || isContainer(binding)
+          ? // TODO(sam): base64 encode if contains `:`?
+            [`alchemy:do:${binding.id}:${bindingName}`]
+          : [],
       ),
       // encode the migraiton tag if there is one so we can avoid the failed PutWorker after adoption
       ...(newMigrationTag ? [`alchemy:migration-tag:${newMigrationTag}`] : []),
@@ -427,6 +418,12 @@ export async function prepareWorkerMetadata(
         service: props.workerName,
         entrypoint: binding.__entrypoint__,
       });
+    } else if (binding.type === "cloudflare::Worker::DevDomain") {
+      meta.bindings.push({
+        type: "plain_text",
+        name: bindingName,
+        text: await computeWorkerDevDomain(api, props.workerName),
+      });
     } else if (binding.type === "d1") {
       meta.bindings.push({
         type: "d1",
@@ -437,26 +434,21 @@ export async function prepareWorkerMetadata(
       meta.bindings.push({
         type: "kv_namespace",
         name: bindingName,
-        namespace_id:
-          "namespaceId" in binding ? binding.namespaceId : binding.id,
+        namespace_id: "namespaceId" in binding ? binding.namespaceId : binding.id,
       });
     } else if (binding.type === "service") {
       meta.bindings.push({
         type: "service",
         name: bindingName,
         service: "service" in binding ? binding.service : binding.name,
-        entrypoint:
-          "__entrypoint__" in binding ? binding.__entrypoint__ : undefined,
+        entrypoint: "__entrypoint__" in binding ? binding.__entrypoint__ : undefined,
       });
     } else if (binding.type === "durable_object_namespace") {
       meta.bindings.push({
         type: "durable_object_namespace",
         name: bindingName,
         class_name: binding.className,
-        script_name:
-          binding.scriptName === props.workerName
-            ? undefined
-            : binding.scriptName,
+        script_name: binding.scriptName === props.workerName ? undefined : binding.scriptName,
         environment: binding.environment,
         namespace_id: binding.namespaceId,
       });
@@ -473,8 +465,7 @@ export async function prepareWorkerMetadata(
         type: "r2_bucket",
         name: bindingName,
         bucket_name: binding.name,
-        jurisdiction:
-          binding.jurisdiction === "default" ? undefined : binding.jurisdiction,
+        jurisdiction: binding.jurisdiction === "default" ? undefined : binding.jurisdiction,
       });
     } else if (binding.type === "secrets_store_secret") {
       meta.bindings.push({
@@ -718,9 +709,7 @@ export async function getWorkerSettings(
   // See: https://developers.cloudflare.com/api/resources/workers/subresources/scripts/subresources/script_and_version_settings/methods/get/
   return await extractCloudflareResult<WorkerSettings>(
     `get worker settings for ${workerName}`,
-    api.get(
-      `/accounts/${api.accountId}/workers/scripts/${workerName}/settings`,
-    ),
+    api.get(`/accounts/${api.accountId}/workers/scripts/${workerName}/settings`),
   ).catch((error) => {
     if (error.status === 404) {
       return undefined;

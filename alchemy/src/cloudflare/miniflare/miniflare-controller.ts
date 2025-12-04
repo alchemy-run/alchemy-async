@@ -2,18 +2,12 @@ import * as miniflare from "miniflare";
 import assert from "node:assert";
 import path from "pathe";
 import { Scope } from "../../scope.ts";
-import { findOpenPort } from "../../util/find-open-port.ts";
+import { reservePort } from "../../util/find-open-port.ts";
 import type { HTTPServer } from "../../util/http.ts";
 import { logger } from "../../util/logger.ts";
 import { AsyncMutex } from "../../util/mutex.ts";
-import {
-  buildWorkerOptions,
-  type MiniflareWorkerInput,
-} from "./build-worker-options.ts";
-import {
-  createMiniflareWorkerProxy,
-  type MiniflareWorkerProxy,
-} from "./miniflare-worker-proxy.ts";
+import { buildWorkerOptions, type MiniflareWorkerInput } from "./build-worker-options.ts";
+import { createMiniflareWorkerProxy, type MiniflareWorkerProxy } from "./miniflare-worker-proxy.ts";
 import { getDefaultPersistPath } from "./paths.ts";
 import { createTunnel, type Tunnel } from "./tunnel.ts";
 
@@ -31,12 +25,12 @@ export class MiniflareController {
   mutex = new AsyncMutex();
 
   static get singleton() {
-    return (globalThis.ALCHEMY_MINIFLARE_CONTROLLER ??=
-      new MiniflareController());
+    return (globalThis.ALCHEMY_MINIFLARE_CONTROLLER ??= new MiniflareController());
   }
 
   async add(input: MiniflareWorkerInput) {
     const { watch, remoteProxy } = await buildWorkerOptions(input);
+
     if (remoteProxy) {
       this.remoteProxies.set(input.name, remoteProxy);
     }
@@ -54,7 +48,7 @@ export class MiniflareController {
       });
     } else {
       const proxy = await createMiniflareWorkerProxy({
-        port: input.port ?? (await findOpenPort()),
+        port: input.port ?? (await reservePort(input.name)),
         getWorkerName: () => input.name,
         miniflare,
         mode: "local",
@@ -73,10 +67,7 @@ export class MiniflareController {
     return url.toString();
   }
 
-  private async watch(
-    id: string,
-    watcher: AsyncGenerator<miniflare.WorkerOptions>,
-  ) {
+  private async watch(id: string, watcher: AsyncGenerator<miniflare.WorkerOptions>) {
     for await (const options of watcher) {
       this.options.set(options.name!, options);
       await this.update();
@@ -94,13 +85,9 @@ export class MiniflareController {
     return await this.mutex.lock(async () => {
       const options: miniflare.MiniflareOptions = {
         workers: [],
-        defaultPersistRoot: path.resolve(
-          getDefaultPersistPath(Scope.current.rootDir),
-        ),
+        defaultPersistRoot: path.resolve(getDefaultPersistPath(Scope.current.rootDir)),
         unsafeDevRegistryPath: miniflare.getDefaultDevRegistryPath(),
-        log: process.env.DEBUG
-          ? new miniflare.Log(miniflare.LogLevel.DEBUG)
-          : undefined,
+        log: process.env.DEBUG ? new miniflare.Log(miniflare.LogLevel.DEBUG) : undefined,
         // This is required to allow websites and other separate processes
         // to detect Alchemy-managed Durable Objects via the Wrangler dev registry.
         unsafeDevRegistryDurableObjectProxy: true,

@@ -627,6 +627,32 @@ export const service = await Worker("auth-service", {
 });
 ```
 
+### Subdomain Bindings
+
+A Worker by default is allocated a `workers.dev` subdomain computed from its name and your account's worker subdomain.
+
+E.g.
+```sh
+${workerName}.${subdomain}.workers.dev
+```
+
+Use the `Worker.DevDomain` binding to inject a Worker's own subdomain into its script.
+
+```ts
+import { Worker } from "alchemy/cloudflare";
+
+const worker = await Worker("api", {
+  name: "api-worker",
+  entrypoint: "./src/api.ts",
+  // workers.dev URL must be enabled (is by default)
+  // url: true,
+  bindings: {
+    // ${workerName}.${subdomain}.workers.dev
+    DEV_DOMAIN: Worker.DevDomain,
+  },
+});
+```
+
 ### Circular Dependencies
 
 Break circular dependencies with WorkerStub:

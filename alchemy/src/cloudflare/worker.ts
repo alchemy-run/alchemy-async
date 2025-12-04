@@ -7,11 +7,7 @@ import { DeferredPromise } from "../util/deferred-promise.ts";
 import { logger } from "../util/logger.ts";
 import { withExponentialBackoff } from "../util/retry.ts";
 import { CloudflareApiError, handleApiError } from "./api-error.ts";
-import {
-  type CloudflareApi,
-  type CloudflareApiOptions,
-  createCloudflareApi,
-} from "./api.ts";
+import { type CloudflareApi, type CloudflareApiOptions, createCloudflareApi } from "./api.ts";
 import type { Assets } from "./assets.ts";
 import type {
   Bindings,
@@ -21,17 +17,11 @@ import type {
 } from "./bindings.ts";
 import type { Bound } from "./bound.ts";
 import { DEFAULT_COMPATIBILITY_DATE } from "./compatibility-date.gen.ts";
-import {
-  type CompatibilityPreset,
-  unionCompatibilityFlags,
-} from "./compatibility-presets.ts";
+import { type CompatibilityPreset, unionCompatibilityFlags } from "./compatibility-presets.ts";
 import { type Container, ContainerApplication } from "./container.ts";
 import { CustomDomain } from "./custom-domain.ts";
 import type { DispatchNamespace } from "./dispatch-namespace.ts";
-import {
-  DurableObjectNamespace,
-  isDurableObjectNamespace,
-} from "./durable-object-namespace.ts";
+import { DurableObjectNamespace, isDurableObjectNamespace } from "./durable-object-namespace.ts";
 import { type EventSource, isQueueEventSource } from "./event-source.ts";
 import { deleteMiniflareWorkerData } from "./miniflare/delete.ts";
 import { MiniflareController } from "./miniflare/miniflare-controller.ts";
@@ -43,11 +33,7 @@ import {
 import { isQueue } from "./queue.ts";
 import { Route } from "./route.ts";
 import { type AssetUploadResult, uploadAssets } from "./worker-assets.ts";
-import {
-  WorkerBundle,
-  type WorkerBundleSource,
-  normalizeWorkerBundle,
-} from "./worker-bundle.ts";
+import { WorkerBundle, type WorkerBundleSource, normalizeWorkerBundle } from "./worker-bundle.ts";
 import {
   type WorkerScriptMetadata,
   bumpMigrationTagVersion,
@@ -56,12 +42,7 @@ import {
 } from "./worker-metadata.ts";
 import { WorkerSubdomain, disableWorkerSubdomain } from "./worker-subdomain.ts";
 import { createTail } from "./worker-tail.ts";
-import {
-  Workflow,
-  deleteWorkflow,
-  isWorkflow,
-  upsertWorkflow,
-} from "./workflow.ts";
+import { Workflow, deleteWorkflow, isWorkflow, upsertWorkflow } from "./workflow.ts";
 
 // Previous versions of `Worker` used the `Bundle` resource.
 // This import is here to avoid errors when destroying the `Bundle` resource.
@@ -92,11 +73,7 @@ export interface AssetsConfig {
    *
    * @default auto-trailing-slash
    */
-  html_handling?:
-    | "auto-trailing-slash"
-    | "force-trailing-slash"
-    | "drop-trailing-slash"
-    | "none";
+  html_handling?: "auto-trailing-slash" | "force-trailing-slash" | "drop-trailing-slash" | "none";
 
   /**
    * Determines the response when a request does not match a static asset, and there is no Worker script
@@ -797,16 +774,23 @@ export type Worker<
  * console.log(`Preview URL: ${previewWorker.url}`);
  * // Output: Preview URL: https://pr-123-my-worker.subdomain.workers.dev
  */
-export function Worker<
-  const B extends Bindings,
-  RPC extends Rpc.WorkerEntrypointBranded,
->(id: string, props: WorkerProps<B, RPC>): Promise<Worker<B, RPC>>;
+export function Worker<const B extends Bindings, RPC extends Rpc.WorkerEntrypointBranded>(
+  id: string,
+  props: WorkerProps<B, RPC>,
+): Promise<Worker<B, RPC>>;
 
 export function Worker<const B extends Bindings>(
   id: string,
   props: WorkerProps<B>,
 ): Promise<Worker<B>> {
   return _Worker(id, props as WorkerProps<B>);
+}
+
+export namespace Worker {
+  export type DevDomain = typeof DevDomain;
+  export const DevDomain = {
+    type: "cloudflare::Worker::DevDomain" as const,
+  };
 }
 
 Worker.experimentalEntrypoint = <RPC extends Rpc.WorkerEntrypointBranded>(
@@ -840,9 +824,7 @@ const _Worker = Resource(
   ) {
     let adopt = props.adopt ?? this.scope.adopt;
     const workerName =
-      props.name ??
-      this.output?.name ??
-      this.scope.createPhysicalName(id).toLowerCase();
+      props.name ?? this.output?.name ?? this.scope.createPhysicalName(id).toLowerCase();
     if (this.phase === "create" && !props.adopt) {
       // it is possible that this worker already exists and was created by the old Website wrapper with a nested scope
       // we need to detect this and set adopt=true so that the previous version will be adopted seamlessly
@@ -850,9 +832,7 @@ const _Worker = Resource(
       // HEURISTIC: `this.scope` would previously be the nested outer scope alchemy.run
       // so, if `this.scope` has a child of `wrangler.jsonc`, then it is likely that it was created by the old Website wrapper with a nested scope
       if (await this.scope.has("wrangler.jsonc", "cloudflare::WranglerJson")) {
-        logger.warn(
-          `Migrating Worker '${workerName}' from the legacy Website wrapper.`,
-        );
+        logger.warn(`Migrating Worker '${workerName}' from the legacy Website wrapper.`);
         props.adopt = true;
       }
     }
@@ -864,16 +844,13 @@ const _Worker = Resource(
       }
 
       const cwd = path.resolve(props.cwd ?? process.cwd());
-      const compatibilityDate =
-        props.compatibilityDate ?? DEFAULT_COMPATIBILITY_DATE;
+      const compatibilityDate = props.compatibilityDate ?? DEFAULT_COMPATIBILITY_DATE;
       const compatibilityFlags = unionCompatibilityFlags(
         props.compatibility,
         props.compatibilityFlags,
       );
       const dispatchNamespace =
-        typeof props.namespace === "string"
-          ? props.namespace
-          : props.namespace?.namespaceName;
+        typeof props.namespace === "string" ? props.namespace : props.namespace?.namespaceName;
       const bundle = normalizeWorkerBundle({
         id,
         entrypoint: props.entrypoint,
@@ -936,9 +913,7 @@ const _Worker = Resource(
       // we will achieve this by checking for a sibling resource with ID wrangler.jsonc and type cloudflare::WranglerJson
       if (await this.scope.has("wrangler.jsonc", "cloudflare::WranglerJson")) {
         // skip deletion
-        logger.warn(
-          `Migrating Worker '${options.name}' from the legacy Website wrapper.`,
-        );
+        logger.warn(`Migrating Worker '${options.name}' from the legacy Website wrapper.`);
         return this.destroy(true);
       }
 
@@ -1190,10 +1165,7 @@ const _Worker = Resource(
   },
 );
 
-const normalizeExportBindings = (
-  scriptName: string,
-  bindings: Bindings = {},
-) => {
+const normalizeExportBindings = (scriptName: string, bindings: Bindings = {}) => {
   return Object.fromEntries(
     Object.entries(bindings).map(([bindingName, binding]) => [
       bindingName,
@@ -1214,11 +1186,7 @@ const normalizeExportBindings = (
   );
 };
 
-const assertUnique = <T, Key extends keyof T>(
-  inputs: T[],
-  key: Key,
-  message: string,
-) => {
+const assertUnique = <T, Key extends keyof T>(inputs: T[], key: Key, message: string) => {
   const ids = inputs.map((input) => input[key]);
   const duplicates = ids.filter((id, index) => ids.indexOf(id) !== index);
   if (duplicates.length > 0) {
@@ -1276,9 +1244,7 @@ async function provisionResources<B extends Bindings>(
       if (isQueue(eventSource)) {
         return {
           queue: eventSource,
-          settings: eventSource.dlq
-            ? { deadLetterQueue: eventSource.dlq }
-            : undefined,
+          settings: eventSource.dlq ? { deadLetterQueue: eventSource.dlq } : undefined,
         };
       }
       if (isQueueEventSource(eventSource)) {
@@ -1319,74 +1285,73 @@ async function provisionResources<B extends Bindings>(
     assertUnique(input.domains, "name", "Custom Domain");
   }
 
-  const [containers, domains, eventSources, routes, subdomain] =
-    await Promise.all([
-      input.containers
-        ? Promise.all(
-            input.containers.map(async (container) => {
-              return await ContainerApplication(container.id, {
-                ...container,
-                durableObjects: {
-                  namespaceId: await getContainerNamespaceId(container),
-                },
-                dev: options.local,
-                ...input.api,
-              });
-            }),
-          )
-        : undefined,
-      input.domains
-        ? Promise.all(
-            input.domains.map(async (domain) => {
-              return await CustomDomain(domain.name, {
-                name: domain.name,
-                zoneId: domain.zoneId,
-                adopt: domain.adopt,
-                workerName: options.name,
-                dev: options.local,
-                ...input.api,
-              });
-            }),
-          )
-        : undefined,
-      input.eventSources
-        ? Promise.all(
-            input.eventSources.map(async (eventSource) => {
-              return await QueueConsumer(`${eventSource.queue.id}-consumer`, {
-                queue: eventSource.queue,
-                scriptName: options.name,
-                settings: eventSource.settings,
-                adopt: props.adopt,
-                dev: options.local,
-                ...input.api,
-              });
-            }),
-          )
-        : undefined,
-      input.routes
-        ? Promise.all(
-            input.routes.map(async (route) => {
-              return await Route(route.pattern, {
-                pattern: route.pattern,
-                script: options.name,
-                zoneId: route.zoneId,
-                adopt: route.adopt,
-                dev: options.local,
-                ...input.api,
-              });
-            }),
-          )
-        : undefined,
-      (props.url ?? !options.dispatchNamespace)
-        ? WorkerSubdomain("url", {
-            scriptName: options.name,
-            previewVersionId: props.version ? options.result?.id : undefined,
-            retain: !!props.version,
-            dev: options.local,
-            ...input.api,
-          })
-        : undefined,
-    ]);
+  const [containers, domains, eventSources, routes, subdomain] = await Promise.all([
+    input.containers
+      ? Promise.all(
+          input.containers.map(async (container) => {
+            return await ContainerApplication(container.id, {
+              ...container,
+              durableObjects: {
+                namespaceId: await getContainerNamespaceId(container),
+              },
+              dev: options.local,
+              ...input.api,
+            });
+          }),
+        )
+      : undefined,
+    input.domains
+      ? Promise.all(
+          input.domains.map(async (domain) => {
+            return await CustomDomain(domain.name, {
+              name: domain.name,
+              zoneId: domain.zoneId,
+              adopt: domain.adopt,
+              workerName: options.name,
+              dev: options.local,
+              ...input.api,
+            });
+          }),
+        )
+      : undefined,
+    input.eventSources
+      ? Promise.all(
+          input.eventSources.map(async (eventSource) => {
+            return await QueueConsumer(`${eventSource.queue.id}-consumer`, {
+              queue: eventSource.queue,
+              scriptName: options.name,
+              settings: eventSource.settings,
+              adopt: props.adopt,
+              dev: options.local,
+              ...input.api,
+            });
+          }),
+        )
+      : undefined,
+    input.routes
+      ? Promise.all(
+          input.routes.map(async (route) => {
+            return await Route(route.pattern, {
+              pattern: route.pattern,
+              script: options.name,
+              zoneId: route.zoneId,
+              adopt: route.adopt,
+              dev: options.local,
+              ...input.api,
+            });
+          }),
+        )
+      : undefined,
+    (props.url ?? !options.dispatchNamespace)
+      ? WorkerSubdomain("url", {
+          scriptName: options.name,
+          previewVersionId: props.version ? options.result?.id : undefined,
+          retain: !!props.version,
+          dev: options.local,
+          ...input.api,
+        })
+      : undefined,
+  ]);
 
   return { containers, domains, routes, eventSources, subdomain };
 
@@ -1394,16 +1359,11 @@ async function provisionResources<B extends Bindings>(
     if (options.local) {
       return container.id;
     }
-    metadataPromise ??= getVersionMetadata(
-      options.api,
-      options.name,
-      options.result.deployment_id,
-    );
+    metadataPromise ??= getVersionMetadata(options.api, options.name, options.result.deployment_id);
     const metadata = await metadataPromise;
     const binding = metadata.resources.bindings.find(
       (binding): binding is WorkerBindingDurableObjectNamespace =>
-        binding.type === "durable_object_namespace" &&
-        binding.class_name === container.className,
+        binding.type === "durable_object_namespace" && binding.class_name === container.className,
     );
     if (!binding?.namespace_id) {
       throw new Error(
@@ -1506,10 +1466,7 @@ type PutWorkerOptions = Omit<WorkerProps, "entrypoint"> & {
   unstable_cacheWorkerSettings?: boolean;
 };
 
-async function prepareWorkerUpload(
-  api: CloudflareApi,
-  props: PutWorkerOptions,
-) {
+async function prepareWorkerUpload(api: CloudflareApi, props: PutWorkerOptions) {
   const scriptMetadata = await prepareWorkerMetadata(api, props);
 
   if (props.format === "cjs") {
@@ -1551,9 +1508,7 @@ async function prepareWorkerUpload(
   let method: "PUT" | "POST";
   if (props.version) {
     if (props.dispatchNamespace) {
-      throw new Error(
-        "Worker Preview Versions are not supported in Workers for Platforms",
-      );
+      throw new Error("Worker Preview Versions are not supported in Workers for Platforms");
     }
     // Upload worker version using the versions API
     endpoint = `/accounts/${api.accountId}/workers/scripts/${props.workerName}/versions`;
@@ -1620,9 +1575,7 @@ export async function putWorker(
           // but it doesn't work at runtime
           //
           // so, we catch the error and parse out the tag and then retry
-          const newTag = error.message.match(
-            /when expected tag is ['"]?([^'"]+)['"]?/,
-          )?.[1];
+          const newTag = error.message.match(/when expected tag is ['"]?([^'"]+)['"]?/)?.[1];
           if (newTag) {
             return await putWorker(api, {
               ...props,
@@ -1661,13 +1614,8 @@ const workerExists = async (
   return res.status === 200;
 };
 
-async function assertWorkerDoesNotExist(
-  api: CloudflareApi,
-  scriptName: string,
-) {
-  const response = await api.get(
-    `/accounts/${api.accountId}/workers/scripts/${scriptName}`,
-  );
+async function assertWorkerDoesNotExist(api: CloudflareApi, scriptName: string) {
+  const response = await api.get(`/accounts/${api.accountId}/workers/scripts/${scriptName}`);
   if (response.status === 404) {
     return true;
   }
@@ -1680,9 +1628,7 @@ async function assertWorkerDoesNotExist(
       );
     }
 
-    throw new Error(
-      `Worker with name '${scriptName}' already exists. Please use a unique name.`,
-    );
+    throw new Error(`Worker with name '${scriptName}' already exists. Please use a unique name.`);
   }
   throw new Error(
     `Error checking if worker exists: ${response.status} ${response.statusText} ${await response.text()}`,
@@ -1693,16 +1639,12 @@ export async function getScriptMetadata(
   api: CloudflareApi,
   scriptName: string,
 ): Promise<WorkerScriptMetadata | undefined> {
-  const res = await api.get(
-    `/accounts/${api.accountId}/workers/services/${scriptName}`,
-  );
+  const res = await api.get(`/accounts/${api.accountId}/workers/services/${scriptName}`);
   if (res.status === 404) {
     return;
   }
   if (!res.ok) {
-    throw new Error(
-      `Error getting worker script metadata: ${res.status} ${res.statusText}`,
-    );
+    throw new Error(`Error getting worker script metadata: ${res.status} ${res.statusText}`);
   }
   const json = (await res.json()) as { result: WorkerScriptMetadata };
   return json.result;
@@ -1747,19 +1689,12 @@ export async function deleteWorker(
       );
 
       if (!deleteResponse.ok && deleteResponse.status !== 404) {
-        await handleApiError(
-          deleteResponse,
-          "delete",
-          "worker",
-          props.scriptName,
-        );
+        await handleApiError(deleteResponse, "delete", "worker", props.scriptName);
       }
     },
     (err) =>
       (err.status === 400 &&
-        err.message.includes(
-          "is still referenced by service bindings in Workers",
-        )) ||
+        err.message.includes("is still referenced by service bindings in Workers")) ||
       err.status === 500 ||
       err.status === 503,
     10,
@@ -1767,11 +1702,7 @@ export async function deleteWorker(
   );
 }
 
-async function getVersionMetadata(
-  api: CloudflareApi,
-  scriptName: string,
-  deploymentId: string,
-) {
+async function getVersionMetadata(api: CloudflareApi, scriptName: string, deploymentId: string) {
   const response = await api.get(
     `/accounts/${api.accountId}/workers/scripts/${scriptName}/versions/${deploymentId}`,
   );

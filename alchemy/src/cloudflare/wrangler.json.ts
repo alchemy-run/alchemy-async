@@ -14,7 +14,8 @@ import type { EventSource } from "./event-source.ts";
 import { isQueueEventSource } from "./event-source.ts";
 import { isQueue } from "./queue.ts";
 import { unencryptSecrets } from "./util/filter-env-bindings.ts";
-import { isWorker, type Worker, type WorkerProps } from "./worker.ts";
+import { getAccountSubdomain } from "./worker-subdomain.ts";
+import { isWorker, Worker, type WorkerProps } from "./worker.ts";
 
 /**
  * Properties for wrangler.json configuration file
@@ -74,9 +75,7 @@ export interface WranglerJsonProps {
      * @param spec - The generated wrangler.json specification
      * @returns The modified wrangler.json specification
      */
-    wrangler?: (
-      spec: WranglerJsonSpec,
-    ) => WranglerJsonSpec | Promise<WranglerJsonSpec>;
+    wrangler?: (spec: WranglerJsonSpec) => WranglerJsonSpec | Promise<WranglerJsonSpec>;
   };
 }
 
@@ -118,9 +117,7 @@ Resource("cloudflare::WranglerJson", async function (this: Context<any>) {
 /**
  * Resource for managing wrangler.json configuration files
  */
-export async function WranglerJson(
-  props: WranglerJsonProps,
-): Promise<WranglerJson> {
+export async function WranglerJson(props: WranglerJsonProps): Promise<WranglerJson> {
   const cwd = props.worker.cwd ? path.resolve(props.worker.cwd) : process.cwd();
 
   const toAbsolute = <T extends string | undefined>(input: T): T => {
@@ -136,9 +133,7 @@ export async function WranglerJson(
   const dirname = path.dirname(filePath);
 
   if (!main) {
-    throw new Error(
-      "Worker must have an entrypoint to generate a wrangler.json",
-    );
+    throw new Error("Worker must have an entrypoint to generate a wrangler.json");
   }
 
   const worker = props.worker;
@@ -178,8 +173,8 @@ export async function WranglerJson(
       cwd,
       props.secrets ?? false,
       Scope.current.local && !props.worker.dev?.remote,
-      async () =>
-        worker.accountId ?? (await createCloudflareApi(worker)).accountId,
+      async () => worker.accountId ?? (await createCloudflareApi(worker)).accountId,
+      async () => await getAccountSubdomain(await createCloudflareApi(worker)),
     );
   }
 
@@ -206,9 +201,7 @@ export async function WranglerJson(
   }
 
   // Apply the wrangler configuration hook as the final transformation
-  const finalSpec = props.transform?.wrangler
-    ? await props.transform.wrangler(spec)
-    : spec;
+  const finalSpec = props.transform?.wrangler ? await props.transform.wrangler(spec) : spec;
 
   await fs.mkdir(dirname, { recursive: true });
   if (props.secrets) {
@@ -253,6 +246,7 @@ async function processBindings(
   writeSecrets: boolean,
   local: boolean,
   getAccountId: () => Promise<string>,
+  getAccountSubdomain: () => Promise<string>,
 ): Promise<void> {
   // Arrays to collect different binding types
   const kvNamespaces: WranglerJsonConfig["kv_namespaces"] = [];
@@ -269,13 +263,10 @@ async function processBindings(
     producers: [],
     consumers: [],
   };
-  const new_sqlite_classes: WranglerJsonConfig["migrations"][number]["new_sqlite_classes"] =
-    [];
-  const new_classes: WranglerJsonConfig["migrations"][number]["new_classes"] =
-    [];
+  const new_sqlite_classes: WranglerJsonConfig["migrations"][number]["new_sqlite_classes"] = [];
+  const new_classes: WranglerJsonConfig["migrations"][number]["new_classes"] = [];
   const vectorizeIndexes: WranglerJsonConfig["vectorize"] = [];
-  const analyticsEngineDatasets: WranglerJsonConfig["analytics_engine_datasets"] =
-    [];
+  const analyticsEngineDatasets: WranglerJsonConfig["analytics_engine_datasets"] = [];
   const hyperdrive: WranglerJsonConfig["hyperdrive"] = [];
   const pipelines: WranglerJsonConfig["pipelines"] = [];
   const secretsStoreSecrets: WranglerJsonConfig["secrets_store_secrets"] = [];
@@ -322,13 +313,16 @@ async function processBindings(
         service: workerName,
         entrypoint: binding.__entrypoint__,
       });
+    } else if (binding.type === "cloudflare::Worker::DevDomain") {
+      const subdomain = await getAccountSubdomain();
+      // Subdomain binding
+      (spec.vars ??= {})[bindingName] = `${workerName}.${subdomain}.workers.dev`;
     } else if (binding.type === "service") {
       // Service binding
       services.push({
         binding: bindingName,
         service: "name" in binding ? binding.name : binding.service,
-        entrypoint:
-          "__entrypoint__" in binding ? binding.__entrypoint__ : undefined,
+        entrypoint: "__entrypoint__" in binding ? binding.__entrypoint__ : undefined,
       });
     } else if (binding.type === "kv_namespace") {
       // KV Namespace binding
@@ -344,10 +338,7 @@ async function processBindings(
         preview_id: id,
         ...("dev" in binding && binding.dev?.remote ? { remote: true } : {}),
       });
-    } else if (
-      typeof binding === "object" &&
-      binding.type === "durable_object_namespace"
-    ) {
+    } else if (typeof binding === "object" && binding.type === "durable_object_namespace") {
       // Durable Object binding
       const doBinding = binding as DurableObjectNamespace;
       durableObjects.push({
@@ -363,15 +354,12 @@ async function processBindings(
       }
     } else if (binding.type === "r2_bucket") {
       const name =
-        "dev" in binding && !binding.dev?.remote && local
-          ? binding.dev.id
-          : binding.name;
+        "dev" in binding && !binding.dev?.remote && local ? binding.dev.id : binding.name;
       r2Buckets.push({
         binding: bindingName,
         bucket_name: name,
         preview_bucket_name: name,
-        jurisdiction:
-          binding.jurisdiction === "default" ? undefined : binding.jurisdiction,
+        jurisdiction: binding.jurisdiction === "default" ? undefined : binding.jurisdiction,
         ...(binding.dev?.remote ? { remote: true } : {}),
       });
     } else if (binding.type === "secret") {
@@ -390,10 +378,7 @@ async function processBindings(
         script_name: binding.scriptName,
       });
     } else if (binding.type === "d1") {
-      const id =
-        "dev" in binding && !binding.dev?.remote && local
-          ? binding.dev.id
-          : binding.id;
+      const id = "dev" in binding && !binding.dev?.remote && local ? binding.dev.id : binding.id;
       d1Databases.push({
         binding: bindingName,
         database_id: id,
@@ -403,10 +388,7 @@ async function processBindings(
         ...(binding.dev?.remote ? { remote: true } : {}),
       });
     } else if (binding.type === "queue") {
-      const id =
-        "dev" in binding && !binding.dev?.remote && local
-          ? binding.dev.id
-          : binding.id;
+      const id = "dev" in binding && !binding.dev?.remote && local ? binding.dev.id : binding.id;
       queues.producers.push({
         binding: bindingName,
         queue: id,
@@ -452,9 +434,7 @@ async function processBindings(
       });
     } else if (binding.type === "version_metadata") {
       if (spec.version_metadata) {
-        throw new Error(
-          `Version metadata already bound to ${spec.version_metadata.binding}`,
-        );
+        throw new Error(`Version metadata already bound to ${spec.version_metadata.binding}`);
       }
       spec.version_metadata = {
         binding: bindingName,
@@ -463,9 +443,7 @@ async function processBindings(
       hyperdrive.push({
         binding: bindingName,
         id: binding.hyperdriveId,
-        localConnectionString: writeSecrets
-          ? binding.dev?.origin.unencrypted
-          : undefined,
+        localConnectionString: writeSecrets ? binding.dev?.origin.unencrypted : undefined,
       });
     } else if (binding.type === "pipeline") {
       pipelines.push({
@@ -510,10 +488,7 @@ async function processBindings(
               binding.image.build.dockerfile ?? "Dockerfile",
             ),
           )
-        : getCloudflareRegistryWithAccountNamespace(
-            await getAccountId(),
-            binding.image.imageRef,
-          );
+        : getCloudflareRegistryWithAccountNamespace(await getAccountId(), binding.image.imageRef);
       containers.push({
         class_name: binding.className,
         image,
