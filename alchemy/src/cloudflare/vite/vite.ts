@@ -27,7 +27,7 @@ export async function Vite<B extends Bindings>(
   if (!domain) {
     let port;
     const args = command.split(" ");
-    if (args.includes("--port=")) {
+    if (args.find((arg) => arg.startsWith("--port="))) {
       port = args.find((arg) => arg.startsWith("--port="))?.split("=")[1];
     } else if (command.includes("--port")) {
       const index = args.indexOf("--port");
