@@ -19,10 +19,7 @@ import { promisify } from "node:util";
 
 const exec = promisify(_exec);
 
-export const entrypoint = z
-  .string()
-  .optional()
-  .describe("Path to the entrypoint file");
+export const entrypoint = z.string().optional().describe("Path to the entrypoint file");
 
 export const watch = z
   .boolean()
@@ -40,20 +37,14 @@ export const adopt = z
   .boolean()
   .optional()
   .default(false)
-  .describe(
-    "Adopt resources if they already exist but are not yet managed by your Alchemy app",
-  );
+  .describe("Adopt resources if they already exist but are not yet managed by your Alchemy app");
 
 export const execArgs = {
   cwd: z
     .string()
     .optional()
     .describe("Path to the project directory (defaults to current directory)"),
-  quiet: z
-    .boolean()
-    .optional()
-    .default(false)
-    .describe("Suppress Create/Update/Delete messages"),
+  quiet: z.boolean().optional().default(false).describe("Suppress Create/Update/Delete messages"),
   stage: z
     .string()
     .optional()
@@ -61,27 +52,12 @@ export const execArgs = {
       "Specify which stage/environment to target. Defaults to your username ($USER, or $USERNAME on windows)",
     ),
   inspect: z.boolean().optional().describe("Enable inspector"),
-  inspectBrk: z
-    .boolean()
-    .optional()
-    .describe("Enable inspector and break on start"),
-  inspectWait: z
-    .boolean()
-    .optional()
-    .describe("Enable inspector and wait for connection"),
+  inspectBrk: z.boolean().optional().describe("Enable inspector and break on start"),
+  inspectWait: z.boolean().optional().describe("Enable inspector and wait for connection"),
   envFile: z.string().optional().describe("Path to environment file to load"),
-  app: z
-    .string()
-    .optional()
-    .describe("Select a specific application to target"),
-  rootDir: z
-    .string()
-    .optional()
-    .describe("Path to the root directory of the project"),
-  profile: z
-    .string()
-    .optional()
-    .describe("Alchemy profile to use for authorizing requests"),
+  app: z.string().optional().describe("Select a specific application to target"),
+  rootDir: z.string().optional().describe("Path to the root directory of the project"),
+  profile: z.string().optional().describe("Alchemy profile to use for authorizing requests"),
 } as const;
 
 export async function execAlchemy(
@@ -130,11 +106,7 @@ export async function execAlchemy(
   const telemetryData = await collectData();
 
   args.push(`--telemetry-session-id ${telemetryData.sessionId}`);
-  args.push(
-    `--telemetry-ref ${
-      telemetryData.referrer ? `${telemetryData.referrer}+cli` : "cli"
-    }`,
-  );
+  args.push(`--telemetry-ref ${telemetryData.referrer ? `${telemetryData.referrer}+cli` : "cli"}`);
 
   if (quiet) args.push("--quiet");
   if (read) args.push("--read");
@@ -187,12 +159,7 @@ export async function execAlchemy(
 
   // Check for alchemy.run.ts or alchemy.run.js (if not provided)
   if (!main) {
-    const candidates = [
-      "alchemy.run.ts",
-      "alchemy.run.js",
-      "alchemy.run.mts",
-      "alchemy.run.mjs",
-    ];
+    const candidates = ["alchemy.run.ts", "alchemy.run.js", "alchemy.run.mts", "alchemy.run.mjs"];
     for (const file of candidates) {
       const resolved = resolve(cwd, file);
       if (await exists(resolved)) {
@@ -203,11 +170,7 @@ export async function execAlchemy(
   }
 
   if (!main) {
-    log.error(
-      pc.red(
-        "No alchemy.run.ts or alchemy.run.js file found in the current directory.",
-      ),
-    );
+    log.error(pc.red("No alchemy.run.ts or alchemy.run.js file found in the current directory."));
     log.info("Create an alchemy.run.ts file to define your infrastructure.");
     throw new ExitSignal(1);
   }
@@ -231,7 +194,7 @@ export async function execAlchemy(
     const [major, minor] = nodeVersion.replace("v", "").split(".").map(Number);
     if (major < 22 || (major === 22 && minor < 18)) {
       // see: https://nodejs.org/en/learn/typescript/run-natively
-      command = `node --experimental-transform-types ${execArgsString} ${main} ${argsString}`;
+      command = `node --experimental-${major === 22 && minor >= 7 ? "transform" : "strip"}-types ${execArgsString} ${main} ${argsString}`;
     }
   }
 
@@ -261,12 +224,8 @@ export async function execAlchemy(
       const string = data.toString();
       //* bun inspector url seems to always be on 6499
       //todo(michael): support node and deno
-      const bunInspectorMatch = string.match(
-        /ws:\/\/localhost:6499\/[a-zA-z0-9]*/,
-      );
-      const nodeInspectorMatch = string.match(
-        /ws:\/\/127.0.0.1:9229\/[a-zA-z0-9-]*/,
-      );
+      const bunInspectorMatch = string.match(/ws:\/\/localhost:6499\/[a-zA-z0-9]*/);
+      const nodeInspectorMatch = string.match(/ws:\/\/127.0.0.1:9229\/[a-zA-z0-9-]*/);
       if (bunInspectorMatch) {
         const inspectorUrl = bunInspectorMatch[0];
         resolveInspectorUrl(inspectorUrl);
