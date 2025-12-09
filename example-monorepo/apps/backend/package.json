@@ -11,9 +11,7 @@
   },
   "exports": {
     "./alchemy": {
-      "bun": "./alchemy.run.ts",
-      "import": "./alchemy.run.ts",
-      "types": "./alchemy.run.ts"
+      "default": "./alchemy.run.ts"
     }
   },
   "dependencies": {
