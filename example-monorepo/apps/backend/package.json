@@ -10,9 +10,7 @@
     "check": "tsc --noEmit"
   },
   "exports": {
-    "./alchemy": {
-      "default": "./alchemy.run.ts"
-    }
+    "./alchemy": "./alchemy.run.ts"
   },
   "dependencies": {
     "alchemy": "catalog:"
