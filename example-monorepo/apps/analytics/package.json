@@ -11,7 +11,7 @@
   "exports": {
     "./alchemy": {
       "bun": "./alchemy.run.ts",
-      "import": "./lib/alchemy.run.js",
+      "import": "./alchemy.run.ts",
       "types": "./alchemy.run.ts"
     }
   },
