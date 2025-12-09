@@ -221,7 +221,7 @@ If this is a mistake, you can disable this check by setting the ALCHEMY_CI_STATE
   const phase = mergedOptions?.phase ?? "up";
   const root = new Scope({
     ...mergedOptions,
-    parent: undefined,
+    parent: null,
     scopeName: appName,
     phase,
     password: mergedOptions?.password ?? process.env.ALCHEMY_PASSWORD,
