@@ -3,7 +3,6 @@ dist/
 lib/
 .out/
 .test/
-.DS_Store
 .env
 *.tsbuildinfo
 
@@ -27,3 +26,7 @@ smoke
 .wrangler
 
 *.tgz
+.cursorindexingignore
+.specstory/
+# SpecStory explanation file
+.specstory/.what-is-this.md

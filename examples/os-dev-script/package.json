@@ -1,0 +1,22 @@
+{
+  "name": "os-dev-script",
+  "version": "0.0.0",
+  "description": "Example demonstrating DevScript for running local dev tools",
+  "type": "module",
+  "scripts": {
+    "dev": "alchemy dev --env-file ../../.env",
+    "deploy": "alchemy deploy --env-file ../../.env",
+    "destroy": "alchemy destroy --env-file ../../.env",
+    "build": "tsc -b"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "catalog:",
+    "@types/node": "^24.0.1",
+    "alchemy": "workspace:*",
+    "typescript": "catalog:"
+  },
+  "dependencies": {
+    "hono": "^4.9.10"
+  }
+}
+

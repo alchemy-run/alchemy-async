@@ -1,0 +1,11 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "outDir": "./dist",
+    "rootDir": ".",
+    "types": ["@cloudflare/workers-types", "node"]
+  },
+  "include": ["src/**/*", "alchemy.run.ts"],
+  "exclude": ["node_modules", "dist"]
+}
+
