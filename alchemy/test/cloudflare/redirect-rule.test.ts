@@ -1,7 +1,13 @@
 import { describe, expect } from "vitest";
 import { alchemy } from "../../src/alchemy.ts";
-import { type CloudflareApi, createCloudflareApi } from "../../src/cloudflare/api.ts";
-import { findRuleInRuleset, RedirectRule } from "../../src/cloudflare/redirect-rule.ts";
+import {
+  type CloudflareApi,
+  createCloudflareApi,
+} from "../../src/cloudflare/api.ts";
+import {
+  findRuleInRuleset,
+  RedirectRule,
+} from "../../src/cloudflare/redirect-rule.ts";
 import { Worker } from "../../src/cloudflare/worker.ts";
 import { getZoneByDomain } from "../../src/cloudflare/zone.ts";
 import { destroy } from "../../src/destroy.ts";
@@ -147,7 +153,12 @@ async function assertRedirectRuleDoesNotExist(
   zoneId: string,
   redirectRule: RedirectRule,
 ): Promise<void> {
-  const rule = await findRuleInRuleset(api, zoneId, redirectRule.rulesetId, redirectRule.ruleId);
+  const rule = await findRuleInRuleset(
+    api,
+    zoneId,
+    redirectRule.rulesetId,
+    redirectRule.ruleId,
+  );
   expect(rule).toBeNull();
 }
 
@@ -172,7 +183,9 @@ async function testRedirectBehavior(
   expectedStatus: number,
   testDescription: string,
 ): Promise<void> {
-  console.log(`Testing ${testDescription}: ${sourceUrl} -> ${expectedTargetUrl}`);
+  console.log(
+    `Testing ${testDescription}: ${sourceUrl} -> ${expectedTargetUrl}`,
+  );
 
   // Test the redirect with manual redirect handling to capture the redirect response
   const response = await fetchAndExpectStatus(
