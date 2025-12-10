@@ -1,10 +1,6 @@
 import type { Context } from "../context.ts";
 import { Resource } from "../resource.ts";
-import {
-  createCloudflareApi,
-  type CloudflareApi,
-  type CloudflareApiOptions,
-} from "./api.ts";
+import { createCloudflareApi, type CloudflareApi, type CloudflareApiOptions } from "./api.ts";
 import type { CloudflareResponse } from "./response.ts";
 import { getZoneByDomain, type Zone } from "./zone.ts";
 
@@ -240,7 +236,9 @@ export const RedirectRule = Resource(
     // Get zone ID
     const zoneId =
       typeof props.zone === "string"
-        ? (await getZoneByDomain(api, props.zone))?.id
+        ? props.zone.includes(".")
+          ? (await getZoneByDomain(api, props.zone))?.id
+          : props.zone
         : props.zone.id;
     if (!zoneId) {
       throw new Error(`Zone ${props.zone} not found`);
@@ -280,11 +278,7 @@ export const RedirectRule = Resource(
       ruleExpression = "true";
     }
 
-    if (
-      this.phase === "update" &&
-      this.output?.ruleId &&
-      this.output?.rulesetId
-    ) {
+    if (this.phase === "update" && this.output?.ruleId && this.output?.rulesetId) {
       // Update existing rule using PATCH API
       const updatedRule = await updateRule({
         api,
@@ -347,19 +341,14 @@ export const RedirectRule = Resource(
 /**
  * Get existing redirect ruleset for a zone
  */
-async function getRedirectRuleset(
-  api: CloudflareApi,
-  zoneId: string,
-): Promise<string | null> {
+async function getRedirectRuleset(api: CloudflareApi, zoneId: string): Promise<string | null> {
   const response = await api.get(`/zones/${zoneId}/rulesets`);
 
   if (!response.ok) {
     return null;
   }
 
-  const result = (await response.json()) as CloudflareResponse<
-    CloudflareRuleset[]
-  >;
+  const result = (await response.json()) as CloudflareResponse<CloudflareRuleset[]>;
   const redirectRuleset = result.result.find(
     (ruleset) => ruleset.phase === "http_request_dynamic_redirect",
   );
@@ -370,10 +359,7 @@ async function getRedirectRuleset(
 /**
  * Create a new redirect ruleset for a zone
  */
-async function createRedirectRuleset(
-  api: CloudflareApi,
-  zoneId: string,
-): Promise<string> {
+async function createRedirectRuleset(api: CloudflareApi, zoneId: string): Promise<string> {
   const response = await api.post(`/zones/${zoneId}/rulesets`, {
     name: "Zone-level redirect ruleset",
     description: "Redirect rules for the zone",
@@ -382,23 +368,17 @@ async function createRedirectRuleset(
   });
 
   if (!response.ok) {
-    throw new Error(
-      `Failed to create redirect ruleset: ${response.statusText}`,
-    );
+    throw new Error(`Failed to create redirect ruleset: ${response.statusText}`);
   }
 
-  const result =
-    (await response.json()) as CloudflareResponse<CloudflareRuleset>;
+  const result = (await response.json()) as CloudflareResponse<CloudflareRuleset>;
   return result.result.id;
 }
 
 /**
  * Get or create the redirect ruleset for a zone
  */
-async function getOrCreateRedirectRuleset(
-  api: CloudflareApi,
-  zoneId: string,
-): Promise<string> {
+async function getOrCreateRedirectRuleset(api: CloudflareApi, zoneId: string): Promise<string> {
   const existingRulesetId = await getRedirectRuleset(api, zoneId);
   if (existingRulesetId) {
     return existingRulesetId;
@@ -410,9 +390,7 @@ async function getOrCreateRedirectRuleset(
 /**
  * Build the redirect rule body for API requests
  */
-function buildRuleBody(
-  data: Omit<RuleData, "api" | "zoneId" | "rulesetId" | "ruleId">,
-) {
+function buildRuleBody(data: Omit<RuleData, "api" | "zoneId" | "rulesetId" | "ruleId">) {
   return {
     action: "redirect" as const,
     description: data.description,
@@ -434,9 +412,7 @@ function buildRuleBody(
  * Create a new redirect rule using the individual rule API
  * @see https://developers.cloudflare.com/api/resources/rulesets/subresources/rules/methods/create/
  */
-async function createRule(
-  data: Omit<RuleData, "ruleId">,
-): Promise<CloudflareRule> {
+async function createRule(data: Omit<RuleData, "ruleId">): Promise<CloudflareRule> {
   const { api, zoneId, rulesetId, ...ruleFields } = data;
 
   const response = await api.post(
@@ -451,8 +427,7 @@ async function createRule(
     );
   }
 
-  const result =
-    (await response.json()) as CloudflareResponse<CloudflareRuleset>;
+  const result = (await response.json()) as CloudflareResponse<CloudflareRuleset>;
   // The API returns the updated ruleset, find the newly created rule (last one)
   const createdRule = result.result.rules[result.result.rules.length - 1];
   if (!createdRule) {
@@ -484,8 +459,7 @@ async function updateRule(data: RuleData): Promise<CloudflareRule> {
     );
   }
 
-  const result =
-    (await response.json()) as CloudflareResponse<CloudflareRuleset>;
+  const result = (await response.json()) as CloudflareResponse<CloudflareRuleset>;
   // Find and return the updated rule
   const updatedRule = result.result.rules.find((rule) => rule.id === ruleId);
   if (!updatedRule) {
@@ -506,9 +480,7 @@ async function deleteRule(data: {
 }): Promise<void> {
   const { api, zoneId, rulesetId, ruleId } = data;
 
-  const response = await api.delete(
-    `/zones/${zoneId}/rulesets/${rulesetId}/rules/${ruleId}`,
-  );
+  const response = await api.delete(`/zones/${zoneId}/rulesets/${rulesetId}/rules/${ruleId}`);
 
   // 404 is acceptable - rule may already be deleted
   if (!response.ok && response.status !== 404) {
@@ -531,13 +503,10 @@ export async function findRuleInRuleset(
   const response = await api.get(`/zones/${zoneId}/rulesets/${rulesetId}`);
 
   if (!response.ok) {
-    throw new Error(
-      `Failed to get ruleset: ${response.status} ${response.statusText}`,
-    );
+    throw new Error(`Failed to get ruleset: ${response.status} ${response.statusText}`);
   }
 
-  const rulesetData =
-    (await response.json()) as CloudflareResponse<CloudflareRuleset>;
+  const rulesetData = (await response.json()) as CloudflareResponse<CloudflareRuleset>;
   const rule = rulesetData.result.rules?.find((r) => r.id === ruleId);
 
   return rule || null;
