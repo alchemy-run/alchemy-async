@@ -6,7 +6,7 @@ import {
   type CloudflareApiOptions,
 } from "./api.ts";
 import type { CloudflareResponse } from "./response.ts";
-import type { Zone } from "./zone.ts";
+import { getZoneByDomain, type Zone } from "./zone.ts";
 
 /**
  * Properties for creating or updating a RedirectRule
@@ -207,7 +207,13 @@ export const RedirectRule = Resource(
     const api = await createCloudflareApi(props);
 
     // Get zone ID
-    const zoneId = typeof props.zone === "string" ? props.zone : props.zone.id;
+    const zoneId =
+      typeof props.zone === "string"
+        ? (await getZoneByDomain(api, props.zone))?.id
+        : props.zone.id;
+    if (!zoneId) {
+      throw new Error(`Zone ${props.zone} not found`);
+    }
 
     if (this.phase === "delete") {
       if (this.output?.ruleId && this.output?.rulesetId) {

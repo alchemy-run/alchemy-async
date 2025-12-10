@@ -1,13 +1,7 @@
 import { describe, expect } from "vitest";
 import { alchemy } from "../../src/alchemy.ts";
-import {
-  type CloudflareApi,
-  createCloudflareApi,
-} from "../../src/cloudflare/api.ts";
-import {
-  RedirectRule,
-  findRuleInRuleset,
-} from "../../src/cloudflare/redirect-rule.ts";
+import { type CloudflareApi, createCloudflareApi } from "../../src/cloudflare/api.ts";
+import { RedirectRule, findRuleInRuleset } from "../../src/cloudflare/redirect-rule.ts";
 import { Worker } from "../../src/cloudflare/worker.ts";
 import { Zone } from "../../src/cloudflare/zone.ts";
 import { destroy } from "../../src/destroy.ts";
@@ -59,7 +53,7 @@ describe.skipIf(!isEnabled)("RedirectRule", () => {
     try {
       // Create a simple redirect rule (no wildcards for now)
       redirectRule = await RedirectRule(`${BRANCH_PREFIX}-wildcard-redirect`, {
-        zone: zone.id,
+        zone: testDomain,
         expression: `http.request.uri.path == "/old-page"`,
         targetUrl: `https://${testDomain}/new-page`,
         statusCode: 301,
@@ -100,7 +94,7 @@ describe.skipIf(!isEnabled)("RedirectRule", () => {
 
       // Update the redirect rule
       redirectRule = await RedirectRule(`${BRANCH_PREFIX}-wildcard-redirect`, {
-        zone: zone.id,
+        zone: testDomain,
         expression: `http.request.uri.path == "/old-page2"`,
         targetUrl: `https://${testDomain}/updated-page`,
         statusCode: 302,
@@ -143,12 +137,7 @@ async function assertRedirectRuleDoesNotExist(
   zoneId: string,
   redirectRule: RedirectRule,
 ): Promise<void> {
-  const rule = await findRuleInRuleset(
-    api,
-    zoneId,
-    redirectRule.rulesetId,
-    redirectRule.ruleId,
-  );
+  const rule = await findRuleInRuleset(api, zoneId, redirectRule.rulesetId, redirectRule.ruleId);
   expect(rule).toBeNull();
 }
 
@@ -173,9 +162,7 @@ async function testRedirectBehavior(
   expectedStatus: number,
   testDescription: string,
 ): Promise<void> {
-  console.log(
-    `Testing ${testDescription}: ${sourceUrl} -> ${expectedTargetUrl}`,
-  );
+  console.log(`Testing ${testDescription}: ${sourceUrl} -> ${expectedTargetUrl}`);
 
   // Test the redirect with manual redirect handling to capture the redirect response
   const response = await fetchAndExpectStatus(
