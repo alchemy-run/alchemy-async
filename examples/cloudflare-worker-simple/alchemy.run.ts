@@ -15,7 +15,7 @@ import type { DO } from "./src/worker1.ts";
 const app = await alchemy("cloudflare-worker-simple");
 
 // to test with remote bindings, set to true
-const remote = true;
+const remote = false;
 
 // create a large seed file for the database to test large migrations
 if (
