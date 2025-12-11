@@ -10,10 +10,10 @@ import {
 } from "./api.ts";
 import { withJurisdiction } from "./bucket.ts";
 import { cloneD1Database } from "./d1-clone.ts";
-import { listSqlFiles, type D1SqlFile } from "./d1-file.ts";
 import { importD1Database } from "./d1-import.ts";
 import { applyLocalD1Migrations } from "./d1-local-migrations.ts";
 import { applyMigrations } from "./d1-migrations.ts";
+import { listSqlFiles, type D1SqlFile } from "./d1-sql-file.ts";
 import { deleteMiniflareBinding } from "./miniflare/delete.ts";
 
 const DEFAULT_MIGRATIONS_TABLE = "d1_migrations";
@@ -87,22 +87,10 @@ export interface D1DatabaseProps extends CloudflareApiOptions {
   clone?: D1Database | { id: string } | { name: string };
 
   /**
-   * Directory to import files from.
+   * Directory containing import SQL files.
+   * After migrations are applied, these files will be run using [Cloudflare's D1 import API](https://developers.cloudflare.com/d1/best-practices/import-export-data/).
    */
   importDir?: string;
-
-  /**
-   * Files to import into the database.
-   * @internal
-   */
-  importFiles?: Array<D1SqlFile>;
-
-  /**
-   * These files will be generated internally with the D1Database wrapper function when migrationsDir is specified
-   *
-   * @private
-   */
-  migrationsFiles?: Array<D1SqlFile>;
 
   /**
    * Name of the table used to track migrations. Only used if migrationsDir is specified. Defaults to 'd1_migrations'
@@ -291,7 +279,10 @@ const _D1Database = Resource(
   async function (
     this: Context<D1Database>,
     id: string,
-    props: D1DatabaseProps,
+    props: D1DatabaseProps & {
+      migrationsFiles: Array<D1SqlFile>;
+      importFiles: Array<D1SqlFile>;
+    },
   ): Promise<D1Database> {
     const databaseName =
       props.name ?? this.output?.name ?? this.scope.createPhysicalName(id);

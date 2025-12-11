@@ -1,5 +1,5 @@
 import * as mf from "miniflare";
-import type { D1SqlFile } from "./d1-file.ts";
+import type { D1SqlFile } from "./d1-sql-file.ts";
 import { getDefaultPersistPath } from "./miniflare/paths.ts";
 
 export interface D1LocalMigrationOptions {
