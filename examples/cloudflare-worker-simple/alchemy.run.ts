@@ -14,6 +14,9 @@ import type { DO } from "./src/worker1.ts";
 
 const app = await alchemy("cloudflare-worker-simple");
 
+// to test with remote bindings, set to true
+const remote = true;
+
 // create a large seed file for the database to test large migrations
 if (
   await fs
@@ -31,9 +34,6 @@ if (
     ).join(""),
   );
 }
-
-// to test with remote bindings, set to true
-const remote = false;
 
 const [d1, kv, r2] = await Promise.all([
   D1Database("d1", {
