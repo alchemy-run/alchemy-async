@@ -25,7 +25,10 @@ describe("cloudflare-worker-simple", () => {
     });
     assert.equal(res.status, 200);
     assert(res.headers.get("content-type")?.includes("text/html"));
-    assert.equal(await res.text(), await fs.readFile("assets/index.html", "utf-8"));
+    assert.equal(
+      await res.text(),
+      await fs.readFile("assets/index.html", "utf-8"),
+    );
   });
 
   it("durable object", async () => {
