@@ -60,6 +60,21 @@ const db = await D1Database("my-db", {
 });
 ```
 
+## Importing Data
+
+Create a database with import SQL files.
+
+```ts
+import { D1Database } from "alchemy/cloudflare";
+
+const db = await D1Database("my-db", {
+  name: "my-db",
+  importDir: "./imports",
+});
+```
+
+The import files will be run using [Cloudflare's D1 import API](https://developers.cloudflare.com/d1/best-practices/import-export-data/).
+
 ## With Location Hint
 
 Create a database with a specific location hint for optimal performance.
