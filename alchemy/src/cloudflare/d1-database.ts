@@ -10,8 +10,10 @@ import {
 } from "./api.ts";
 import { withJurisdiction } from "./bucket.ts";
 import { cloneD1Database } from "./d1-clone.ts";
+import { listSqlFiles, type D1SqlFile } from "./d1-file.ts";
+import { importD1Database } from "./d1-import.ts";
 import { applyLocalD1Migrations } from "./d1-local-migrations.ts";
-import { applyMigrations, listMigrationsFiles } from "./d1-migrations.ts";
+import { applyMigrations } from "./d1-migrations.ts";
 import { deleteMiniflareBinding } from "./miniflare/delete.ts";
 
 const DEFAULT_MIGRATIONS_TABLE = "d1_migrations";
@@ -85,11 +87,22 @@ export interface D1DatabaseProps extends CloudflareApiOptions {
   clone?: D1Database | { id: string } | { name: string };
 
   /**
+   * Directory to import files from.
+   */
+  importDir?: string;
+
+  /**
+   * Files to import into the database.
+   * @internal
+   */
+  importFiles?: Array<D1SqlFile>;
+
+  /**
    * These files will be generated internally with the D1Database wrapper function when migrationsDir is specified
    *
    * @private
    */
-  migrationsFiles?: Array<{ id: string; sql: string }>;
+  migrationsFiles?: Array<D1SqlFile>;
 
   /**
    * Name of the table used to track migrations. Only used if migrationsDir is specified. Defaults to 'd1_migrations'
@@ -102,6 +115,7 @@ export interface D1DatabaseProps extends CloudflareApiOptions {
    * This is analogous to wrangler's `migrations_dir`.
    */
   migrationsDir?: string;
+
   /**
    * Whether to emulate the database locally when Alchemy is running in watch mode.
    */
@@ -139,6 +153,7 @@ export type D1Database = Pick<
   | "migrationsTable"
   | "primaryLocationHint"
   | "readReplication"
+  | "importDir"
 > & {
   type: "d1";
   /**
@@ -251,15 +266,17 @@ export type D1Database = Pick<
  */
 export async function D1Database(
   id: string,
-  props: Omit<D1DatabaseProps, "migrationsFiles"> = {},
+  props: Omit<D1DatabaseProps, "migrationsFiles" | "importFiles"> = {},
 ): Promise<D1Database> {
-  const migrationsFiles = props.migrationsDir
-    ? await listMigrationsFiles(props.migrationsDir)
-    : [];
+  const [migrationsFiles, importFiles] = await Promise.all([
+    props.migrationsDir ? await listSqlFiles(props.migrationsDir) : [],
+    props.importDir ? await listSqlFiles(props.importDir) : [],
+  ]);
 
   return _D1Database(id, {
     ...props,
     migrationsFiles,
+    importFiles,
     dev: {
       ...(props.dev ?? {}),
       // force local migrations to run even if the database was already deployed live
@@ -292,11 +309,12 @@ const _D1Database = Resource(
     const adopt = props.adopt ?? this.scope.adopt;
 
     if (local) {
-      if (props.migrationsFiles && props.migrationsFiles.length > 0) {
+      if (props.migrationsFiles?.length || props.importFiles?.length) {
         await applyLocalD1Migrations({
           databaseId: dev.id,
           migrationsTable: props.migrationsTable ?? DEFAULT_MIGRATIONS_TABLE,
-          migrations: props.migrationsFiles,
+          migrations: props.migrationsFiles ?? [],
+          imports: props.importFiles ?? [],
           rootDir: this.scope.rootDir,
         });
       }
@@ -308,6 +326,7 @@ const _D1Database = Resource(
         primaryLocationHint: props.primaryLocationHint,
         migrationsDir: props.migrationsDir,
         migrationsTable: props.migrationsTable ?? DEFAULT_MIGRATIONS_TABLE,
+        importDir: props.importDir,
         dev,
         jurisdiction,
       };
@@ -401,12 +420,13 @@ const _D1Database = Resource(
       dbData = await createDatabase(api, databaseName, props);
     }
 
+    const databaseId = dbData.result.uuid!;
+
     // Run migrations if provided
     if (props.migrationsFiles && props.migrationsFiles.length > 0) {
       try {
         const migrationsTable =
           props.migrationsTable || DEFAULT_MIGRATIONS_TABLE;
-        const databaseId = dbData.result.uuid || this.output?.id;
 
         if (!databaseId) {
           throw new Error("Database ID not found for migrations");
@@ -424,19 +444,27 @@ const _D1Database = Resource(
         throw migrationErr;
       }
     }
-    if (!dbData.result.uuid) {
-      // TODO(sam): why would this ever happen?
-      throw new Error("Database ID not found");
+    if (props.importFiles?.length) {
+      await Promise.all(
+        props.importFiles.map(async (file) => {
+          await importD1Database(api, {
+            databaseId,
+            sqlData: file.sql,
+            filename: file.id,
+          });
+        }),
+      );
     }
     return {
       type: "d1",
-      id: dbData.result.uuid!,
+      id: databaseId,
       name: databaseName,
       readReplication: props.readReplication,
       primaryLocationHint: props.primaryLocationHint,
       dev,
       migrationsDir: props.migrationsDir,
       migrationsTable: props.migrationsTable ?? DEFAULT_MIGRATIONS_TABLE,
+      importDir: props.importDir,
       jurisdiction,
     };
   },

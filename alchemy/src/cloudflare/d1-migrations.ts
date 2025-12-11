@@ -1,6 +1,3 @@
-import { glob } from "glob";
-import * as fs from "node:fs/promises";
-import path from "pathe";
 import { logger } from "../util/logger.ts";
 import { handleApiError } from "./api-error.ts";
 import type { CloudflareApi } from "./api.ts";
@@ -12,16 +9,6 @@ export interface D1MigrationOptions {
   databaseId: string;
   api: CloudflareApi;
   quiet?: boolean;
-}
-
-const getPrefix = (name: string) => {
-  const prefix = name.split("_")[0];
-  const num = Number.parseInt(prefix, 10);
-  return Number.isNaN(num) ? null : num;
-};
-
-async function readMigrationFile(filePath: string): Promise<string> {
-  return fs.readFile(filePath, "utf-8");
 }
 
 /**
@@ -151,36 +138,6 @@ async function migrateLegacySchema(
     } catch {}
     throw new Error(`Failed to migrate legacy migration table: ${error}`);
   }
-}
-
-/**
- * Reads migration SQL files from the migrationsDir, sorted by filename.
- * @param migrationsDir Directory containing .sql migration files
- */
-export async function listMigrationsFiles(
-  migrationsDir: string,
-): Promise<Array<{ id: string; sql: string }>> {
-  const entries = await glob("**/*.sql", {
-    cwd: migrationsDir,
-  });
-
-  const sqlFiles = entries.sort((a: string, b: string) => {
-    const aNum = getPrefix(a);
-    const bNum = getPrefix(b);
-
-    if (aNum !== null && bNum !== null) return aNum - bNum;
-    if (aNum !== null) return -1;
-    if (bNum !== null) return 1;
-
-    return a.localeCompare(b);
-  });
-
-  return await Promise.all(
-    sqlFiles.map(async (file) => ({
-      id: file,
-      sql: await readMigrationFile(path.join(migrationsDir, file)),
-    })),
-  );
 }
 
 /**

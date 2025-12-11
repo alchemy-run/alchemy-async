@@ -1,11 +1,13 @@
 import * as mf from "miniflare";
+import type { D1SqlFile } from "./d1-file.ts";
 import { getDefaultPersistPath } from "./miniflare/paths.ts";
 
 export interface D1LocalMigrationOptions {
   rootDir: string;
   databaseId: string;
   migrationsTable: string;
-  migrations: { id: string; sql: string }[];
+  migrations: Array<D1SqlFile>;
+  imports: Array<D1SqlFile>;
 }
 
 export const applyLocalD1Migrations = async (
@@ -21,9 +23,8 @@ export const applyLocalD1Migrations = async (
   });
   try {
     await miniflare.ready;
-    // TODO(sam): don't use `any` once prisma is fixed upstream
-    const db: any = await miniflare.getD1Database("DB");
-    const session: any = db.withSession("first-primary");
+    const db = await miniflare.getD1Database("DB");
+    const session = db.withSession("first-primary");
     await session
       .prepare(
         `CREATE TABLE IF NOT EXISTS ${options.migrationsTable} (
@@ -33,22 +34,42 @@ export const applyLocalD1Migrations = async (
     )`,
       )
       .run();
-    const appliedMigrations: {
-      results: { name: string }[];
+    await session
+      .prepare(
+        `MODIFY TABLE ${options.migrationsTable} ADD COLUMN type TEXT NOT NULL DEFAULT 'migration';`,
+      )
+      .run();
+    const applied: {
+      results: { name: string; type: "migration" | "import" }[];
     } = await session
       .prepare(
-        `SELECT name FROM ${options.migrationsTable} ORDER BY applied_at ASC`,
+        `SELECT name, type FROM ${options.migrationsTable} ORDER BY applied_at ASC`,
       )
       .all();
     const insertRecord = session.prepare(
-      `INSERT INTO ${options.migrationsTable} (name) VALUES (?)`,
+      `INSERT INTO ${options.migrationsTable} (name, type) VALUES (?, ?)`,
     );
-    for (const migration of options.migrations) {
-      if (appliedMigrations.results.some((m) => m.name === migration.id)) {
+    for (const { id, sql } of options.migrations) {
+      if (applied.results.some((m) => m.name === id)) {
         continue;
       }
-      await session.prepare(migration.sql).run();
-      await insertRecord.bind(migration.id).run();
+      await session.prepare(sql).run();
+      await insertRecord.bind(id, "migration").run();
+    }
+    for (const { id, sql, hash } of options.imports) {
+      const name = `${id}-${hash}`;
+      if (applied.results.some((m) => m.name === name)) {
+        continue;
+      }
+      await session.batch(
+        // Split into statements to prevent D1_ERROR: statement too long: SQLITE_TOOBIG.
+        // This is split naively by semicolons followed by newlines - not perfect but should work 99% of the time.
+        sql
+          .split(/;\r?\n/)
+          .filter((s) => s.trim())
+          .map((s) => session.prepare(s)),
+      );
+      await insertRecord.bind(name, "import").run();
     }
   } finally {
     await miniflare.dispose();
