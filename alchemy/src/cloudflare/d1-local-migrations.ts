@@ -36,7 +36,7 @@ export const applyLocalD1Migrations = async (
       .run();
     await session
       .prepare(
-        `MODIFY TABLE ${options.migrationsTable} ADD COLUMN type TEXT NOT NULL DEFAULT 'migration';`,
+        `ALTER TABLE ${options.migrationsTable} ADD COLUMN type TEXT NOT NULL DEFAULT 'migration';`,
       )
       .run();
     const applied: {
