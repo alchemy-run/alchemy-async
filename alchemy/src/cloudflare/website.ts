@@ -8,7 +8,7 @@ import { logger } from "../util/logger.ts";
 import { createCloudflareApi } from "./api.ts";
 import { Assets } from "./assets.ts";
 import type { Bindings } from "./bindings.ts";
-import { DEFAULT_COMPATIBILITY_DATE } from "./compatibility-date.gen.ts";
+import { DEFAULT_COMPATIBILITY_DATE } from "./compatibility-date.ts";
 import { unionCompatibilityFlags } from "./compatibility-presets.ts";
 import {
   extractStringAndSecretBindings,

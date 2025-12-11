@@ -20,7 +20,7 @@ import type {
   WorkerBindingSpec,
 } from "./bindings.ts";
 import type { Bound } from "./bound.ts";
-import { DEFAULT_COMPATIBILITY_DATE } from "./compatibility-date.gen.ts";
+import { DEFAULT_COMPATIBILITY_DATE } from "./compatibility-date.ts";
 import {
   type CompatibilityPreset,
   unionCompatibilityFlags,
