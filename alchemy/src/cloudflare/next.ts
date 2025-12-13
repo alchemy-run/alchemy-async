@@ -32,6 +32,42 @@ export async function Nextjs<const B extends Bindings>(
       ].join(" "),
     );
   }
+  const dev = normalizeCommand(props.dev, {
+    command: `${runner} next dev`,
+    env: {
+      NEXTJS_ENV: "development",
+    },
+  });
+  let domain = typeof props.dev === "object" ? props.dev.domain : undefined;
+  if (!domain) {
+    let port;
+    const args = dev.command.split(" ");
+
+    const findArg = (arg: string) => {
+      if (args.find((arg) => arg.startsWith(`${arg}=`))) {
+        port = args.find((arg) => arg.startsWith("--port="))?.split("=")[1];
+      } else if (args.includes(arg)) {
+        const index = args.indexOf(arg);
+        return args[index + 1];
+      }
+      return undefined;
+    };
+    if ((port = findArg("--port"))) {
+      domain = `localhost:${port}`;
+    } else if ((port = findArg("-p"))) {
+      domain = `localhost:${port}`;
+    } else {
+      try {
+        const config = await import(
+          path.resolve(props.cwd ?? process.cwd(), "next.config.ts")
+        );
+        port = config.default?.devServer?.port ?? 3000;
+      } catch {}
+    }
+    if (port) {
+      domain = `localhost:${port}`;
+    }
+  }
   return await Website(id, {
     bundle: {
       minify: true,
@@ -50,13 +86,8 @@ export async function Nextjs<const B extends Bindings>(
       },
     }),
     dev: {
-      ...normalizeCommand(props.dev, {
-        command: `${runner} next dev`,
-        env: {
-          NEXTJS_ENV: "development",
-        },
-      }),
-      domain: typeof props.dev === "object" ? props.dev.domain : undefined,
+      ...dev,
+      domain,
     },
 
     // OpenNext generates the files, but relies on us to bundle them.
@@ -92,7 +123,9 @@ const isFileIgnored = async (filename: string, cwd?: string) => {
       const gitignoreContent = await fs.readFile(gitignorePath, "utf8");
       // unshift to prioritize local .gitignore
       gitignorePatterns.unshift(
-        ...gitignoreContent.split("\n").filter((line) => line.trim() && !line.startsWith("#")),
+        ...gitignoreContent
+          .split("\n")
+          .filter((line) => line.trim() && !line.startsWith("#")),
       );
     } catch {
       // .gitignore doesn't exist in this directory, continue up
@@ -116,7 +149,8 @@ const normalizeCommand = (
   },
 ) => {
   return {
-    command: typeof input === "string" ? input : (input?.command ?? defaults.command),
+    command:
+      typeof input === "string" ? input : (input?.command ?? defaults.command),
     env: {
       ...defaults.env,
       ...(typeof input === "object" ? (input?.env ?? {}) : {}),
