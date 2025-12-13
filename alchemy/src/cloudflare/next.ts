@@ -45,7 +45,7 @@ export async function Nextjs<const B extends Bindings>(
 
     const findArg = (arg: string) => {
       if (args.find((arg) => arg.startsWith(`${arg}=`))) {
-        port = args.find((arg) => arg.startsWith("--port="))?.split("=")[1];
+        return args.find((arg) => arg.startsWith(`${arg}=`))?.split("=")[1];
       } else if (args.includes(arg)) {
         const index = args.indexOf(arg);
         return args[index + 1];
