@@ -87,8 +87,8 @@ const examples = (await discoverExamples()).filter(
 const exclude: string[] = [];
 const include: string[] = [];
 const fitlerTest = (name: string) =>
-  (include.length === 0 || include.every((filter) => name.includes(filter))) &&
-  (exclude.length === 0 || exclude.every((filter) => !name.includes(filter)));
+  include.every((filter) => name.includes(filter)) &&
+  exclude.every((filter) => !name.includes(filter));
 
 for (let i = 0; i < process.argv.length; i++) {
   if (process.argv[i] === "-t") {
@@ -464,6 +464,7 @@ async function deleteOutputFile(exampleName: string): Promise<void> {
 
 function stripAnsiColors(str: string): string {
   // Remove ANSI escape sequences
+  // oxlint-disable-next-line no-control-regex
   return str.replace(/\u001b\[[0-9;]*m/g, "");
 }
 

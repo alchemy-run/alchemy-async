@@ -39,7 +39,7 @@ export type Serialized<T> = T extends
           ? {
               "@date": string;
             }
-          : T extends Symbol
+          : T extends symbol
             ? {
                 "@symbol": string;
               }
@@ -225,7 +225,7 @@ function parseSymbol(value: string) {
   return Symbol.for(match[1]);
 }
 
-function assertNotUniqueSymbol(symbol: Symbol) {
+function assertNotUniqueSymbol(symbol: symbol) {
   if (
     symbol.description === undefined ||
     symbol !== Symbol.for(symbol.description)

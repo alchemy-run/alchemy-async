@@ -104,8 +104,8 @@ export async function BunSPA<B extends Bindings>(
     );
     const secrets = props.wrangler?.secrets ?? !props.wrangler?.path;
     const env = {
-      ...(process.env ?? {}),
-      ...(props.env ?? {}),
+      ...process.env,
+      ...props.env,
       ...extractStringAndSecretBindings(props.bindings ?? {}, secrets),
     };
     website.url = await scope.spawn(website.name, {
@@ -115,6 +115,7 @@ export async function BunSPA<B extends Bindings>(
         const URL_REGEX =
           /http:\/\/(localhost|0\.0\.0\.0|127\.0\.0\.1|\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}):\d+\/?/;
         const match = line
+          // oxlint-disable-next-line no-control-regex
           .replace(/\x1B\[[0-9;]*[a-zA-Z]/g, "")
           .match(URL_REGEX);
         if (match) {

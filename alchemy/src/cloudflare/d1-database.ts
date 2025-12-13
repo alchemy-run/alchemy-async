@@ -261,7 +261,7 @@ export async function D1Database(
     ...props,
     migrationsFiles,
     dev: {
-      ...(props.dev ?? {}),
+      ...props.dev,
       // force local migrations to run even if the database was already deployed live
       // this property will oscillate from true to false depending on the dev vs live deployment
       force: Scope.current.local,

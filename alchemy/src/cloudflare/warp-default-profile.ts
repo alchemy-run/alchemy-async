@@ -183,30 +183,6 @@ export const WarpDefaultProfile = Resource(
   },
 );
 
-/**
- * Internal API response type for default policy
- * @internal
- */
-interface CloudflareDefaultPolicyResponse {
-  device_settings?: {
-    service_mode_v2?: {
-      mode: string;
-      port?: number;
-    };
-    disable_auto_fallback?: boolean;
-    allow_mode_switch?: boolean;
-    switch_locked?: boolean;
-    tunnel_protocol?: string;
-    auto_connect?: number;
-    allowed_to_leave?: boolean;
-    captive_portal?: number;
-    support_url?: string;
-    exclude_office_ips?: boolean;
-    lan_allow_minutes?: number;
-    lan_allow_subnet_size?: number;
-  };
-}
-
 // Keys with special handling (not simple 1:1 mapping)
 type SpecialKeys = "serviceModeV2" | "splitTunnel" | "delete";
 
@@ -278,43 +254,5 @@ async function updateDefaultPolicy(
 
   if (!response.ok) {
     await handleApiError(response, "update", "warp_default_profile", "default");
-  }
-}
-
-async function updateDefaultSplitTunnel(
-  api: CloudflareApi,
-  config: SplitTunnelConfig,
-): Promise<void> {
-  const routes = config.entries.map((entry) => ({
-    address: entry.address,
-    ...(entry.description && { description: entry.description }),
-  }));
-
-  if (config.mode === "include") {
-    const response = await api.put(
-      `/accounts/${api.accountId}/devices/policies/default/includes`,
-      routes,
-    );
-    if (!response.ok) {
-      await handleApiError(
-        response,
-        "update split tunnel includes",
-        "warp_default_profile",
-        "default",
-      );
-    }
-  } else {
-    const response = await api.put(
-      `/accounts/${api.accountId}/devices/policies/default/excludes`,
-      routes,
-    );
-    if (!response.ok) {
-      await handleApiError(
-        response,
-        "update split tunnel excludes",
-        "warp_default_profile",
-        "default",
-      );
-    }
   }
 }

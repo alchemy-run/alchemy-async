@@ -31,12 +31,12 @@ describe("Stripe Card Resource", () => {
     let customer: Customer | undefined;
     let card: Card | undefined;
     try {
-      const customer = await Customer(customerId, {
+      customer = await Customer(customerId, {
         email: "test@example.com",
         name: "Test Customer for Card",
       });
 
-      const card = await Card(cardId, {
+      card = await Card(cardId, {
         customer: customer.id,
         source: "tok_visa",
         name: "Test Cardholder",

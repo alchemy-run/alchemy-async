@@ -28,7 +28,7 @@ describe("Stripe Coupon Resource", () => {
 
     let coupon: Coupon | undefined;
     try {
-      const coupon = await Coupon(couponId, {
+      coupon = await Coupon(couponId, {
         id: couponId,
         duration: "once",
         percentOff: 25,
@@ -50,7 +50,7 @@ describe("Stripe Coupon Resource", () => {
       expect(stripeCoupon.id).toBe(coupon.id);
       expect(stripeCoupon.percent_off).toBe(25);
 
-      const updatedCoupon = await Coupon(couponId, {
+      coupon = await Coupon(couponId, {
         id: couponId,
         duration: "once",
         percentOff: 25,
@@ -62,7 +62,7 @@ describe("Stripe Coupon Resource", () => {
         },
       });
 
-      expect(updatedCoupon).toMatchObject({
+      expect(coupon).toMatchObject({
         name: "Updated Test Coupon",
         metadata: expect.objectContaining({
           updated: "true",

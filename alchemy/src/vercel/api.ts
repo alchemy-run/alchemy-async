@@ -100,6 +100,7 @@ export class VercelApi {
           ((await response.json()) as { error: Error })?.error,
         );
       } finally {
+        // oxlint-disable-next-line no-unsafe-finally
         throw error;
       }
     }

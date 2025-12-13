@@ -176,8 +176,8 @@ export class Scope {
 
   public static readonly KIND = "alchemy::Scope" as const;
 
-  public static storage = globalThis.__ALCHEMY_STORAGE__ ??=
-    new AsyncLocalStorage<Scope>();
+  public static storage = (globalThis.__ALCHEMY_STORAGE__ ??=
+    new AsyncLocalStorage<Scope>());
 
   public static getScope(): Scope | undefined {
     return Scope.storage.getStore();
@@ -396,6 +396,7 @@ export class Scope {
   }
 
   public get root(): Scope {
+    // oxlint-disable-next-line no-this-alias
     let root: Scope = this;
     while (root.parent) {
       root = root.parent;
@@ -445,7 +446,7 @@ export class Scope {
   }
 
   public async init() {
-    await Promise.all([this.state.init?.()]);
+    await this.state.init?.();
   }
 
   public async deinit() {

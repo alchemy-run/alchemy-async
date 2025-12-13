@@ -1,0 +1,5030 @@
+export type ClientOptions = {
+    baseUrl: "https://api.clickhouse.cloud" | (string & {});
+};
+export type Plain = {
+    /**
+     * Username.
+     */
+    username?: string;
+    /**
+     * Password.
+     */
+    password?: string;
+};
+export type MskIamUser = {
+    /**
+     * IAM access key ID.
+     */
+    accessKeyId?: string;
+    /**
+     * IAM secret key.
+     */
+    secretKey?: string;
+};
+export type ClickPipeKafkaOffset = {
+    /**
+     * Offset strategy.
+     */
+    strategy?: "from_beginning" | "from_latest" | "from_timestamp";
+    /**
+     * A minute precision UTC timestamp to start from. Required for "from_timestamp" strategy.
+     */
+    timestamp?: string | null;
+};
+export type ClickPipeKafkaSchemaRegistry = {
+    /**
+     * Schema URL. HTTPS required.
+     */
+    url?: string;
+    /**
+     * Authentication type of the schema registry.
+     */
+    authentication?: "PLAIN";
+    /**
+     * PEM encoded CA certificates to validate the schema registry's certificate.
+     */
+    caCertificate?: string | null;
+};
+export type ClickPipeKafkaSchemaRegistryCredentials = {
+    /**
+     * Username for the schema registry.
+     */
+    username?: string;
+    /**
+     * Password for the schema registry.
+     */
+    password?: string;
+};
+export type ClickPipeMutateKafkaSchemaRegistry = {
+    /**
+     * Schema URL. HTTPS required.
+     */
+    url?: string;
+    /**
+     * Authentication type of the schema registry.
+     */
+    authentication?: "PLAIN";
+    /**
+     * PEM encoded CA certificates to validate the schema registry's certificate.
+     */
+    caCertificate?: string | null;
+    credentials?: ClickPipeKafkaSchemaRegistryCredentials;
+};
+export type AzureEventHub = {
+    /**
+     * Connection string for Azure EventHub source.
+     */
+    connectionString?: string;
+};
+export type ClickPipeKafkaSource = {
+    /**
+     * Type of the Kafka source.
+     */
+    type?: "kafka" | "redpanda" | "msk" | "confluent" | "warpstream" | "azureeventhub" | "dokafka";
+    /**
+     * Format of the Kafka source.
+     */
+    format?: "JSONEachRow" | "Avro" | "AvroConfluent";
+    /**
+     * Brokers of the Kafka source.
+     */
+    brokers?: string;
+    /**
+     * Topics of the Kafka source.
+     */
+    topics?: string;
+    /**
+     * Consumer group of the Kafka source. If not provided "clickpipes-<<ID>>" will be used.
+     */
+    consumerGroup?: string | null;
+    /**
+     * Authentication method of the Kafka source. Supported authentication methods: kafka: PLAIN, SCRAM-SHA-256, SCRAM-SHA-512, MUTUAL_TLS, msk: SCRAM-SHA-512, IAM_ROLE, IAM_USER, MUTUAL_TLS, confluent: PLAIN, MUTUAL_TLS, warpstream: PLAIN, azureeventhub: PLAIN, redpanda: SCRAM-SHA-256, SCRAM-SHA-512, MUTUAL_TLS, dokafka: SCRAM-SHA-256, MUTUAL_TLS
+     */
+    authentication?: "PLAIN" | "SCRAM-SHA-256" | "SCRAM-SHA-512" | "IAM_ROLE" | "IAM_USER" | "MUTUAL_TLS";
+    /**
+     * IAM role for the Kafka source. Use with IAM role authentication. Read more in ClickPipes documentation: https://clickhouse.com/docs/en/integrations/clickpipes/kafka#iam
+     */
+    iamRole?: string | null;
+    offset?: ClickPipeKafkaOffset | null;
+    schemaRegistry?: ClickPipeKafkaSchemaRegistry | null;
+    /**
+     * PEM encoded CA certificates to validate the broker's certificate.
+     */
+    caCertificate?: string | null;
+    /**
+     * Reverse private endpoint UUIDs used for a secure private connection to the Kafka source.
+     */
+    reversePrivateEndpointIds?: Array<string>;
+};
+export type ClickPipePostKafkaSource = {
+    /**
+     * Type of the Kafka source.
+     */
+    type?: "kafka" | "redpanda" | "msk" | "confluent" | "warpstream" | "azureeventhub" | "dokafka";
+    /**
+     * Format of the Kafka source.
+     */
+    format?: "JSONEachRow" | "Avro" | "AvroConfluent";
+    /**
+     * Brokers of the Kafka source.
+     */
+    brokers?: string;
+    /**
+     * Topics of the Kafka source.
+     */
+    topics?: string;
+    /**
+     * Consumer group of the Kafka source. If not provided "clickpipes-<<ID>>" will be used.
+     */
+    consumerGroup?: string | null;
+    /**
+     * Authentication method of the Kafka source. Supported authentication methods: kafka: PLAIN, SCRAM-SHA-256, SCRAM-SHA-512, MUTUAL_TLS, msk: SCRAM-SHA-512, IAM_ROLE, IAM_USER, MUTUAL_TLS, confluent: PLAIN, MUTUAL_TLS, warpstream: PLAIN, azureeventhub: PLAIN, redpanda: SCRAM-SHA-256, SCRAM-SHA-512, MUTUAL_TLS, dokafka: SCRAM-SHA-256, MUTUAL_TLS
+     */
+    authentication?: "PLAIN" | "SCRAM-SHA-256" | "SCRAM-SHA-512" | "IAM_ROLE" | "IAM_USER" | "MUTUAL_TLS";
+    /**
+     * IAM role for the Kafka source. Use with IAM role authentication. Read more in ClickPipes documentation: https://clickhouse.com/docs/en/integrations/clickpipes/kafka#iam
+     */
+    iamRole?: string | null;
+    offset?: ClickPipeKafkaOffset | null;
+    schemaRegistry?: ClickPipeMutateKafkaSchemaRegistry | null;
+    /**
+     * PEM encoded CA certificates to validate the broker's certificate.
+     */
+    caCertificate?: string | null;
+    /**
+     * Reverse private endpoint UUIDs used for a secure private connection to the Kafka source.
+     */
+    reversePrivateEndpointIds?: Array<string>;
+    /**
+     * Credentials for Kafka source. Chose one of that is supported by the authentication method.
+     */
+    credentials?: Plain | MskIamUser | AzureEventHub | null;
+};
+export type ClickPipePatchKafkaSource = {
+    /**
+     * Authentication method of the Kafka source. Supported authentication methods: kafka: PLAIN, SCRAM-SHA-256, SCRAM-SHA-512, MUTUAL_TLS, msk: SCRAM-SHA-512, IAM_ROLE, IAM_USER, MUTUAL_TLS, confluent: PLAIN, MUTUAL_TLS, warpstream: PLAIN, azureeventhub: PLAIN, redpanda: SCRAM-SHA-256, SCRAM-SHA-512, MUTUAL_TLS, dokafka: SCRAM-SHA-256, MUTUAL_TLS
+     */
+    authentication?: "PLAIN" | "SCRAM-SHA-256" | "SCRAM-SHA-512" | "IAM_ROLE" | "IAM_USER" | "MUTUAL_TLS";
+    /**
+     * IAM role for the Kafka source. Use with IAM role authentication. Read more in ClickPipes documentation: https://clickhouse.com/docs/en/integrations/clickpipes/kafka#iam
+     */
+    iamRole?: string | null;
+    /**
+     * PEM encoded CA certificates to validate the broker's certificate.
+     */
+    caCertificate?: string | null;
+    /**
+     * Reverse private endpoint UUIDs used for a secure private connection to the Kafka source.
+     */
+    reversePrivateEndpointIds?: Array<string>;
+    /**
+     * Credentials for Kafka source. Chose one of that is supported by the authentication method.
+     */
+    credentials?: Plain | MskIamUser | AzureEventHub | null;
+};
+export type ClickPipeKinesisSource = {
+    /**
+     * Format of the Kinesis stream.
+     */
+    format?: "JSONEachRow" | "Avro" | "AvroConfluent";
+    /**
+     * Name of the Kinesis stream.
+     */
+    streamName?: string;
+    /**
+     * AWS region of the Kinesis stream.
+     */
+    region?: string;
+    /**
+     * Use enhanced fan-out for the Kinesis stream.
+     */
+    useEnhancedFanOut?: boolean | null;
+    /**
+     * Type of iterator to use when reading from the Kinesis stream. If AT_TIMESTAMP is used, the timestamp field must be provided.
+     */
+    iteratorType?: "TRIM_HORIZON" | "LATEST" | "AT_TIMESTAMP";
+    /**
+     * UNIX timestamp to start reading from the Kinesis stream. Required if iteratorType is AT_TIMESTAMP.
+     */
+    timestamp?: number | null;
+    /**
+     * Authentication method to use with the Kinesis stream.
+     */
+    authentication?: "IAM_ROLE" | "IAM_USER";
+    /**
+     * IAM role to use for authentication. Required if IAM_ROLE is used.
+     */
+    iamRole?: string | null;
+};
+export type ClickPipePostKinesisSource = {
+    /**
+     * Format of the Kinesis stream.
+     */
+    format?: "JSONEachRow" | "Avro" | "AvroConfluent";
+    /**
+     * Name of the Kinesis stream.
+     */
+    streamName?: string;
+    /**
+     * AWS region of the Kinesis stream.
+     */
+    region?: string;
+    /**
+     * Use enhanced fan-out for the Kinesis stream.
+     */
+    useEnhancedFanOut?: boolean | null;
+    /**
+     * Type of iterator to use when reading from the Kinesis stream. If AT_TIMESTAMP is used, the timestamp field must be provided.
+     */
+    iteratorType?: "TRIM_HORIZON" | "LATEST" | "AT_TIMESTAMP";
+    /**
+     * UNIX timestamp to start reading from the Kinesis stream. Required if iteratorType is AT_TIMESTAMP.
+     */
+    timestamp?: number | null;
+    /**
+     * Authentication method to use with the Kinesis stream.
+     */
+    authentication?: "IAM_ROLE" | "IAM_USER";
+    /**
+     * IAM role to use for authentication. Required if IAM_ROLE is used.
+     */
+    iamRole?: string | null;
+    accessKey?: MskIamUser | null;
+};
+export type ClickPipePatchKinesisSource = {
+    /**
+     * Authentication method to use with the Kinesis stream.
+     */
+    authentication?: "IAM_ROLE" | "IAM_USER";
+    /**
+     * IAM role to use for authentication. Required if IAM_ROLE is used.
+     */
+    iamRole?: string | null;
+    accessKey?: MskIamUser | null;
+};
+export type ClickPipeObjectStorageSource = {
+    /**
+     * Type of the ObjectStorage source.
+     */
+    type?: "s3" | "gcs" | "dospaces" | "azureblobstorage";
+    /**
+     * Format of the files.
+     */
+    format?: "JSONEachRow" | "JSONAsObject" | "CSV" | "CSVWithNames" | "Parquet" | "Avro";
+    /**
+     * Provide a path to the file(s) you want to ingest. You can specify multiple files using bash-like wildcards. For more information, see the documentation on using wildcards in path: https://clickhouse.com/docs/en/integrations/clickpipes/object-storage#limitations
+     */
+    url?: string;
+    /**
+     * Delimiter used in the files.
+     */
+    delimiter?: string | null;
+    /**
+     * Compression algorithm used for the files.
+     */
+    compression?: "gzip" | "gz" | "brotli" | "br" | "xz" | "LZMA" | "zstd" | "auto";
+    /**
+     * If set to true, the pipe will continuously read new files from the source. If set to false, the pipe will read the files only once. New files have to be uploaded lexically order.
+     */
+    isContinuous?: boolean | null;
+    /**
+     * Authentication method. CONNECTION_STRING is for Azure Blob Storage. IAM_ROLE and IAM_USER are for AWS S3/GCS/DigitalOcean. If not provided, no authentication is used.
+     */
+    authentication?: "IAM_ROLE" | "IAM_USER" | "CONNECTION_STRING";
+    /**
+     * IAM role to be used with IAM role authentication. Read more in ClickPipes documentation: https://clickhouse.com/docs/en/integrations/clickpipes/object-storage#authentication
+     */
+    iamRole?: string | null;
+    /**
+     * Connection string for Azure Blob Storage authentication. Required when authentication is CONNECTION_STRING.
+     */
+    connectionString?: string | null;
+    /**
+     * Path to the file(s) within the Azure container. Used for Azure Blob Storage sources. You can specify multiple files using bash-like wildcards. For more information, see the documentation on using wildcards in path: https://clickhouse.com/docs/en/integrations/clickpipes/object-storage#limitations
+     */
+    path?: string | null;
+    /**
+     * Container name for Azure Blob Storage. Required when type is azureblobstorage.
+     */
+    azureContainerName?: string | null;
+};
+export type ClickPipePostObjectStorageSource = {
+    /**
+     * Type of the ObjectStorage source.
+     */
+    type?: "s3" | "gcs" | "dospaces" | "azureblobstorage";
+    /**
+     * Format of the files.
+     */
+    format?: "JSONEachRow" | "JSONAsObject" | "CSV" | "CSVWithNames" | "Parquet" | "Avro";
+    /**
+     * Provide a path to the file(s) you want to ingest. You can specify multiple files using bash-like wildcards. For more information, see the documentation on using wildcards in path: https://clickhouse.com/docs/en/integrations/clickpipes/object-storage#limitations
+     */
+    url?: string;
+    /**
+     * Delimiter used in the files.
+     */
+    delimiter?: string | null;
+    /**
+     * Compression algorithm used for the files.
+     */
+    compression?: "gzip" | "gz" | "brotli" | "br" | "xz" | "LZMA" | "zstd" | "auto";
+    /**
+     * If set to true, the pipe will continuously read new files from the source. If set to false, the pipe will read the files only once. New files have to be uploaded lexically order.
+     */
+    isContinuous?: boolean | null;
+    /**
+     * Authentication method. CONNECTION_STRING is for Azure Blob Storage. IAM_ROLE and IAM_USER are for AWS S3/GCS/DigitalOcean. If not provided, no authentication is used.
+     */
+    authentication?: "IAM_ROLE" | "IAM_USER" | "CONNECTION_STRING";
+    /**
+     * IAM role to be used with IAM role authentication. Read more in ClickPipes documentation: https://clickhouse.com/docs/en/integrations/clickpipes/object-storage#authentication
+     */
+    iamRole?: string | null;
+    /**
+     * Connection string for Azure Blob Storage authentication. Required when authentication is CONNECTION_STRING.
+     */
+    connectionString?: string | null;
+    /**
+     * Path to the file(s) within the Azure container. Used for Azure Blob Storage sources. You can specify multiple files using bash-like wildcards. For more information, see the documentation on using wildcards in path: https://clickhouse.com/docs/en/integrations/clickpipes/object-storage#limitations
+     */
+    path?: string | null;
+    /**
+     * Container name for Azure Blob Storage. Required when type is azureblobstorage.
+     */
+    azureContainerName?: string | null;
+    accessKey?: MskIamUser | null;
+};
+export type ClickPipePatchObjectStorageSource = {
+    /**
+     * Authentication method. CONNECTION_STRING is for Azure Blob Storage. IAM_ROLE and IAM_USER are for AWS S3/GCS/DigitalOcean. If not provided, no authentication is used.
+     */
+    authentication?: "IAM_ROLE" | "IAM_USER" | "CONNECTION_STRING";
+    /**
+     * IAM role to be used with IAM role authentication. Read more in ClickPipes documentation: https://clickhouse.com/docs/en/integrations/clickpipes/object-storage#authentication
+     */
+    iamRole?: string | null;
+    /**
+     * Connection string for Azure Blob Storage authentication. Required when authentication is CONNECTION_STRING.
+     */
+    connectionString?: string | null;
+    /**
+     * Path to the file(s) within the Azure container. Used for Azure Blob Storage sources. You can specify multiple files using bash-like wildcards. For more information, see the documentation on using wildcards in path: https://clickhouse.com/docs/en/integrations/clickpipes/object-storage#limitations
+     */
+    path?: string | null;
+    /**
+     * Container name for Azure Blob Storage. Required when type is azureblobstorage.
+     */
+    azureContainerName?: string | null;
+    accessKey?: MskIamUser | null;
+};
+export type ClickPipePostgresPipeSettings = {
+    /**
+     * Interval in seconds to sync data from Postgres.
+     */
+    syncIntervalSeconds?: number;
+    /**
+     * Number of rows to pull in each batch.
+     */
+    pullBatchSize?: number;
+    /**
+     * Publication name to use for replication.
+     */
+    publicationName?: string;
+    /**
+     * Replication mode to use for the pipe.
+     */
+    replicationMode?: "cdc" | "snapshot" | "cdc_only";
+    /**
+     * Replication slot name to use for replication.
+     */
+    replicationSlotName?: string;
+    /**
+     * Allow nullable columns in the destination table.
+     */
+    allowNullableColumns?: boolean;
+    /**
+     * Number of parallel tables to sync during initial load.
+     */
+    initialLoadParallelism?: number;
+    /**
+     * Number of rows to snapshot per partition.
+     */
+    snapshotNumRowsPerPartition?: number;
+    /**
+     * Number of parallel tables to snapshot.
+     */
+    snapshotNumberOfParallelTables?: number;
+    /**
+     * Enable failover for created replication slot. Requires a replication slot to NOT be set.
+     */
+    enableFailoverSlots?: boolean;
+};
+export type ClickPipePatchPostgresPipeSettings = {
+    /**
+     * Interval in seconds to sync data from Postgres.
+     */
+    syncIntervalSeconds?: number | null;
+    /**
+     * Number of rows to pull in each batch.
+     */
+    pullBatchSize?: number | null;
+};
+export type ClickPipePostgresPipeTableMapping = {
+    /**
+     * Source schema name.
+     */
+    sourceSchemaName?: string;
+    /**
+     * Source table name.
+     */
+    sourceTable?: string;
+    /**
+     * Target table name.
+     */
+    targetTable?: string;
+    /**
+     * Columns to exclude from the target table.
+     */
+    excludedColumns?: Array<string>;
+    /**
+     * Whether to use a custom sorting key for the target table.
+     */
+    useCustomSortingKey?: boolean;
+    /**
+     * Ordered list of columns to use as sorting key for the target table.
+     */
+    sortingKeys?: Array<string>;
+    /**
+     * Table engine to use for the target table.
+     */
+    tableEngine?: "MergeTree" | "ReplacingMergeTree" | "Null";
+};
+export type ClickPipePatchPostgresPipeRemoveTableMapping = {
+    /**
+     * Source schema name.
+     */
+    sourceSchemaName?: string | null;
+    /**
+     * Source table name.
+     */
+    sourceTable?: string | null;
+    /**
+     * Target table name.
+     */
+    targetTable?: string | null;
+    /**
+     * Table engine to use for the target table.
+     */
+    tableEngine?: "MergeTree" | "ReplacingMergeTree" | "Null";
+};
+export type ClickPipePostgresSource = {
+    /**
+     * Host of the Postgres instance to connect to.
+     */
+    host?: string;
+    /**
+     * Port of the Postgres instance to connect to.
+     */
+    port?: number;
+    /**
+     * Database of the Postgres instance to connect to.
+     */
+    database?: string;
+    settings?: ClickPipePostgresPipeSettings;
+    /**
+     * Table mappings for Postgres pipe.
+     */
+    tableMappings?: Array<ClickPipePostgresPipeTableMapping>;
+};
+export type ClickPipeMutatePostgresSource = {
+    /**
+     * Host of the Postgres instance to connect to.
+     */
+    host?: string;
+    /**
+     * Port of the Postgres instance to connect to.
+     */
+    port?: number;
+    /**
+     * Database of the Postgres instance to connect to.
+     */
+    database?: string;
+    settings?: ClickPipePostgresPipeSettings;
+    /**
+     * Table mappings for Postgres pipe.
+     */
+    tableMappings?: Array<ClickPipePostgresPipeTableMapping>;
+    credentials?: Plain;
+};
+export type ClickPipePatchPostgresSource = {
+    /**
+     * Host of the Postgres instance to connect to.
+     */
+    host?: string | null;
+    /**
+     * Port of the Postgres instance to connect to.
+     */
+    port?: number | null;
+    /**
+     * Database of the Postgres instance to connect to.
+     */
+    database?: string | null;
+    credentials?: Plain | null;
+    settings?: ClickPipePatchPostgresPipeSettings;
+    /**
+     * Table mappings to add to Postgres pipe.
+     */
+    tableMappingsToAdd?: Array<ClickPipePostgresPipeTableMapping>;
+    /**
+     * Table mappings to remove from Postgres pipe.
+     */
+    tableMappingsToRemove?: Array<ClickPipePatchPostgresPipeRemoveTableMapping>;
+};
+export type ClickPipeScaling = {
+    /**
+     * Desired number of replicas. Only for scalable pipes.
+     */
+    replicas?: number;
+    /**
+     * Desired number of concurrency. Only for S3 pipes. If set to 0, concurrency is auto-scaled based on the cluster memory.
+     */
+    concurrency?: number;
+    /**
+     * CPU in millicores for each replica. Only for streaming pipes.
+     */
+    replicaCpuMillicores?: number;
+    /**
+     * Memory in GB for each replica. Only for streaming pipes.
+     */
+    replicaMemoryGb?: number;
+};
+export type ClickPipeSource = {
+    kafka?: ClickPipeKafkaSource | null;
+    objectStorage?: ClickPipeObjectStorageSource | null;
+    kinesis?: ClickPipeKinesisSource | null;
+    postgres?: ClickPipePostgresSource | null;
+};
+export type ClickPipeDestinationColumn = {
+    /**
+     * Name of the column.
+     */
+    name?: string;
+    /**
+     * Type of the column.
+     */
+    type?: string;
+};
+export type ClickPipeDestinationTableEngine = {
+    /**
+     * Engine type of the destination table.
+     */
+    type?: "MergeTree" | "ReplacingMergeTree" | "SummingMergeTree" | "Null";
+    /**
+     * Column name to use as version for ReplacingMergeTree engine.
+     */
+    versionColumnId?: string | null;
+    /**
+     * Column names to sum for SummingMergeTree engine.
+     */
+    columnIds?: Array<string>;
+};
+export type ClickPipeDestinationTableDefinition = {
+    engine?: ClickPipeDestinationTableEngine;
+    /**
+     * Sorting key of the destination table. List of columns.
+     */
+    sortingKey?: Array<string>;
+    /**
+     * Partition key SQL expression.
+     */
+    partitionBy?: string;
+    /**
+     * Primary key of SQL expression.
+     */
+    primaryKey?: string;
+};
+export type ClickPipeDestination = {
+    /**
+     * Destination database.
+     */
+    database?: string;
+    /**
+     * Destination table. Required field for all pipe types except Postgres.
+     */
+    table?: string;
+    /**
+     * Is the table managed by ClickPipes? Required field for all pipe types except Postgres.
+     */
+    managedTable?: boolean;
+    tableDefinition?: ClickPipeDestinationTableDefinition;
+    /**
+     * Columns of the destination table. Required field for all pipe types except Postgres.
+     */
+    columns?: Array<ClickPipeDestinationColumn>;
+};
+export type ClickPipeFieldMapping = {
+    /**
+     * Source field name.
+     */
+    sourceField?: string;
+    /**
+     * Destination field name.
+     */
+    destinationField?: string;
+};
+export type ClickPipeSettings = {
+    /**
+     * Streaming max insert wait time. Configures the max wait period before inserting data into the ClickHouse.
+     */
+    streaming_max_insert_wait_ms?: number | null;
+    /**
+     * Object storage concurrency. Number of concurrent file processing threads
+     */
+    object_storage_concurrency?: number | null;
+    /**
+     * Object storage polling interval. Configures the refresh interval for querying continuous ingest for new object storage data
+     */
+    object_storage_polling_interval_ms?: number | null;
+    /**
+     * Max insert bytes. Number of bytes to process in a single insert batch
+     */
+    object_storage_max_insert_bytes?: number | null;
+    /**
+     * Max file count. Maximum number of files to process in a single insert batch
+     */
+    object_storage_max_file_count?: number | null;
+    /**
+     * Max threads. Maximum number of concurrent threads for file processing
+     */
+    clickhouse_max_threads?: number | null;
+    /**
+     * Max insert threads. Maximum number of concurrent insert threads
+     */
+    clickhouse_max_insert_threads?: number | null;
+    /**
+     * Min insert block size bytes. Minimum size of data block for insert (in bytes)
+     */
+    clickhouse_min_insert_block_size_bytes?: number | null;
+    /**
+     * Max download threads. Maximum number of concurrent download threads
+     */
+    clickhouse_max_download_threads?: number | null;
+    /**
+     * Parallel distributed insert select. Parallel distributed insert select setting
+     */
+    clickhouse_parallel_distributed_insert_select?: number | null;
+    /**
+     * use cluster function. Whether to use ClickHouse cluster function for distributed processing
+     */
+    object_storage_use_cluster_function?: boolean | null;
+    /**
+     * parallel view processing. Whether to enable pushing to attached views concurrently instead of sequentially
+     */
+    clickhouse_parallel_view_processing?: boolean | null;
+};
+export type ClickPipe = {
+    /**
+     * Unique ClickPipe ID.
+     */
+    id?: string;
+    /**
+     * ID of the service this ClickPipe belongs to.
+     */
+    serviceId?: string;
+    /**
+     * Name of the ClickPipe.
+     */
+    name?: string;
+    /**
+     * Current state of the ClickPipe.
+     */
+    state?: string;
+    scaling?: ClickPipeScaling;
+    source?: ClickPipeSource;
+    destination?: ClickPipeDestination;
+    /**
+     * Field mappings of the ClickPipe. Note that all destination columns must be included in the mappings.
+     */
+    fieldMappings?: Array<ClickPipeFieldMapping>;
+    settings?: ClickPipeSettings;
+    /**
+     * Creation date of the ClickPipe.
+     */
+    createdAt?: string;
+    /**
+     * Last update date of the ClickPipe.
+     */
+    updatedAt?: string;
+};
+export type ClickPipePostSource = {
+    kafka?: ClickPipePostKafkaSource | null;
+    objectStorage?: ClickPipePostObjectStorageSource | null;
+    kinesis?: ClickPipePostKinesisSource | null;
+    postgres?: ClickPipeMutatePostgresSource;
+    /**
+     * Validate data samples received from data source. It will validate the connection and data availability and correctness. If not enabled, only connection will be validated. This has no effect on Postgres pipes, they always only validate the connection and table definitions. This is experimental and can be removed in the future.
+     */
+    validateSamples?: boolean;
+};
+export type ClickPipePatchSource = {
+    kafka?: ClickPipePatchKafkaSource | null;
+    objectStorage?: ClickPipePatchObjectStorageSource | null;
+    kinesis?: ClickPipePatchKinesisSource | null;
+    postgres?: ClickPipePatchPostgresSource;
+    /**
+     * Validate data samples received from data source. It will validate the connection and data availability and correctness. If not enabled, only connection will be validated. This has no effect on Postgres pipes, they always only validate the connection and table definitions. This is experimental and can be removed in the future.
+     */
+    validateSamples?: boolean;
+};
+export type ClickPipeMutateDestination = {
+    /**
+     * Destination database.
+     */
+    database?: string;
+    /**
+     * Destination table. Required field for all pipe types except Postgres.
+     */
+    table?: string;
+    /**
+     * Is the table managed by ClickPipes? Required field for all pipe types except Postgres.
+     */
+    managedTable?: boolean;
+    tableDefinition?: ClickPipeDestinationTableDefinition;
+    /**
+     * Columns of the destination table. Required field for all pipe types except Postgres.
+     */
+    columns?: Array<ClickPipeDestinationColumn>;
+    /**
+     * ClickPipe will create a ClickHouse user with these roles. Add your custom roles here if required.
+     */
+    roles?: Array<string>;
+};
+export type ClickPipePatchDestination = {
+    /**
+     * Columns of the destination table. This will not update the table schema, only the ClickPipe configuration.
+     */
+    columns?: Array<ClickPipeDestinationColumn>;
+};
+export type ClickPipesCdcScaling = {
+    /**
+     * CPU in millicores for DB ClickPipes.
+     */
+    replicaCpuMillicores?: number;
+    /**
+     * Memory in GiB for DB ClickPipes. Must be 4× the CPU core count.
+     */
+    replicaMemoryGb?: number;
+};
+export type ClickPipeSettingsGetResponse = {
+    /**
+     * Streaming max insert wait time. Configures the max wait period before inserting data into the ClickHouse.
+     */
+    streaming_max_insert_wait_ms?: number | null;
+    /**
+     * Object storage concurrency. Number of concurrent file processing threads
+     */
+    object_storage_concurrency?: number | null;
+    /**
+     * Object storage polling interval. Configures the refresh interval for querying continuous ingest for new object storage data
+     */
+    object_storage_polling_interval_ms?: number | null;
+    /**
+     * Max insert bytes. Number of bytes to process in a single insert batch
+     */
+    object_storage_max_insert_bytes?: number | null;
+    /**
+     * Max file count. Maximum number of files to process in a single insert batch
+     */
+    object_storage_max_file_count?: number | null;
+    /**
+     * Max threads. Maximum number of concurrent threads for file processing
+     */
+    clickhouse_max_threads?: number | null;
+    /**
+     * Max insert threads. Maximum number of concurrent insert threads
+     */
+    clickhouse_max_insert_threads?: number | null;
+    /**
+     * Min insert block size bytes. Minimum size of data block for insert (in bytes)
+     */
+    clickhouse_min_insert_block_size_bytes?: number | null;
+    /**
+     * Max download threads. Maximum number of concurrent download threads
+     */
+    clickhouse_max_download_threads?: number | null;
+    /**
+     * Parallel distributed insert select. Parallel distributed insert select setting
+     */
+    clickhouse_parallel_distributed_insert_select?: number | null;
+    /**
+     * use cluster function. Whether to use ClickHouse cluster function for distributed processing
+     */
+    object_storage_use_cluster_function?: boolean | null;
+    /**
+     * parallel view processing. Whether to enable pushing to attached views concurrently instead of sequentially
+     */
+    clickhouse_parallel_view_processing?: boolean | null;
+};
+export type ClickPipeSettingsPutRequest = {
+    /**
+     * Streaming max insert wait time. Configures the max wait period before inserting data into the ClickHouse.
+     */
+    streaming_max_insert_wait_ms?: number | null;
+    /**
+     * Object storage concurrency. Number of concurrent file processing threads
+     */
+    object_storage_concurrency?: number | null;
+    /**
+     * Object storage polling interval. Configures the refresh interval for querying continuous ingest for new object storage data
+     */
+    object_storage_polling_interval_ms?: number | null;
+    /**
+     * Max insert bytes. Number of bytes to process in a single insert batch
+     */
+    object_storage_max_insert_bytes?: number | null;
+    /**
+     * Max file count. Maximum number of files to process in a single insert batch
+     */
+    object_storage_max_file_count?: number | null;
+    /**
+     * Max threads. Maximum number of concurrent threads for file processing
+     */
+    clickhouse_max_threads?: number | null;
+    /**
+     * Max insert threads. Maximum number of concurrent insert threads
+     */
+    clickhouse_max_insert_threads?: number | null;
+    /**
+     * Min insert block size bytes. Minimum size of data block for insert (in bytes)
+     */
+    clickhouse_min_insert_block_size_bytes?: number | null;
+    /**
+     * Max download threads. Maximum number of concurrent download threads
+     */
+    clickhouse_max_download_threads?: number | null;
+    /**
+     * Parallel distributed insert select. Parallel distributed insert select setting
+     */
+    clickhouse_parallel_distributed_insert_select?: number | null;
+    /**
+     * use cluster function. Whether to use ClickHouse cluster function for distributed processing
+     */
+    object_storage_use_cluster_function?: boolean | null;
+    /**
+     * parallel view processing. Whether to enable pushing to attached views concurrently instead of sequentially
+     */
+    clickhouse_parallel_view_processing?: boolean | null;
+};
+export type ServiceEndpoint = {
+    /**
+     * Endpoint protocol: 'https', 'nativesecure', 'mysql'.
+     */
+    protocol?: "https" | "nativesecure" | "mysql";
+    /**
+     * Service host name
+     */
+    host?: string;
+    /**
+     * Numeric port
+     */
+    port?: number;
+    /**
+     * Optional username for the endpoint
+     */
+    username?: string | null;
+};
+export type IpAccessListEntry = {
+    /**
+     * IP or CIDR
+     */
+    source?: string;
+    /**
+     * Optional description of IPv4 address or IPv4 CIDR to allow access from
+     */
+    description?: string;
+};
+export type Service = {
+    /**
+     * Unique service ID.
+     */
+    id?: string;
+    /**
+     * Name of the service. Alphanumerical string with whitespaces up to 50 characters.
+     */
+    name?: string;
+    /**
+     * Cloud provider
+     */
+    provider?: "aws" | "gcp" | "azure";
+    /**
+     * Service region.
+     */
+    region?: "ap-south-1" | "ap-southeast-1" | "eu-central-1" | "eu-west-1" | "eu-west-2" | "us-east-1" | "us-east-2" | "us-west-2" | "ap-southeast-2" | "ap-northeast-1" | "me-central-1" | "us-east1" | "us-central1" | "europe-west4" | "asia-southeast1" | "eastus" | "eastus2" | "westus3" | "germanywestcentral";
+    /**
+     * Current state of the service.
+     */
+    state?: "starting" | "stopping" | "terminating" | "awaking" | "partially_running" | "provisioning" | "running" | "stopped" | "terminated" | "degraded" | "failed" | "idle";
+    /**
+     * ClickHouse version of the service.
+     */
+    clickhouseVersion?: string;
+    /**
+     * List of all service endpoints.
+     */
+    endpoints?: Array<ServiceEndpoint>;
+    /**
+     * DEPRECATED for BASIC, SCALE and ENTERPRISE organization tiers. Tier of the service: 'development', 'production', 'dedicated_high_mem', 'dedicated_high_cpu', 'dedicated_standard', 'dedicated_standard_n2d_standard_4', 'dedicated_standard_n2d_standard_8', 'dedicated_standard_n2d_standard_32', 'dedicated_standard_n2d_standard_128', 'dedicated_standard_n2d_standard_32_16SSD', 'dedicated_standard_n2d_standard_64_24SSD'. Production services scale, Development are fixed size. Azure services don't support Development tier
+     * @deprecated
+     */
+    tier?: "development" | "production" | "dedicated_high_mem" | "dedicated_high_cpu" | "dedicated_standard" | "dedicated_standard_n2d_standard_4" | "dedicated_standard_n2d_standard_8" | "dedicated_standard_n2d_standard_32" | "dedicated_standard_n2d_standard_128" | "dedicated_standard_n2d_standard_32_16SSD" | "dedicated_standard_n2d_standard_64_24SSD";
+    /**
+     * DEPRECATED - inaccurate for services with non-default numbers of replicas. Minimum memory of three workers during auto-scaling in Gb. Available only for 'production' services. Must be a multiple of 12 and greater than or equal to 24.
+     * @deprecated
+     */
+    minTotalMemoryGb?: number;
+    /**
+     * DEPRECATED - inaccurate for services with non-default numbers of replicas. Maximum memory of three workers during auto-scaling in Gb. Available only for 'production' services. Must be a multiple of 12 and lower than or equal to 360 for non paid services or 1068 for paid services.
+     * @deprecated
+     */
+    maxTotalMemoryGb?: number;
+    /**
+     * Minimum total memory of each replica during auto-scaling in Gb. Must be a multiple of 4 and greater than or equal to 8.
+     */
+    minReplicaMemoryGb?: number;
+    /**
+     * Maximum total memory of each replica during auto-scaling in Gb.  Must be a multiple of 4 and lower than or equal to 120* for non paid services or 356* for paid services.* - maximum replica size subject to cloud provider hardware availability in your selected region.
+     */
+    maxReplicaMemoryGb?: number;
+    /**
+     * Number of replicas for the service. The number of replicas must be between 2 and 20 for the first service in a warehouse. Services that are created in an existing warehouse can have a number of replicas as low as 1. Further restrictions may apply based on your organization's tier. It defaults to 1 for the BASIC tier and 3 for the SCALE and ENTERPRISE tiers.
+     */
+    numReplicas?: number;
+    /**
+     * When set to true the service is allowed to scale down to zero when idle. True by default.
+     */
+    idleScaling?: boolean;
+    /**
+     * Set minimum idling timeout (in minutes). Must be >= 5 minutes.
+     */
+    idleTimeoutMinutes?: number;
+    /**
+     * List of IP addresses allowed to access the service
+     */
+    ipAccessList?: Array<IpAccessListEntry>;
+    /**
+     * Service creation timestamp. ISO-8601.
+     */
+    createdAt?: string;
+    /**
+     * Optional customer provided disk encryption key
+     */
+    encryptionKey?: string;
+    /**
+     * Optional role to use for disk encryption
+     */
+    encryptionAssumedRoleIdentifier?: string;
+    /**
+     * IAM role used for accessing objects in s3
+     */
+    iamRole?: string;
+    /**
+     * List of private endpoints
+     */
+    privateEndpointIds?: Array<string>;
+    /**
+     * List of available private endpoints ids that can be attached to the service
+     */
+    availablePrivateEndpointIds?: Array<string>;
+    /**
+     * Data warehouse containing this service
+     */
+    dataWarehouseId?: string;
+    /**
+     * True if this service is the primary service in the data warehouse
+     */
+    isPrimary?: boolean;
+    /**
+     * True if this service is read-only. It can only be read-only if a dataWarehouseId is provided.
+     */
+    isReadonly?: boolean;
+    /**
+     * Select fast if you want to get new ClickHouse releases as soon as they are available. You'll get new features faster, but with a higher risk of bugs. Select slow if you would like to defer releases to give yourself more time to test. This feature is only available for production services. default is the regular release channel.
+     */
+    releaseChannel?: "slow" | "default" | "fast";
+    /**
+     * This is the ID returned after setting up a region for Bring Your Own Cloud (BYOC). When the byocId parameter is specified, the minReplicaMemoryGb and the maxReplicaGb parameters are required too, with values included among the following sizes: 48, 116, 172, 232.
+     */
+    byocId?: string;
+    /**
+     * True if the service should have the Transparent Data Encryption (TDE) enabled. TDE is only available for ENTERPRISE organizations tiers and can only be enabled at service creation.
+     */
+    hasTransparentDataEncryption?: boolean;
+    /**
+     * Custom instance profile. Only available for ENTERPRISE organization tiers.
+     */
+    profile?: "v1-default" | "v1-highmem-xs" | "v1-highmem-s" | "v1-highmem-m" | "v1-highmem-l" | "v1-highmem-xl" | "v1-highcpu-s" | "v1-highcpu-m" | "v1-highcpu-l" | "v1-highcpu-xl";
+    /**
+     * The ID of the Transparent Data Encryption key used for the service. This is only available if hasTransparentDataEncryption is true.
+     */
+    transparentDataEncryptionKeyId?: string;
+    /**
+     * The ID of the IAM role used for encryption. This is only available if hasTransparentDataEncryption is true.
+     */
+    encryptionRoleId?: string;
+    /**
+     * Type of regulatory compliance for service.
+     */
+    complianceType?: "hipaa" | "pci";
+};
+export type PrivateEndpointConfig = {
+    /**
+     * Unique identifier of the interface endpoint you created in your VPC with the AWS(Service Name), GCP(Target Service) or AZURE (Private Link Service) resource
+     */
+    endpointServiceId?: string;
+    /**
+     * Private DNS Hostname of the VPC you created
+     */
+    privateDnsHostname?: string;
+};
+export type ServiceQueryApiEndpoint = {
+    /**
+     * The id of the service query endpoint
+     */
+    id?: string;
+    /**
+     * List of OpenAPI keys that can access the service query endpoint
+     */
+    openApiKeys?: Array<string>;
+    /**
+     * List of roles that can access the service query endpoint
+     */
+    roles?: Array<"sql_console_read_only" | "sql_console_admin">;
+    /**
+     * The allowed origins as comma separated list of domains
+     */
+    allowedOrigins?: string;
+};
+export type ServiceEndpointChange = {
+    /**
+     * Endpoint protocol
+     */
+    protocol?: "mysql";
+    /**
+     * Enable or disable the endpoint
+     */
+    enabled?: boolean;
+};
+export type IpAccessListPatch = {
+    /**
+     * Elements to add. Executed after "remove" part is processed.
+     */
+    add?: Array<IpAccessListEntry>;
+    /**
+     * Elements to remove. Executed before "add" part is processed.
+     */
+    remove?: Array<IpAccessListEntry>;
+};
+export type InstancePrivateEndpointsPatch = {
+    /**
+     * Elements to add. Executed after "remove" part is processed.
+     */
+    add?: Array<string>;
+    /**
+     * Elements to remove. Executed before "add" part is processed.
+     */
+    remove?: Array<string>;
+};
+export type InstancePrivateEndpoint = {
+    /**
+     * Private endpoint identifier
+     */
+    id?: string;
+    /**
+     * Description of private endpoint
+     */
+    description?: string;
+    /**
+     * Cloud provider in which the private endpoint is lcoated
+     */
+    cloudProvider?: "gcp" | "aws" | "azure";
+    /**
+     * Region in which the private endpoint is located
+     */
+    region?: "ap-south-1" | "ap-southeast-1" | "eu-central-1" | "eu-west-1" | "eu-west-2" | "us-east-1" | "us-east-2" | "us-west-2" | "ap-southeast-2" | "ap-northeast-1" | "me-central-1" | "us-east1" | "us-central1" | "europe-west4" | "asia-southeast1" | "eastus" | "eastus2" | "westus3" | "germanywestcentral";
+};
+export type UsageCostMetrics = {
+    /**
+     * Cost of storage in ClickHouse Credits (CHCs). Applies to dataWarehouse entities.
+     */
+    storageCHC?: number;
+    /**
+     * Cost of backup in ClickHouse Credits (CHCs). Applies to dataWarehouse entities.
+     */
+    backupCHC?: number;
+    /**
+     * Cost of compute in ClickHouse Credits (CHCs). Applies to service and clickpipe entities.
+     */
+    computeCHC?: number;
+    /**
+     * Cost of data transfer in ClickHouse Credits (CHCs). Applies to clickpipe entities.
+     */
+    dataTransferCHC?: number;
+    /**
+     * Cost of initial load and resyncs in ClickHouse Credits (CHCs). Applies to clickpipe entities.
+     */
+    initialLoadCHC?: number;
+    /**
+     * Cost of data transfer in ClickHouse Credits (CHCs). Applies to service entities.
+     */
+    publicDataTransferCHC?: number;
+    /**
+     * Cost of tier1 inter-region data transfer in ClickHouse Credits (CHCs). Applies to service entities.
+     */
+    interRegionTier1DataTransferCHC?: number;
+    /**
+     * Cost of tier2 inter-region data transfer in ClickHouse Credits (CHCs). Applies to service entities.
+     */
+    interRegionTier2DataTransferCHC?: number;
+    /**
+     * Cost of tier3 inter-region data transfer in ClickHouse Credits (CHCs). Applies to service entities.
+     */
+    interRegionTier3DataTransferCHC?: number;
+    /**
+     * Cost of tier4 inter-region data transfer in ClickHouse Credits (CHCs). Applies to service entities.
+     */
+    interRegionTier4DataTransferCHC?: number;
+};
+export type UsageCostRecord = {
+    /**
+     * ID of the dataWarehouse this entity belongs to (or is).
+     */
+    dataWarehouseId?: string;
+    /**
+     * ID of the service this entity belongs to (or is). Set to null for dataWarehouse entities.
+     */
+    serviceId?: string | null;
+    /**
+     * Date of the usage. ISO-8601 date, based on the UTC timezone.
+     */
+    date?: string;
+    /**
+     * Type of the entity.
+     */
+    entityType?: "datawarehouse" | "service" | "clickpipe";
+    /**
+     * Unique ID of the entity.
+     */
+    entityId?: string;
+    /**
+     * Name of the entity.
+     */
+    entityName?: string;
+    metrics?: UsageCostMetrics;
+    /**
+     * Total cost of usage in ClickHouse Credits (CHCs) for this entity.
+     */
+    totalCHC?: number;
+    /**
+     * When true, the record is immutable. Unlocked records are subject to change until locked.
+     */
+    locked?: boolean;
+};
+export type UsageCost = {
+    /**
+     * Grand total cost of usage in ClickHouse Credits (CHCs).
+     */
+    grandTotalCHC?: number;
+    costs?: UsageCostRecord;
+};
+export type OrganizationPrivateEndpoint = {
+    /**
+     * Private endpoint identifier
+     */
+    id?: string;
+    /**
+     * Description of private endpoint
+     */
+    description?: string;
+    /**
+     * Cloud provider in which the private endpoint is lcoated
+     */
+    cloudProvider?: "gcp" | "aws" | "azure";
+    /**
+     * Region in which the private endpoint is located
+     */
+    region?: "ap-south-1" | "ap-southeast-1" | "eu-central-1" | "eu-west-1" | "eu-west-2" | "us-east-1" | "us-east-2" | "us-west-2" | "ap-southeast-2" | "ap-northeast-1" | "me-central-1" | "us-east1" | "us-central1" | "europe-west4" | "asia-southeast1" | "eastus" | "eastus2" | "westus3" | "germanywestcentral";
+};
+export type ByocConfig = {
+    /**
+     * Unique identifier of the BYOC configuration
+     */
+    id?: string;
+    /**
+     * State of the infrastructure
+     */
+    state?: "infra-ready" | "infra-provisioning" | "infra-terminated";
+    /**
+     * Name of the account
+     */
+    accountName?: string;
+    /**
+     * Region for which the BYOC has been configured and where it is possible to create services
+     */
+    regionId?: "ap-south-1" | "ap-southeast-1" | "eu-central-1" | "eu-west-1" | "eu-west-2" | "us-east-1" | "us-east-2" | "us-west-2" | "ap-southeast-2" | "ap-northeast-1" | "me-central-1" | "us-east1" | "us-central1" | "europe-west4" | "asia-southeast1" | "eastus" | "eastus2" | "westus3" | "germanywestcentral";
+    /**
+     * Cloud provider of the region
+     */
+    cloudProvider?: "gcp" | "aws" | "azure";
+};
+export type Organization = {
+    /**
+     * Unique organization ID.
+     */
+    id?: string;
+    /**
+     * The timestamp the organization was created. ISO-8601.
+     */
+    createdAt?: string;
+    /**
+     * Name of the organization.
+     */
+    name?: string;
+    /**
+     * List of private endpoints for organization
+     */
+    privateEndpoints?: Array<OrganizationPrivateEndpoint>;
+    /**
+     * BYOC configuration for the organization
+     */
+    byocConfig?: Array<ByocConfig>;
+};
+export type OrganizationCloudRegionPrivateEndpointConfig = {
+    /**
+     * Unique identifier of the interface endpoint you created in your VPC with the AWS(Service Name) or GCP(Target Service) resource
+     */
+    endpointServiceId?: string;
+};
+export type OrganizationPatchPrivateEndpoint = {
+    /**
+     * Private endpoint identifier
+     */
+    id?: string;
+    /**
+     * Optional description of private endpoint
+     */
+    description?: string;
+    /**
+     * Cloud provider in which the private endpoint is lcoated
+     */
+    cloudProvider?: "gcp" | "aws" | "azure";
+    /**
+     * Region in which the private endpoint is located
+     */
+    region?: "ap-south-1" | "ap-southeast-1" | "eu-central-1" | "eu-west-1" | "eu-west-2" | "us-east-1" | "us-east-2" | "us-west-2" | "ap-southeast-2" | "ap-northeast-1" | "me-central-1" | "us-east1" | "us-central1" | "europe-west4" | "asia-southeast1" | "eastus" | "eastus2" | "westus3" | "germanywestcentral";
+};
+export type OrganizationPrivateEndpointsPatch = {
+    /**
+     * Elements to add. Executed after "remove" part is processed. Please use the `Update Service Basic Details` endpoint instead to modify the private endpoints.
+     * @deprecated
+     */
+    add?: Array<OrganizationPatchPrivateEndpoint>;
+    /**
+     * Elements to remove. Executed before "add" part is processed.
+     */
+    remove?: Array<OrganizationPatchPrivateEndpoint>;
+};
+export type Activity = {
+    /**
+     * Unique activity ID.
+     */
+    id?: string;
+    /**
+     * Timestamp of the activity. ISO-8601.
+     */
+    createdAt?: string;
+    /**
+     * Type of the activity.
+     */
+    type?: "create_organization" | "organization_update_name" | "transfer_service_in" | "transfer_service_out" | "save_payment_method" | "marketplace_subscription" | "migrate_marketplace_billing_details_in" | "migrate_marketplace_billing_details_out" | "organization_update_tier" | "organization_invite_create" | "organization_invite_delete" | "organization_member_join" | "organization_member_add" | "organization_member_leave" | "organization_member_delete" | "organization_member_update_role" | "organization_member_update_mfa_method" | "user_login" | "user_login_failed" | "user_logout" | "key_create" | "key_delete" | "openapi_key_update" | "service_create" | "service_start" | "service_stop" | "service_awaken" | "service_partially_running" | "service_delete" | "service_update_name" | "service_update_ip_access_list" | "service_update_autoscaling_memory" | "service_update_autoscaling_idling" | "service_update_password" | "service_update_autoscaling_replicas" | "service_update_max_allowable_replicas" | "service_update_backup_configuration" | "service_restore_backup" | "service_update_release_channel" | "service_update_gpt_usage_consent" | "service_update_private_endpoints" | "service_import_to_organization" | "service_export_from_organization" | "service_maintenance_start" | "service_maintenance_end" | "service_update_core_dump" | "backup_delete";
+    /**
+     * Type of the actor: 'user', 'support', 'system', 'api'.
+     */
+    actorType?: "user" | "support" | "system" | "api";
+    /**
+     * Unique actor ID.
+     */
+    actorId?: string;
+    /**
+     * Additional information about the actor.
+     */
+    actorDetails?: string;
+    /**
+     * IP address of the actor. Defined for 'user' and 'api' actor types.
+     */
+    actorIpAddress?: string;
+    /**
+     * Scope of the activity: organization ID this activity is related to.
+     */
+    organizationId?: string;
+    /**
+     * Scope of the activity: service ID this activity is related to.
+     */
+    serviceId?: string;
+    /**
+     * User agent of the actor
+     */
+    userAgent?: string;
+};
+export type AwsBackupBucket = {
+    /**
+     * Unique backup bucket ID
+     */
+    id?: string;
+    /**
+     * Bucket provider
+     */
+    bucketProvider?: "AWS";
+    /**
+     * Bucket path
+     */
+    bucketPath?: string;
+    /**
+     * AWS Role ARN
+     */
+    iamRoleArn?: string;
+    /**
+     * AWS  Role session name
+     */
+    iamRoleSessionName?: string;
+};
+export type GcpBackupBucket = {
+    /**
+     * Unique backup bucket ID
+     */
+    id?: string;
+    /**
+     * Bucket provider
+     */
+    bucketProvider?: "GCP";
+    /**
+     * Bucket path
+     */
+    bucketPath?: string;
+    /**
+     * Access Key ID (HMAC key)
+     */
+    accessKeyId?: string;
+};
+export type AzureBackupBucket = {
+    /**
+     * Unique backup bucket ID.
+     */
+    id?: string;
+    /**
+     * Bucket provider
+     */
+    bucketProvider?: "AZURE";
+    /**
+     * Container Name
+     */
+    containerName?: string;
+};
+export type BackupBucket = AwsBackupBucket | GcpBackupBucket | AzureBackupBucket;
+export type AwsBackupBucketProperties = {
+    /**
+     * Bucket provider
+     */
+    bucketProvider?: "AWS";
+    /**
+     * Bucket path
+     */
+    bucketPath?: string;
+    /**
+     * AWS IAM Role
+     */
+    iamRoleArn?: string;
+    /**
+     * AWS IAM Role
+     */
+    iamRoleSessionName?: string;
+};
+export type GcpBackupBucketProperties = {
+    /**
+     * Bucket provider
+     */
+    bucketProvider?: "GCP";
+    /**
+     * Bucket path
+     */
+    bucketPath?: string;
+    /**
+     * Access Key ID (HMAC key)
+     */
+    accessKeyId?: string;
+};
+export type AzureBackupBucketProperties = {
+    /**
+     * Bucket provider
+     */
+    bucketProvider?: "AZURE";
+    /**
+     * Container Name
+     */
+    containerName?: string;
+};
+export type BackupBucketProperties = AwsBackupBucketProperties | GcpBackupBucketProperties | AzureBackupBucketProperties;
+export type AwsBackupBucketPostRequestV1 = {
+    /**
+     * Bucket provider
+     */
+    bucketProvider?: "AWS";
+    /**
+     * Bucket path
+     */
+    bucketPath?: string;
+    /**
+     * AWS Role ARN
+     */
+    iamRoleArn?: string;
+    /**
+     * AWS Role session name
+     */
+    iamRoleSessionName?: string;
+};
+export type GcpBackupBucketPostRequestV1 = {
+    /**
+     * Bucket provider
+     */
+    bucketProvider?: "GCP";
+    /**
+     * Bucket path
+     */
+    bucketPath?: string;
+    /**
+     * Access Key ID (HMAC key)
+     */
+    accessKeyId?: string;
+    /**
+     * Secret Access Key (HMAC secret key)
+     */
+    secretAccessKey?: string;
+};
+export type AzureBackupBucketPostRequestV1 = {
+    /**
+     * Bucket provider
+     */
+    bucketProvider?: "AZURE";
+    /**
+     * Container Name
+     */
+    containerName?: string;
+    /**
+     * Connection String
+     */
+    connectionString?: string;
+};
+export type BackupBucketPostRequest = AwsBackupBucketPostRequestV1 | GcpBackupBucketPostRequestV1 | AzureBackupBucketPostRequestV1;
+export type AwsBackupBucketPatchRequestV1 = {
+    /**
+     * Bucket provider
+     */
+    bucketProvider?: "AWS";
+    /**
+     * Bucket path
+     */
+    bucketPath?: string;
+    /**
+     * AWS Role ARN
+     */
+    iamRoleArn?: string;
+    /**
+     * AWS IAM Role session name
+     */
+    iamRoleSessionName?: string | null;
+};
+export type GcpBackupBucketPatchRequestV1 = {
+    /**
+     * Bucket provider
+     */
+    bucketProvider?: "GCP";
+    /**
+     * Bucket path
+     */
+    bucketPath?: string;
+    /**
+     * Access Key ID (HMAC key)
+     */
+    accessKeyId?: string;
+    /**
+     * Secret Access Key (HMAC secret key)
+     */
+    secretAccessKey?: string;
+};
+export type AzureBackupBucketPatchRequestV1 = {
+    /**
+     * Bucket provider
+     */
+    bucketProvider?: "AZURE";
+    /**
+     * Container Name
+     */
+    containerName?: string;
+    /**
+     * Connection String
+     */
+    connectionString?: string;
+};
+export type BackupBucketPatchRequest = AwsBackupBucketPatchRequestV1 | GcpBackupBucketPatchRequestV1 | AzureBackupBucketPatchRequestV1;
+export type BackupConfiguration = {
+    /**
+     * The interval in hours between each backup.
+     */
+    backupPeriodInHours?: number;
+    /**
+     * The minimum duration in hours for which the backups are available.
+     */
+    backupRetentionPeriodInHours?: number;
+    /**
+     * The time in HH:MM format for the backups to be performed (evaluated in UTC timezone). When defined the backup period resets to every 24 hours.
+     */
+    backupStartTime?: string;
+};
+export type Backup = {
+    /**
+     * Unique backup ID.
+     */
+    id?: string;
+    /**
+     * Status of the backup: 'done', 'error', 'in_progress'.
+     */
+    status?: "done" | "error" | "in_progress";
+    /**
+     * Name
+     */
+    serviceId?: string;
+    /**
+     * Backup start timestamp. ISO-8601.
+     */
+    startedAt?: string;
+    /**
+     * Backup finish timestamp. ISO-8601. Available only for finished backups
+     */
+    finishedAt?: string;
+    /**
+     * Size of the backup in bytes.
+     */
+    sizeInBytes?: number;
+    /**
+     * Time in seconds it took to perform the backup. If the status still in_progress, this is the time in seconds since the backup started until now.
+     */
+    durationInSeconds?: number;
+    /**
+     * Backup type ("full" or "incremental").
+     */
+    type?: "full" | "incremental";
+    /**
+     * Backup name on the external backup bucket.
+     */
+    backupName?: string;
+    /**
+     * Backup bucket where the backup is stored.
+     */
+    bucket?: AwsBackupBucketProperties | GcpBackupBucketProperties | AzureBackupBucketProperties;
+};
+export type CreateReversePrivateEndpoint = {
+    /**
+     * Reverse private endpoint description. Maximum length is 255 characters.
+     */
+    description?: string;
+    /**
+     * Reverse private endpoint type.
+     */
+    type?: "VPC_ENDPOINT_SERVICE" | "VPC_RESOURCE" | "MSK_MULTI_VPC";
+    /**
+     * VPC endpoint service name.
+     */
+    vpcEndpointServiceName?: string | null;
+    /**
+     * VPC resource configuration ID. Required for VPC_RESOURCE type.
+     */
+    vpcResourceConfigurationId?: string | null;
+    /**
+     * VPC resource share ARN. Required for VPC_RESOURCE type.
+     */
+    vpcResourceShareArn?: string | null;
+    /**
+     * MSK cluster ARN. Required for MSK_MULTI_VPC type.
+     */
+    mskClusterArn?: string | null;
+    /**
+     * MSK cluster authentication type. Required for MSK_MULTI_VPC type.
+     */
+    mskAuthentication?: "SASL_IAM" | "SASL_SCRAM";
+};
+export type ReversePrivateEndpoint = {
+    /**
+     * Reverse private endpoint description. Maximum length is 255 characters.
+     */
+    description?: string;
+    /**
+     * Reverse private endpoint type.
+     */
+    type?: "VPC_ENDPOINT_SERVICE" | "VPC_RESOURCE" | "MSK_MULTI_VPC";
+    /**
+     * VPC endpoint service name.
+     */
+    vpcEndpointServiceName?: string | null;
+    /**
+     * VPC resource configuration ID. Required for VPC_RESOURCE type.
+     */
+    vpcResourceConfigurationId?: string | null;
+    /**
+     * VPC resource share ARN. Required for VPC_RESOURCE type.
+     */
+    vpcResourceShareArn?: string | null;
+    /**
+     * MSK cluster ARN. Required for MSK_MULTI_VPC type.
+     */
+    mskClusterArn?: string | null;
+    /**
+     * MSK cluster authentication type. Required for MSK_MULTI_VPC type.
+     */
+    mskAuthentication?: "SASL_IAM" | "SASL_SCRAM";
+    /**
+     * Reverse private endpoint ID.
+     */
+    id?: string;
+    /**
+     * ClickHouse service ID reverse private endpoint is associated with.
+     */
+    serviceId?: string;
+    /**
+     * Reverse private endpoint endpoint ID.
+     */
+    endpointId?: string;
+    /**
+     * Reverse private endpoint internal DNS names.
+     */
+    dnsNames?: Array<string>;
+    /**
+     * Reverse private endpoint private DNS names.
+     */
+    privateDnsNames?: Array<string>;
+    /**
+     * Reverse private endpoint status.
+     */
+    status?: "Unknown" | "Provisioning" | "Deleting" | "Ready" | "Failed" | "PendingAcceptance" | "Rejected" | "Expired";
+};
+export type Member = {
+    /**
+     * Unique user ID. If a user is a member in multiple organizations this ID will stay the same.
+     */
+    userId?: string;
+    /**
+     * Name of the member as set a personal user profile.
+     */
+    name?: string;
+    /**
+     * Email of the member as set in personal user profile.
+     */
+    email?: string;
+    /**
+     * Role of the member in the organization.
+     */
+    role?: "admin" | "developer";
+    /**
+     * Timestamp the member joined the organization. ISO-8601.
+     */
+    joinedAt?: string;
+};
+export type Invitation = {
+    /**
+     * Role of the member in the organization.
+     */
+    role?: "admin" | "developer";
+    /**
+     * Unique invitation ID.
+     */
+    id?: string;
+    /**
+     * Email of the invited user. Only a user with this email can join using the invitation. The email is stored in a lowercase form.
+     */
+    email?: string;
+    /**
+     * Invitation creation timestamp. ISO-8601.
+     */
+    createdAt?: string;
+    /**
+     * Timestamp the invitation expires. ISO-8601.
+     */
+    expireAt?: string;
+};
+export type ApiKey = {
+    /**
+     * Unique API key ID.
+     */
+    id?: string;
+    /**
+     * Name of the key
+     */
+    name?: string;
+    /**
+     * State of the key: 'enabled', 'disabled'.
+     */
+    state?: "enabled" | "disabled";
+    /**
+     * List of roles assigned to the key. Contains at least 1 element.
+     */
+    roles?: Array<"admin" | "developer" | "query_endpoints">;
+    /**
+     * Last 4 letters of the key.
+     */
+    keySuffix?: string;
+    /**
+     * Timestamp the key was created. ISO-8601.
+     */
+    createdAt?: string;
+    /**
+     * Timestamp the key expires. If not present, `null` or is empty the key never expires. ISO-8601.
+     */
+    expireAt?: string | null;
+    /**
+     * Timestamp the key was used last time. If not present the key was never used. ISO-8601.
+     */
+    usedAt?: string;
+    /**
+     * List of IP addresses allowed to access the API using this key
+     */
+    ipAccessList?: Array<IpAccessListEntry>;
+};
+export type ApiKeyHashData = {
+    /**
+     * Hash of the key ID.
+     */
+    keyIdHash?: string;
+    /**
+     * Last 4 digits of the key ID. Algorithm: echo -n "yourpassword" | sha256sum | tr -d '-' | xxd -r -p | base64
+     */
+    keyIdSuffix?: string;
+    /**
+     * Hash of the key secret. Algorithm: echo -n "yourpassword" | sha256sum | tr -d '-' | xxd -r -p | base64
+     */
+    keySecretHash?: string;
+};
+export type OrganizationPatchRequest = {
+    /**
+     * Name of the organization.
+     */
+    name?: string;
+    privateEndpoints?: OrganizationPrivateEndpointsPatch;
+};
+export type InstanceServiceQueryApiEndpointsPostRequest = {
+    /**
+     * The roles
+     */
+    roles?: Array<"sql_console_read_only" | "sql_console_admin">;
+    /**
+     * The version of the service query endpoint
+     */
+    openApiKeys?: Array<string>;
+    /**
+     * The allowed origins as comma separated list of domains
+     */
+    allowedOrigins?: string;
+};
+export type ServicePostResponse = {
+    service?: Service;
+    /**
+     * Password for the newly created service.
+     */
+    password?: string;
+};
+export type ServicePostRequest = {
+    /**
+     * Name of the service. Alphanumerical string with whitespaces up to 50 characters.
+     */
+    name?: string;
+    /**
+     * Cloud provider
+     */
+    provider?: "aws" | "gcp" | "azure";
+    /**
+     * Service region.
+     */
+    region?: "ap-south-1" | "ap-southeast-1" | "eu-central-1" | "eu-west-1" | "eu-west-2" | "us-east-1" | "us-east-2" | "us-west-2" | "ap-southeast-2" | "ap-northeast-1" | "me-central-1" | "us-east1" | "us-central1" | "europe-west4" | "asia-southeast1" | "eastus" | "eastus2" | "westus3" | "germanywestcentral";
+    /**
+     * DEPRECATED for BASIC, SCALE and ENTERPRISE organization tiers. Tier of the service: 'development', 'production', 'dedicated_high_mem', 'dedicated_high_cpu', 'dedicated_standard', 'dedicated_standard_n2d_standard_4', 'dedicated_standard_n2d_standard_8', 'dedicated_standard_n2d_standard_32', 'dedicated_standard_n2d_standard_128', 'dedicated_standard_n2d_standard_32_16SSD', 'dedicated_standard_n2d_standard_64_24SSD'. Production services scale, Development are fixed size. Azure services don't support Development tier
+     * @deprecated
+     */
+    tier?: "development" | "production" | "dedicated_high_mem" | "dedicated_high_cpu" | "dedicated_standard" | "dedicated_standard_n2d_standard_4" | "dedicated_standard_n2d_standard_8" | "dedicated_standard_n2d_standard_32" | "dedicated_standard_n2d_standard_128" | "dedicated_standard_n2d_standard_32_16SSD" | "dedicated_standard_n2d_standard_64_24SSD";
+    /**
+     * List of IP addresses allowed to access the service
+     */
+    ipAccessList?: Array<IpAccessListEntry>;
+    /**
+     * DEPRECATED - inaccurate for services with non-default numbers of replicas. Minimum memory of three workers during auto-scaling in Gb. Available only for 'production' services. Must be a multiple of 12 and greater than or equal to 24.
+     * @deprecated
+     */
+    minTotalMemoryGb?: number;
+    /**
+     * DEPRECATED - inaccurate for services with non-default numbers of replicas. Maximum memory of three workers during auto-scaling in Gb. Available only for 'production' services. Must be a multiple of 12 and lower than or equal to 360 for non paid services or 1068 for paid services.
+     * @deprecated
+     */
+    maxTotalMemoryGb?: number;
+    /**
+     * Minimum total memory of each replica during auto-scaling in Gb. Must be a multiple of 4 and greater than or equal to 8.
+     */
+    minReplicaMemoryGb?: number;
+    /**
+     * Maximum total memory of each replica during auto-scaling in Gb.  Must be a multiple of 4 and lower than or equal to 120* for non paid services or 356* for paid services.* - maximum replica size subject to cloud provider hardware availability in your selected region.
+     */
+    maxReplicaMemoryGb?: number;
+    /**
+     * Number of replicas for the service. The number of replicas must be between 2 and 20 for the first service in a warehouse. Services that are created in an existing warehouse can have a number of replicas as low as 1. Further restrictions may apply based on your organization's tier. It defaults to 1 for the BASIC tier and 3 for the SCALE and ENTERPRISE tiers.
+     */
+    numReplicas?: number;
+    /**
+     * When set to true the service is allowed to scale down to zero when idle. True by default.
+     */
+    idleScaling?: boolean;
+    /**
+     * Set minimum idling timeout (in minutes). Must be >= 5 minutes.
+     */
+    idleTimeoutMinutes?: number;
+    /**
+     * True if this service is read-only. It can only be read-only if a dataWarehouseId is provided.
+     */
+    isReadonly?: boolean;
+    /**
+     * Data warehouse containing this service
+     */
+    dataWarehouseId?: string;
+    /**
+     * Optional backup ID used as an initial state for the new service. When used the region and the tier of the new instance must be the same as the values of the original instance.
+     */
+    backupId?: string;
+    /**
+     * Optional customer provided disk encryption key
+     */
+    encryptionKey?: string;
+    /**
+     * Optional role to use for disk encryption
+     */
+    encryptionAssumedRoleIdentifier?: string;
+    /**
+     * To associate the service with private endpoints, first create the service, then use the `Update Service Basic Details` endpoint to modify private endpoints.
+     * @deprecated
+     */
+    privateEndpointIds?: Array<string>;
+    /**
+     * Accept the private preview terms and conditions. It is only needed when creating the first service in the organization in case of a private preview
+     */
+    privatePreviewTermsChecked?: boolean;
+    /**
+     * Select fast if you want to get new ClickHouse releases as soon as they are available. You'll get new features faster, but with a higher risk of bugs. Select slow if you would like to defer releases to give yourself more time to test. This feature is only available for production services. default is the regular release channel.
+     */
+    releaseChannel?: "slow" | "default" | "fast";
+    /**
+     * This is the ID returned after setting up a region for Bring Your Own Cloud (BYOC). When the byocId parameter is specified, the minReplicaMemoryGb and the maxReplicaGb parameters are required too, with values included among the following sizes: 48, 116, 172, 232.
+     */
+    byocId?: string;
+    /**
+     * True if the service should have the Transparent Data Encryption (TDE) enabled. TDE is only available for ENTERPRISE organizations tiers and can only be enabled at service creation.
+     */
+    hasTransparentDataEncryption?: boolean;
+    /**
+     * List of service endpoints to enable or disable
+     */
+    endpoints?: Array<ServiceEndpointChange>;
+    /**
+     * Custom instance profile. Only available for ENTERPRISE organization tiers.
+     */
+    profile?: "v1-default" | "v1-highmem-xs" | "v1-highmem-s" | "v1-highmem-m" | "v1-highmem-l" | "v1-highmem-xl" | "v1-highcpu-s" | "v1-highcpu-m" | "v1-highcpu-l" | "v1-highcpu-xl";
+    /**
+     * Type of regulatory compliance for service.
+     */
+    complianceType?: "hipaa" | "pci";
+};
+export type ServicePatchRequest = {
+    /**
+     * Name of the service. Alphanumerical string with whitespaces up to 50 characters.
+     */
+    name?: string;
+    ipAccessList?: IpAccessListPatch;
+    privateEndpointIds?: InstancePrivateEndpointsPatch;
+    /**
+     * Select fast if you want to get new ClickHouse releases as soon as they are available. You'll get new features faster, but with a higher risk of bugs. Select slow if you would like to defer releases to give yourself more time to test. This feature is only available for production services. default is the regular release channel.
+     */
+    releaseChannel?: "slow" | "default" | "fast";
+    /**
+     * List of service endpoints to change
+     */
+    endpoints?: Array<ServiceEndpointChange>;
+    /**
+     * The id of the key to rotate
+     */
+    transparentDataEncryptionKeyId?: string;
+};
+export type ServiceStatePatchRequest = {
+    /**
+     * Command to change the state: 'start', 'stop'.
+     */
+    command?: "start" | "stop";
+};
+export type ServiceScalingPatchRequest = {
+    /**
+     * DEPRECATED - inaccurate for services with non-default numbers of replicas. Minimum memory of three workers during auto-scaling in Gb. Available only for 'production' services. Must be a multiple of 12 and greater than or equal to 24.
+     * @deprecated
+     */
+    minTotalMemoryGb?: number;
+    /**
+     * DEPRECATED - inaccurate for services with non-default numbers of replicas. Maximum memory of three workers during auto-scaling in Gb. Available only for 'production' services. Must be a multiple of 12 and lower than or equal to 360 for non paid services or 1068 for paid services.
+     * @deprecated
+     */
+    maxTotalMemoryGb?: number;
+    /**
+     * Number of replicas for the service. The number of replicas must be between 2 and 20 for the first service in a warehouse. Services that are created in an existing warehouse can have a number of replicas as low as 1. Further restrictions may apply based on your organization's tier. It defaults to 1 for the BASIC tier and 3 for the SCALE and ENTERPRISE tiers.
+     */
+    numReplicas?: number;
+    /**
+     * When set to true the service is allowed to scale down to zero when idle. True by default.
+     */
+    idleScaling?: boolean;
+    /**
+     * Set minimum idling timeout (in minutes). Must be >= 5 minutes.
+     */
+    idleTimeoutMinutes?: number;
+};
+export type ServiceScalingPatchResponse = {
+    /**
+     * Unique service ID.
+     */
+    id?: string;
+    /**
+     * Name of the service. Alphanumerical string with whitespaces up to 50 characters.
+     */
+    name?: string;
+    /**
+     * Cloud provider
+     */
+    provider?: "aws" | "gcp" | "azure";
+    /**
+     * Service region.
+     */
+    region?: "ap-south-1" | "ap-southeast-1" | "eu-central-1" | "eu-west-1" | "eu-west-2" | "us-east-1" | "us-east-2" | "us-west-2" | "ap-southeast-2" | "ap-northeast-1" | "me-central-1" | "us-east1" | "us-central1" | "europe-west4" | "asia-southeast1" | "eastus" | "eastus2" | "westus3" | "germanywestcentral";
+    /**
+     * Current state of the service.
+     */
+    state?: "starting" | "stopping" | "terminating" | "awaking" | "partially_running" | "provisioning" | "running" | "stopped" | "terminated" | "degraded" | "failed" | "idle";
+    /**
+     * ClickHouse version of the service.
+     */
+    clickhouseVersion?: string;
+    /**
+     * List of all service endpoints.
+     */
+    endpoints?: Array<ServiceEndpoint>;
+    /**
+     * DEPRECATED for BASIC, SCALE and ENTERPRISE organization tiers. Tier of the service: 'development', 'production', 'dedicated_high_mem', 'dedicated_high_cpu', 'dedicated_standard', 'dedicated_standard_n2d_standard_4', 'dedicated_standard_n2d_standard_8', 'dedicated_standard_n2d_standard_32', 'dedicated_standard_n2d_standard_128', 'dedicated_standard_n2d_standard_32_16SSD', 'dedicated_standard_n2d_standard_64_24SSD'. Production services scale, Development are fixed size. Azure services don't support Development tier
+     * @deprecated
+     */
+    tier?: "development" | "production" | "dedicated_high_mem" | "dedicated_high_cpu" | "dedicated_standard" | "dedicated_standard_n2d_standard_4" | "dedicated_standard_n2d_standard_8" | "dedicated_standard_n2d_standard_32" | "dedicated_standard_n2d_standard_128" | "dedicated_standard_n2d_standard_32_16SSD" | "dedicated_standard_n2d_standard_64_24SSD";
+    /**
+     * DEPRECATED - inaccurate for services with non-default numbers of replicas. Minimum memory of three workers during auto-scaling in Gb. Available only for 'production' services. Must be a multiple of 12 and greater than or equal to 24.
+     * @deprecated
+     */
+    minTotalMemoryGb?: number;
+    /**
+     * DEPRECATED - inaccurate for services with non-default numbers of replicas. Maximum memory of three workers during auto-scaling in Gb. Available only for 'production' services. Must be a multiple of 12 and lower than or equal to 360 for non paid services or 1068 for paid services.
+     * @deprecated
+     */
+    maxTotalMemoryGb?: number;
+    /**
+     * Minimum auto-scaling memory in Gb for a single replica. Available only for 'production' services. Must be a multiple of 4 and greater than or equal to 8.
+     */
+    minReplicaMemoryGb?: number;
+    /**
+     * Maximum auto-scaling memory in Gb for a single replica . Available only for 'production' services. Must be a multiple of 4 and lower than or equal to 120 for non paid services or 356 for paid services.
+     */
+    maxReplicaMemoryGb?: number;
+    /**
+     * Number of replicas for the service. The number of replicas must be between 2 and 20 for the first service in a warehouse. Services that are created in an existing warehouse can have a number of replicas as low as 1. Further restrictions may apply based on your organization's tier. It defaults to 1 for the BASIC tier and 3 for the SCALE and ENTERPRISE tiers.
+     */
+    numReplicas?: number;
+    /**
+     * When set to true the service is allowed to scale down to zero when idle. True by default.
+     */
+    idleScaling?: boolean;
+    /**
+     * Set minimum idling timeout (in minutes). Must be >= 5 minutes.
+     */
+    idleTimeoutMinutes?: number;
+    /**
+     * List of IP addresses allowed to access the service
+     */
+    ipAccessList?: Array<IpAccessListEntry>;
+    /**
+     * Service creation timestamp. ISO-8601.
+     */
+    createdAt?: string;
+    /**
+     * Optional customer provided disk encryption key
+     */
+    encryptionKey?: string;
+    /**
+     * Optional role to use for disk encryption
+     */
+    encryptionAssumedRoleIdentifier?: string;
+    /**
+     * IAM role used for accessing objects in s3
+     */
+    iamRole?: string;
+    /**
+     * List of private endpoints
+     */
+    privateEndpointIds?: Array<string>;
+    /**
+     * List of available private endpoints ids that can be attached to the service
+     */
+    availablePrivateEndpointIds?: Array<string>;
+    /**
+     * Data warehouse containing this service
+     */
+    dataWarehouseId?: string;
+    /**
+     * True if this service is the primary service in the data warehouse
+     */
+    isPrimary?: boolean;
+    /**
+     * True if this service is read-only. It can only be read-only if a dataWarehouseId is provided.
+     */
+    isReadonly?: boolean;
+    /**
+     * Select fast if you want to get new ClickHouse releases as soon as they are available. You'll get new features faster, but with a higher risk of bugs. Select slow if you would like to defer releases to give yourself more time to test. This feature is only available for production services. default is the regular release channel.
+     */
+    releaseChannel?: "slow" | "default" | "fast";
+    /**
+     * This is the ID returned after setting up a region for Bring Your Own Cloud (BYOC). When the byocId parameter is specified, the minReplicaMemoryGb and the maxReplicaGb parameters are required too, with values included among the following sizes: 48, 116, 172, 232.
+     */
+    byocId?: string;
+    /**
+     * True if the service should have the Transparent Data Encryption (TDE) enabled. TDE is only available for ENTERPRISE organizations tiers and can only be enabled at service creation.
+     */
+    hasTransparentDataEncryption?: boolean;
+    /**
+     * Custom instance profile. Only available for ENTERPRISE organization tiers.
+     */
+    profile?: "v1-default" | "v1-highmem-xs" | "v1-highmem-s" | "v1-highmem-m" | "v1-highmem-l" | "v1-highmem-xl" | "v1-highcpu-s" | "v1-highcpu-m" | "v1-highcpu-l" | "v1-highcpu-xl";
+    /**
+     * The ID of the Transparent Data Encryption key used for the service. This is only available if hasTransparentDataEncryption is true.
+     */
+    transparentDataEncryptionKeyId?: string;
+    /**
+     * The ID of the IAM role used for encryption. This is only available if hasTransparentDataEncryption is true.
+     */
+    encryptionRoleId?: string;
+    /**
+     * Type of regulatory compliance for service.
+     */
+    complianceType?: "hipaa" | "pci";
+};
+export type ServiceReplicaScalingPatchRequest = {
+    /**
+     * Minimum auto-scaling memory in Gb for a single replica. Available only for 'production' services. Must be a multiple of 4 and greater than or equal to 8.
+     */
+    minReplicaMemoryGb?: number;
+    /**
+     * Maximum auto-scaling memory in Gb for a single replica . Available only for 'production' services. Must be a multiple of 4 and lower than or equal to 120 for non paid services or 356 for paid services.
+     */
+    maxReplicaMemoryGb?: number;
+    /**
+     * Number of replicas for the service. The number of replicas must be between 2 and 20 for the first service in a warehouse. Services that are created in an existing warehouse can have a number of replicas as low as 1. Further restrictions may apply based on your organization's tier. It defaults to 1 for the BASIC tier and 3 for the SCALE and ENTERPRISE tiers.
+     */
+    numReplicas?: number;
+    /**
+     * When set to true the service is allowed to scale down to zero when idle. True by default.
+     */
+    idleScaling?: boolean;
+    /**
+     * Set minimum idling timeout (in minutes). Must be >= 5 minutes.
+     */
+    idleTimeoutMinutes?: number;
+};
+export type ServicePasswordPatchResponse = {
+    /**
+     * New service password. Provided only if there was no 'newPasswordHash' in the request
+     */
+    password?: string;
+};
+export type ServicePasswordPatchRequest = {
+    /**
+     * Optional password hash. Used to avoid password transmission over network. If not provided a new password is generated and is provided in the response. Otherwise this hash is used. Algorithm: echo -n "yourpassword" | sha256sum | tr -d '-' | xxd -r -p | base64
+     */
+    newPasswordHash?: string;
+    /**
+     * Optional double SHA1 password hash for MySQL protocol. If newPasswordHash is not provided this key will be ignored and the generated password will be used. Algorithm: echo -n "yourpassword" | sha1sum | tr -d '-' | xxd -r -p | sha1sum | tr -d '-'
+     */
+    newDoubleSha1Hash?: string;
+};
+export type ServicPrivateEndpointePostRequest = {
+    /**
+     * Private endpoint identifier
+     */
+    id?: string;
+    /**
+     * Description of private endpoint
+     */
+    description?: string;
+};
+export type BackupConfigurationPatchRequest = {
+    /**
+     * The interval in hours between each backup.
+     */
+    backupPeriodInHours?: number;
+    /**
+     * The minimum duration in hours for which the backups are available.
+     */
+    backupRetentionPeriodInHours?: number;
+    /**
+     * The time in HH:MM format for the backups to be performed (evaluated in UTC timezone). When defined the backup period resets to every 24 hours.
+     */
+    backupStartTime?: string;
+};
+export type ApiKeyPostResponse = {
+    key?: ApiKey;
+    /**
+     * Generated key ID. Provided only if there was no 'hashData' in the request.
+     */
+    keyId?: string;
+    /**
+     * Generated key secret. Provided only if there was no 'hashData' in the request.
+     */
+    keySecret?: string;
+};
+export type ApiKeyPostRequest = {
+    /**
+     * Name of the key.
+     */
+    name?: string;
+    /**
+     * Timestamp the key expires. If not present, `null` or is empty the key never expires. ISO-8601.
+     */
+    expireAt?: string | null;
+    /**
+     * Initial state of the key: 'enabled', 'disabled'. If not provided the new key will be 'enabled'.
+     */
+    state?: "enabled" | "disabled";
+    hashData?: ApiKeyHashData;
+    /**
+     * List of roles assigned to the key. Contains at least 1 element.
+     */
+    roles?: Array<"admin" | "developer" | "query_endpoints">;
+    /**
+     * List of IP addresses allowed to access the API using this key
+     */
+    ipAccessList?: Array<IpAccessListEntry>;
+};
+export type ApiKeyPatchRequest = {
+    /**
+     * Name of the key
+     */
+    name?: string;
+    /**
+     * List of roles assigned to the key. Contains at least 1 element.
+     */
+    roles?: Array<"admin" | "developer" | "query_endpoints">;
+    /**
+     * Timestamp the key expires. If `null` or is empty the key never expires. ISO-8601.
+     */
+    expireAt?: string | null;
+    /**
+     * State of the key: 'enabled', 'disabled'.
+     */
+    state?: "enabled" | "disabled";
+    /**
+     * List of IP addresses allowed to access the API using this key
+     */
+    ipAccessList?: Array<IpAccessListEntry>;
+};
+export type MemberPatchRequest = {
+    /**
+     * Role of the member in the organization.
+     */
+    role?: "admin" | "developer";
+};
+export type InvitationPostRequest = {
+    /**
+     * Email of the invited user. Only a user with this email can join using the invitation. The email is stored in a lowercase form.
+     */
+    email?: string;
+    /**
+     * Role of the member in the organization.
+     */
+    role?: "admin" | "developer";
+};
+export type ClickPipePostRequest = {
+    /**
+     * Name of the ClickPipe.
+     */
+    name?: string;
+    source?: ClickPipePostSource;
+    destination?: ClickPipeMutateDestination;
+    /**
+     * Field mappings of the ClickPipe. Note that all destination columns must be included in the mappings.
+     */
+    fieldMappings?: Array<ClickPipeFieldMapping>;
+    scaling?: ClickPipeScaling;
+    settings?: ClickPipeSettings;
+};
+export type ClickPipePatchRequest = {
+    /**
+     * Name of the ClickPipe.
+     */
+    name?: string | null;
+    source?: ClickPipePatchSource | null;
+    destination?: ClickPipePatchDestination | null;
+    /**
+     * Field mappings of the ClickPipe. This will not update the table schema, only the ClickPipe configuration.
+     */
+    fieldMappings?: Array<ClickPipeFieldMapping>;
+    settings?: ClickPipeSettings | null;
+};
+export type ClickPipeScalingPatchRequest = {
+    /**
+     * Number of replicas to scale to. Use to scale Kafka pipes.
+     */
+    replicas?: number | null;
+    /**
+     * Number of concurrency to scale to. Use to scale S3 pipes.
+     */
+    concurrency?: number | null;
+    /**
+     * CPU in millicores for each replica. Use to scale streaming pipes.
+     */
+    replicaCpuMillicores?: number | null;
+    /**
+     * Memory in GB for each replica. Use to scale streaming pipes.
+     */
+    replicaMemoryGb?: number | null;
+};
+export type ClickPipeStatePatchRequest = {
+    /**
+     * Command to change the state: 'start', 'stop', 'resync'.
+     */
+    command?: "start" | "stop" | "resync";
+};
+export type ClickPipesCdcScalingPatchRequest = {
+    /**
+     * CPU in millicores for DB ClickPipes.
+     */
+    replicaCpuMillicores?: number;
+    /**
+     * Memory in GiB for DB ClickPipes. Must be 4× the CPU core count.
+     */
+    replicaMemoryGb?: number;
+};
+export type ByocInfrastructurePostRequest = {
+    /**
+     * Region in which the BYOC infrastructure will be located
+     */
+    regionId?: "ap-south-1" | "ap-southeast-1" | "eu-central-1" | "eu-west-1" | "eu-west-2" | "us-east-1" | "us-east-2" | "us-west-2" | "ap-southeast-2" | "ap-northeast-1" | "me-central-1" | "us-east1" | "us-central1" | "europe-west4" | "asia-southeast1" | "eastus" | "eastus2" | "westus3" | "germanywestcentral";
+    /**
+     * Cloud account ID the BYOC infrastructure is configured for
+     */
+    accountId?: string;
+    /**
+     * List of availability zone suffixes
+     */
+    availabilityZoneSuffixes?: Array<"a" | "b" | "c" | "d" | "e" | "f">;
+    /**
+     * CIDR range for VPC
+     */
+    vpcCidrRange?: string;
+};
+export type ListAvailableOrganizationsData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: "/v1/organizations";
+};
+export type ListAvailableOrganizationsErrors = {
+    /**
+     * The server cannot or will not process the request due to something that is perceived to be a client error.
+     */
+    400: {
+        /**
+         * HTTP status code.
+         */
+        status?: number;
+        /**
+         * Detailed error description.
+         */
+        error?: string;
+    };
+};
+export type ListAvailableOrganizationsError = ListAvailableOrganizationsErrors[keyof ListAvailableOrganizationsErrors];
+export type ListAvailableOrganizationsResponses = {
+    /**
+     * Successful response
+     */
+    200: {
+        /**
+         * HTTP status code.
+         */
+        status?: number;
+        /**
+         * Unique id assigned to every request. UUIDv4
+         */
+        requestId?: string;
+        result?: Array<Organization>;
+    };
+};
+export type ListAvailableOrganizationsResponse = ListAvailableOrganizationsResponses[keyof ListAvailableOrganizationsResponses];
+export type GetOrganizationDetailsData = {
+    body?: never;
+    path: {
+        /**
+         * ID of the requested organization.
+         */
+        organizationId: string;
+    };
+    query?: never;
+    url: "/v1/organizations/{organizationId}";
+};
+export type GetOrganizationDetailsErrors = {
+    /**
+     * The server cannot or will not process the request due to something that is perceived to be a client error.
+     */
+    400: {
+        /**
+         * HTTP status code.
+         */
+        status?: number;
+        /**
+         * Detailed error description.
+         */
+        error?: string;
+    };
+};
+export type GetOrganizationDetailsError = GetOrganizationDetailsErrors[keyof GetOrganizationDetailsErrors];
+export type GetOrganizationDetailsResponses = {
+    /**
+     * Successful response
+     */
+    200: {
+        /**
+         * HTTP status code.
+         */
+        status?: number;
+        /**
+         * Unique id assigned to every request. UUIDv4
+         */
+        requestId?: string;
+        result?: Organization;
+    };
+};
+export type GetOrganizationDetailsResponse = GetOrganizationDetailsResponses[keyof GetOrganizationDetailsResponses];
+export type UpdateOrganizationDetailsData = {
+    body?: OrganizationPatchRequest;
+    path: {
+        /**
+         * ID of the organization to update.
+         */
+        organizationId: string;
+    };
+    query?: never;
+    url: "/v1/organizations/{organizationId}";
+};
+export type UpdateOrganizationDetailsErrors = {
+    /**
+     * The server cannot or will not process the request due to something that is perceived to be a client error.
+     */
+    400: {
+        /**
+         * HTTP status code.
+         */
+        status?: number;
+        /**
+         * Detailed error description.
+         */
+        error?: string;
+    };
+};
+export type UpdateOrganizationDetailsError = UpdateOrganizationDetailsErrors[keyof UpdateOrganizationDetailsErrors];
+export type UpdateOrganizationDetailsResponses = {
+    /**
+     * Successful response
+     */
+    200: {
+        /**
+         * HTTP status code.
+         */
+        status?: number;
+        /**
+         * Unique id assigned to every request. UUIDv4
+         */
+        requestId?: string;
+        result?: Organization;
+    };
+};
+export type UpdateOrganizationDetailsResponse = UpdateOrganizationDetailsResponses[keyof UpdateOrganizationDetailsResponses];
+export type GetOrganizationMetricsData = {
+    body?: never;
+    path: {
+        /**
+         * ID of the requested organization.
+         */
+        organizationId: string;
+    };
+    query?: {
+        /**
+         * Return a filtered list of Prometheus metrics.
+         */
+        filtered_metrics?: string;
+    };
+    url: "/v1/organizations/{organizationId}/prometheus";
+};
+export type GetOrganizationMetricsErrors = {
+    /**
+     * The server cannot or will not process the request due to something that is perceived to be a client error.
+     */
+    400: {
+        /**
+         * HTTP status code.
+         */
+        status?: number;
+        /**
+         * Detailed error description.
+         */
+        error?: string;
+    };
+};
+export type GetOrganizationMetricsError = GetOrganizationMetricsErrors[keyof GetOrganizationMetricsErrors];
+export type GetOrganizationMetricsResponses = {
+    /**
+     * Successful response
+     */
+    200: string;
+};
+export type GetOrganizationMetricsResponse = GetOrganizationMetricsResponses[keyof GetOrganizationMetricsResponses];
+export type ListOrganizationServicesData = {
+    body?: never;
+    path: {
+        /**
+         * ID of the requested organization.
+         */
+        organizationId: string;
+    };
+    query?: {
+        /**
+         * Filter criteria to apply when retrieving the resource. Currently, only filtering by resource tags is supported.
+         */
+        filter?: Array<string>;
+    };
+    url: "/v1/organizations/{organizationId}/services";
+};
+export type ListOrganizationServicesErrors = {
+    /**
+     * The server cannot or will not process the request due to something that is perceived to be a client error.
+     */
+    400: {
+        /**
+         * HTTP status code.
+         */
+        status?: number;
+        /**
+         * Detailed error description.
+         */
+        error?: string;
+    };
+};
+export type ListOrganizationServicesError = ListOrganizationServicesErrors[keyof ListOrganizationServicesErrors];
+export type ListOrganizationServicesResponses = {
+    /**
+     * Successful response
+     */
+    200: {
+        /**
+         * HTTP status code.
+         */
+        status?: number;
+        /**
+         * Unique id assigned to every request. UUIDv4
+         */
+        requestId?: string;
+        result?: Array<Service>;
+    };
+};
+export type ListOrganizationServicesResponse = ListOrganizationServicesResponses[keyof ListOrganizationServicesResponses];
+export type CreateNewServiceData = {
+    body?: ServicePostRequest;
+    path: {
+        /**
+         * ID of the organization that will own the service.
+         */
+        organizationId: string;
+    };
+    query?: never;
+    url: "/v1/organizations/{organizationId}/services";
+};
+export type CreateNewServiceErrors = {
+    /**
+     * The server cannot or will not process the request due to something that is perceived to be a client error.
+     */
+    400: {
+        /**
+         * HTTP status code.
+         */
+        status?: number;
+        /**
+         * Detailed error description.
+         */
+        error?: string;
+    };
+};
+export type CreateNewServiceError = CreateNewServiceErrors[keyof CreateNewServiceErrors];
+export type CreateNewServiceResponses = {
+    /**
+     * Successful response
+     */
+    200: {
+        /**
+         * HTTP status code.
+         */
+        status?: number;
+        /**
+         * Unique id assigned to every request. UUIDv4
+         */
+        requestId?: string;
+        result?: ServicePostResponse;
+    };
+};
+export type CreateNewServiceResponse = CreateNewServiceResponses[keyof CreateNewServiceResponses];
+export type DeleteServiceData = {
+    body?: never;
+    path: {
+        /**
+         * ID of the organization that owns the service.
+         */
+        organizationId: string;
+        /**
+         * ID of the service to delete.
+         */
+        serviceId: string;
+    };
+    query?: never;
+    url: "/v1/organizations/{organizationId}/services/{serviceId}";
+};
+export type DeleteServiceErrors = {
+    /**
+     * The server cannot or will not process the request due to something that is perceived to be a client error.
+     */
+    400: {
+        /**
+         * HTTP status code.
+         */
+        status?: number;
+        /**
+         * Detailed error description.
+         */
+        error?: string;
+    };
+};
+export type DeleteServiceError = DeleteServiceErrors[keyof DeleteServiceErrors];
+export type DeleteServiceResponses = {
+    /**
+     * Successful response
+     */
+    200: {
+        /**
+         * HTTP status code.
+         */
+        status?: number;
+        /**
+         * Unique id assigned to every request. UUIDv4
+         */
+        requestId?: string;
+    };
+};
+export type DeleteServiceResponse = DeleteServiceResponses[keyof DeleteServiceResponses];
+export type GetServiceDetailsData = {
+    body?: never;
+    path: {
+        /**
+         * ID of the organization that owns the service.
+         */
+        organizationId: string;
+        /**
+         * ID of the requested service.
+         */
+        serviceId: string;
+    };
+    query?: never;
+    url: "/v1/organizations/{organizationId}/services/{serviceId}";
+};
+export type GetServiceDetailsErrors = {
+    /**
+     * The server cannot or will not process the request due to something that is perceived to be a client error.
+     */
+    400: {
+        /**
+         * HTTP status code.
+         */
+        status?: number;
+        /**
+         * Detailed error description.
+         */
+        error?: string;
+    };
+};
+export type GetServiceDetailsError = GetServiceDetailsErrors[keyof GetServiceDetailsErrors];
+export type GetServiceDetailsResponses = {
+    /**
+     * Successful response
+     */
+    200: {
+        /**
+         * HTTP status code.
+         */
+        status?: number;
+        /**
+         * Unique id assigned to every request. UUIDv4
+         */
+        requestId?: string;
+        result?: Service;
+    };
+};
+export type GetServiceDetailsResponse = GetServiceDetailsResponses[keyof GetServiceDetailsResponses];
+export type UpdateServiceBasicDetailsData = {
+    body?: ServicePatchRequest;
+    path: {
+        /**
+         * ID of the organization that owns the service.
+         */
+        organizationId: string;
+        /**
+         * ID of the service to update.
+         */
+        serviceId: string;
+    };
+    query?: never;
+    url: "/v1/organizations/{organizationId}/services/{serviceId}";
+};
+export type UpdateServiceBasicDetailsErrors = {
+    /**
+     * The server cannot or will not process the request due to something that is perceived to be a client error.
+     */
+    400: {
+        /**
+         * HTTP status code.
+         */
+        status?: number;
+        /**
+         * Detailed error description.
+         */
+        error?: string;
+    };
+};
+export type UpdateServiceBasicDetailsError = UpdateServiceBasicDetailsErrors[keyof UpdateServiceBasicDetailsErrors];
+export type UpdateServiceBasicDetailsResponses = {
+    /**
+     * Successful response
+     */
+    200: {
+        /**
+         * HTTP status code.
+         */
+        status?: number;
+        /**
+         * Unique id assigned to every request. UUIDv4
+         */
+        requestId?: string;
+        result?: Service;
+    };
+};
+export type UpdateServiceBasicDetailsResponse = UpdateServiceBasicDetailsResponses[keyof UpdateServiceBasicDetailsResponses];
+export type GetPrivateEndpointConfigurationData = {
+    body?: never;
+    path: {
+        /**
+         * ID of the requested organization.
+         */
+        organizationId: string;
+        /**
+         * ID of the requested service.
+         */
+        serviceId: string;
+    };
+    query?: never;
+    url: "/v1/organizations/{organizationId}/services/{serviceId}/privateEndpointConfig";
+};
+export type GetPrivateEndpointConfigurationErrors = {
+    /**
+     * The server cannot or will not process the request due to something that is perceived to be a client error.
+     */
+    400: {
+        /**
+         * HTTP status code.
+         */
+        status?: number;
+        /**
+         * Detailed error description.
+         */
+        error?: string;
+    };
+};
+export type GetPrivateEndpointConfigurationError = GetPrivateEndpointConfigurationErrors[keyof GetPrivateEndpointConfigurationErrors];
+export type GetPrivateEndpointConfigurationResponses = {
+    /**
+     * Successful response
+     */
+    200: {
+        /**
+         * HTTP status code.
+         */
+        status?: number;
+        /**
+         * Unique id assigned to every request. UUIDv4
+         */
+        requestId?: string;
+        result?: PrivateEndpointConfig;
+    };
+};
+export type GetPrivateEndpointConfigurationResponse = GetPrivateEndpointConfigurationResponses[keyof GetPrivateEndpointConfigurationResponses];
+export type DeleteServiceQueryEndpointForInstanceData = {
+    body?: never;
+    path: {
+        /**
+         * ID of the requested organization.
+         */
+        organizationId: string;
+        /**
+         * ID of the requested service.
+         */
+        serviceId: string;
+    };
+    query?: never;
+    url: "/v1/organizations/{organizationId}/services/{serviceId}/serviceQueryEndpoint";
+};
+export type DeleteServiceQueryEndpointForInstanceErrors = {
+    /**
+     * The server cannot or will not process the request due to something that is perceived to be a client error.
+     */
+    400: {
+        /**
+         * HTTP status code.
+         */
+        status?: number;
+        /**
+         * Detailed error description.
+         */
+        error?: string;
+    };
+};
+export type DeleteServiceQueryEndpointForInstanceError = DeleteServiceQueryEndpointForInstanceErrors[keyof DeleteServiceQueryEndpointForInstanceErrors];
+export type DeleteServiceQueryEndpointForInstanceResponses = {
+    /**
+     * Successful response
+     */
+    200: {
+        /**
+         * HTTP status code.
+         */
+        status?: number;
+        /**
+         * Unique id assigned to every request. UUIDv4
+         */
+        requestId?: string;
+    };
+};
+export type DeleteServiceQueryEndpointForInstanceResponse = DeleteServiceQueryEndpointForInstanceResponses[keyof DeleteServiceQueryEndpointForInstanceResponses];
+export type GetServiceQueryEndpointForInstanceData = {
+    body?: never;
+    path: {
+        /**
+         * ID of the requested organization.
+         */
+        organizationId: string;
+        /**
+         * ID of the requested service.
+         */
+        serviceId: string;
+    };
+    query?: never;
+    url: "/v1/organizations/{organizationId}/services/{serviceId}/serviceQueryEndpoint";
+};
+export type GetServiceQueryEndpointForInstanceErrors = {
+    /**
+     * The server cannot or will not process the request due to something that is perceived to be a client error.
+     */
+    400: {
+        /**
+         * HTTP status code.
+         */
+        status?: number;
+        /**
+         * Detailed error description.
+         */
+        error?: string;
+    };
+};
+export type GetServiceQueryEndpointForInstanceError = GetServiceQueryEndpointForInstanceErrors[keyof GetServiceQueryEndpointForInstanceErrors];
+export type GetServiceQueryEndpointForInstanceResponses = {
+    /**
+     * Successful response
+     */
+    200: {
+        /**
+         * HTTP status code.
+         */
+        status?: number;
+        /**
+         * Unique id assigned to every request. UUIDv4
+         */
+        requestId?: string;
+        result?: ServiceQueryApiEndpoint;
+    };
+};
+export type GetServiceQueryEndpointForInstanceResponse = GetServiceQueryEndpointForInstanceResponses[keyof GetServiceQueryEndpointForInstanceResponses];
+export type UpsertServiceQueryEndpointForInstanceData = {
+    body?: InstanceServiceQueryApiEndpointsPostRequest;
+    path: {
+        /**
+         * ID of the requested organization.
+         */
+        organizationId: string;
+        /**
+         * ID of the requested service.
+         */
+        serviceId: string;
+    };
+    query?: never;
+    url: "/v1/organizations/{organizationId}/services/{serviceId}/serviceQueryEndpoint";
+};
+export type UpsertServiceQueryEndpointForInstanceErrors = {
+    /**
+     * The server cannot or will not process the request due to something that is perceived to be a client error.
+     */
+    400: {
+        /**
+         * HTTP status code.
+         */
+        status?: number;
+        /**
+         * Detailed error description.
+         */
+        error?: string;
+    };
+};
+export type UpsertServiceQueryEndpointForInstanceError = UpsertServiceQueryEndpointForInstanceErrors[keyof UpsertServiceQueryEndpointForInstanceErrors];
+export type UpsertServiceQueryEndpointForInstanceResponses = {
+    /**
+     * Successful response
+     */
+    200: {
+        /**
+         * HTTP status code.
+         */
+        status?: number;
+        /**
+         * Unique id assigned to every request. UUIDv4
+         */
+        requestId?: string;
+        result?: ServiceQueryApiEndpoint;
+    };
+};
+export type UpsertServiceQueryEndpointForInstanceResponse = UpsertServiceQueryEndpointForInstanceResponses[keyof UpsertServiceQueryEndpointForInstanceResponses];
+export type UpdateServiceStateData = {
+    body?: ServiceStatePatchRequest;
+    path: {
+        /**
+         * ID of the organization that owns the service.
+         */
+        organizationId: string;
+        /**
+         * ID of the service to update state.
+         */
+        serviceId: string;
+    };
+    query?: never;
+    url: "/v1/organizations/{organizationId}/services/{serviceId}/state";
+};
+export type UpdateServiceStateErrors = {
+    /**
+     * The server cannot or will not process the request due to something that is perceived to be a client error.
+     */
+    400: {
+        /**
+         * HTTP status code.
+         */
+        status?: number;
+        /**
+         * Detailed error description.
+         */
+        error?: string;
+    };
+};
+export type UpdateServiceStateError = UpdateServiceStateErrors[keyof UpdateServiceStateErrors];
+export type UpdateServiceStateResponses = {
+    /**
+     * Successful response
+     */
+    200: {
+        /**
+         * HTTP status code.
+         */
+        status?: number;
+        /**
+         * Unique id assigned to every request. UUIDv4
+         */
+        requestId?: string;
+        result?: Service;
+    };
+};
+export type UpdateServiceStateResponse = UpdateServiceStateResponses[keyof UpdateServiceStateResponses];
+export type UpdateServiceAutoScalingSettingsData = {
+    body?: ServiceScalingPatchRequest;
+    path: {
+        /**
+         * ID of the organization that owns the service.
+         */
+        organizationId: string;
+        /**
+         * ID of the service to update scaling parameters.
+         */
+        serviceId: string;
+    };
+    query?: never;
+    url: "/v1/organizations/{organizationId}/services/{serviceId}/scaling";
+};
+export type UpdateServiceAutoScalingSettingsErrors = {
+    /**
+     * The server cannot or will not process the request due to something that is perceived to be a client error.
+     */
+    400: {
+        /**
+         * HTTP status code.
+         */
+        status?: number;
+        /**
+         * Detailed error description.
+         */
+        error?: string;
+    };
+};
+export type UpdateServiceAutoScalingSettingsError = UpdateServiceAutoScalingSettingsErrors[keyof UpdateServiceAutoScalingSettingsErrors];
+export type UpdateServiceAutoScalingSettingsResponses = {
+    /**
+     * Successful response
+     */
+    200: {
+        /**
+         * HTTP status code.
+         */
+        status?: number;
+        /**
+         * Unique id assigned to every request. UUIDv4
+         */
+        requestId?: string;
+        result?: Service;
+    };
+};
+export type UpdateServiceAutoScalingSettingsResponse = UpdateServiceAutoScalingSettingsResponses[keyof UpdateServiceAutoScalingSettingsResponses];
+export type UpdateServiceAutoScalingSettings2Data = {
+    body?: ServiceReplicaScalingPatchRequest;
+    path: {
+        /**
+         * ID of the organization that owns the service.
+         */
+        organizationId: string;
+        /**
+         * ID of the service to update scaling parameters.
+         */
+        serviceId: string;
+    };
+    query?: never;
+    url: "/v1/organizations/{organizationId}/services/{serviceId}/replicaScaling";
+};
+export type UpdateServiceAutoScalingSettings2Errors = {
+    /**
+     * The server cannot or will not process the request due to something that is perceived to be a client error.
+     */
+    400: {
+        /**
+         * HTTP status code.
+         */
+        status?: number;
+        /**
+         * Detailed error description.
+         */
+        error?: string;
+    };
+};
+export type UpdateServiceAutoScalingSettings2Error = UpdateServiceAutoScalingSettings2Errors[keyof UpdateServiceAutoScalingSettings2Errors];
+export type UpdateServiceAutoScalingSettings2Responses = {
+    /**
+     * Successful response
+     */
+    200: {
+        /**
+         * HTTP status code.
+         */
+        status?: number;
+        /**
+         * Unique id assigned to every request. UUIDv4
+         */
+        requestId?: string;
+        result?: ServiceScalingPatchResponse;
+    };
+};
+export type UpdateServiceAutoScalingSettings2Response = UpdateServiceAutoScalingSettings2Responses[keyof UpdateServiceAutoScalingSettings2Responses];
+export type UpdateServicePasswordData = {
+    body?: ServicePasswordPatchRequest;
+    path: {
+        /**
+         * ID of the organization that owns the service.
+         */
+        organizationId: string;
+        /**
+         * ID of the service to update password.
+         */
+        serviceId: string;
+    };
+    query?: never;
+    url: "/v1/organizations/{organizationId}/services/{serviceId}/password";
+};
+export type UpdateServicePasswordErrors = {
+    /**
+     * The server cannot or will not process the request due to something that is perceived to be a client error.
+     */
+    400: {
+        /**
+         * HTTP status code.
+         */
+        status?: number;
+        /**
+         * Detailed error description.
+         */
+        error?: string;
+    };
+};
+export type UpdateServicePasswordError = UpdateServicePasswordErrors[keyof UpdateServicePasswordErrors];
+export type UpdateServicePasswordResponses = {
+    /**
+     * Successful response
+     */
+    200: {
+        /**
+         * HTTP status code.
+         */
+        status?: number;
+        /**
+         * Unique id assigned to every request. UUIDv4
+         */
+        requestId?: string;
+        result?: ServicePasswordPatchResponse;
+    };
+};
+export type UpdateServicePasswordResponse = UpdateServicePasswordResponses[keyof UpdateServicePasswordResponses];
+export type CreatePrivateEndpointData = {
+    body?: ServicPrivateEndpointePostRequest;
+    path: {
+        /**
+         * ID of the requested organization.
+         */
+        organizationId: string;
+        /**
+         * ID of the requested service.
+         */
+        serviceId: string;
+    };
+    query?: never;
+    url: "/v1/organizations/{organizationId}/services/{serviceId}/privateEndpoint";
+};
+export type CreatePrivateEndpointErrors = {
+    /**
+     * The server cannot or will not process the request due to something that is perceived to be a client error.
+     */
+    400: {
+        /**
+         * HTTP status code.
+         */
+        status?: number;
+        /**
+         * Detailed error description.
+         */
+        error?: string;
+    };
+};
+export type CreatePrivateEndpointError = CreatePrivateEndpointErrors[keyof CreatePrivateEndpointErrors];
+export type CreatePrivateEndpointResponses = {
+    /**
+     * Successful response
+     */
+    200: {
+        /**
+         * HTTP status code.
+         */
+        status?: number;
+        /**
+         * Unique id assigned to every request. UUIDv4
+         */
+        requestId?: string;
+        result?: InstancePrivateEndpoint;
+    };
+};
+export type CreatePrivateEndpointResponse = CreatePrivateEndpointResponses[keyof CreatePrivateEndpointResponses];
+export type GetServiceMetricsData = {
+    body?: never;
+    path: {
+        /**
+         * ID of the organization that owns the service.
+         */
+        organizationId: string;
+        /**
+         * ID of the requested service.
+         */
+        serviceId: string;
+    };
+    query?: {
+        /**
+         * Return a filtered list of Prometheus metrics.
+         */
+        filtered_metrics?: string;
+    };
+    url: "/v1/organizations/{organizationId}/services/{serviceId}/prometheus";
+};
+export type GetServiceMetricsErrors = {
+    /**
+     * The server cannot or will not process the request due to something that is perceived to be a client error.
+     */
+    400: {
+        /**
+         * HTTP status code.
+         */
+        status?: number;
+        /**
+         * Detailed error description.
+         */
+        error?: string;
+    };
+};
+export type GetServiceMetricsError = GetServiceMetricsErrors[keyof GetServiceMetricsErrors];
+export type GetServiceMetricsResponses = {
+    /**
+     * Successful response
+     */
+    200: string;
+};
+export type GetServiceMetricsResponse = GetServiceMetricsResponses[keyof GetServiceMetricsResponses];
+export type ListServiceBackupsData = {
+    body?: never;
+    path: {
+        /**
+         * ID of the organization that owns the backup.
+         */
+        organizationId: string;
+        /**
+         * ID of the service the backup was created from.
+         */
+        serviceId: string;
+    };
+    query?: never;
+    url: "/v1/organizations/{organizationId}/services/{serviceId}/backups";
+};
+export type ListServiceBackupsErrors = {
+    /**
+     * The server cannot or will not process the request due to something that is perceived to be a client error.
+     */
+    400: {
+        /**
+         * HTTP status code.
+         */
+        status?: number;
+        /**
+         * Detailed error description.
+         */
+        error?: string;
+    };
+};
+export type ListServiceBackupsError = ListServiceBackupsErrors[keyof ListServiceBackupsErrors];
+export type ListServiceBackupsResponses = {
+    /**
+     * Successful response
+     */
+    200: {
+        /**
+         * HTTP status code.
+         */
+        status?: number;
+        /**
+         * Unique id assigned to every request. UUIDv4
+         */
+        requestId?: string;
+        result?: Array<Backup>;
+    };
+};
+export type ListServiceBackupsResponse = ListServiceBackupsResponses[keyof ListServiceBackupsResponses];
+export type GetBackupDetailsData = {
+    body?: never;
+    path: {
+        /**
+         * ID of the organization that owns the backup.
+         */
+        organizationId: string;
+        /**
+         * ID of the service the backup was created from.
+         */
+        serviceId: string;
+        /**
+         * ID of the requested backup.
+         */
+        backupId: string;
+    };
+    query?: never;
+    url: "/v1/organizations/{organizationId}/services/{serviceId}/backups/{backupId}";
+};
+export type GetBackupDetailsErrors = {
+    /**
+     * The server cannot or will not process the request due to something that is perceived to be a client error.
+     */
+    400: {
+        /**
+         * HTTP status code.
+         */
+        status?: number;
+        /**
+         * Detailed error description.
+         */
+        error?: string;
+    };
+};
+export type GetBackupDetailsError = GetBackupDetailsErrors[keyof GetBackupDetailsErrors];
+export type GetBackupDetailsResponses = {
+    /**
+     * Successful response
+     */
+    200: {
+        /**
+         * HTTP status code.
+         */
+        status?: number;
+        /**
+         * Unique id assigned to every request. UUIDv4
+         */
+        requestId?: string;
+        result?: Backup;
+    };
+};
+export type GetBackupDetailsResponse = GetBackupDetailsResponses[keyof GetBackupDetailsResponses];
+export type GetServiceBackupConfigurationData = {
+    body?: never;
+    path: {
+        /**
+         * ID of the organization that owns the service.
+         */
+        organizationId: string;
+        /**
+         * ID of the service.
+         */
+        serviceId: string;
+    };
+    query?: never;
+    url: "/v1/organizations/{organizationId}/services/{serviceId}/backupConfiguration";
+};
+export type GetServiceBackupConfigurationErrors = {
+    /**
+     * The server cannot or will not process the request due to something that is perceived to be a client error.
+     */
+    400: {
+        /**
+         * HTTP status code.
+         */
+        status?: number;
+        /**
+         * Detailed error description.
+         */
+        error?: string;
+    };
+};
+export type GetServiceBackupConfigurationError = GetServiceBackupConfigurationErrors[keyof GetServiceBackupConfigurationErrors];
+export type GetServiceBackupConfigurationResponses = {
+    /**
+     * Successful response
+     */
+    200: {
+        /**
+         * HTTP status code.
+         */
+        status?: number;
+        /**
+         * Unique id assigned to every request. UUIDv4
+         */
+        requestId?: string;
+        result?: BackupConfiguration;
+    };
+};
+export type GetServiceBackupConfigurationResponse = GetServiceBackupConfigurationResponses[keyof GetServiceBackupConfigurationResponses];
+export type UpdateServiceBackupConfigurationData = {
+    body?: BackupConfigurationPatchRequest;
+    path: {
+        /**
+         * ID of the organization that owns the service.
+         */
+        organizationId: string;
+        /**
+         * ID of the service.
+         */
+        serviceId: string;
+    };
+    query?: never;
+    url: "/v1/organizations/{organizationId}/services/{serviceId}/backupConfiguration";
+};
+export type UpdateServiceBackupConfigurationErrors = {
+    /**
+     * The server cannot or will not process the request due to something that is perceived to be a client error.
+     */
+    400: {
+        /**
+         * HTTP status code.
+         */
+        status?: number;
+        /**
+         * Detailed error description.
+         */
+        error?: string;
+    };
+};
+export type UpdateServiceBackupConfigurationError = UpdateServiceBackupConfigurationErrors[keyof UpdateServiceBackupConfigurationErrors];
+export type UpdateServiceBackupConfigurationResponses = {
+    /**
+     * Successful response
+     */
+    200: {
+        /**
+         * HTTP status code.
+         */
+        status?: number;
+        /**
+         * Unique id assigned to every request. UUIDv4
+         */
+        requestId?: string;
+        result?: BackupConfiguration;
+    };
+};
+export type UpdateServiceBackupConfigurationResponse = UpdateServiceBackupConfigurationResponses[keyof UpdateServiceBackupConfigurationResponses];
+export type ListAllKeysData = {
+    body?: never;
+    path: {
+        /**
+         * ID of the requested organization.
+         */
+        organizationId: string;
+    };
+    query?: never;
+    url: "/v1/organizations/{organizationId}/keys";
+};
+export type ListAllKeysErrors = {
+    /**
+     * The server cannot or will not process the request due to something that is perceived to be a client error.
+     */
+    400: {
+        /**
+         * HTTP status code.
+         */
+        status?: number;
+        /**
+         * Detailed error description.
+         */
+        error?: string;
+    };
+};
+export type ListAllKeysError = ListAllKeysErrors[keyof ListAllKeysErrors];
+export type ListAllKeysResponses = {
+    /**
+     * Successful response
+     */
+    200: {
+        /**
+         * HTTP status code.
+         */
+        status?: number;
+        /**
+         * Unique id assigned to every request. UUIDv4
+         */
+        requestId?: string;
+        result?: Array<ApiKey>;
+    };
+};
+export type ListAllKeysResponse = ListAllKeysResponses[keyof ListAllKeysResponses];
+export type CreateKeyData = {
+    body?: ApiKeyPostRequest;
+    path: {
+        /**
+         * ID of the organization that will own the key.
+         */
+        organizationId: string;
+    };
+    query?: never;
+    url: "/v1/organizations/{organizationId}/keys";
+};
+export type CreateKeyErrors = {
+    /**
+     * The server cannot or will not process the request due to something that is perceived to be a client error.
+     */
+    400: {
+        /**
+         * HTTP status code.
+         */
+        status?: number;
+        /**
+         * Detailed error description.
+         */
+        error?: string;
+    };
+};
+export type CreateKeyError = CreateKeyErrors[keyof CreateKeyErrors];
+export type CreateKeyResponses = {
+    /**
+     * Successful response
+     */
+    200: {
+        /**
+         * HTTP status code.
+         */
+        status?: number;
+        /**
+         * Unique id assigned to every request. UUIDv4
+         */
+        requestId?: string;
+        result?: ApiKeyPostResponse;
+    };
+};
+export type CreateKeyResponse = CreateKeyResponses[keyof CreateKeyResponses];
+export type DeleteKeyData = {
+    body?: never;
+    path: {
+        /**
+         * ID of the organization that owns the key.
+         */
+        organizationId: string;
+        /**
+         * ID of the key to delete.
+         */
+        keyId: string;
+    };
+    query?: never;
+    url: "/v1/organizations/{organizationId}/keys/{keyId}";
+};
+export type DeleteKeyErrors = {
+    /**
+     * The server cannot or will not process the request due to something that is perceived to be a client error.
+     */
+    400: {
+        /**
+         * HTTP status code.
+         */
+        status?: number;
+        /**
+         * Detailed error description.
+         */
+        error?: string;
+    };
+};
+export type DeleteKeyError = DeleteKeyErrors[keyof DeleteKeyErrors];
+export type DeleteKeyResponses = {
+    /**
+     * Successful response
+     */
+    200: {
+        /**
+         * HTTP status code.
+         */
+        status?: number;
+        /**
+         * Unique id assigned to every request. UUIDv4
+         */
+        requestId?: string;
+    };
+};
+export type DeleteKeyResponse = DeleteKeyResponses[keyof DeleteKeyResponses];
+export type GetKeyDetailsData = {
+    body?: never;
+    path: {
+        /**
+         * ID of the requested organization.
+         */
+        organizationId: string;
+        /**
+         * ID of the requested key.
+         */
+        keyId: string;
+    };
+    query?: never;
+    url: "/v1/organizations/{organizationId}/keys/{keyId}";
+};
+export type GetKeyDetailsErrors = {
+    /**
+     * The server cannot or will not process the request due to something that is perceived to be a client error.
+     */
+    400: {
+        /**
+         * HTTP status code.
+         */
+        status?: number;
+        /**
+         * Detailed error description.
+         */
+        error?: string;
+    };
+};
+export type GetKeyDetailsError = GetKeyDetailsErrors[keyof GetKeyDetailsErrors];
+export type GetKeyDetailsResponses = {
+    /**
+     * Successful response
+     */
+    200: {
+        /**
+         * HTTP status code.
+         */
+        status?: number;
+        /**
+         * Unique id assigned to every request. UUIDv4
+         */
+        requestId?: string;
+        result?: ApiKey;
+    };
+};
+export type GetKeyDetailsResponse = GetKeyDetailsResponses[keyof GetKeyDetailsResponses];
+export type UpdateKeyData = {
+    body?: ApiKeyPatchRequest;
+    path: {
+        /**
+         * ID of the organization that owns the key.
+         */
+        organizationId: string;
+        /**
+         * ID of the key to update.
+         */
+        keyId: string;
+    };
+    query?: never;
+    url: "/v1/organizations/{organizationId}/keys/{keyId}";
+};
+export type UpdateKeyErrors = {
+    /**
+     * The server cannot or will not process the request due to something that is perceived to be a client error.
+     */
+    400: {
+        /**
+         * HTTP status code.
+         */
+        status?: number;
+        /**
+         * Detailed error description.
+         */
+        error?: string;
+    };
+};
+export type UpdateKeyError = UpdateKeyErrors[keyof UpdateKeyErrors];
+export type UpdateKeyResponses = {
+    /**
+     * Successful response
+     */
+    200: {
+        /**
+         * HTTP status code.
+         */
+        status?: number;
+        /**
+         * Unique id assigned to every request. UUIDv4
+         */
+        requestId?: string;
+        result?: ApiKey;
+    };
+};
+export type UpdateKeyResponse = UpdateKeyResponses[keyof UpdateKeyResponses];
+export type ListOrganizationMembersData = {
+    body?: never;
+    path: {
+        /**
+         * ID of the requested organization.
+         */
+        organizationId: string;
+    };
+    query?: never;
+    url: "/v1/organizations/{organizationId}/members";
+};
+export type ListOrganizationMembersErrors = {
+    /**
+     * The server cannot or will not process the request due to something that is perceived to be a client error.
+     */
+    400: {
+        /**
+         * HTTP status code.
+         */
+        status?: number;
+        /**
+         * Detailed error description.
+         */
+        error?: string;
+    };
+};
+export type ListOrganizationMembersError = ListOrganizationMembersErrors[keyof ListOrganizationMembersErrors];
+export type ListOrganizationMembersResponses = {
+    /**
+     * Successful response
+     */
+    200: {
+        /**
+         * HTTP status code.
+         */
+        status?: number;
+        /**
+         * Unique id assigned to every request. UUIDv4
+         */
+        requestId?: string;
+        result?: Array<Member>;
+    };
+};
+export type ListOrganizationMembersResponse = ListOrganizationMembersResponses[keyof ListOrganizationMembersResponses];
+export type RemoveOrganizationMemberData = {
+    body?: never;
+    path: {
+        /**
+         * ID of the requested organization.
+         */
+        organizationId: string;
+        /**
+         * ID of the requested user.
+         */
+        userId: string;
+    };
+    query?: never;
+    url: "/v1/organizations/{organizationId}/members/{userId}";
+};
+export type RemoveOrganizationMemberErrors = {
+    /**
+     * The server cannot or will not process the request due to something that is perceived to be a client error.
+     */
+    400: {
+        /**
+         * HTTP status code.
+         */
+        status?: number;
+        /**
+         * Detailed error description.
+         */
+        error?: string;
+    };
+};
+export type RemoveOrganizationMemberError = RemoveOrganizationMemberErrors[keyof RemoveOrganizationMemberErrors];
+export type RemoveOrganizationMemberResponses = {
+    /**
+     * Successful response
+     */
+    200: {
+        /**
+         * HTTP status code.
+         */
+        status?: number;
+        /**
+         * Unique id assigned to every request. UUIDv4
+         */
+        requestId?: string;
+    };
+};
+export type RemoveOrganizationMemberResponse = RemoveOrganizationMemberResponses[keyof RemoveOrganizationMemberResponses];
+export type GetMemberDetailsData = {
+    body?: never;
+    path: {
+        /**
+         * ID of the organization the member is part of.
+         */
+        organizationId: string;
+        /**
+         * ID of the requested user.
+         */
+        userId: string;
+    };
+    query?: never;
+    url: "/v1/organizations/{organizationId}/members/{userId}";
+};
+export type GetMemberDetailsErrors = {
+    /**
+     * The server cannot or will not process the request due to something that is perceived to be a client error.
+     */
+    400: {
+        /**
+         * HTTP status code.
+         */
+        status?: number;
+        /**
+         * Detailed error description.
+         */
+        error?: string;
+    };
+};
+export type GetMemberDetailsError = GetMemberDetailsErrors[keyof GetMemberDetailsErrors];
+export type GetMemberDetailsResponses = {
+    /**
+     * Successful response
+     */
+    200: {
+        /**
+         * HTTP status code.
+         */
+        status?: number;
+        /**
+         * Unique id assigned to every request. UUIDv4
+         */
+        requestId?: string;
+        result?: Member;
+    };
+};
+export type GetMemberDetailsResponse = GetMemberDetailsResponses[keyof GetMemberDetailsResponses];
+export type UpdateOrganizationMemberData = {
+    body?: MemberPatchRequest;
+    path: {
+        /**
+         * ID of the organization the member is part of.
+         */
+        organizationId: string;
+        /**
+         * ID of the user to patch
+         */
+        userId: string;
+    };
+    query?: never;
+    url: "/v1/organizations/{organizationId}/members/{userId}";
+};
+export type UpdateOrganizationMemberErrors = {
+    /**
+     * The server cannot or will not process the request due to something that is perceived to be a client error.
+     */
+    400: {
+        /**
+         * HTTP status code.
+         */
+        status?: number;
+        /**
+         * Detailed error description.
+         */
+        error?: string;
+    };
+};
+export type UpdateOrganizationMemberError = UpdateOrganizationMemberErrors[keyof UpdateOrganizationMemberErrors];
+export type UpdateOrganizationMemberResponses = {
+    /**
+     * Successful response
+     */
+    200: {
+        /**
+         * HTTP status code.
+         */
+        status?: number;
+        /**
+         * Unique id assigned to every request. UUIDv4
+         */
+        requestId?: string;
+        result?: Member;
+    };
+};
+export type UpdateOrganizationMemberResponse = UpdateOrganizationMemberResponses[keyof UpdateOrganizationMemberResponses];
+export type ListAllInvitationsData = {
+    body?: never;
+    path: {
+        /**
+         * ID of the requested organization.
+         */
+        organizationId: string;
+    };
+    query?: never;
+    url: "/v1/organizations/{organizationId}/invitations";
+};
+export type ListAllInvitationsErrors = {
+    /**
+     * The server cannot or will not process the request due to something that is perceived to be a client error.
+     */
+    400: {
+        /**
+         * HTTP status code.
+         */
+        status?: number;
+        /**
+         * Detailed error description.
+         */
+        error?: string;
+    };
+};
+export type ListAllInvitationsError = ListAllInvitationsErrors[keyof ListAllInvitationsErrors];
+export type ListAllInvitationsResponses = {
+    /**
+     * Successful response
+     */
+    200: {
+        /**
+         * HTTP status code.
+         */
+        status?: number;
+        /**
+         * Unique id assigned to every request. UUIDv4
+         */
+        requestId?: string;
+        result?: Array<Invitation>;
+    };
+};
+export type ListAllInvitationsResponse = ListAllInvitationsResponses[keyof ListAllInvitationsResponses];
+export type CreateInvitationData = {
+    body?: InvitationPostRequest;
+    path: {
+        /**
+         * ID of the organization to invite a user to.
+         */
+        organizationId: string;
+    };
+    query?: never;
+    url: "/v1/organizations/{organizationId}/invitations";
+};
+export type CreateInvitationErrors = {
+    /**
+     * The server cannot or will not process the request due to something that is perceived to be a client error.
+     */
+    400: {
+        /**
+         * HTTP status code.
+         */
+        status?: number;
+        /**
+         * Detailed error description.
+         */
+        error?: string;
+    };
+};
+export type CreateInvitationError = CreateInvitationErrors[keyof CreateInvitationErrors];
+export type CreateInvitationResponses = {
+    /**
+     * Successful response
+     */
+    200: {
+        /**
+         * HTTP status code.
+         */
+        status?: number;
+        /**
+         * Unique id assigned to every request. UUIDv4
+         */
+        requestId?: string;
+        result?: Invitation;
+    };
+};
+export type CreateInvitationResponse = CreateInvitationResponses[keyof CreateInvitationResponses];
+export type DeleteOrganizationInvitationData = {
+    body?: never;
+    path: {
+        /**
+         * ID of the organization that has the invitation.
+         */
+        organizationId: string;
+        /**
+         * ID of the requested organization.
+         */
+        invitationId: string;
+    };
+    query?: never;
+    url: "/v1/organizations/{organizationId}/invitations/{invitationId}";
+};
+export type DeleteOrganizationInvitationErrors = {
+    /**
+     * The server cannot or will not process the request due to something that is perceived to be a client error.
+     */
+    400: {
+        /**
+         * HTTP status code.
+         */
+        status?: number;
+        /**
+         * Detailed error description.
+         */
+        error?: string;
+    };
+};
+export type DeleteOrganizationInvitationError = DeleteOrganizationInvitationErrors[keyof DeleteOrganizationInvitationErrors];
+export type DeleteOrganizationInvitationResponses = {
+    /**
+     * Successful response
+     */
+    200: {
+        /**
+         * HTTP status code.
+         */
+        status?: number;
+        /**
+         * Unique id assigned to every request. UUIDv4
+         */
+        requestId?: string;
+    };
+};
+export type DeleteOrganizationInvitationResponse = DeleteOrganizationInvitationResponses[keyof DeleteOrganizationInvitationResponses];
+export type GetInvitationDetailsData = {
+    body?: never;
+    path: {
+        /**
+         * ID of the requested organization.
+         */
+        organizationId: string;
+        /**
+         * ID of the requested organization.
+         */
+        invitationId: string;
+    };
+    query?: never;
+    url: "/v1/organizations/{organizationId}/invitations/{invitationId}";
+};
+export type GetInvitationDetailsErrors = {
+    /**
+     * The server cannot or will not process the request due to something that is perceived to be a client error.
+     */
+    400: {
+        /**
+         * HTTP status code.
+         */
+        status?: number;
+        /**
+         * Detailed error description.
+         */
+        error?: string;
+    };
+};
+export type GetInvitationDetailsError = GetInvitationDetailsErrors[keyof GetInvitationDetailsErrors];
+export type GetInvitationDetailsResponses = {
+    /**
+     * Successful response
+     */
+    200: {
+        /**
+         * HTTP status code.
+         */
+        status?: number;
+        /**
+         * Unique id assigned to every request. UUIDv4
+         */
+        requestId?: string;
+        result?: Invitation;
+    };
+};
+export type GetInvitationDetailsResponse = GetInvitationDetailsResponses[keyof GetInvitationDetailsResponses];
+export type ListOrganizationActivitiesData = {
+    body?: never;
+    path: {
+        /**
+         * ID of the requested organization.
+         */
+        organizationId: string;
+    };
+    query?: {
+        /**
+         * A starting date for a search
+         */
+        from_date?: string;
+        /**
+         * An ending date for a search
+         */
+        to_date?: string;
+    };
+    url: "/v1/organizations/{organizationId}/activities";
+};
+export type ListOrganizationActivitiesErrors = {
+    /**
+     * The server cannot or will not process the request due to something that is perceived to be a client error.
+     */
+    400: {
+        /**
+         * HTTP status code.
+         */
+        status?: number;
+        /**
+         * Detailed error description.
+         */
+        error?: string;
+    };
+};
+export type ListOrganizationActivitiesError = ListOrganizationActivitiesErrors[keyof ListOrganizationActivitiesErrors];
+export type ListOrganizationActivitiesResponses = {
+    /**
+     * Successful response
+     */
+    200: {
+        /**
+         * HTTP status code.
+         */
+        status?: number;
+        /**
+         * Unique id assigned to every request. UUIDv4
+         */
+        requestId?: string;
+        result?: Array<Activity>;
+    };
+};
+export type ListOrganizationActivitiesResponse = ListOrganizationActivitiesResponses[keyof ListOrganizationActivitiesResponses];
+export type OrganizationActivityData = {
+    body?: never;
+    path: {
+        /**
+         * ID of the requested organization.
+         */
+        organizationId: string;
+        /**
+         * ID of the requested activity.
+         */
+        activityId: string;
+    };
+    query?: never;
+    url: "/v1/organizations/{organizationId}/activities/{activityId}";
+};
+export type OrganizationActivityErrors = {
+    /**
+     * The server cannot or will not process the request due to something that is perceived to be a client error.
+     */
+    400: {
+        /**
+         * HTTP status code.
+         */
+        status?: number;
+        /**
+         * Detailed error description.
+         */
+        error?: string;
+    };
+};
+export type OrganizationActivityError = OrganizationActivityErrors[keyof OrganizationActivityErrors];
+export type OrganizationActivityResponses = {
+    /**
+     * Successful response
+     */
+    200: {
+        /**
+         * HTTP status code.
+         */
+        status?: number;
+        /**
+         * Unique id assigned to every request. UUIDv4
+         */
+        requestId?: string;
+        result?: Activity;
+    };
+};
+export type OrganizationActivityResponse = OrganizationActivityResponses[keyof OrganizationActivityResponses];
+export type GetOrganizationUsageCostsData = {
+    body?: never;
+    path: {
+        /**
+         * ID of the requested organization.
+         */
+        organizationId: string;
+    };
+    query: {
+        /**
+         * Start date for the report, e.g. 2024-12-19.
+         */
+        from_date: string;
+        /**
+         * End date (inclusive) for the report, e.g. 2024-12-20. This date cannot be more than 30 days after from_date (for a maximum queried period of 31 days).
+         */
+        to_date: string;
+    };
+    url: "/v1/organizations/{organizationId}/usageCost";
+};
+export type GetOrganizationUsageCostsErrors = {
+    /**
+     * The server cannot or will not process the request due to something that is perceived to be a client error.
+     */
+    400: {
+        /**
+         * HTTP status code.
+         */
+        status?: number;
+        /**
+         * Detailed error description.
+         */
+        error?: string;
+    };
+};
+export type GetOrganizationUsageCostsError = GetOrganizationUsageCostsErrors[keyof GetOrganizationUsageCostsErrors];
+export type GetOrganizationUsageCostsResponses = {
+    /**
+     * Successful response
+     */
+    200: {
+        /**
+         * HTTP status code.
+         */
+        status?: number;
+        /**
+         * Unique id assigned to every request. UUIDv4
+         */
+        requestId?: string;
+        result?: UsageCost;
+    };
+};
+export type GetOrganizationUsageCostsResponse = GetOrganizationUsageCostsResponses[keyof GetOrganizationUsageCostsResponses];
+export type ListClickPipesData = {
+    body?: never;
+    path: {
+        /**
+         * ID of the organization that owns the service.
+         */
+        organizationId: string;
+        /**
+         * ID of the service that owns the ClickPipe.
+         */
+        serviceId: string;
+    };
+    query?: never;
+    url: "/v1/organizations/{organizationId}/services/{serviceId}/clickpipes";
+};
+export type ListClickPipesErrors = {
+    /**
+     * The server cannot or will not process the request due to something that is perceived to be a client error.
+     */
+    400: {
+        /**
+         * HTTP status code.
+         */
+        status?: number;
+        /**
+         * Detailed error description.
+         */
+        error?: string;
+    };
+};
+export type ListClickPipesError = ListClickPipesErrors[keyof ListClickPipesErrors];
+export type ListClickPipesResponses = {
+    /**
+     * Successful response
+     */
+    200: {
+        /**
+         * HTTP status code.
+         */
+        status?: number;
+        /**
+         * Unique id assigned to every request. UUIDv4
+         */
+        requestId?: string;
+        result?: Array<ClickPipe>;
+    };
+};
+export type ListClickPipesResponse = ListClickPipesResponses[keyof ListClickPipesResponses];
+export type CreateClickPipeData = {
+    body?: ClickPipePostRequest;
+    path: {
+        /**
+         * ID of the organization that owns the service.
+         */
+        organizationId: string;
+        /**
+         * ID of the service to create the ClickPipe for.
+         */
+        serviceId: string;
+    };
+    query?: never;
+    url: "/v1/organizations/{organizationId}/services/{serviceId}/clickpipes";
+};
+export type CreateClickPipeErrors = {
+    /**
+     * The server cannot or will not process the request due to something that is perceived to be a client error.
+     */
+    400: {
+        /**
+         * HTTP status code.
+         */
+        status?: number;
+        /**
+         * Detailed error description.
+         */
+        error?: string;
+    };
+};
+export type CreateClickPipeError = CreateClickPipeErrors[keyof CreateClickPipeErrors];
+export type CreateClickPipeResponses = {
+    /**
+     * Successful response
+     */
+    200: {
+        /**
+         * HTTP status code.
+         */
+        status?: number;
+        /**
+         * Unique id assigned to every request. UUIDv4
+         */
+        requestId?: string;
+        result?: ClickPipe;
+    };
+};
+export type CreateClickPipeResponse = CreateClickPipeResponses[keyof CreateClickPipeResponses];
+export type DeleteClickPipeData = {
+    body?: never;
+    path: {
+        /**
+         * ID of the organization that owns the service.
+         */
+        organizationId: string;
+        /**
+         * ID of the service that owns the ClickPipe.
+         */
+        serviceId: string;
+        /**
+         * ID of the ClickPipe to delete.
+         */
+        clickPipeId: string;
+    };
+    query?: never;
+    url: "/v1/organizations/{organizationId}/services/{serviceId}/clickpipes/{clickPipeId}";
+};
+export type DeleteClickPipeErrors = {
+    /**
+     * The server cannot or will not process the request due to something that is perceived to be a client error.
+     */
+    400: {
+        /**
+         * HTTP status code.
+         */
+        status?: number;
+        /**
+         * Detailed error description.
+         */
+        error?: string;
+    };
+};
+export type DeleteClickPipeError = DeleteClickPipeErrors[keyof DeleteClickPipeErrors];
+export type DeleteClickPipeResponses = {
+    /**
+     * Successful response
+     */
+    200: {
+        /**
+         * HTTP status code.
+         */
+        status?: number;
+        /**
+         * Unique id assigned to every request. UUIDv4
+         */
+        requestId?: string;
+    };
+};
+export type DeleteClickPipeResponse = DeleteClickPipeResponses[keyof DeleteClickPipeResponses];
+export type GetClickPipeData = {
+    body?: never;
+    path: {
+        /**
+         * ID of the organization that owns the service.
+         */
+        organizationId: string;
+        /**
+         * ID of the service that owns the ClickPipe.
+         */
+        serviceId: string;
+        /**
+         * ID of the requested ClickPipe.
+         */
+        clickPipeId: string;
+    };
+    query?: never;
+    url: "/v1/organizations/{organizationId}/services/{serviceId}/clickpipes/{clickPipeId}";
+};
+export type GetClickPipeErrors = {
+    /**
+     * The server cannot or will not process the request due to something that is perceived to be a client error.
+     */
+    400: {
+        /**
+         * HTTP status code.
+         */
+        status?: number;
+        /**
+         * Detailed error description.
+         */
+        error?: string;
+    };
+};
+export type GetClickPipeError = GetClickPipeErrors[keyof GetClickPipeErrors];
+export type GetClickPipeResponses = {
+    /**
+     * Successful response
+     */
+    200: {
+        /**
+         * HTTP status code.
+         */
+        status?: number;
+        /**
+         * Unique id assigned to every request. UUIDv4
+         */
+        requestId?: string;
+        result?: ClickPipe;
+    };
+};
+export type GetClickPipeResponse = GetClickPipeResponses[keyof GetClickPipeResponses];
+export type UpdateClickPipeData = {
+    body?: ClickPipePatchRequest;
+    path: {
+        /**
+         * ID of the organization that owns the service.
+         */
+        organizationId: string;
+        /**
+         * ID of the service to create the ClickPipe for.
+         */
+        serviceId: string;
+        /**
+         * ID of the requested ClickPipe.
+         */
+        clickPipeId: string;
+    };
+    query?: never;
+    url: "/v1/organizations/{organizationId}/services/{serviceId}/clickpipes/{clickPipeId}";
+};
+export type UpdateClickPipeErrors = {
+    /**
+     * The server cannot or will not process the request due to something that is perceived to be a client error.
+     */
+    400: {
+        /**
+         * HTTP status code.
+         */
+        status?: number;
+        /**
+         * Detailed error description.
+         */
+        error?: string;
+    };
+};
+export type UpdateClickPipeError = UpdateClickPipeErrors[keyof UpdateClickPipeErrors];
+export type UpdateClickPipeResponses = {
+    /**
+     * Successful response
+     */
+    200: {
+        /**
+         * HTTP status code.
+         */
+        status?: number;
+        /**
+         * Unique id assigned to every request. UUIDv4
+         */
+        requestId?: string;
+        result?: ClickPipe;
+    };
+};
+export type UpdateClickPipeResponse = UpdateClickPipeResponses[keyof UpdateClickPipeResponses];
+export type GetClickPipeSettingsData = {
+    body?: never;
+    path: {
+        /**
+         * ID of the organization that owns the service.
+         */
+        organizationId: string;
+        /**
+         * ID of the service that owns the ClickPipe.
+         */
+        serviceId: string;
+        /**
+         * ID of the ClickPipe to get settings for.
+         */
+        clickPipeId: string;
+    };
+    query?: never;
+    url: "/v1/organizations/{organizationId}/services/{serviceId}/clickpipes/{clickPipeId}/settings";
+};
+export type GetClickPipeSettingsErrors = {
+    /**
+     * The server cannot or will not process the request due to something that is perceived to be a client error.
+     */
+    400: {
+        /**
+         * HTTP status code.
+         */
+        status?: number;
+        /**
+         * Detailed error description.
+         */
+        error?: string;
+    };
+};
+export type GetClickPipeSettingsError = GetClickPipeSettingsErrors[keyof GetClickPipeSettingsErrors];
+export type GetClickPipeSettingsResponses = {
+    /**
+     * Successful response
+     */
+    200: {
+        /**
+         * HTTP status code.
+         */
+        status?: number;
+        /**
+         * Unique id assigned to every request. UUIDv4
+         */
+        requestId?: string;
+        result?: ClickPipeSettingsGetResponse;
+    };
+};
+export type GetClickPipeSettingsResponse = GetClickPipeSettingsResponses[keyof GetClickPipeSettingsResponses];
+export type UpdateClickPipeSettingsData = {
+    body?: ClickPipeSettingsPutRequest;
+    path: {
+        /**
+         * ID of the organization that owns the service.
+         */
+        organizationId: string;
+        /**
+         * ID of the service that owns the ClickPipe.
+         */
+        serviceId: string;
+        /**
+         * ID of the ClickPipe to update settings for.
+         */
+        clickPipeId: string;
+    };
+    query?: never;
+    url: "/v1/organizations/{organizationId}/services/{serviceId}/clickpipes/{clickPipeId}/settings";
+};
+export type UpdateClickPipeSettingsErrors = {
+    /**
+     * The server cannot or will not process the request due to something that is perceived to be a client error.
+     */
+    400: {
+        /**
+         * HTTP status code.
+         */
+        status?: number;
+        /**
+         * Detailed error description.
+         */
+        error?: string;
+    };
+};
+export type UpdateClickPipeSettingsError = UpdateClickPipeSettingsErrors[keyof UpdateClickPipeSettingsErrors];
+export type UpdateClickPipeSettingsResponses = {
+    /**
+     * Successful response
+     */
+    200: {
+        /**
+         * HTTP status code.
+         */
+        status?: number;
+        /**
+         * Unique id assigned to every request. UUIDv4
+         */
+        requestId?: string;
+        result?: ClickPipeSettingsGetResponse;
+    };
+};
+export type UpdateClickPipeSettingsResponse = UpdateClickPipeSettingsResponses[keyof UpdateClickPipeSettingsResponses];
+export type ScalingClickPipeData = {
+    body?: ClickPipeScalingPatchRequest;
+    path: {
+        /**
+         * ID of the organization that owns the service.
+         */
+        organizationId: string;
+        /**
+         * ID of the service that owns the ClickPipe.
+         */
+        serviceId: string;
+        /**
+         * ID of the ClickPipe to update scaling settings.
+         */
+        clickPipeId: string;
+    };
+    query?: never;
+    url: "/v1/organizations/{organizationId}/services/{serviceId}/clickpipes/{clickPipeId}/scaling";
+};
+export type ScalingClickPipeErrors = {
+    /**
+     * The server cannot or will not process the request due to something that is perceived to be a client error.
+     */
+    400: {
+        /**
+         * HTTP status code.
+         */
+        status?: number;
+        /**
+         * Detailed error description.
+         */
+        error?: string;
+    };
+};
+export type ScalingClickPipeError = ScalingClickPipeErrors[keyof ScalingClickPipeErrors];
+export type ScalingClickPipeResponses = {
+    /**
+     * Successful response
+     */
+    200: {
+        /**
+         * HTTP status code.
+         */
+        status?: number;
+        /**
+         * Unique id assigned to every request. UUIDv4
+         */
+        requestId?: string;
+        result?: ClickPipe;
+    };
+};
+export type ScalingClickPipeResponse = ScalingClickPipeResponses[keyof ScalingClickPipeResponses];
+export type UpdateClickPipeStateData = {
+    body?: ClickPipeStatePatchRequest;
+    path: {
+        /**
+         * ID of the organization that owns the service.
+         */
+        organizationId: string;
+        /**
+         * ID of the service that owns the ClickPipe.
+         */
+        serviceId: string;
+        /**
+         * ID of the ClickPipe to update state.
+         */
+        clickPipeId: string;
+    };
+    query?: never;
+    url: "/v1/organizations/{organizationId}/services/{serviceId}/clickpipes/{clickPipeId}/state";
+};
+export type UpdateClickPipeStateErrors = {
+    /**
+     * The server cannot or will not process the request due to something that is perceived to be a client error.
+     */
+    400: {
+        /**
+         * HTTP status code.
+         */
+        status?: number;
+        /**
+         * Detailed error description.
+         */
+        error?: string;
+    };
+};
+export type UpdateClickPipeStateError = UpdateClickPipeStateErrors[keyof UpdateClickPipeStateErrors];
+export type UpdateClickPipeStateResponses = {
+    /**
+     * Successful response
+     */
+    200: {
+        /**
+         * HTTP status code.
+         */
+        status?: number;
+        /**
+         * Unique id assigned to every request. UUIDv4
+         */
+        requestId?: string;
+        result?: ClickPipe;
+    };
+};
+export type UpdateClickPipeStateResponse = UpdateClickPipeStateResponses[keyof UpdateClickPipeStateResponses];
+export type GetCdcClickPipesScalingData = {
+    body?: never;
+    path: {
+        /**
+         * ID of the organization that owns the service.
+         */
+        organizationId: string;
+        /**
+         * ID of the service that owns the ClickPipe.
+         */
+        serviceId: string;
+    };
+    query?: never;
+    url: "/v1/organizations/{organizationId}/services/{serviceId}/clickpipesCdcScaling";
+};
+export type GetCdcClickPipesScalingErrors = {
+    /**
+     * The server cannot or will not process the request due to something that is perceived to be a client error.
+     */
+    400: {
+        /**
+         * HTTP status code.
+         */
+        status?: number;
+        /**
+         * Detailed error description.
+         */
+        error?: string;
+    };
+};
+export type GetCdcClickPipesScalingError = GetCdcClickPipesScalingErrors[keyof GetCdcClickPipesScalingErrors];
+export type GetCdcClickPipesScalingResponses = {
+    /**
+     * Successful response
+     */
+    200: {
+        /**
+         * HTTP status code.
+         */
+        status?: number;
+        /**
+         * Unique id assigned to every request. UUIDv4
+         */
+        requestId?: string;
+        result?: ClickPipesCdcScaling;
+    };
+};
+export type GetCdcClickPipesScalingResponse = GetCdcClickPipesScalingResponses[keyof GetCdcClickPipesScalingResponses];
+export type UpdateCdcClickPipesScalingData = {
+    body?: ClickPipesCdcScalingPatchRequest;
+    path: {
+        /**
+         * ID of the organization that owns the service.
+         */
+        organizationId: string;
+        /**
+         * ID of the service that owns the ClickPipe.
+         */
+        serviceId: string;
+    };
+    query?: never;
+    url: "/v1/organizations/{organizationId}/services/{serviceId}/clickpipesCdcScaling";
+};
+export type UpdateCdcClickPipesScalingErrors = {
+    /**
+     * The server cannot or will not process the request due to something that is perceived to be a client error.
+     */
+    400: {
+        /**
+         * HTTP status code.
+         */
+        status?: number;
+        /**
+         * Detailed error description.
+         */
+        error?: string;
+    };
+};
+export type UpdateCdcClickPipesScalingError = UpdateCdcClickPipesScalingErrors[keyof UpdateCdcClickPipesScalingErrors];
+export type UpdateCdcClickPipesScalingResponses = {
+    /**
+     * Successful response
+     */
+    200: {
+        /**
+         * HTTP status code.
+         */
+        status?: number;
+        /**
+         * Unique id assigned to every request. UUIDv4
+         */
+        requestId?: string;
+        result?: ClickPipesCdcScaling;
+    };
+};
+export type UpdateCdcClickPipesScalingResponse = UpdateCdcClickPipesScalingResponses[keyof UpdateCdcClickPipesScalingResponses];
+export type GetPrivateEndpointConfigurationForRegionWithinCloudProviderForOrganizationData = {
+    body?: never;
+    path: {
+        /**
+         * ID of the requested organization.
+         */
+        organizationId: string;
+    };
+    query: {
+        /**
+         * Cloud provider identifier. One of aws, gcp, or azure.
+         */
+        cloud_provider: string;
+        /**
+         * Region identifier within specific cloud providers.
+         */
+        region_id: string;
+    };
+    url: "/v1/organizations/{organizationId}/privateEndpointConfig";
+};
+export type GetPrivateEndpointConfigurationForRegionWithinCloudProviderForOrganizationErrors = {
+    /**
+     * The server cannot or will not process the request due to something that is perceived to be a client error.
+     */
+    400: {
+        /**
+         * HTTP status code.
+         */
+        status?: number;
+        /**
+         * Detailed error description.
+         */
+        error?: string;
+    };
+};
+export type GetPrivateEndpointConfigurationForRegionWithinCloudProviderForOrganizationError = GetPrivateEndpointConfigurationForRegionWithinCloudProviderForOrganizationErrors[keyof GetPrivateEndpointConfigurationForRegionWithinCloudProviderForOrganizationErrors];
+export type GetPrivateEndpointConfigurationForRegionWithinCloudProviderForOrganizationResponses = {
+    /**
+     * Successful response
+     */
+    200: {
+        /**
+         * HTTP status code.
+         */
+        status?: number;
+        /**
+         * Unique id assigned to every request. UUIDv4
+         */
+        requestId?: string;
+        result?: OrganizationCloudRegionPrivateEndpointConfig;
+    };
+};
+export type GetPrivateEndpointConfigurationForRegionWithinCloudProviderForOrganizationResponse = GetPrivateEndpointConfigurationForRegionWithinCloudProviderForOrganizationResponses[keyof GetPrivateEndpointConfigurationForRegionWithinCloudProviderForOrganizationResponses];
+export type CreateByocInfrastructureData = {
+    body?: ByocInfrastructurePostRequest;
+    path: {
+        /**
+         * ID of the requested organization.
+         */
+        organizationId: string;
+    };
+    query?: never;
+    url: "/v1/organizations/{organizationId}/byocInfrastructure";
+};
+export type CreateByocInfrastructureErrors = {
+    /**
+     * The server cannot or will not process the request due to something that is perceived to be a client error.
+     */
+    400: {
+        /**
+         * HTTP status code.
+         */
+        status?: number;
+        /**
+         * Detailed error description.
+         */
+        error?: string;
+    };
+};
+export type CreateByocInfrastructureError = CreateByocInfrastructureErrors[keyof CreateByocInfrastructureErrors];
+export type CreateByocInfrastructureResponses = {
+    /**
+     * Successful response
+     */
+    200: {
+        /**
+         * HTTP status code.
+         */
+        status?: number;
+        /**
+         * Unique id assigned to every request. UUIDv4
+         */
+        requestId?: string;
+        result?: ByocConfig;
+    };
+};
+export type CreateByocInfrastructureResponse = CreateByocInfrastructureResponses[keyof CreateByocInfrastructureResponses];
+export type RemoveByocInfrastructureData = {
+    body?: never;
+    path: {
+        /**
+         * ID of the requested organization.
+         */
+        organizationId: string;
+        /**
+         * ID of the requested BYOC Infrastructure
+         */
+        byocInfrastructureId: string;
+    };
+    query?: never;
+    url: "/v1/organizations/{organizationId}/byocInfrastructure/{byocInfrastructureId}";
+};
+export type RemoveByocInfrastructureErrors = {
+    /**
+     * The server cannot or will not process the request due to something that is perceived to be a client error.
+     */
+    400: {
+        /**
+         * HTTP status code.
+         */
+        status?: number;
+        /**
+         * Detailed error description.
+         */
+        error?: string;
+    };
+};
+export type RemoveByocInfrastructureError = RemoveByocInfrastructureErrors[keyof RemoveByocInfrastructureErrors];
+export type RemoveByocInfrastructureResponses = {
+    /**
+     * Successful response
+     */
+    200: {
+        /**
+         * HTTP status code.
+         */
+        status?: number;
+        /**
+         * Unique id assigned to every request. UUIDv4
+         */
+        requestId?: string;
+    };
+};
+export type RemoveByocInfrastructureResponse = RemoveByocInfrastructureResponses[keyof RemoveByocInfrastructureResponses];
+export type ListReversePrivateEndpointsData = {
+    body?: never;
+    path: {
+        /**
+         * ID of the organization that owns the service.
+         */
+        organizationId: string;
+        /**
+         * ID of the service that owns the Reverse Private Endpoint.
+         */
+        serviceId: string;
+    };
+    query?: never;
+    url: "/v1/organizations/{organizationId}/services/{serviceId}/clickpipesReversePrivateEndpoints";
+};
+export type ListReversePrivateEndpointsErrors = {
+    /**
+     * The server cannot or will not process the request due to something that is perceived to be a client error.
+     */
+    400: {
+        /**
+         * HTTP status code.
+         */
+        status?: number;
+        /**
+         * Detailed error description.
+         */
+        error?: string;
+    };
+};
+export type ListReversePrivateEndpointsError = ListReversePrivateEndpointsErrors[keyof ListReversePrivateEndpointsErrors];
+export type ListReversePrivateEndpointsResponses = {
+    /**
+     * Successful response
+     */
+    200: {
+        /**
+         * HTTP status code.
+         */
+        status?: number;
+        /**
+         * Unique id assigned to every request. UUIDv4
+         */
+        requestId?: string;
+        result?: Array<ReversePrivateEndpoint>;
+    };
+};
+export type ListReversePrivateEndpointsResponse = ListReversePrivateEndpointsResponses[keyof ListReversePrivateEndpointsResponses];
+export type CreateReversePrivateEndpointData = {
+    body?: CreateReversePrivateEndpoint;
+    path: {
+        /**
+         * ID of the organization that owns the service.
+         */
+        organizationId: string;
+        /**
+         * ID of the service that owns the Reverse Private Endpoint.
+         */
+        serviceId: string;
+    };
+    query?: never;
+    url: "/v1/organizations/{organizationId}/services/{serviceId}/clickpipesReversePrivateEndpoints";
+};
+export type CreateReversePrivateEndpointErrors = {
+    /**
+     * The server cannot or will not process the request due to something that is perceived to be a client error.
+     */
+    400: {
+        /**
+         * HTTP status code.
+         */
+        status?: number;
+        /**
+         * Detailed error description.
+         */
+        error?: string;
+    };
+};
+export type CreateReversePrivateEndpointError = CreateReversePrivateEndpointErrors[keyof CreateReversePrivateEndpointErrors];
+export type CreateReversePrivateEndpointResponses = {
+    /**
+     * Successful response
+     */
+    200: {
+        /**
+         * HTTP status code.
+         */
+        status?: number;
+        /**
+         * Unique id assigned to every request. UUIDv4
+         */
+        requestId?: string;
+        result?: ReversePrivateEndpoint;
+    };
+};
+export type CreateReversePrivateEndpointResponse = CreateReversePrivateEndpointResponses[keyof CreateReversePrivateEndpointResponses];
+export type DeleteReversePrivateEndpointData = {
+    body?: never;
+    path: {
+        /**
+         * ID of the organization that owns the service.
+         */
+        organizationId: string;
+        /**
+         * ID of the service that owns the Reverse Private Endpoint.
+         */
+        serviceId: string;
+        /**
+         * ID of the reverse private endpoint to delete.
+         */
+        reversePrivateEndpointId: string;
+    };
+    query?: never;
+    url: "/v1/organizations/{organizationId}/services/{serviceId}/clickpipesReversePrivateEndpoints/{reversePrivateEndpointId}";
+};
+export type DeleteReversePrivateEndpointErrors = {
+    /**
+     * The server cannot or will not process the request due to something that is perceived to be a client error.
+     */
+    400: {
+        /**
+         * HTTP status code.
+         */
+        status?: number;
+        /**
+         * Detailed error description.
+         */
+        error?: string;
+    };
+};
+export type DeleteReversePrivateEndpointError = DeleteReversePrivateEndpointErrors[keyof DeleteReversePrivateEndpointErrors];
+export type DeleteReversePrivateEndpointResponses = {
+    /**
+     * Successful response
+     */
+    200: {
+        /**
+         * HTTP status code.
+         */
+        status?: number;
+        /**
+         * Unique id assigned to every request. UUIDv4
+         */
+        requestId?: string;
+    };
+};
+export type DeleteReversePrivateEndpointResponse = DeleteReversePrivateEndpointResponses[keyof DeleteReversePrivateEndpointResponses];
+export type GetReversePrivateEndpointData = {
+    body?: never;
+    path: {
+        /**
+         * ID of the organization that owns the service.
+         */
+        organizationId: string;
+        /**
+         * ID of the service that owns the Reverse Private Endpoint.
+         */
+        serviceId: string;
+        /**
+         * ID of the reverse private endpoint to get.
+         */
+        reversePrivateEndpointId: string;
+    };
+    query?: never;
+    url: "/v1/organizations/{organizationId}/services/{serviceId}/clickpipesReversePrivateEndpoints/{reversePrivateEndpointId}";
+};
+export type GetReversePrivateEndpointErrors = {
+    /**
+     * The server cannot or will not process the request due to something that is perceived to be a client error.
+     */
+    400: {
+        /**
+         * HTTP status code.
+         */
+        status?: number;
+        /**
+         * Detailed error description.
+         */
+        error?: string;
+    };
+};
+export type GetReversePrivateEndpointError = GetReversePrivateEndpointErrors[keyof GetReversePrivateEndpointErrors];
+export type GetReversePrivateEndpointResponses = {
+    /**
+     * Successful response
+     */
+    200: {
+        /**
+         * HTTP status code.
+         */
+        status?: number;
+        /**
+         * Unique id assigned to every request. UUIDv4
+         */
+        requestId?: string;
+        result?: ReversePrivateEndpoint;
+    };
+};
+export type GetReversePrivateEndpointResponse = GetReversePrivateEndpointResponses[keyof GetReversePrivateEndpointResponses];
+//# sourceMappingURL=types.gen.d.ts.map

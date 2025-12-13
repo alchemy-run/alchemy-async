@@ -5,9 +5,9 @@ import {
 } from "../util/telemetry.ts";
 
 //todo(michael): we should also handle serde here
-export class InstrumentedStateStore<T extends StateStore>
-  implements StateStore
-{
+export class InstrumentedStateStore<
+  T extends StateStore,
+> implements StateStore {
   /** @internal */
   __phantom?: T;
   private readonly stateStore: StateStore;

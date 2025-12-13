@@ -60,7 +60,7 @@ export async function destroy(
     const [scope] = args;
     const options = {
       strategy: scope.destroyStrategy ?? "sequential",
-      ...(args[1] ?? {}),
+      ...args[1],
     } satisfies DestroyOptions;
 
     await scope.run(async () => {

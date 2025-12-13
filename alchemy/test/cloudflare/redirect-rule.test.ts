@@ -11,7 +11,6 @@ import {
 import { Worker } from "../../src/cloudflare/worker.ts";
 import { getZoneByDomain } from "../../src/cloudflare/zone.ts";
 import { destroy } from "../../src/destroy.ts";
-import { fetchAndExpectStatus } from "../../src/util/safe-fetch.ts";
 import { BRANCH_PREFIX } from "../util.ts";
 
 import "../../src/test/vitest.ts";
@@ -175,59 +174,4 @@ async function assertRedirectRuleDoesNotExist(
     redirectRule.ruleId,
   );
   expect(rule).toBeNull();
-}
-
-/**
- * Test actual HTTP redirect behavior.
- *
- * NOTE: This function attempts to test real redirect behavior, but will gracefully
- * handle cases where domains don't resolve or aren't properly configured with Cloudflare.
- * For full redirect testing, the domains need to:
- * 1. Have proper DNS configuration pointing to Cloudflare
- * 2. Be proxied through Cloudflare (orange cloud enabled)
- * 3. Have SSL certificates configured
- *
- * @param sourceUrl - The URL that should trigger the redirect
- * @param expectedTargetUrl - The URL that should be redirected to
- * @param expectedStatus - The expected HTTP status code (301, 302, etc.)
- * @param testDescription - Description of the test for logging
- */
-async function testRedirectBehavior(
-  sourceUrl: string,
-  expectedTargetUrl: string,
-  expectedStatus: number,
-  testDescription: string,
-): Promise<void> {
-  console.log(
-    `Testing ${testDescription}: ${sourceUrl} -> ${expectedTargetUrl}`,
-  );
-
-  // Test the redirect with manual redirect handling to capture the redirect response
-  const response = await fetchAndExpectStatus(
-    sourceUrl,
-    {
-      redirect: "manual", // Don't follow redirects automatically
-      headers: {
-        "User-Agent": "alchemy-test-bot/1.0",
-      },
-    },
-    expectedStatus,
-    100,
-    120_000,
-  );
-
-  // For redirect status codes, verify the Location header
-  if (expectedStatus >= 300 && expectedStatus < 400) {
-    const locationHeader = response.headers.get("location");
-    if (locationHeader) {
-      // Normalize URLs for comparison (handle relative vs absolute URLs)
-      const actualTarget = new URL(locationHeader, sourceUrl).toString();
-      const normalizedExpected = new URL(expectedTargetUrl).toString();
-
-      expect(actualTarget).toEqual(normalizedExpected);
-      console.log(`✓ ${testDescription}: Redirect Location header correct`);
-    } else {
-      console.warn(`⚠ ${testDescription}: Expected Location header not found`);
-    }
-  }
 }

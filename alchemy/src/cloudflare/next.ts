@@ -41,7 +41,7 @@ export async function Nextjs<const B extends Bindings>(
     wrangler: {
       path: "wrangler.jsonc",
       secrets: isIgnored,
-      ...(props.wrangler ?? {}),
+      ...props.wrangler,
     },
     build: normalizeCommand(props.build, {
       command: `${runner} opennextjs-cloudflare build`,

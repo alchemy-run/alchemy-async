@@ -184,7 +184,7 @@ export class S3StateStore implements StateStore {
       return {
         ...state,
         output: {
-          ...(state.output || {}),
+          ...state.output,
           [ResourceScope]: this.scope,
         },
       };

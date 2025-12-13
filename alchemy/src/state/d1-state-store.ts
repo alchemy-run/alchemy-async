@@ -75,12 +75,10 @@ const createDatabaseClient = memoize(async (options: D1StateStoreOptions) => {
 });
 
 const upsertDatabase = async (api: CloudflareApi, databaseName: string) => {
-  const { listDatabases, createDatabase } = await import(
-    "../cloudflare/d1-database.ts"
-  );
-  const { applyMigrations, listMigrationsFiles } = await import(
-    "../cloudflare/d1-migrations.ts"
-  );
+  const { listDatabases, createDatabase } =
+    await import("../cloudflare/d1-database.ts");
+  const { applyMigrations, listMigrationsFiles } =
+    await import("../cloudflare/d1-migrations.ts");
   const migrate = async (databaseId: string) => {
     await applyMigrations({
       migrationsFiles: await listMigrationsFiles(MIGRATIONS_DIRECTORY),

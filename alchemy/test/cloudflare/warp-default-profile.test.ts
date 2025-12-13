@@ -2,8 +2,8 @@ import { describe, expect } from "vitest";
 import { alchemy } from "../../src/alchemy.ts";
 import { createCloudflareApi } from "../../src/cloudflare/api.ts";
 import { WarpDefaultProfile } from "../../src/cloudflare/warp-default-profile.ts";
-import { BRANCH_PREFIX } from "../util.ts";
 import "../../src/test/vitest.ts";
+import { BRANCH_PREFIX } from "../util.ts";
 
 const test = alchemy.test(import.meta, {
   prefix: BRANCH_PREFIX,
@@ -50,7 +50,7 @@ describe("WarpDefaultProfile Resource", () => {
       expect(profile.splitTunnel?.entries).toHaveLength(2);
 
       // Verify split tunnel was configured
-      await assertDefaultSplitTunnelConfigured("exclude");
+      await assertDefaultSplitTunnelConfigured();
     } finally {
       await alchemy.destroy(scope);
     }
@@ -71,7 +71,7 @@ describe("WarpDefaultProfile Resource", () => {
       });
 
       expect(profile.splitTunnel?.mode).toEqual("include");
-      await assertDefaultSplitTunnelConfigured("include");
+      await assertDefaultSplitTunnelConfigured();
     } finally {
       await alchemy.destroy(scope);
     }
@@ -114,9 +114,7 @@ describe("WarpDefaultProfile Resource", () => {
     expect(response.status).toEqual(200);
   }
 
-  async function assertDefaultSplitTunnelConfigured(
-    mode: "include" | "exclude",
-  ): Promise<void> {
+  async function assertDefaultSplitTunnelConfigured(): Promise<void> {
     const api = await createCloudflareApi();
     const response = await api.get(`/accounts/${api.accountId}/devices/policy`);
     expect(response.status).toEqual(200);

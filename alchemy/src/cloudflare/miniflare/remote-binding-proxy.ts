@@ -100,6 +100,7 @@ export async function createRemoteProxyWorker(input: {
       const res = await fetch(proxied, {
         method: req.method,
         headers,
+        // oxlint-disable-next-line no-invalid-fetch-options
         body: req.body,
         redirect: "manual",
         // @ts-expect-error - caused by @cloudflare/workers-types
@@ -181,9 +182,7 @@ async function createWorkersPreviewSession(api: CloudflareApi) {
   );
   const accessToken = await getAccessToken(new URL(exchange_url).hostname);
   const res = await fetch(exchange_url, {
-    headers: {
-      ...(accessToken ? { cookie: `CF_Authorization=${accessToken}` } : {}),
-    },
+    headers: accessToken ? { cookie: `CF_Authorization=${accessToken}` } : {},
   });
   if (!res.ok) {
     throw new Error(

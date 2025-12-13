@@ -27,5 +27,5 @@ export async function ensureVibeRulesPostinstall(
     }
 
     await writeJson(packageJsonPath, packageJson, { spaces: 2 });
-  } catch (_err) {}
+  } catch {}
 }

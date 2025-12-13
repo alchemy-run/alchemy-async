@@ -199,7 +199,7 @@ export async function KVNamespace(
   return await _KVNamespace(id, {
     ...props,
     dev: {
-      ...(props.dev ?? {}),
+      ...props.dev,
       force: Scope.current.local,
     },
   });

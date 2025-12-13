@@ -236,7 +236,7 @@ export async function Queue<T = unknown>(
   return await _Queue(id, {
     ...props,
     dev: {
-      ...(props.dev ?? {}),
+      ...props.dev,
       force: Scope.current.local,
     },
   });

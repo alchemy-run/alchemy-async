@@ -229,13 +229,6 @@ import { CloudflareStateStore } from "alchemy/state";`;
       code = code.replace(alchemyImportRegex, `$1${githubImport}`);
     }
 
-    const lastImportRegex = /import[^;]+from[^;]+;(\s*\n)*/g;
-    let lastImportMatch;
-
-    while ((lastImportMatch = lastImportRegex.exec(code)) !== null) {
-      lastImportMatch.index + lastImportMatch[0].length;
-    }
-
     const appCallRegex = /const app = await alchemy\("([^"]+)"\);/;
     const appMatch = code.match(appCallRegex);
     if (appMatch) {

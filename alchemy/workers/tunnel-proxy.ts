@@ -16,6 +16,7 @@ export default {
     const response = await fetch(url, {
       method: request.method,
       headers,
+      // oxlint-disable-next-line no-invalid-fetch-options
       body: request.body,
       redirect: "manual",
     });

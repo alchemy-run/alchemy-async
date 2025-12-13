@@ -29,7 +29,7 @@ const environment = await (async (): Promise<Record<string, any>> => {
   try {
     const { env } = await import("cloudflare:workers");
     return env;
-  } catch (_error) {}
+  } catch {}
   if (typeof import.meta !== "undefined") {
     return import.meta.env;
   }

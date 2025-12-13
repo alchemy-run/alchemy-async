@@ -42,7 +42,7 @@ describe.sequential("NodeJS Import Warning Plugin", () => {
         format: "esm",
         adopt: true,
       });
-    } catch (_e) {
+    } catch {
       // Upload should fail, but we're testing the warning
     } finally {
       await destroy(scope);
@@ -94,7 +94,7 @@ describe.sequential("NodeJS Import Warning Plugin", () => {
         format: "esm",
         adopt: true,
       });
-    } catch (_e) {
+    } catch {
       // Upload should fail, but we're testing the warning
     } finally {
       await destroy(scope);
@@ -125,7 +125,7 @@ describe.sequential("NodeJS Import Warning Plugin", () => {
         compatibilityFlags: ["nodejs_als"], // nodejs_als flag present
         adopt: true,
       });
-    } catch (_e) {
+    } catch {
       // Bundling might fail for other reasons, but we're testing no async_hooks warning
     } finally {
       await destroy(scope);

@@ -139,7 +139,7 @@ async function createInitContext(options: {
       if (packageJson?.name) {
         projectName = sanitizeProjectName(packageJson.name);
       }
-    } catch (_error) {}
+    } catch {}
   }
 
   const useTypeScript = await exists(resolve(cwd, "tsconfig.json"));
@@ -228,7 +228,7 @@ async function detectFrameworkFromPackageJson(
     }
 
     return "typescript";
-  } catch (_error) {
+  } catch {
     return "typescript";
   }
 }

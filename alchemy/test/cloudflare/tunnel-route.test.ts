@@ -4,12 +4,12 @@ import {
   type CloudflareApi,
   createCloudflareApi,
 } from "../../src/cloudflare/api.ts";
-import { Tunnel, getTunnel } from "../../src/cloudflare/tunnel.ts";
 import {
   TunnelRoute,
   getTunnelRoute,
   listTunnelRoutes,
 } from "../../src/cloudflare/tunnel-route.ts";
+import { Tunnel, getTunnel } from "../../src/cloudflare/tunnel.ts";
 import { destroy } from "../../src/destroy.ts";
 import { BRANCH_PREFIX, waitFor } from "../util.ts";
 // must import this or else alchemy.test won't exist
@@ -364,7 +364,7 @@ describe("TunnelRoute Resource", () => {
           .catch(() => {
             // Ignore if already deleted
           });
-      } catch (err) {
+      } catch {
         // Ignore cleanup errors
       }
     } catch (err) {

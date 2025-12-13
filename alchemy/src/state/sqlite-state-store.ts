@@ -94,7 +94,7 @@ export class SQLiteStateStore extends StateStoreProxy {
 
   async provision(): Promise<StateStoreProxy.Dispatch> {
     const db = await createDatabase({
-      ...(this.options ?? {}),
+      ...this.options,
       dotAlchemy: this.scope.dotAlchemy,
     });
     const { SQLiteStateStoreOperations } = await import("./operations.js");

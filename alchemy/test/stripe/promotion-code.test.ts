@@ -37,7 +37,7 @@ describe("Stripe PromotionCode Resource", () => {
         name: "Test Coupon for Promo",
       });
 
-      const promotionCode = await PromotionCode(promotionCodeId, {
+      promotionCode = await PromotionCode(promotionCodeId, {
         coupon: coupon.id,
         code: "TESTCODE123",
         active: true,
@@ -58,7 +58,7 @@ describe("Stripe PromotionCode Resource", () => {
       expect(stripePromotionCode.id).toBe(promotionCode.id);
       expect(stripePromotionCode.active).toBe(true);
 
-      const updatedPromotionCode = await PromotionCode(promotionCodeId, {
+      promotionCode = await PromotionCode(promotionCodeId, {
         coupon: coupon.id,
         code: promotionCode.code,
         active: false,
@@ -70,7 +70,7 @@ describe("Stripe PromotionCode Resource", () => {
         },
       });
 
-      expect(updatedPromotionCode.active).toBe(false);
+      expect(promotionCode.active).toBe(false);
     } finally {
       await destroy(scope);
 

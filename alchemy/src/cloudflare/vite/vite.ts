@@ -51,7 +51,7 @@ export async function Vite<B extends Bindings>(
       typeof props.assets === "string"
         ? { directory: props.assets }
         : {
-            ...(props.assets ?? {}),
+            ...props.assets,
             directory:
               props.assets?.directory ??
               (props.entrypoint || props.script ? "dist/client" : "dist"),

@@ -16,7 +16,8 @@ import {
  * for Cloudflare API authentication.
  */
 export interface ContainerProps
-  extends Omit<ImageProps, "registry" | "skipPush">,
+  extends
+    Omit<ImageProps, "registry" | "skipPush">,
     Partial<CloudflareApiOptions> {
   /**
    * The class name for the container binding.

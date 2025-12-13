@@ -1,0 +1,24 @@
+{
+  "$schema": "./node_modules/oxfmt/configuration_schema.json",
+  "plugins": [
+    "import"
+  ],
+  "rules": {
+    "no-misused-new": "off",
+    "no-empty-pattern": "off",
+    "no-non-null-asserted-optional-chain": "off",
+    "no-unsafe-finally": "off",
+    "triple-slash-reference": "off",
+    "require-yield": "off",
+    "import/extensions": [
+      "error",
+      "ignorePackages",
+      {
+        "ts": "always",
+        "tsx": "always",
+        "js": "never",
+        "jsx": "never"
+      }
+    ]
+  }
+}

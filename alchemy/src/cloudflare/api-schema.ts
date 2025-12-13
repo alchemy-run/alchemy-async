@@ -14,8 +14,9 @@ import { findZoneForHostname } from "./zone.ts";
 /**
  * Properties for creating or updating a Schema
  */
-export interface APISchemaProps<S extends OpenAPIV3.Document>
-  extends CloudflareApiOptions {
+export interface APISchemaProps<
+  S extends OpenAPIV3.Document,
+> extends CloudflareApiOptions {
   /**
    * The zone to upload the schema to
    */

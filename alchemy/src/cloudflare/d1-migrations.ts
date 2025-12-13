@@ -73,7 +73,7 @@ async function detectMigrationTableSchema(
         pk: col.pk,
       })),
     };
-  } catch (_error) {
+  } catch {
     return {
       exists: false,
       hasIdColumn: false,

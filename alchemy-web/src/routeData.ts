@@ -8,7 +8,7 @@ export const onRequest = defineRouteMiddleware((context) => {
   // Get the content collection entry for this page.
   try {
     route = context.locals.starlightRoute;
-  } catch (_) {
+  } catch {
     // This is a non-starlight route, so we want to skip the og generation
     return;
   }

@@ -37,8 +37,7 @@ export interface InternetGatewayAttachmentProps extends AwsClientProps {
 /**
  * Output returned after Internet Gateway Attachment creation/update
  */
-export interface InternetGatewayAttachment
-  extends InternetGatewayAttachmentProps {
+export interface InternetGatewayAttachment extends InternetGatewayAttachmentProps {
   /**
    * The ID of the Internet Gateway
    */

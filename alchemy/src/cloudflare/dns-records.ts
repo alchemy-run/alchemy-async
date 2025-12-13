@@ -1,4 +1,4 @@
-import type { Context } from "../context.ts";
+import type { Context } from "../context";
 import type {
   DnsRecord as BaseDnsRecord,
   DnsRecordType,
@@ -308,7 +308,7 @@ async function createOrUpdateRecord(
             zoneId,
           );
         }
-      } catch (_err) {
+      } catch {
         // Fall through to the original error
       }
     }

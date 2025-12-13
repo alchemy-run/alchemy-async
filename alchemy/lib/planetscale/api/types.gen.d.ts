@@ -1,0 +1,12317 @@
+export type ClientOptions = {
+    baseUrl: "https://api.planetscale.com/v1" | (string & {});
+};
+export type PaginatedBackup = {
+    /**
+     * The current page number
+     */
+    current_page: number;
+    /**
+     * The next page number
+     */
+    next_page: number;
+    /**
+     * The next page of results
+     */
+    next_page_url: string;
+    /**
+     * The previous page number
+     */
+    prev_page: number;
+    /**
+     * The previous page of results
+     */
+    prev_page_url: string;
+    data: Array<{
+        /**
+         * The ID of the backup
+         */
+        id: string;
+        /**
+         * The name of the backup
+         */
+        name: string;
+        /**
+         * The current state of the backup
+         */
+        state: "pending" | "running" | "success" | "failed" | "canceled" | "ignored";
+        /**
+         * The size of the backup in bytes
+         */
+        size: number;
+        /**
+         * The estimated storage cost of the backup
+         */
+        estimated_storage_cost: number;
+        /**
+         * When the backup was created
+         */
+        created_at: string;
+        /**
+         * When the backup was last updated
+         */
+        updated_at: string;
+        /**
+         * When the backup started
+         */
+        started_at: string;
+        /**
+         * When the backup expires
+         */
+        expires_at: string;
+        /**
+         * When the backup completed
+         */
+        completed_at: string;
+        /**
+         * When the backup was deleted
+         */
+        deleted_at: string;
+        /**
+         * Size of the PVC used for the backup
+         */
+        pvc_size: number;
+        /**
+         * Whether or not the backup is protected from deletion
+         */
+        protected: boolean;
+        /**
+         * Whether or not the backup policy is required
+         */
+        required: boolean;
+        restored_branches: Array<{
+            /**
+             * The ID for the resource
+             */
+            id: string;
+            /**
+             * The name for the resource
+             */
+            name: string;
+            /**
+             * When the resource was created
+             */
+            created_at: string;
+            /**
+             * When the resource was last updated
+             */
+            updated_at: string;
+            /**
+             * When the resource was deleted, if deleted
+             */
+            deleted_at: string;
+        }>;
+        actor: {
+            /**
+             * The ID of the actor
+             */
+            id: string;
+            /**
+             * The name of the actor
+             */
+            display_name: string;
+            /**
+             * The URL of the actor's avatar
+             */
+            avatar_url: string;
+        };
+        backup_policy: {
+            /**
+             * The ID of the backup policy
+             */
+            id: string;
+            /**
+             * The name of the backup policy
+             */
+            name: string;
+            /**
+             * Whether the policy is for production or development branches
+             */
+            target: "production" | "development";
+            /**
+             * A number value for the retention period of the backup policy
+             */
+            retention_value: number;
+            /**
+             * The unit for the retention period of the backup policy
+             */
+            retention_unit: string;
+            /**
+             * A number value for the frequency of the backup policy
+             */
+            frequency_value: number;
+            /**
+             * The unit for the frequency of the backup policy
+             */
+            frequency_unit: string;
+            /**
+             * The time of day that the backup is scheduled, in HH:MM format
+             */
+            schedule_time: string;
+            /**
+             * Day of the week that the backup is scheduled
+             */
+            schedule_day: 0 | 1 | 2 | 3 | 4 | 5 | 6;
+            /**
+             * Week of the month that the backup is scheduled
+             */
+            schedule_week: 0 | 1 | 2 | 3;
+            /**
+             * When the backup policy was created
+             */
+            created_at: string;
+            /**
+             * When the backup policy was last updated
+             */
+            updated_at: string;
+            /**
+             * When the backup was last run
+             */
+            last_ran_at: string;
+            /**
+             * When the backup will next run
+             */
+            next_run_at: string;
+            /**
+             * Whether the policy is a required system backup
+             */
+            required: boolean;
+        };
+        schema_snapshot: {
+            /**
+             * The ID of the schema snapshot
+             */
+            id: string;
+            /**
+             * The name of the schema snapshot
+             */
+            name: string;
+            /**
+             * When the schema snapshot was created
+             */
+            created_at: string;
+            /**
+             * When the schema snapshot was last updated
+             */
+            updated_at: string;
+            /**
+             * When the schema snapshot was last linted
+             */
+            linted_at: string;
+            /**
+             * The URL to the schema snapshot in the PlanetScale app
+             */
+            url: string;
+        };
+        database_branch: {
+            /**
+             * The ID for the resource
+             */
+            id: string;
+            /**
+             * The name for the resource
+             */
+            name: string;
+            /**
+             * When the resource was created
+             */
+            created_at: string;
+            /**
+             * When the resource was last updated
+             */
+            updated_at: string;
+            /**
+             * When the resource was deleted, if deleted
+             */
+            deleted_at: string;
+        };
+    }>;
+};
+export type Backup = {
+    /**
+     * The ID of the backup
+     */
+    id: string;
+    /**
+     * The name of the backup
+     */
+    name: string;
+    /**
+     * The current state of the backup
+     */
+    state: "pending" | "running" | "success" | "failed" | "canceled" | "ignored";
+    /**
+     * The size of the backup in bytes
+     */
+    size: number;
+    /**
+     * The estimated storage cost of the backup
+     */
+    estimated_storage_cost: number;
+    /**
+     * When the backup was created
+     */
+    created_at: string;
+    /**
+     * When the backup was last updated
+     */
+    updated_at: string;
+    /**
+     * When the backup started
+     */
+    started_at: string;
+    /**
+     * When the backup expires
+     */
+    expires_at: string;
+    /**
+     * When the backup completed
+     */
+    completed_at: string;
+    /**
+     * When the backup was deleted
+     */
+    deleted_at: string;
+    /**
+     * Size of the PVC used for the backup
+     */
+    pvc_size: number;
+    /**
+     * Whether or not the backup is protected from deletion
+     */
+    protected: boolean;
+    /**
+     * Whether or not the backup policy is required
+     */
+    required: boolean;
+    restored_branches: Array<{
+        /**
+         * The ID for the resource
+         */
+        id: string;
+        /**
+         * The name for the resource
+         */
+        name: string;
+        /**
+         * When the resource was created
+         */
+        created_at: string;
+        /**
+         * When the resource was last updated
+         */
+        updated_at: string;
+        /**
+         * When the resource was deleted, if deleted
+         */
+        deleted_at: string;
+    }>;
+    actor: {
+        /**
+         * The ID of the actor
+         */
+        id: string;
+        /**
+         * The name of the actor
+         */
+        display_name: string;
+        /**
+         * The URL of the actor's avatar
+         */
+        avatar_url: string;
+    };
+    backup_policy: {
+        /**
+         * The ID of the backup policy
+         */
+        id: string;
+        /**
+         * The name of the backup policy
+         */
+        name: string;
+        /**
+         * Whether the policy is for production or development branches
+         */
+        target: "production" | "development";
+        /**
+         * A number value for the retention period of the backup policy
+         */
+        retention_value: number;
+        /**
+         * The unit for the retention period of the backup policy
+         */
+        retention_unit: string;
+        /**
+         * A number value for the frequency of the backup policy
+         */
+        frequency_value: number;
+        /**
+         * The unit for the frequency of the backup policy
+         */
+        frequency_unit: string;
+        /**
+         * The time of day that the backup is scheduled, in HH:MM format
+         */
+        schedule_time: string;
+        /**
+         * Day of the week that the backup is scheduled
+         */
+        schedule_day: 0 | 1 | 2 | 3 | 4 | 5 | 6;
+        /**
+         * Week of the month that the backup is scheduled
+         */
+        schedule_week: 0 | 1 | 2 | 3;
+        /**
+         * When the backup policy was created
+         */
+        created_at: string;
+        /**
+         * When the backup policy was last updated
+         */
+        updated_at: string;
+        /**
+         * When the backup was last run
+         */
+        last_ran_at: string;
+        /**
+         * When the backup will next run
+         */
+        next_run_at: string;
+        /**
+         * Whether the policy is a required system backup
+         */
+        required: boolean;
+    };
+    schema_snapshot: {
+        /**
+         * The ID of the schema snapshot
+         */
+        id: string;
+        /**
+         * The name of the schema snapshot
+         */
+        name: string;
+        /**
+         * When the schema snapshot was created
+         */
+        created_at: string;
+        /**
+         * When the schema snapshot was last updated
+         */
+        updated_at: string;
+        /**
+         * When the schema snapshot was last linted
+         */
+        linted_at: string;
+        /**
+         * The URL to the schema snapshot in the PlanetScale app
+         */
+        url: string;
+    };
+    database_branch: {
+        /**
+         * The ID for the resource
+         */
+        id: string;
+        /**
+         * The name for the resource
+         */
+        name: string;
+        /**
+         * When the resource was created
+         */
+        created_at: string;
+        /**
+         * When the resource was last updated
+         */
+        updated_at: string;
+        /**
+         * When the resource was deleted, if deleted
+         */
+        deleted_at: string;
+    };
+};
+export type PaginatedPostgresClusterResizeRequest = {
+    /**
+     * The current page number
+     */
+    current_page: number;
+    /**
+     * The next page number
+     */
+    next_page: number;
+    /**
+     * The next page of results
+     */
+    next_page_url: string;
+    /**
+     * The previous page number
+     */
+    prev_page: number;
+    /**
+     * The previous page of results
+     */
+    prev_page_url: string;
+    data: Array<{
+        /**
+         * The ID of the branch change request
+         */
+        id: string;
+        /**
+         * The ports requiring a restart when changes are applied
+         */
+        restart: Array<number>;
+        /**
+         * The state of the branch change request
+         */
+        state: "queued" | "pending" | "resizing" | "canceled" | "completed";
+        /**
+         * The time the branch change request started
+         */
+        started_at: string;
+        /**
+         * The time the branch change request completed
+         */
+        completed_at: string;
+        /**
+         * The time the branch change request was created
+         */
+        created_at: string;
+        /**
+         * The time the branch change request was last updated
+         */
+        updated_at: string;
+        actor: {
+            /**
+             * The ID of the actor
+             */
+            id: string;
+            /**
+             * The name of the actor
+             */
+            display_name: string;
+            /**
+             * The URL of the actor's avatar
+             */
+            avatar_url: string;
+        };
+        /**
+         * The SKU representing the branch cluster
+         */
+        cluster_name: string;
+        /**
+         * The SKU representing the branch cluster for display
+         */
+        cluster_display_name: string;
+        /**
+         * Whether or not this is a metal database
+         */
+        cluster_metal: boolean;
+        /**
+         * The total number of replicas
+         */
+        replicas: number;
+        /**
+         * The branch parameters
+         */
+        parameters: {
+            [key: string]: unknown;
+        };
+        /**
+         * The previous SKU representing the branch cluster
+         */
+        previous_cluster_name: string;
+        /**
+         * The previous SKU representing the branch cluster for display
+         */
+        previous_cluster_display_name: string;
+        /**
+         * Whether or not the previous SKU was a metal database
+         */
+        previous_cluster_metal: boolean;
+        /**
+         * The previous total number of replicas
+         */
+        previous_replicas: number;
+        /**
+         * The previous branch parameters
+         */
+        previous_parameters: {
+            [key: string]: unknown;
+        };
+        /**
+         * The minimum storage size in bytes
+         */
+        minimum_storage_bytes: number;
+        /**
+         * The maximum storage size in bytes
+         */
+        maximum_storage_bytes: number;
+        /**
+         * Whether storage autoscaling is enabled
+         */
+        storage_autoscaling: boolean;
+        /**
+         * Whether storage shrinking is enabled when autoscaling is enabled
+         */
+        storage_shrinking: boolean;
+        /**
+         * The storage type (gp3 or io2)
+         */
+        storage_type: "gp3" | "io2" | "pd_ssd";
+        /**
+         * The storage IOPS
+         */
+        storage_iops: number;
+        /**
+         * The storage throughput in MiB/s
+         */
+        storage_throughput_mibs: number;
+        /**
+         * The previous minimum storage size in bytes
+         */
+        previous_minimum_storage_bytes: number;
+        /**
+         * The previous maximum storage size in bytes
+         */
+        previous_maximum_storage_bytes: number;
+        /**
+         * Whether storage autoscaling was previously enabled
+         */
+        previous_storage_autoscaling: boolean;
+        /**
+         * Whether storage shrinking was previously enabled
+         */
+        previous_storage_shrinking: boolean;
+        /**
+         * The previous storage type
+         */
+        previous_storage_type: string;
+        /**
+         * The previous storage IOPS
+         */
+        previous_storage_iops: number;
+        /**
+         * The previous storage throughput in MiB/s
+         */
+        previous_storage_throughput_mibs: number;
+    }>;
+};
+export type PostgresClusterResizeRequest = {
+    /**
+     * The ID of the branch change request
+     */
+    id: string;
+    /**
+     * The ports requiring a restart when changes are applied
+     */
+    restart: Array<number>;
+    /**
+     * The state of the branch change request
+     */
+    state: "queued" | "pending" | "resizing" | "canceled" | "completed";
+    /**
+     * The time the branch change request started
+     */
+    started_at: string;
+    /**
+     * The time the branch change request completed
+     */
+    completed_at: string;
+    /**
+     * The time the branch change request was created
+     */
+    created_at: string;
+    /**
+     * The time the branch change request was last updated
+     */
+    updated_at: string;
+    actor: {
+        /**
+         * The ID of the actor
+         */
+        id: string;
+        /**
+         * The name of the actor
+         */
+        display_name: string;
+        /**
+         * The URL of the actor's avatar
+         */
+        avatar_url: string;
+    };
+    /**
+     * The SKU representing the branch cluster
+     */
+    cluster_name: string;
+    /**
+     * The SKU representing the branch cluster for display
+     */
+    cluster_display_name: string;
+    /**
+     * Whether or not this is a metal database
+     */
+    cluster_metal: boolean;
+    /**
+     * The total number of replicas
+     */
+    replicas: number;
+    /**
+     * The branch parameters
+     */
+    parameters: {
+        [key: string]: unknown;
+    };
+    /**
+     * The previous SKU representing the branch cluster
+     */
+    previous_cluster_name: string;
+    /**
+     * The previous SKU representing the branch cluster for display
+     */
+    previous_cluster_display_name: string;
+    /**
+     * Whether or not the previous SKU was a metal database
+     */
+    previous_cluster_metal: boolean;
+    /**
+     * The previous total number of replicas
+     */
+    previous_replicas: number;
+    /**
+     * The previous branch parameters
+     */
+    previous_parameters: {
+        [key: string]: unknown;
+    };
+    /**
+     * The minimum storage size in bytes
+     */
+    minimum_storage_bytes: number;
+    /**
+     * The maximum storage size in bytes
+     */
+    maximum_storage_bytes: number;
+    /**
+     * Whether storage autoscaling is enabled
+     */
+    storage_autoscaling: boolean;
+    /**
+     * Whether storage shrinking is enabled when autoscaling is enabled
+     */
+    storage_shrinking: boolean;
+    /**
+     * The storage type (gp3 or io2)
+     */
+    storage_type: "gp3" | "io2" | "pd_ssd";
+    /**
+     * The storage IOPS
+     */
+    storage_iops: number;
+    /**
+     * The storage throughput in MiB/s
+     */
+    storage_throughput_mibs: number;
+    /**
+     * The previous minimum storage size in bytes
+     */
+    previous_minimum_storage_bytes: number;
+    /**
+     * The previous maximum storage size in bytes
+     */
+    previous_maximum_storage_bytes: number;
+    /**
+     * Whether storage autoscaling was previously enabled
+     */
+    previous_storage_autoscaling: boolean;
+    /**
+     * Whether storage shrinking was previously enabled
+     */
+    previous_storage_shrinking: boolean;
+    /**
+     * The previous storage type
+     */
+    previous_storage_type: string;
+    /**
+     * The previous storage IOPS
+     */
+    previous_storage_iops: number;
+    /**
+     * The previous storage throughput in MiB/s
+     */
+    previous_storage_throughput_mibs: number;
+};
+export type PaginatedDatabaseBranch = {
+    /**
+     * The current page number
+     */
+    current_page: number;
+    /**
+     * The next page number
+     */
+    next_page: number;
+    /**
+     * The next page of results
+     */
+    next_page_url: string;
+    /**
+     * The previous page number
+     */
+    prev_page: number;
+    /**
+     * The previous page of results
+     */
+    prev_page_url: string;
+    data: Array<{
+        /**
+         * The ID of the branch
+         */
+        id: string;
+        /**
+         * The name of the branch
+         */
+        name: string;
+        /**
+         * When the branch was created
+         */
+        created_at: string;
+        /**
+         * When the branch was last updated
+         */
+        updated_at: string;
+        /**
+         * When the branch was deleted
+         */
+        deleted_at: string;
+        /**
+         * When a user last marked a backup restore checklist as completed
+         */
+        restore_checklist_completed_at: string;
+        /**
+         * When the schema for the branch was last updated
+         */
+        schema_last_updated_at: string;
+        /**
+         * The kind of branch
+         */
+        kind: "mysql" | "postgresql";
+        /**
+         * The MySQL address for the branch
+         */
+        mysql_address: string;
+        /**
+         * The address of the MySQL provider for the branch
+         */
+        mysql_edge_address: string;
+        /**
+         * The current state of the branch
+         */
+        state: "pending" | "sleep_in_progress" | "sleeping" | "awakening" | "ready";
+        /**
+         * The size of the vtgate cluster for the branch
+         */
+        vtgate_size: string;
+        /**
+         * The number of vtgate instances in the branch
+         */
+        vtgate_count: number;
+        /**
+         * The SKU representing the branch's cluster size
+         */
+        cluster_name: string;
+        /**
+         * IOPS for the cluster
+         */
+        cluster_iops: number;
+        /**
+         * Whether or not the branch is ready to serve queries
+         */
+        ready: boolean;
+        /**
+         * Whether or not the schema is ready for queries
+         */
+        schema_ready: boolean;
+        /**
+         * Whether or not this is a metal database
+         */
+        metal: boolean;
+        /**
+         * Whether or not the branch is a production branch
+         */
+        production: boolean;
+        /**
+         * Whether or not the branch has safe migrations enabled
+         */
+        safe_migrations: boolean;
+        /**
+         * Whether or not the branch is sharded
+         */
+        sharded: boolean;
+        /**
+         * The number of shards in the branch
+         */
+        shard_count: number;
+        /**
+         * Whether or not the branch has a stale schema
+         */
+        stale_schema: boolean;
+        actor: {
+            /**
+             * The ID of the actor
+             */
+            id: string;
+            /**
+             * The name of the actor
+             */
+            display_name: string;
+            /**
+             * The URL of the actor's avatar
+             */
+            avatar_url: string;
+        };
+        restored_from_branch: {
+            /**
+             * The ID for the resource
+             */
+            id: string;
+            /**
+             * The name for the resource
+             */
+            name: string;
+            /**
+             * When the resource was created
+             */
+            created_at: string;
+            /**
+             * When the resource was last updated
+             */
+            updated_at: string;
+            /**
+             * When the resource was deleted, if deleted
+             */
+            deleted_at: string;
+        };
+        /**
+         * True if private connections are enabled
+         */
+        private_edge_connectivity: boolean;
+        /**
+         * True if the branch has replica servers
+         */
+        has_replicas: boolean;
+        /**
+         * True if the branch has read-only replica servers
+         */
+        has_read_only_replicas: boolean;
+        /**
+         * Planetscale app URL for the branch
+         */
+        html_url: string;
+        /**
+         * Planetscale API URL for the branch
+         */
+        url: string;
+        region: {
+            /**
+             * The ID of the region
+             */
+            id: string;
+            /**
+             * Provider for the region (ex. AWS)
+             */
+            provider: string;
+            /**
+             * Whether or not the region is currently active
+             */
+            enabled: boolean;
+            /**
+             * Public IP addresses for the region
+             */
+            public_ip_addresses: Array<string>;
+            /**
+             * Name of the region
+             */
+            display_name: string;
+            /**
+             * Location of the region
+             */
+            location: string;
+            /**
+             * The slug of the region
+             */
+            slug: string;
+            /**
+             * True if the region is the default for new branch creation
+             */
+            current_default: boolean;
+        };
+        /**
+         * The name of the parent branch from which the branch was created
+         */
+        parent_branch: string;
+    }>;
+};
+export type DatabaseBranch = {
+    /**
+     * The ID of the branch
+     */
+    id: string;
+    /**
+     * The name of the branch
+     */
+    name: string;
+    /**
+     * When the branch was created
+     */
+    created_at: string;
+    /**
+     * When the branch was last updated
+     */
+    updated_at: string;
+    /**
+     * When the branch was deleted
+     */
+    deleted_at: string;
+    /**
+     * When a user last marked a backup restore checklist as completed
+     */
+    restore_checklist_completed_at: string;
+    /**
+     * When the schema for the branch was last updated
+     */
+    schema_last_updated_at: string;
+    /**
+     * The kind of branch
+     */
+    kind: "mysql" | "postgresql";
+    /**
+     * The MySQL address for the branch
+     */
+    mysql_address: string;
+    /**
+     * The address of the MySQL provider for the branch
+     */
+    mysql_edge_address: string;
+    /**
+     * The current state of the branch
+     */
+    state: "pending" | "sleep_in_progress" | "sleeping" | "awakening" | "ready";
+    /**
+     * The size of the vtgate cluster for the branch
+     */
+    vtgate_size: string;
+    /**
+     * The number of vtgate instances in the branch
+     */
+    vtgate_count: number;
+    /**
+     * The SKU representing the branch's cluster size
+     */
+    cluster_name: string;
+    /**
+     * IOPS for the cluster
+     */
+    cluster_iops: number;
+    /**
+     * Whether or not the branch is ready to serve queries
+     */
+    ready: boolean;
+    /**
+     * Whether or not the schema is ready for queries
+     */
+    schema_ready: boolean;
+    /**
+     * Whether or not this is a metal database
+     */
+    metal: boolean;
+    /**
+     * Whether or not the branch is a production branch
+     */
+    production: boolean;
+    /**
+     * Whether or not the branch has safe migrations enabled
+     */
+    safe_migrations: boolean;
+    /**
+     * Whether or not the branch is sharded
+     */
+    sharded: boolean;
+    /**
+     * The number of shards in the branch
+     */
+    shard_count: number;
+    /**
+     * Whether or not the branch has a stale schema
+     */
+    stale_schema: boolean;
+    actor: {
+        /**
+         * The ID of the actor
+         */
+        id: string;
+        /**
+         * The name of the actor
+         */
+        display_name: string;
+        /**
+         * The URL of the actor's avatar
+         */
+        avatar_url: string;
+    };
+    restored_from_branch: {
+        /**
+         * The ID for the resource
+         */
+        id: string;
+        /**
+         * The name for the resource
+         */
+        name: string;
+        /**
+         * When the resource was created
+         */
+        created_at: string;
+        /**
+         * When the resource was last updated
+         */
+        updated_at: string;
+        /**
+         * When the resource was deleted, if deleted
+         */
+        deleted_at: string;
+    };
+    /**
+     * True if private connections are enabled
+     */
+    private_edge_connectivity: boolean;
+    /**
+     * True if the branch has replica servers
+     */
+    has_replicas: boolean;
+    /**
+     * True if the branch has read-only replica servers
+     */
+    has_read_only_replicas: boolean;
+    /**
+     * Planetscale app URL for the branch
+     */
+    html_url: string;
+    /**
+     * Planetscale API URL for the branch
+     */
+    url: string;
+    region: {
+        /**
+         * The ID of the region
+         */
+        id: string;
+        /**
+         * Provider for the region (ex. AWS)
+         */
+        provider: string;
+        /**
+         * Whether or not the region is currently active
+         */
+        enabled: boolean;
+        /**
+         * Public IP addresses for the region
+         */
+        public_ip_addresses: Array<string>;
+        /**
+         * Name of the region
+         */
+        display_name: string;
+        /**
+         * Location of the region
+         */
+        location: string;
+        /**
+         * The slug of the region
+         */
+        slug: string;
+        /**
+         * True if the region is the default for new branch creation
+         */
+        current_default: boolean;
+    };
+    /**
+     * The name of the parent branch from which the branch was created
+     */
+    parent_branch: string;
+    /**
+     * The architecture of the cluster for Postgres databases.
+     */
+    cluster_architecture?: "x86_64" | "aarch64";
+};
+export type PaginatedSchemaLintError = {
+    /**
+     * The current page number
+     */
+    current_page: number;
+    /**
+     * The next page number
+     */
+    next_page: number;
+    /**
+     * The next page of results
+     */
+    next_page_url: string;
+    /**
+     * The previous page number
+     */
+    prev_page: number;
+    /**
+     * The previous page of results
+     */
+    prev_page_url: string;
+    data: Array<{
+        /**
+         * Code representing the type of error
+         */
+        lint_error: string;
+        /**
+         * The subject for the errors
+         */
+        subject_type: "table" | "vschema" | "routing_rules";
+        /**
+         * The keyspace of the schema with the error
+         */
+        keyspace_name: string;
+        /**
+         * The table with the error
+         */
+        table_name: string;
+        /**
+         * A description for the error that occurred
+         */
+        error_description: string;
+        /**
+         * A link to the documentation related to the error
+         */
+        docs_url: string;
+        /**
+         * The column in a table relevant to the error
+         */
+        column_name: string;
+        /**
+         * A list of invalid foreign key columns in a table
+         */
+        foreign_key_column_names: Array<string>;
+        /**
+         * A list of invalid auto-incremented columns
+         */
+        auto_increment_column_names: Array<string>;
+        /**
+         * The charset of the schema
+         */
+        charset_name: string;
+        /**
+         * The engine of the schema
+         */
+        engine_name: string;
+        /**
+         * The name of the vindex for the schema
+         */
+        vindex_name: string;
+        /**
+         * The path for an invalid JSON column
+         */
+        json_path: string;
+        /**
+         * The name of the invalid check constraint
+         */
+        check_constraint_name: string;
+        /**
+         * The name of the invalid enum value
+         */
+        enum_value: string;
+        /**
+         * The name of the invalid partitioning type
+         */
+        partitioning_type: string;
+        /**
+         * The name of the invalid partition in the schema
+         */
+        partition_name: string;
+    }>;
+};
+export type PostgresClusterExtension = {
+    /**
+     * The ID of the extension
+     */
+    id: string;
+    /**
+     * The name of the extension
+     */
+    name: string;
+    /**
+     * The description of the extension
+     */
+    description: string;
+    /**
+     * The internal state of the extension
+     */
+    internal: boolean;
+    /**
+     * The URL of the extension
+     */
+    url: string;
+    parameters: Array<{
+        /**
+         * The ID of the parameter
+         */
+        id: string;
+        /**
+         * The name of the parameter
+         */
+        name: string;
+        /**
+         * The display name of the parameter
+         */
+        display_name: string;
+        /**
+         * The namespace of the parameter
+         */
+        namespace: "patroni" | "pgconf" | "pgbouncer";
+        /**
+         * The category of the parameter
+         */
+        category: string;
+        /**
+         * The description of the parameter
+         */
+        description: string;
+        /**
+         * Configures an extension
+         */
+        extension: boolean;
+        /**
+         * The internal state of the parameter
+         */
+        internal: boolean;
+        /**
+         * The type of the parameter
+         */
+        parameter_type: "boolean" | "bytes" | "float" | "integer" | "internal" | "milliseconds" | "seconds" | "select" | "string" | "time";
+        /**
+         * The default value of the parameter
+         */
+        default_value: string;
+        /**
+         * The configured value of the parameter
+         */
+        value: string;
+        /**
+         * Whether the parameter is required
+         */
+        required: boolean;
+        /**
+         * When the parameter was created
+         */
+        created_at: string;
+        /**
+         * When the parameter was last updated
+         */
+        updated_at: string;
+        /**
+         * True if processes require a server restart on change
+         */
+        restart: boolean;
+        /**
+         * The maximum value of the parameter
+         */
+        max: number;
+        /**
+         * The minimum value of the parameter
+         */
+        min: number;
+        /**
+         * The step change of the parameter
+         */
+        step: number;
+        /**
+         * The URL of the parameter
+         */
+        url: string;
+        /**
+         * Valid options for the parameter value
+         */
+        options: Array<string>;
+        actor: {
+            /**
+             * The ID of the actor
+             */
+            id: string;
+            /**
+             * The name of the actor
+             */
+            display_name: string;
+            /**
+             * The URL of the actor's avatar
+             */
+            avatar_url: string;
+        };
+    }>;
+};
+export type PostgresClusterParameter = {
+    /**
+     * The ID of the parameter
+     */
+    id: string;
+    /**
+     * The name of the parameter
+     */
+    name: string;
+    /**
+     * The display name of the parameter
+     */
+    display_name: string;
+    /**
+     * The namespace of the parameter
+     */
+    namespace: "patroni" | "pgconf" | "pgbouncer";
+    /**
+     * The category of the parameter
+     */
+    category: string;
+    /**
+     * The description of the parameter
+     */
+    description: string;
+    /**
+     * Configures an extension
+     */
+    extension: boolean;
+    /**
+     * The internal state of the parameter
+     */
+    internal: boolean;
+    /**
+     * The type of the parameter
+     */
+    parameter_type: "boolean" | "bytes" | "float" | "integer" | "internal" | "milliseconds" | "seconds" | "select" | "string" | "time";
+    /**
+     * The default value of the parameter
+     */
+    default_value: string;
+    /**
+     * The configured value of the parameter
+     */
+    value: string;
+    /**
+     * Whether the parameter is required
+     */
+    required: boolean;
+    /**
+     * When the parameter was created
+     */
+    created_at: string;
+    /**
+     * When the parameter was last updated
+     */
+    updated_at: string;
+    /**
+     * True if processes require a server restart on change
+     */
+    restart: boolean;
+    /**
+     * The maximum value of the parameter
+     */
+    max: number;
+    /**
+     * The minimum value of the parameter
+     */
+    min: number;
+    /**
+     * The step change of the parameter
+     */
+    step: number;
+    /**
+     * The URL of the parameter
+     */
+    url: string;
+    /**
+     * Valid options for the parameter value
+     */
+    options: Array<string>;
+    actor: {
+        /**
+         * The ID of the actor
+         */
+        id: string;
+        /**
+         * The name of the actor
+         */
+        display_name: string;
+        /**
+         * The URL of the actor's avatar
+         */
+        avatar_url: string;
+    };
+};
+export type PaginatedDatabaseBranchKeyspace = {
+    /**
+     * The current page number
+     */
+    current_page: number;
+    /**
+     * The next page number
+     */
+    next_page: number;
+    /**
+     * The next page of results
+     */
+    next_page_url: string;
+    /**
+     * The previous page number
+     */
+    prev_page: number;
+    /**
+     * The previous page of results
+     */
+    prev_page_url: string;
+    data: Array<{
+        /**
+         * The ID of the keyspace
+         */
+        id: string;
+        /**
+         * Name of the keyspace
+         */
+        name: string;
+        /**
+         * The number of keyspace shards
+         */
+        shards: number;
+        /**
+         * If the keyspace is sharded
+         */
+        sharded: boolean;
+        /**
+         * Total number of replicas in the keyspace
+         */
+        replicas: number;
+        /**
+         * Number of extra replicas in the keyspace
+         */
+        extra_replicas: number;
+        /**
+         * When the keyspace was created
+         */
+        created_at: string;
+        /**
+         * When the keyspace was last updated
+         */
+        updated_at: string;
+        /**
+         * The SKU representing the keyspace cluster size
+         */
+        cluster_name: string;
+        /**
+         * The SKU representing the keyspace cluster size for display
+         */
+        cluster_display_name: string;
+        /**
+         * Is the keyspace currently resizing
+         */
+        resizing: boolean;
+        /**
+         * Is the keyspace awaiting a resize
+         */
+        resize_pending: boolean;
+        /**
+         * Is the keyspace provisioned and serving traffic
+         */
+        ready: boolean;
+        /**
+         * Is the keyspace running on metal instances
+         */
+        metal: boolean;
+        /**
+         * Is this the default keyspace for the branch
+         */
+        default: boolean;
+        /**
+         * Is this keyspace used in an import
+         */
+        imported: boolean;
+        /**
+         * Percentage of buffer pool memory allocated to vector indexes
+         */
+        vector_pool_allocation: number;
+        replication_durability_constraints: {
+            /**
+             * The replication durability strategy
+             */
+            strategy: "available" | "lag" | "always";
+        };
+        vreplication_flags: {
+            /**
+             * Enable optimized inserts
+             */
+            optimize_inserts: boolean;
+            /**
+             * Allow no blob binlog row image
+             */
+            allow_no_blob_binlog_row_image: boolean;
+            /**
+             * Enable VPlayer batching
+             */
+            vplayer_batching: boolean;
+        };
+    }>;
+};
+export type DatabaseBranchKeyspace = {
+    /**
+     * The ID of the keyspace
+     */
+    id: string;
+    /**
+     * Name of the keyspace
+     */
+    name: string;
+    /**
+     * The number of keyspace shards
+     */
+    shards: number;
+    /**
+     * If the keyspace is sharded
+     */
+    sharded: boolean;
+    /**
+     * Total number of replicas in the keyspace
+     */
+    replicas: number;
+    /**
+     * Number of extra replicas in the keyspace
+     */
+    extra_replicas: number;
+    /**
+     * When the keyspace was created
+     */
+    created_at: string;
+    /**
+     * When the keyspace was last updated
+     */
+    updated_at: string;
+    /**
+     * The SKU representing the keyspace cluster size
+     */
+    cluster_name: string;
+    /**
+     * The SKU representing the keyspace cluster size for display
+     */
+    cluster_display_name: string;
+    /**
+     * Is the keyspace currently resizing
+     */
+    resizing: boolean;
+    /**
+     * Is the keyspace awaiting a resize
+     */
+    resize_pending: boolean;
+    /**
+     * Is the keyspace provisioned and serving traffic
+     */
+    ready: boolean;
+    /**
+     * Is the keyspace running on metal instances
+     */
+    metal: boolean;
+    /**
+     * Is this the default keyspace for the branch
+     */
+    default: boolean;
+    /**
+     * Is this keyspace used in an import
+     */
+    imported: boolean;
+    /**
+     * Percentage of buffer pool memory allocated to vector indexes
+     */
+    vector_pool_allocation: number;
+    replication_durability_constraints: {
+        /**
+         * The replication durability strategy
+         */
+        strategy: "available" | "lag" | "always";
+    };
+    vreplication_flags: {
+        /**
+         * Enable optimized inserts
+         */
+        optimize_inserts: boolean;
+        /**
+         * Allow no blob binlog row image
+         */
+        allow_no_blob_binlog_row_image: boolean;
+        /**
+         * Enable VPlayer batching
+         */
+        vplayer_batching: boolean;
+    };
+};
+export type PaginatedDatabaseBranchPassword = {
+    /**
+     * The current page number
+     */
+    current_page: number;
+    /**
+     * The next page number
+     */
+    next_page: number;
+    /**
+     * The next page of results
+     */
+    next_page_url: string;
+    /**
+     * The previous page number
+     */
+    prev_page: number;
+    /**
+     * The previous page of results
+     */
+    prev_page_url: string;
+    data: Array<{
+        /**
+         * The ID for the password
+         */
+        id: string;
+        /**
+         * The display name for the password
+         */
+        name: string;
+        /**
+         * The role for the password
+         */
+        role: "reader" | "writer" | "admin" | "readwriter";
+        /**
+         * List of IP addresses or CIDR ranges that can use this password
+         */
+        cidrs: Array<string>;
+        /**
+         * When the password was created
+         */
+        created_at: string;
+        /**
+         * When the password was deleted
+         */
+        deleted_at: string;
+        /**
+         * When the password will expire
+         */
+        expires_at: string;
+        /**
+         * When the password was last used to execute a query
+         */
+        last_used_at: string;
+        /**
+         * True if the credentials are expired
+         */
+        expired: boolean;
+        /**
+         * Time to live (in seconds) for the password. The password will be invalid when TTL has passed
+         */
+        ttl_seconds: number;
+        /**
+         * The host URL for the password
+         */
+        access_host_url: string;
+        /**
+         * The regional host URL
+         */
+        access_host_regional_url: string;
+        /**
+         * The read-only replica host URLs
+         */
+        access_host_regional_urls: Array<string>;
+        actor: {
+            /**
+             * The ID of the actor
+             */
+            id: string;
+            /**
+             * The name of the actor
+             */
+            display_name: string;
+            /**
+             * The URL of the actor's avatar
+             */
+            avatar_url: string;
+        };
+        region: {
+            /**
+             * The ID of the region
+             */
+            id: string;
+            /**
+             * Provider for the region (ex. AWS)
+             */
+            provider: string;
+            /**
+             * Whether or not the region is currently active
+             */
+            enabled: boolean;
+            /**
+             * Public IP addresses for the region
+             */
+            public_ip_addresses: Array<string>;
+            /**
+             * Name of the region
+             */
+            display_name: string;
+            /**
+             * Location of the region
+             */
+            location: string;
+            /**
+             * The slug of the region
+             */
+            slug: string;
+            /**
+             * True if the region is the default for new branch creation
+             */
+            current_default: boolean;
+        };
+        /**
+         * The username for the password
+         */
+        username: string;
+        /**
+         * The plain text password, available only after create
+         */
+        plain_text: string;
+        /**
+         * Whether or not the password is for a read replica
+         */
+        replica: boolean;
+        /**
+         * Whether or not the password can be renewed
+         */
+        renewable: boolean;
+        database_branch: {
+            /**
+             * The name for the branch
+             */
+            name: string;
+            /**
+             * The ID for the branch
+             */
+            id: string;
+            /**
+             * Whether or not the branch is a production branch
+             */
+            production: boolean;
+            /**
+             * The address of the MySQL provider for the branch
+             */
+            mysql_edge_address: string;
+            /**
+             * True if private connectivity is enabled
+             */
+            private_edge_connectivity: boolean;
+        };
+    }>;
+};
+export type DatabaseBranchPassword = {
+    /**
+     * The ID for the password
+     */
+    id: string;
+    /**
+     * The display name for the password
+     */
+    name: string;
+    /**
+     * The role for the password
+     */
+    role: "reader" | "writer" | "admin" | "readwriter";
+    /**
+     * List of IP addresses or CIDR ranges that can use this password
+     */
+    cidrs: Array<string>;
+    /**
+     * When the password was created
+     */
+    created_at: string;
+    /**
+     * When the password was deleted
+     */
+    deleted_at: string;
+    /**
+     * When the password will expire
+     */
+    expires_at: string;
+    /**
+     * When the password was last used to execute a query
+     */
+    last_used_at: string;
+    /**
+     * True if the credentials are expired
+     */
+    expired: boolean;
+    /**
+     * Time to live (in seconds) for the password. The password will be invalid when TTL has passed
+     */
+    ttl_seconds: number;
+    /**
+     * The host URL for the password
+     */
+    access_host_url: string;
+    /**
+     * The regional host URL
+     */
+    access_host_regional_url: string;
+    /**
+     * The read-only replica host URLs
+     */
+    access_host_regional_urls: Array<string>;
+    actor: {
+        /**
+         * The ID of the actor
+         */
+        id: string;
+        /**
+         * The name of the actor
+         */
+        display_name: string;
+        /**
+         * The URL of the actor's avatar
+         */
+        avatar_url: string;
+    };
+    region: {
+        /**
+         * The ID of the region
+         */
+        id: string;
+        /**
+         * Provider for the region (ex. AWS)
+         */
+        provider: string;
+        /**
+         * Whether or not the region is currently active
+         */
+        enabled: boolean;
+        /**
+         * Public IP addresses for the region
+         */
+        public_ip_addresses: Array<string>;
+        /**
+         * Name of the region
+         */
+        display_name: string;
+        /**
+         * Location of the region
+         */
+        location: string;
+        /**
+         * The slug of the region
+         */
+        slug: string;
+        /**
+         * True if the region is the default for new branch creation
+         */
+        current_default: boolean;
+    };
+    /**
+     * The username for the password
+     */
+    username: string;
+    /**
+     * The plain text password, available only after create
+     */
+    plain_text: string;
+    /**
+     * Whether or not the password is for a read replica
+     */
+    replica: boolean;
+    /**
+     * Whether or not the password can be renewed
+     */
+    renewable: boolean;
+    database_branch: {
+        /**
+         * The name for the branch
+         */
+        name: string;
+        /**
+         * The ID for the branch
+         */
+        id: string;
+        /**
+         * Whether or not the branch is a production branch
+         */
+        production: boolean;
+        /**
+         * The address of the MySQL provider for the branch
+         */
+        mysql_edge_address: string;
+        /**
+         * True if private connectivity is enabled
+         */
+        private_edge_connectivity: boolean;
+    };
+};
+export type PaginatedDatabase = {
+    /**
+     * The current page number
+     */
+    current_page: number;
+    /**
+     * The next page number
+     */
+    next_page: number;
+    /**
+     * The next page of results
+     */
+    next_page_url: string;
+    /**
+     * The previous page number
+     */
+    prev_page: number;
+    /**
+     * The previous page of results
+     */
+    prev_page_url: string;
+    data: Array<{
+        /**
+         * The ID of the database
+         */
+        id: string;
+        /**
+         * The URL to the database API endpoint
+         */
+        url: string;
+        /**
+         * The URL to retrieve this database's branches via the API
+         */
+        branches_url: string;
+        /**
+         * The total number of database branches
+         */
+        branches_count: number;
+        /**
+         * The total number of schema recommendations
+         */
+        open_schema_recommendations_count: number;
+        /**
+         * The total number of database development branches
+         */
+        development_branches_count: number;
+        /**
+         * The total number of database production branches
+         */
+        production_branches_count: number;
+        /**
+         * The total number of ongoing issues within a database
+         */
+        issues_count: number;
+        /**
+         * If the database requires multiple admins for deletion
+         */
+        multiple_admins_required_for_deletion: boolean;
+        /**
+         * If the database is ready to be used
+         */
+        ready: boolean;
+        /**
+         * If the database has reached its backup restored branch limit
+         */
+        at_backup_restore_branches_limit: boolean;
+        /**
+         * If the database has reached its development branch limit
+         */
+        at_development_branch_usage_limit: boolean;
+        data_import: {
+            /**
+             * State of the data import
+             */
+            state: string;
+            /**
+             * Errors encountered during the import check
+             */
+            import_check_errors: string;
+            /**
+             * When the import started
+             */
+            started_at: string;
+            /**
+             * When the import finished
+             */
+            finished_at: string;
+            data_source: {
+                /**
+                 * Hostname of the data source
+                 */
+                hostname: string;
+                /**
+                 * Port of the data source
+                 */
+                port: number;
+                /**
+                 * Database name of the data source
+                 */
+                database: string;
+            };
+        };
+        region: {
+            /**
+             * The ID of the region
+             */
+            id: string;
+            /**
+             * Provider for the region (ex. AWS)
+             */
+            provider: string;
+            /**
+             * Whether or not the region is currently active
+             */
+            enabled: boolean;
+            /**
+             * Public IP addresses for the region
+             */
+            public_ip_addresses: Array<string>;
+            /**
+             * Name of the region
+             */
+            display_name: string;
+            /**
+             * Location of the region
+             */
+            location: string;
+            /**
+             * The slug of the region
+             */
+            slug: string;
+            /**
+             * True if the region is the default for new branch creation
+             */
+            current_default: boolean;
+        };
+        /**
+         * The URL to see this database's branches in the web UI
+         */
+        html_url: string;
+        /**
+         * Name of the database
+         */
+        name: string;
+        /**
+         * State of the database
+         */
+        state: "pending" | "importing" | "sleep_in_progress" | "sleeping" | "awakening" | "import_ready" | "ready";
+        /**
+         * If the database is sharded
+         */
+        sharded: boolean;
+        /**
+         * Number of shards in the default branch
+         */
+        default_branch_shard_count: number;
+        /**
+         * Number of read only regions in the default branch
+         */
+        default_branch_read_only_regions_count: number;
+        /**
+         * Number of tables in the default branch schema
+         */
+        default_branch_table_count: number;
+        /**
+         * The default branch for the database
+         */
+        default_branch: string;
+        /**
+         * Whether an approval is required to deploy schema changes to this database
+         */
+        require_approval_for_deploy: boolean;
+        /**
+         * True if a branch is currently resizing
+         */
+        resizing: boolean;
+        /**
+         * True if a branch has a queued resize request
+         */
+        resize_queued: boolean;
+        /**
+         * Whether seeding branches with data is enabled for all branches
+         */
+        allow_data_branching: boolean;
+        /**
+         * Whether foreign key constraints are enabled
+         */
+        foreign_keys_enabled: boolean;
+        /**
+         * Whether to automatically manage Rails migrations during deploy requests
+         */
+        automatic_migrations: boolean;
+        /**
+         * Whether to restrict branch creation to one region
+         */
+        restrict_branch_region: boolean;
+        /**
+         * Whether raw SQL queries are collected
+         */
+        insights_raw_queries: boolean;
+        /**
+         * The database plan
+         */
+        plan: string;
+        /**
+         * True if query insights is enabled for the database
+         */
+        insights_enabled: boolean;
+        /**
+         * Whether web console is enabled for production branches
+         */
+        production_branch_web_console: boolean;
+        /**
+         * Table name to use for copying schema migration data
+         */
+        migration_table_name: string;
+        /**
+         * Framework used for applying migrations
+         */
+        migration_framework: string;
+        /**
+         * When the database was created
+         */
+        created_at: string;
+        /**
+         * When the database was last updated
+         */
+        updated_at: string;
+        /**
+         * When the default branch schema was last changed.
+         */
+        schema_last_updated_at: string;
+        /**
+         * The kind of database
+         */
+        kind: "mysql" | "postgresql";
+    }>;
+};
+export type Database = {
+    /**
+     * The ID of the database
+     */
+    id: string;
+    /**
+     * The URL to the database API endpoint
+     */
+    url: string;
+    /**
+     * The URL to retrieve this database's branches via the API
+     */
+    branches_url: string;
+    /**
+     * The total number of database branches
+     */
+    branches_count: number;
+    /**
+     * The total number of schema recommendations
+     */
+    open_schema_recommendations_count: number;
+    /**
+     * The total number of database development branches
+     */
+    development_branches_count: number;
+    /**
+     * The total number of database production branches
+     */
+    production_branches_count: number;
+    /**
+     * The total number of ongoing issues within a database
+     */
+    issues_count: number;
+    /**
+     * If the database requires multiple admins for deletion
+     */
+    multiple_admins_required_for_deletion: boolean;
+    /**
+     * If the database is ready to be used
+     */
+    ready: boolean;
+    /**
+     * If the database has reached its backup restored branch limit
+     */
+    at_backup_restore_branches_limit: boolean;
+    /**
+     * If the database has reached its development branch limit
+     */
+    at_development_branch_usage_limit: boolean;
+    data_import: {
+        /**
+         * State of the data import
+         */
+        state: string;
+        /**
+         * Errors encountered during the import check
+         */
+        import_check_errors: string;
+        /**
+         * When the import started
+         */
+        started_at: string;
+        /**
+         * When the import finished
+         */
+        finished_at: string;
+        data_source: {
+            /**
+             * Hostname of the data source
+             */
+            hostname: string;
+            /**
+             * Port of the data source
+             */
+            port: number;
+            /**
+             * Database name of the data source
+             */
+            database: string;
+        };
+    };
+    region: {
+        /**
+         * The ID of the region
+         */
+        id: string;
+        /**
+         * Provider for the region (ex. AWS)
+         */
+        provider: string;
+        /**
+         * Whether or not the region is currently active
+         */
+        enabled: boolean;
+        /**
+         * Public IP addresses for the region
+         */
+        public_ip_addresses: Array<string>;
+        /**
+         * Name of the region
+         */
+        display_name: string;
+        /**
+         * Location of the region
+         */
+        location: string;
+        /**
+         * The slug of the region
+         */
+        slug: string;
+        /**
+         * True if the region is the default for new branch creation
+         */
+        current_default: boolean;
+    };
+    /**
+     * The URL to see this database's branches in the web UI
+     */
+    html_url: string;
+    /**
+     * Name of the database
+     */
+    name: string;
+    /**
+     * State of the database
+     */
+    state: "pending" | "importing" | "sleep_in_progress" | "sleeping" | "awakening" | "import_ready" | "ready";
+    /**
+     * If the database is sharded
+     */
+    sharded: boolean;
+    /**
+     * Number of shards in the default branch
+     */
+    default_branch_shard_count: number;
+    /**
+     * Number of read only regions in the default branch
+     */
+    default_branch_read_only_regions_count: number;
+    /**
+     * Number of tables in the default branch schema
+     */
+    default_branch_table_count: number;
+    /**
+     * The default branch for the database
+     */
+    default_branch: string;
+    /**
+     * Whether an approval is required to deploy schema changes to this database
+     */
+    require_approval_for_deploy: boolean;
+    /**
+     * True if a branch is currently resizing
+     */
+    resizing: boolean;
+    /**
+     * True if a branch has a queued resize request
+     */
+    resize_queued: boolean;
+    /**
+     * Whether seeding branches with data is enabled for all branches
+     */
+    allow_data_branching: boolean;
+    /**
+     * Whether foreign key constraints are enabled
+     */
+    foreign_keys_enabled: boolean;
+    /**
+     * Whether to automatically manage Rails migrations during deploy requests
+     */
+    automatic_migrations: boolean;
+    /**
+     * Whether to restrict branch creation to one region
+     */
+    restrict_branch_region: boolean;
+    /**
+     * Whether raw SQL queries are collected
+     */
+    insights_raw_queries: boolean;
+    /**
+     * The database plan
+     */
+    plan: string;
+    /**
+     * True if query insights is enabled for the database
+     */
+    insights_enabled: boolean;
+    /**
+     * Whether web console is enabled for production branches
+     */
+    production_branch_web_console: boolean;
+    /**
+     * Table name to use for copying schema migration data
+     */
+    migration_table_name: string;
+    /**
+     * Framework used for applying migrations
+     */
+    migration_framework: string;
+    /**
+     * When the database was created
+     */
+    created_at: string;
+    /**
+     * When the database was last updated
+     */
+    updated_at: string;
+    /**
+     * When the default branch schema was last changed.
+     */
+    schema_last_updated_at: string;
+    /**
+     * The kind of database
+     */
+    kind: "mysql" | "postgresql";
+};
+export type PaginatedPlanetscaleRegion = {
+    /**
+     * The current page number
+     */
+    current_page: number;
+    /**
+     * The next page number
+     */
+    next_page: number;
+    /**
+     * The next page of results
+     */
+    next_page_url: string;
+    /**
+     * The previous page number
+     */
+    prev_page: number;
+    /**
+     * The previous page of results
+     */
+    prev_page_url: string;
+    data: Array<{
+        /**
+         * The ID of the region
+         */
+        id: string;
+        /**
+         * Provider for the region (ex. AWS)
+         */
+        provider: string;
+        /**
+         * Whether or not the region is currently active
+         */
+        enabled: boolean;
+        /**
+         * Public IP addresses for the region
+         */
+        public_ip_addresses: Array<string>;
+        /**
+         * Name of the region
+         */
+        display_name: string;
+        /**
+         * Location of the region
+         */
+        location: string;
+        /**
+         * The slug of the region
+         */
+        slug: string;
+        /**
+         * True if the region is the default for new branch creation
+         */
+        current_default: boolean;
+    }>;
+};
+export type PaginatedDatabaseBranchReadOnlyRegion = {
+    /**
+     * The current page number
+     */
+    current_page: number;
+    /**
+     * The next page number
+     */
+    next_page: number;
+    /**
+     * The next page of results
+     */
+    next_page_url: string;
+    /**
+     * The previous page number
+     */
+    prev_page: number;
+    /**
+     * The previous page of results
+     */
+    prev_page_url: string;
+    data: Array<{
+        /**
+         * The ID of the read-only region
+         */
+        id: string;
+        /**
+         * The name of the read-only region
+         */
+        display_name: string;
+        /**
+         * When the read-only region was created
+         */
+        created_at: string;
+        /**
+         * When the read-only region was last updated
+         */
+        updated_at: string;
+        /**
+         * When the read-only region was ready to serve queries
+         */
+        ready_at: string;
+        /**
+         * Whether or not the read-only region is ready to serve queries
+         */
+        ready: boolean;
+        actor: {
+            /**
+             * The ID of the actor
+             */
+            id: string;
+            /**
+             * The name of the actor
+             */
+            display_name: string;
+            /**
+             * The URL of the actor's avatar
+             */
+            avatar_url: string;
+        };
+        region: {
+            /**
+             * The ID of the region
+             */
+            id: string;
+            /**
+             * Provider for the region (ex. AWS)
+             */
+            provider: string;
+            /**
+             * Whether or not the region is currently active
+             */
+            enabled: boolean;
+            /**
+             * Public IP addresses for the region
+             */
+            public_ip_addresses: Array<string>;
+            /**
+             * Name of the region
+             */
+            display_name: string;
+            /**
+             * Location of the region
+             */
+            location: string;
+            /**
+             * The slug of the region
+             */
+            slug: string;
+            /**
+             * True if the region is the default for new branch creation
+             */
+            current_default: boolean;
+        };
+    }>;
+};
+export type ThrottlerConfigurations = {
+    /**
+     * Keyspaces that are eligible for throttler configuration in the configurable resource (database or deploy request)
+     */
+    keyspaces: Array<string>;
+    configurable: {
+        /**
+         * The ID for the resource
+         */
+        id: string;
+        /**
+         * The name for the resource
+         */
+        name: string;
+        /**
+         * When the resource was created
+         */
+        created_at: string;
+        /**
+         * When the resource was last updated
+         */
+        updated_at: string;
+        /**
+         * When the resource was deleted, if deleted
+         */
+        deleted_at: string;
+    };
+    configurations: Array<{
+        /**
+         * Name of keyspace this throttler ratio applies to
+         */
+        keyspace_name: string;
+        /**
+         * A throttler ratio between 0 and 95 that applies to migrations in this specific keyspace
+         */
+        ratio: number;
+    }>;
+};
+export type PaginatedOauthApplication = {
+    /**
+     * The current page number
+     */
+    current_page: number;
+    /**
+     * The next page number
+     */
+    next_page: number;
+    /**
+     * The next page of results
+     */
+    next_page_url: string;
+    /**
+     * The previous page number
+     */
+    prev_page: number;
+    /**
+     * The previous page of results
+     */
+    prev_page_url: string;
+    data: Array<{
+        /**
+         * The ID of the app
+         */
+        id: string;
+        /**
+         * The name of the app
+         */
+        name: string;
+        /**
+         * The redirect URI of the OAuth application
+         */
+        redirect_uri: string;
+        /**
+         * The domain of the OAuth application. Used for verification of a valid redirect uri
+         */
+        domain: string;
+        /**
+         * When the OAuth application was created
+         */
+        created_at: string;
+        /**
+         * When the OAuth application was last updated
+         */
+        updated_at: string;
+        /**
+         * The scopes that the OAuth application requires on a user account
+         */
+        scopes: Array<string>;
+        /**
+         * The image source for the OAuth application's avatar
+         */
+        avatar: string;
+        /**
+         * The OAuth application's unique client id
+         */
+        client_id: string;
+        /**
+         * The number of tokens issued by the OAuth application
+         */
+        tokens: number;
+    }>;
+};
+export type OauthApplication = {
+    /**
+     * The ID of the app
+     */
+    id: string;
+    /**
+     * The name of the app
+     */
+    name: string;
+    /**
+     * The redirect URI of the OAuth application
+     */
+    redirect_uri: string;
+    /**
+     * The domain of the OAuth application. Used for verification of a valid redirect uri
+     */
+    domain: string;
+    /**
+     * When the OAuth application was created
+     */
+    created_at: string;
+    /**
+     * When the OAuth application was last updated
+     */
+    updated_at: string;
+    /**
+     * The scopes that the OAuth application requires on a user account
+     */
+    scopes: Array<string>;
+    /**
+     * The image source for the OAuth application's avatar
+     */
+    avatar: string;
+    /**
+     * The OAuth application's unique client id
+     */
+    client_id: string;
+    /**
+     * The number of tokens issued by the OAuth application
+     */
+    tokens: number;
+};
+export type PaginatedServiceToken = {
+    /**
+     * The current page number
+     */
+    current_page: number;
+    /**
+     * The next page number
+     */
+    next_page: number;
+    /**
+     * The next page of results
+     */
+    next_page_url: string;
+    /**
+     * The previous page number
+     */
+    prev_page: number;
+    /**
+     * The previous page of results
+     */
+    prev_page_url: string;
+    data: Array<{
+        /**
+         * The ID of the service token
+         */
+        id: string;
+        /**
+         * The name of the service token
+         */
+        name: string;
+        /**
+         * The display name of the service token
+         */
+        display_name: string;
+        /**
+         * The plain text token. Available only after create.
+         */
+        token: string;
+        /**
+         * The plain text refresh token. Available only after create.
+         */
+        plain_text_refresh_token: string;
+        /**
+         * The image source for the avatar of the service token
+         */
+        avatar_url: string;
+        /**
+         * When the service token was created
+         */
+        created_at: string;
+        /**
+         * When the service token was last updated
+         */
+        updated_at: string;
+        /**
+         * When the service token will expire
+         */
+        expires_at: string;
+        /**
+         * When the service token was last used
+         */
+        last_used_at: string;
+        /**
+         * The ID of the actor on whose behalf the service token was created
+         */
+        actor_id: string;
+        /**
+         * The name of the actor on whose behalf the service token was created
+         */
+        actor_display_name: string;
+        /**
+         * The type of the actor on whose behalf the service token was created
+         */
+        actor_type: string;
+        service_token_accesses: Array<{
+            /**
+             * The ID of the service token access
+             */
+            id: string;
+            /**
+             * The name of the service token access
+             */
+            access: string;
+            /**
+             * The description of the service token access
+             */
+            description: string;
+            /**
+             * The name of the resource the service token access gives access to
+             */
+            resource_name: string;
+            /**
+             * The ID of the resource the service token access gives access to
+             */
+            resource_id: string;
+            /**
+             * The type of the resource the service token access gives access to
+             */
+            resource_type: string;
+            resource: {
+                /**
+                 * The ID for the resource
+                 */
+                id: string;
+                /**
+                 * The name for the resource
+                 */
+                name: string;
+                /**
+                 * When the resource was created
+                 */
+                created_at: string;
+                /**
+                 * When the resource was last updated
+                 */
+                updated_at: string;
+                /**
+                 * When the resource was deleted, if deleted
+                 */
+                deleted_at: string;
+            };
+        }>;
+        oauth_accesses_by_resource: {
+            database: {
+                databases: Array<{
+                    /**
+                     * the name of the database the token has access to
+                     */
+                    name: string;
+                    /**
+                     * the id of the database the token has access to
+                     */
+                    id: string;
+                    /**
+                     * the name of the database's organization
+                     */
+                    organization: string;
+                    /**
+                     * the planetscale app url for the database
+                     */
+                    url: string;
+                }>;
+                accesses: Array<{
+                    /**
+                     * The name of the access scope
+                     */
+                    name: string;
+                    /**
+                     * The scope description
+                     */
+                    description: string;
+                }>;
+            };
+            organization: {
+                organizations: Array<{
+                    /**
+                     * the name of the organization
+                     */
+                    name: string;
+                    /**
+                     * the id of the organization
+                     */
+                    id: string;
+                    /**
+                     * the planetscale app url for the organization
+                     */
+                    url: string;
+                }>;
+                accesses: Array<{
+                    /**
+                     * The name of the access scope
+                     */
+                    name: string;
+                    /**
+                     * The scope description
+                     */
+                    description: string;
+                }>;
+            };
+            branch: {
+                branches: Array<{
+                    /**
+                     * the name of the branch
+                     */
+                    name: string;
+                    /**
+                     * the id of the branch
+                     */
+                    id: string;
+                    /**
+                     * the name of the database the branch belongs to
+                     */
+                    database: string;
+                    /**
+                     * the name of the organization the branch belongs to
+                     */
+                    organization: string;
+                    /**
+                     * the planetscale app url for the branch
+                     */
+                    url: string;
+                }>;
+                accesses: Array<{
+                    /**
+                     * The name of the access scope
+                     */
+                    name: string;
+                    /**
+                     * The scope description
+                     */
+                    description: string;
+                }>;
+            };
+            user: {
+                users: Array<{
+                    /**
+                     * the name of the user
+                     */
+                    name: string;
+                    /**
+                     * the id of the user
+                     */
+                    id: string;
+                }>;
+                accesses: Array<{
+                    /**
+                     * The name of the access scope
+                     */
+                    name: string;
+                    /**
+                     * The scope description
+                     */
+                    description: string;
+                }>;
+            };
+        };
+    }>;
+};
+export type ServiceToken = {
+    /**
+     * The ID of the service token
+     */
+    id: string;
+    /**
+     * The name of the service token
+     */
+    name: string;
+    /**
+     * The display name of the service token
+     */
+    display_name: string;
+    /**
+     * The plain text token. Available only after create.
+     */
+    token: string;
+    /**
+     * The plain text refresh token. Available only after create.
+     */
+    plain_text_refresh_token: string;
+    /**
+     * The image source for the avatar of the service token
+     */
+    avatar_url: string;
+    /**
+     * When the service token was created
+     */
+    created_at: string;
+    /**
+     * When the service token was last updated
+     */
+    updated_at: string;
+    /**
+     * When the service token will expire
+     */
+    expires_at: string;
+    /**
+     * When the service token was last used
+     */
+    last_used_at: string;
+    /**
+     * The ID of the actor on whose behalf the service token was created
+     */
+    actor_id: string;
+    /**
+     * The name of the actor on whose behalf the service token was created
+     */
+    actor_display_name: string;
+    /**
+     * The type of the actor on whose behalf the service token was created
+     */
+    actor_type: string;
+    service_token_accesses: Array<{
+        /**
+         * The ID of the service token access
+         */
+        id: string;
+        /**
+         * The name of the service token access
+         */
+        access: string;
+        /**
+         * The description of the service token access
+         */
+        description: string;
+        /**
+         * The name of the resource the service token access gives access to
+         */
+        resource_name: string;
+        /**
+         * The ID of the resource the service token access gives access to
+         */
+        resource_id: string;
+        /**
+         * The type of the resource the service token access gives access to
+         */
+        resource_type: string;
+        resource: {
+            /**
+             * The ID for the resource
+             */
+            id: string;
+            /**
+             * The name for the resource
+             */
+            name: string;
+            /**
+             * When the resource was created
+             */
+            created_at: string;
+            /**
+             * When the resource was last updated
+             */
+            updated_at: string;
+            /**
+             * When the resource was deleted, if deleted
+             */
+            deleted_at: string;
+        };
+    }>;
+    oauth_accesses_by_resource: {
+        database: {
+            databases: Array<{
+                /**
+                 * the name of the database the token has access to
+                 */
+                name: string;
+                /**
+                 * the id of the database the token has access to
+                 */
+                id: string;
+                /**
+                 * the name of the database's organization
+                 */
+                organization: string;
+                /**
+                 * the planetscale app url for the database
+                 */
+                url: string;
+            }>;
+            accesses: Array<{
+                /**
+                 * The name of the access scope
+                 */
+                name: string;
+                /**
+                 * The scope description
+                 */
+                description: string;
+            }>;
+        };
+        organization: {
+            organizations: Array<{
+                /**
+                 * the name of the organization
+                 */
+                name: string;
+                /**
+                 * the id of the organization
+                 */
+                id: string;
+                /**
+                 * the planetscale app url for the organization
+                 */
+                url: string;
+            }>;
+            accesses: Array<{
+                /**
+                 * The name of the access scope
+                 */
+                name: string;
+                /**
+                 * The scope description
+                 */
+                description: string;
+            }>;
+        };
+        branch: {
+            branches: Array<{
+                /**
+                 * the name of the branch
+                 */
+                name: string;
+                /**
+                 * the id of the branch
+                 */
+                id: string;
+                /**
+                 * the name of the database the branch belongs to
+                 */
+                database: string;
+                /**
+                 * the name of the organization the branch belongs to
+                 */
+                organization: string;
+                /**
+                 * the planetscale app url for the branch
+                 */
+                url: string;
+            }>;
+            accesses: Array<{
+                /**
+                 * The name of the access scope
+                 */
+                name: string;
+                /**
+                 * The scope description
+                 */
+                description: string;
+            }>;
+        };
+        user: {
+            users: Array<{
+                /**
+                 * the name of the user
+                 */
+                name: string;
+                /**
+                 * the id of the user
+                 */
+                id: string;
+            }>;
+            accesses: Array<{
+                /**
+                 * The name of the access scope
+                 */
+                name: string;
+                /**
+                 * The scope description
+                 */
+                description: string;
+            }>;
+        };
+    };
+};
+export type PaginatedOrganizationMembership = {
+    /**
+     * The current page number
+     */
+    current_page: number;
+    /**
+     * The next page number
+     */
+    next_page: number;
+    /**
+     * The next page of results
+     */
+    next_page_url: string;
+    /**
+     * The previous page number
+     */
+    prev_page: number;
+    /**
+     * The previous page of results
+     */
+    prev_page_url: string;
+    data: Array<{
+        /**
+         * The ID of the membership
+         */
+        id: string;
+        user: {
+            /**
+             * The ID of the user
+             */
+            id: string;
+            /**
+             * The display name of the user
+             */
+            display_name: string;
+            /**
+             * The name of the user
+             */
+            name: string;
+            /**
+             * The email of the user
+             */
+            email: string;
+            /**
+             * The URL source of the user's avatar
+             */
+            avatar_url: string;
+            /**
+             * When the user was created
+             */
+            created_at: string;
+            /**
+             * When the user was last updated
+             */
+            updated_at: string;
+            /**
+             * Whether or not the user has configured two factor authentication
+             */
+            two_factor_auth_configured: boolean;
+            default_organization: {
+                /**
+                 * The ID for the resource
+                 */
+                id: string;
+                /**
+                 * The name for the resource
+                 */
+                name: string;
+                /**
+                 * When the resource was created
+                 */
+                created_at: string;
+                /**
+                 * When the resource was last updated
+                 */
+                updated_at: string;
+                /**
+                 * When the resource was deleted, if deleted
+                 */
+                deleted_at: string;
+            };
+            /**
+             * Whether or not the user is managed by SSO
+             */
+            sso: boolean;
+            /**
+             * Whether or not the user is managed by an authentication provider
+             */
+            managed: boolean;
+            /**
+             * Whether or not the user is managed by a SSO directory
+             */
+            directory_managed: boolean;
+            /**
+             * Whether or not the user is verified by email
+             */
+            email_verified: boolean;
+        };
+        /**
+         * The role of the user in the organization
+         */
+        role: "member" | "admin";
+        /**
+         * When the membership was created
+         */
+        created_at: string;
+        /**
+         * When the membership was last updated
+         */
+        updated_at: string;
+    }>;
+};
+export type PaginatedOrganization = {
+    /**
+     * The current page number
+     */
+    current_page: number;
+    /**
+     * The next page number
+     */
+    next_page: number;
+    /**
+     * The next page of results
+     */
+    next_page_url: string;
+    /**
+     * The previous page number
+     */
+    prev_page: number;
+    /**
+     * The previous page of results
+     */
+    prev_page_url: string;
+    data: Array<{
+        /**
+         * The ID for the organization
+         */
+        id: string;
+        /**
+         * The name of the organization
+         */
+        name: string;
+        /**
+         * The billing email of the organization
+         */
+        billing_email: string;
+        /**
+         * When the organization was created
+         */
+        created_at: string;
+        /**
+         * When the organization was last updated
+         */
+        updated_at: string;
+        /**
+         * The billing plan of the organization
+         */
+        plan: string;
+        /**
+         * Whether or not the organization's billing information is valid
+         */
+        valid_billing_info: boolean;
+        /**
+         * Whether or not SSO is enabled on the organization
+         */
+        sso: boolean;
+        /**
+         * Whether or not the organization uses an SSO directory
+         */
+        sso_directory: boolean;
+        /**
+         * Whether or not the organization has single tenancy enabled
+         */
+        single_tenancy: boolean;
+        /**
+         * Whether or not the organization has managed tenancy enabled
+         */
+        managed_tenancy: boolean;
+        /**
+         * Whether or not the organization has past due billing invoices
+         */
+        has_past_due_invoices: boolean;
+        /**
+         * The number of databases in the organization
+         */
+        database_count: number;
+        /**
+         * The URL of the organization's SSO portal
+         */
+        sso_portal_url: string;
+        /**
+         * Features that can be enabled on the organization
+         */
+        features: {
+            [key: string]: unknown;
+        };
+        /**
+         * Whether or not the IdP provider is be responsible for managing roles in PlanetScale
+         */
+        idp_managed_roles: boolean;
+        /**
+         * The expected monthly budget for the organization
+         */
+        invoice_budget_amount: number;
+        /**
+         * The keyspace shard limit for the organization
+         */
+        keyspace_shard_limit: number;
+        /**
+         * Whether or not the organization has a payment method on file
+         */
+        has_card: boolean;
+        /**
+         * Whether or not the organization requires payment information
+         */
+        payment_info_required: boolean;
+    }>;
+};
+export type Organization = {
+    /**
+     * The ID for the organization
+     */
+    id: string;
+    /**
+     * The name of the organization
+     */
+    name: string;
+    /**
+     * The billing email of the organization
+     */
+    billing_email: string;
+    /**
+     * When the organization was created
+     */
+    created_at: string;
+    /**
+     * When the organization was last updated
+     */
+    updated_at: string;
+    /**
+     * The billing plan of the organization
+     */
+    plan: string;
+    /**
+     * Whether or not the organization's billing information is valid
+     */
+    valid_billing_info: boolean;
+    /**
+     * Whether or not SSO is enabled on the organization
+     */
+    sso: boolean;
+    /**
+     * Whether or not the organization uses an SSO directory
+     */
+    sso_directory: boolean;
+    /**
+     * Whether or not the organization has single tenancy enabled
+     */
+    single_tenancy: boolean;
+    /**
+     * Whether or not the organization has managed tenancy enabled
+     */
+    managed_tenancy: boolean;
+    /**
+     * Whether or not the organization has past due billing invoices
+     */
+    has_past_due_invoices: boolean;
+    /**
+     * The number of databases in the organization
+     */
+    database_count: number;
+    /**
+     * The URL of the organization's SSO portal
+     */
+    sso_portal_url: string;
+    /**
+     * Features that can be enabled on the organization
+     */
+    features: {
+        [key: string]: unknown;
+    };
+    /**
+     * Whether or not the IdP provider is be responsible for managing roles in PlanetScale
+     */
+    idp_managed_roles: boolean;
+    /**
+     * The expected monthly budget for the organization
+     */
+    invoice_budget_amount: number;
+    /**
+     * The keyspace shard limit for the organization
+     */
+    keyspace_shard_limit: number;
+    /**
+     * Whether or not the organization has a payment method on file
+     */
+    has_card: boolean;
+    /**
+     * Whether or not the organization requires payment information
+     */
+    payment_info_required: boolean;
+};
+export type PaginatedAuditLogEvent = {
+    /**
+     * Whether there is a next page of results
+     */
+    has_next: boolean;
+    /**
+     * Whether there is a previous page of results
+     */
+    has_prev: boolean;
+    /**
+     * The ID of the first object in the current results
+     */
+    cursor_start: string;
+    /**
+     * The ID of the last object in the current results
+     */
+    cursor_end: string;
+    data: Array<{
+        /**
+         * The ID for the audit log
+         */
+        id: string;
+        /**
+         * The ID of the actor
+         */
+        actor_id: string;
+        /**
+         * The type of the actor. Such as 'User' or 'ServiceToken'
+         */
+        actor_type: string;
+        /**
+         * The ID of the auditable object
+         */
+        auditable_id: string;
+        /**
+         * The type of the auditable. Such as 'Organization' or 'Database'
+         */
+        auditable_type: string;
+        /**
+         * The ID of the target
+         */
+        target_id: string;
+        /**
+         * The type of the target. Such as 'DatabaseBranch' or 'DatabaseBranchPassword'
+         */
+        target_type: string;
+        /**
+         * The location of the actor based on their IP address
+         */
+        location: string;
+        /**
+         * The name of the target
+         */
+        target_display_name: string;
+        /**
+         * The action that was taken
+         */
+        audit_action: string;
+        /**
+         * The action that was taken
+         */
+        action: string;
+        /**
+         * The name of the actor
+         */
+        actor_display_name: string;
+        /**
+         * The name of the auditable object
+         */
+        auditable_display_name: string;
+        /**
+         * The IP address of the actor
+         */
+        remote_ip: string;
+        /**
+         * When the audit log was created
+         */
+        created_at: string;
+        /**
+         * When the audit log was last updated
+         */
+        updated_at: string;
+        /**
+         * Additional metadata containing details about the change
+         */
+        metadata: {
+            [key: string]: unknown;
+        };
+    }>;
+};
+export type PaginatedPostgresRole = {
+    /**
+     * The current page number
+     */
+    current_page: number;
+    /**
+     * The next page number
+     */
+    next_page: number;
+    /**
+     * The next page of results
+     */
+    next_page_url: string;
+    /**
+     * The previous page number
+     */
+    prev_page: number;
+    /**
+     * The previous page of results
+     */
+    prev_page_url: string;
+    data: Array<{
+        /**
+         * The ID of the role
+         */
+        id: string;
+        /**
+         * The name of the role
+         */
+        name: string;
+        /**
+         * The database connection string
+         */
+        access_host_url: string;
+        /**
+         * The database connection string for private connections
+         */
+        private_access_host_url: string;
+        /**
+         * The service name to set up private connectivity
+         */
+        private_connection_service_name: string;
+        /**
+         * The database user name
+         */
+        username: string;
+        /**
+         * The plain text password, available only after create
+         */
+        password: string;
+        /**
+         * The database name
+         */
+        database_name: string;
+        /**
+         * When the role was created
+         */
+        created_at: string;
+        /**
+         * When the role was updated
+         */
+        updated_at: string;
+        /**
+         * When the role was deleted
+         */
+        deleted_at: string;
+        /**
+         * When the role expires
+         */
+        expires_at: string;
+        /**
+         * When the role was dropped
+         */
+        dropped_at: string;
+        /**
+         * Error message available when dropping the role fails
+         */
+        drop_failed: string;
+        /**
+         * True if the credentials are expired
+         */
+        expired: boolean;
+        /**
+         * Whether the role is the default postgres user
+         */
+        default: boolean;
+        /**
+         * Number of seconds before the credentials expire
+         */
+        ttl: number;
+        /**
+         * Database roles these credentials inherit
+         */
+        inherited_roles: Array<"pg_checkpoint" | "pg_create_subscription" | "pg_maintain" | "pg_monitor" | "pg_read_all_data" | "pg_read_all_settings" | "pg_read_all_stats" | "pg_signal_backend" | "pg_stat_scan_tables" | "pg_use_reserved_connections" | "pg_write_all_data" | "postgres">;
+        branch: {
+            /**
+             * The ID for the resource
+             */
+            id: string;
+            /**
+             * The name for the resource
+             */
+            name: string;
+            /**
+             * When the resource was created
+             */
+            created_at: string;
+            /**
+             * When the resource was last updated
+             */
+            updated_at: string;
+            /**
+             * When the resource was deleted, if deleted
+             */
+            deleted_at: string;
+        };
+        actor: {
+            /**
+             * The ID of the actor
+             */
+            id: string;
+            /**
+             * The name of the actor
+             */
+            display_name: string;
+            /**
+             * The URL of the actor's avatar
+             */
+            avatar_url: string;
+        };
+    }>;
+};
+export type PostgresRole = {
+    /**
+     * The ID of the role
+     */
+    id: string;
+    /**
+     * The name of the role
+     */
+    name: string;
+    /**
+     * The database connection string
+     */
+    access_host_url: string;
+    /**
+     * The database connection string for private connections
+     */
+    private_access_host_url: string;
+    /**
+     * The service name to set up private connectivity
+     */
+    private_connection_service_name: string;
+    /**
+     * The database user name
+     */
+    username: string;
+    /**
+     * The plain text password, available only after create
+     */
+    password: string;
+    /**
+     * The database name
+     */
+    database_name: string;
+    /**
+     * When the role was created
+     */
+    created_at: string;
+    /**
+     * When the role was updated
+     */
+    updated_at: string;
+    /**
+     * When the role was deleted
+     */
+    deleted_at: string;
+    /**
+     * When the role expires
+     */
+    expires_at: string;
+    /**
+     * When the role was dropped
+     */
+    dropped_at: string;
+    /**
+     * Error message available when dropping the role fails
+     */
+    drop_failed: string;
+    /**
+     * True if the credentials are expired
+     */
+    expired: boolean;
+    /**
+     * Whether the role is the default postgres user
+     */
+    default: boolean;
+    /**
+     * Number of seconds before the credentials expire
+     */
+    ttl: number;
+    /**
+     * Database roles these credentials inherit
+     */
+    inherited_roles: Array<"pg_checkpoint" | "pg_create_subscription" | "pg_maintain" | "pg_monitor" | "pg_read_all_data" | "pg_read_all_settings" | "pg_read_all_stats" | "pg_signal_backend" | "pg_stat_scan_tables" | "pg_use_reserved_connections" | "pg_write_all_data" | "postgres">;
+    branch: {
+        /**
+         * The ID for the resource
+         */
+        id: string;
+        /**
+         * The name for the resource
+         */
+        name: string;
+        /**
+         * When the resource was created
+         */
+        created_at: string;
+        /**
+         * When the resource was last updated
+         */
+        updated_at: string;
+        /**
+         * When the resource was deleted, if deleted
+         */
+        deleted_at: string;
+    };
+    actor: {
+        /**
+         * The ID of the actor
+         */
+        id: string;
+        /**
+         * The name of the actor
+         */
+        display_name: string;
+        /**
+         * The URL of the actor's avatar
+         */
+        avatar_url: string;
+    };
+};
+export type PaginatedQueryPatternsDownload = {
+    /**
+     * Whether there is a next page of results
+     */
+    has_next: boolean;
+    /**
+     * Whether there is a previous page of results
+     */
+    has_prev: boolean;
+    /**
+     * The ID of the first object in the current results
+     */
+    cursor_start: string;
+    /**
+     * The ID of the last object in the current results
+     */
+    cursor_end: string;
+    data: Array<{
+        /**
+         * The ID of the query patterns download
+         */
+        id: string;
+        /**
+         * The state of the download
+         */
+        state: "pending" | "completed" | "failed";
+        /**
+         * When the download was created
+         */
+        created_at: string;
+        /**
+         * When the download was finished
+         */
+        finished_at: string;
+        /**
+         * The URL to access the query patterns download
+         */
+        url: string;
+        /**
+         * The URL to download the query patterns file
+         */
+        download_url: string;
+        actor: {
+            /**
+             * The ID of the actor
+             */
+            id: string;
+            /**
+             * The name of the actor
+             */
+            display_name: string;
+            /**
+             * The URL of the actor's avatar
+             */
+            avatar_url: string;
+        };
+    }>;
+};
+export type QueryPatternsDownload = {
+    /**
+     * The ID of the query patterns download
+     */
+    id: string;
+    /**
+     * The state of the download
+     */
+    state: "pending" | "completed" | "failed";
+    /**
+     * When the download was created
+     */
+    created_at: string;
+    /**
+     * When the download was finished
+     */
+    finished_at: string;
+    /**
+     * The URL to access the query patterns download
+     */
+    url: string;
+    /**
+     * The URL to download the query patterns file
+     */
+    download_url: string;
+    actor: {
+        /**
+         * The ID of the actor
+         */
+        id: string;
+        /**
+         * The name of the actor
+         */
+        display_name: string;
+        /**
+         * The URL of the actor's avatar
+         */
+        avatar_url: string;
+    };
+};
+export type PaginatedPublicPlanetscaleRegionSerializer = {
+    /**
+     * The current page number
+     */
+    current_page: number;
+    /**
+     * The next page number
+     */
+    next_page: number;
+    /**
+     * The next page of results
+     */
+    next_page_url: string;
+    /**
+     * The previous page number
+     */
+    prev_page: number;
+    /**
+     * The previous page of results
+     */
+    prev_page_url: string;
+    data: Array<{
+        /**
+         * The ID of the region
+         */
+        id: string;
+        /**
+         * The cloud provider for the region
+         */
+        provider: string;
+        /**
+         * Whether new clusters can be created in this region
+         */
+        enabled: boolean;
+        /**
+         * List of public IP addresses for the region
+         */
+        public_ip_addresses: Array<string>;
+        /**
+         * The name of the region
+         */
+        display_name: string;
+        /**
+         * The location of the region
+         */
+        location: string;
+        /**
+         * The slug identifier for the region
+         */
+        slug: string;
+    }>;
+};
+export type User = {
+    /**
+     * The ID of the user
+     */
+    id: string;
+    /**
+     * The display name of the user
+     */
+    display_name: string;
+    /**
+     * The name of the user
+     */
+    name: string;
+    /**
+     * The email of the user
+     */
+    email: string;
+    /**
+     * The URL source of the user's avatar
+     */
+    avatar_url: string;
+    /**
+     * When the user was created
+     */
+    created_at: string;
+    /**
+     * When the user was last updated
+     */
+    updated_at: string;
+    /**
+     * Whether or not the user has configured two factor authentication
+     */
+    two_factor_auth_configured: boolean;
+    default_organization: {
+        /**
+         * The ID for the resource
+         */
+        id: string;
+        /**
+         * The name for the resource
+         */
+        name: string;
+        /**
+         * When the resource was created
+         */
+        created_at: string;
+        /**
+         * When the resource was last updated
+         */
+        updated_at: string;
+        /**
+         * When the resource was deleted, if deleted
+         */
+        deleted_at: string;
+    };
+    /**
+     * Whether or not the user is managed by SSO
+     */
+    sso: boolean;
+    /**
+     * Whether or not the user is managed by an authentication provider
+     */
+    managed: boolean;
+    /**
+     * Whether or not the user is managed by a SSO directory
+     */
+    directory_managed: boolean;
+    /**
+     * Whether or not the user is verified by email
+     */
+    email_verified: boolean;
+};
+export type PaginatedWorkflow = {
+    /**
+     * The current page number
+     */
+    current_page: number;
+    /**
+     * The next page number
+     */
+    next_page: number;
+    /**
+     * The next page of results
+     */
+    next_page_url: string;
+    /**
+     * The previous page number
+     */
+    prev_page: number;
+    /**
+     * The previous page of results
+     */
+    prev_page_url: string;
+    data: Array<{
+        /**
+         * The ID of the workflow
+         */
+        id: string;
+        /**
+         * The name of the workflow
+         */
+        name: string;
+        /**
+         * The sequence number of the workflow
+         */
+        number: number;
+        /**
+         * The state of the workflow
+         */
+        state: "pending" | "copying" | "running" | "stopped" | "verifying_data" | "verified_data" | "switching_replicas" | "switched_replicas" | "switching_primaries" | "switched_primaries" | "reversing_traffic" | "reversing_traffic_for_cancel" | "cutting_over" | "cutover" | "reversed_cutover" | "completed" | "cancelling" | "cancelled" | "error";
+        /**
+         * When the workflow was created
+         */
+        created_at: string;
+        /**
+         * When the workflow was last updated
+         */
+        updated_at: string;
+        /**
+         * When the workflow was started
+         */
+        started_at: string;
+        /**
+         * When the workflow was completed
+         */
+        completed_at: string;
+        /**
+         * When the workflow was cancelled
+         */
+        cancelled_at: string;
+        /**
+         * When the workflow was reversed
+         */
+        reversed_at: string;
+        /**
+         * When the workflow was retried
+         */
+        retried_at: string;
+        /**
+         * When the data copy was completed
+         */
+        data_copy_completed_at: string;
+        /**
+         * When the cutover was completed
+         */
+        cutover_at: string;
+        /**
+         * Whether or not the replicas have been switched
+         */
+        replicas_switched: boolean;
+        /**
+         * Whether or not the primaries have been switched
+         */
+        primaries_switched: boolean;
+        /**
+         * When the replicas were switched
+         */
+        switch_replicas_at: string;
+        /**
+         * When the primaries were switched
+         */
+        switch_primaries_at: string;
+        /**
+         * When the data was verified
+         */
+        verify_data_at: string;
+        /**
+         * The type of the workflow
+         */
+        workflow_type: "move_tables";
+        /**
+         * The subtype of the workflow
+         */
+        workflow_subtype: string;
+        /**
+         * Whether or not secondary keys are deferred
+         */
+        defer_secondary_keys: boolean;
+        /**
+         * The behavior when DDL changes during the workflow
+         */
+        on_ddl: "IGNORE" | "STOP" | "EXEC" | "EXEC_IGNORE";
+        /**
+         * Whether or not the workflow may be retried
+         */
+        may_retry: boolean;
+        /**
+         * Whether or not the verified data is stale
+         */
+        verified_data_stale: boolean;
+        /**
+         * Whether or not sequence tables have been created
+         */
+        sequence_tables_applied: boolean;
+        actor: {
+            /**
+             * The ID of the actor
+             */
+            id: string;
+            /**
+             * The name of the actor
+             */
+            display_name: string;
+            /**
+             * The URL of the actor's avatar
+             */
+            avatar_url: string;
+        };
+        verify_data_by: {
+            /**
+             * The ID of the actor
+             */
+            id: string;
+            /**
+             * The name of the actor
+             */
+            display_name: string;
+            /**
+             * The URL of the actor's avatar
+             */
+            avatar_url: string;
+        };
+        reversed_by: {
+            /**
+             * The ID of the actor
+             */
+            id: string;
+            /**
+             * The name of the actor
+             */
+            display_name: string;
+            /**
+             * The URL of the actor's avatar
+             */
+            avatar_url: string;
+        };
+        switch_replicas_by: {
+            /**
+             * The ID of the actor
+             */
+            id: string;
+            /**
+             * The name of the actor
+             */
+            display_name: string;
+            /**
+             * The URL of the actor's avatar
+             */
+            avatar_url: string;
+        };
+        switch_primaries_by: {
+            /**
+             * The ID of the actor
+             */
+            id: string;
+            /**
+             * The name of the actor
+             */
+            display_name: string;
+            /**
+             * The URL of the actor's avatar
+             */
+            avatar_url: string;
+        };
+        cancelled_by: {
+            /**
+             * The ID of the actor
+             */
+            id: string;
+            /**
+             * The name of the actor
+             */
+            display_name: string;
+            /**
+             * The URL of the actor's avatar
+             */
+            avatar_url: string;
+        };
+        completed_by: {
+            /**
+             * The ID of the actor
+             */
+            id: string;
+            /**
+             * The name of the actor
+             */
+            display_name: string;
+            /**
+             * The URL of the actor's avatar
+             */
+            avatar_url: string;
+        };
+        retried_by: {
+            /**
+             * The ID of the actor
+             */
+            id: string;
+            /**
+             * The name of the actor
+             */
+            display_name: string;
+            /**
+             * The URL of the actor's avatar
+             */
+            avatar_url: string;
+        };
+        cutover_by: {
+            /**
+             * The ID of the actor
+             */
+            id: string;
+            /**
+             * The name of the actor
+             */
+            display_name: string;
+            /**
+             * The URL of the actor's avatar
+             */
+            avatar_url: string;
+        };
+        reversed_cutover_by: {
+            /**
+             * The ID of the actor
+             */
+            id: string;
+            /**
+             * The name of the actor
+             */
+            display_name: string;
+            /**
+             * The URL of the actor's avatar
+             */
+            avatar_url: string;
+        };
+        branch: {
+            /**
+             * The ID for the resource
+             */
+            id: string;
+            /**
+             * The name for the resource
+             */
+            name: string;
+            /**
+             * When the resource was created
+             */
+            created_at: string;
+            /**
+             * When the resource was last updated
+             */
+            updated_at: string;
+            /**
+             * When the resource was deleted, if deleted
+             */
+            deleted_at: string;
+        };
+        source_keyspace: {
+            /**
+             * The ID for the resource
+             */
+            id: string;
+            /**
+             * The name for the resource
+             */
+            name: string;
+            /**
+             * When the resource was created
+             */
+            created_at: string;
+            /**
+             * When the resource was last updated
+             */
+            updated_at: string;
+            /**
+             * When the resource was deleted, if deleted
+             */
+            deleted_at: string;
+        };
+        target_keyspace: {
+            /**
+             * The ID for the resource
+             */
+            id: string;
+            /**
+             * The name for the resource
+             */
+            name: string;
+            /**
+             * When the resource was created
+             */
+            created_at: string;
+            /**
+             * When the resource was last updated
+             */
+            updated_at: string;
+            /**
+             * When the resource was deleted, if deleted
+             */
+            deleted_at: string;
+        };
+        global_keyspace: {
+            /**
+             * The ID for the resource
+             */
+            id: string;
+            /**
+             * The name for the resource
+             */
+            name: string;
+            /**
+             * When the resource was created
+             */
+            created_at: string;
+            /**
+             * When the resource was last updated
+             */
+            updated_at: string;
+            /**
+             * When the resource was deleted, if deleted
+             */
+            deleted_at: string;
+        };
+    }>;
+};
+export type Workflow = {
+    /**
+     * The ID of the workflow
+     */
+    id: string;
+    /**
+     * The name of the workflow
+     */
+    name: string;
+    /**
+     * The sequence number of the workflow
+     */
+    number: number;
+    /**
+     * The state of the workflow
+     */
+    state: "pending" | "copying" | "running" | "stopped" | "verifying_data" | "verified_data" | "switching_replicas" | "switched_replicas" | "switching_primaries" | "switched_primaries" | "reversing_traffic" | "reversing_traffic_for_cancel" | "cutting_over" | "cutover" | "reversed_cutover" | "completed" | "cancelling" | "cancelled" | "error";
+    /**
+     * When the workflow was created
+     */
+    created_at: string;
+    /**
+     * When the workflow was last updated
+     */
+    updated_at: string;
+    /**
+     * When the workflow was started
+     */
+    started_at: string;
+    /**
+     * When the workflow was completed
+     */
+    completed_at: string;
+    /**
+     * When the workflow was cancelled
+     */
+    cancelled_at: string;
+    /**
+     * When the workflow was reversed
+     */
+    reversed_at: string;
+    /**
+     * When the workflow was retried
+     */
+    retried_at: string;
+    /**
+     * When the data copy was completed
+     */
+    data_copy_completed_at: string;
+    /**
+     * When the cutover was completed
+     */
+    cutover_at: string;
+    /**
+     * Whether or not the replicas have been switched
+     */
+    replicas_switched: boolean;
+    /**
+     * Whether or not the primaries have been switched
+     */
+    primaries_switched: boolean;
+    /**
+     * When the replicas were switched
+     */
+    switch_replicas_at: string;
+    /**
+     * When the primaries were switched
+     */
+    switch_primaries_at: string;
+    /**
+     * When the data was verified
+     */
+    verify_data_at: string;
+    /**
+     * The type of the workflow
+     */
+    workflow_type: "move_tables";
+    /**
+     * The subtype of the workflow
+     */
+    workflow_subtype: string;
+    /**
+     * Whether or not secondary keys are deferred
+     */
+    defer_secondary_keys: boolean;
+    /**
+     * The behavior when DDL changes during the workflow
+     */
+    on_ddl: "IGNORE" | "STOP" | "EXEC" | "EXEC_IGNORE";
+    /**
+     * Whether or not the workflow may be retried
+     */
+    may_retry: boolean;
+    /**
+     * Whether or not the verified data is stale
+     */
+    verified_data_stale: boolean;
+    /**
+     * Whether or not sequence tables have been created
+     */
+    sequence_tables_applied: boolean;
+    actor: {
+        /**
+         * The ID of the actor
+         */
+        id: string;
+        /**
+         * The name of the actor
+         */
+        display_name: string;
+        /**
+         * The URL of the actor's avatar
+         */
+        avatar_url: string;
+    };
+    verify_data_by: {
+        /**
+         * The ID of the actor
+         */
+        id: string;
+        /**
+         * The name of the actor
+         */
+        display_name: string;
+        /**
+         * The URL of the actor's avatar
+         */
+        avatar_url: string;
+    };
+    reversed_by: {
+        /**
+         * The ID of the actor
+         */
+        id: string;
+        /**
+         * The name of the actor
+         */
+        display_name: string;
+        /**
+         * The URL of the actor's avatar
+         */
+        avatar_url: string;
+    };
+    switch_replicas_by: {
+        /**
+         * The ID of the actor
+         */
+        id: string;
+        /**
+         * The name of the actor
+         */
+        display_name: string;
+        /**
+         * The URL of the actor's avatar
+         */
+        avatar_url: string;
+    };
+    switch_primaries_by: {
+        /**
+         * The ID of the actor
+         */
+        id: string;
+        /**
+         * The name of the actor
+         */
+        display_name: string;
+        /**
+         * The URL of the actor's avatar
+         */
+        avatar_url: string;
+    };
+    cancelled_by: {
+        /**
+         * The ID of the actor
+         */
+        id: string;
+        /**
+         * The name of the actor
+         */
+        display_name: string;
+        /**
+         * The URL of the actor's avatar
+         */
+        avatar_url: string;
+    };
+    completed_by: {
+        /**
+         * The ID of the actor
+         */
+        id: string;
+        /**
+         * The name of the actor
+         */
+        display_name: string;
+        /**
+         * The URL of the actor's avatar
+         */
+        avatar_url: string;
+    };
+    retried_by: {
+        /**
+         * The ID of the actor
+         */
+        id: string;
+        /**
+         * The name of the actor
+         */
+        display_name: string;
+        /**
+         * The URL of the actor's avatar
+         */
+        avatar_url: string;
+    };
+    cutover_by: {
+        /**
+         * The ID of the actor
+         */
+        id: string;
+        /**
+         * The name of the actor
+         */
+        display_name: string;
+        /**
+         * The URL of the actor's avatar
+         */
+        avatar_url: string;
+    };
+    reversed_cutover_by: {
+        /**
+         * The ID of the actor
+         */
+        id: string;
+        /**
+         * The name of the actor
+         */
+        display_name: string;
+        /**
+         * The URL of the actor's avatar
+         */
+        avatar_url: string;
+    };
+    branch: {
+        /**
+         * The ID for the resource
+         */
+        id: string;
+        /**
+         * The name for the resource
+         */
+        name: string;
+        /**
+         * When the resource was created
+         */
+        created_at: string;
+        /**
+         * When the resource was last updated
+         */
+        updated_at: string;
+        /**
+         * When the resource was deleted, if deleted
+         */
+        deleted_at: string;
+    };
+    source_keyspace: {
+        /**
+         * The ID for the resource
+         */
+        id: string;
+        /**
+         * The name for the resource
+         */
+        name: string;
+        /**
+         * When the resource was created
+         */
+        created_at: string;
+        /**
+         * When the resource was last updated
+         */
+        updated_at: string;
+        /**
+         * When the resource was deleted, if deleted
+         */
+        deleted_at: string;
+    };
+    target_keyspace: {
+        /**
+         * The ID for the resource
+         */
+        id: string;
+        /**
+         * The name for the resource
+         */
+        name: string;
+        /**
+         * When the resource was created
+         */
+        created_at: string;
+        /**
+         * When the resource was last updated
+         */
+        updated_at: string;
+        /**
+         * When the resource was deleted, if deleted
+         */
+        deleted_at: string;
+    };
+    global_keyspace: {
+        /**
+         * The ID for the resource
+         */
+        id: string;
+        /**
+         * The name for the resource
+         */
+        name: string;
+        /**
+         * When the resource was created
+         */
+        created_at: string;
+        /**
+         * When the resource was last updated
+         */
+        updated_at: string;
+        /**
+         * When the resource was deleted, if deleted
+         */
+        deleted_at: string;
+    };
+};
+export type PaginatedDeployRequestReview = {
+    /**
+     * The current page number
+     */
+    current_page: number;
+    /**
+     * The next page number
+     */
+    next_page: number;
+    /**
+     * The next page of results
+     */
+    next_page_url: string;
+    /**
+     * The previous page number
+     */
+    prev_page: number;
+    /**
+     * The previous page of results
+     */
+    prev_page_url: string;
+    data: Array<{
+        /**
+         * The ID of the review
+         */
+        id: string;
+        /**
+         * The text body of the review
+         */
+        body: string;
+        /**
+         * The HTML body of the review
+         */
+        html_body: string;
+        /**
+         * Whether the review is a comment or approval
+         */
+        state: "commented" | "approved";
+        /**
+         * When the review was created
+         */
+        created_at: string;
+        /**
+         * When the review was last updated
+         */
+        updated_at: string;
+        actor: {
+            /**
+             * The ID of the actor
+             */
+            id: string;
+            /**
+             * The name of the actor
+             */
+            display_name: string;
+            /**
+             * The URL of the actor's avatar
+             */
+            avatar_url: string;
+        };
+    }>;
+};
+export type DeployRequestReview = {
+    /**
+     * The ID of the review
+     */
+    id: string;
+    /**
+     * The text body of the review
+     */
+    body: string;
+    /**
+     * The HTML body of the review
+     */
+    html_body: string;
+    /**
+     * Whether the review is a comment or approval
+     */
+    state: "commented" | "approved";
+    /**
+     * When the review was created
+     */
+    created_at: string;
+    /**
+     * When the review was last updated
+     */
+    updated_at: string;
+    actor: {
+        /**
+         * The ID of the actor
+         */
+        id: string;
+        /**
+         * The name of the actor
+         */
+        display_name: string;
+        /**
+         * The URL of the actor's avatar
+         */
+        avatar_url: string;
+    };
+};
+export type PaginatedDatabaseDeployRequest = {
+    /**
+     * The current page number
+     */
+    current_page: number;
+    /**
+     * The next page number
+     */
+    next_page: number;
+    /**
+     * The next page of results
+     */
+    next_page_url: string;
+    /**
+     * The previous page number
+     */
+    prev_page: number;
+    /**
+     * The previous page of results
+     */
+    prev_page_url: string;
+    data: Array<{
+        /**
+         * The ID of the deploy request
+         */
+        id: string;
+        /**
+         * The number of the deploy request
+         */
+        number: number;
+        actor: {
+            /**
+             * The ID of the actor
+             */
+            id: string;
+            /**
+             * The name of the actor
+             */
+            display_name: string;
+            /**
+             * The URL of the actor's avatar
+             */
+            avatar_url: string;
+        };
+        closed_by: {
+            /**
+             * The ID of the actor
+             */
+            id: string;
+            /**
+             * The name of the actor
+             */
+            display_name: string;
+            /**
+             * The URL of the actor's avatar
+             */
+            avatar_url: string;
+        };
+        /**
+         * The name of the branch the deploy request was created from
+         */
+        branch: string;
+        /**
+         * The ID of the branch the deploy request was created from
+         */
+        branch_id: string;
+        /**
+         * Whether or not the deploy request branch was deleted
+         */
+        branch_deleted: boolean;
+        branch_deleted_by: {
+            /**
+             * The ID of the actor
+             */
+            id: string;
+            /**
+             * The name of the actor
+             */
+            display_name: string;
+            /**
+             * The URL of the actor's avatar
+             */
+            avatar_url: string;
+        };
+        /**
+         * When the deploy request branch was deleted
+         */
+        branch_deleted_at: string;
+        /**
+         * The name of the branch the deploy request will be merged into
+         */
+        into_branch: string;
+        /**
+         * Whether or not the branch the deploy request will be merged into is sharded
+         */
+        into_branch_sharded: boolean;
+        /**
+         * The number of shards the branch the deploy request will be merged into has
+         */
+        into_branch_shard_count: number;
+        /**
+         * Whether or not the deploy request is approved
+         */
+        approved: boolean;
+        /**
+         * Whether the deploy request is open or closed
+         */
+        state: "open" | "closed";
+        /**
+         * The deployment state of the deploy request
+         */
+        deployment_state: "pending" | "ready" | "no_changes" | "queued" | "submitting" | "in_progress" | "pending_cutover" | "in_progress_vschema" | "in_progress_cancel" | "in_progress_cutover" | "complete" | "complete_cancel" | "complete_error" | "complete_pending_revert" | "in_progress_revert" | "in_progress_revert_vschema" | "complete_revert" | "complete_revert_error" | "cancelled" | "error";
+        deployment: {
+            /**
+             * The ID of the deployment
+             */
+            id: string;
+            /**
+             * Whether or not to automatically cutover once deployment is finished
+             */
+            auto_cutover: boolean;
+            /**
+             * Whether or not to automatically delete the head branch once deployment is finished
+             */
+            auto_delete_branch: boolean;
+            /**
+             * When the deployment was created
+             */
+            created_at: string;
+            /**
+             * When the cutover for the deployment was initiated
+             */
+            cutover_at: string;
+            /**
+             * Whether or not the deployment cutover will expire soon
+             */
+            cutover_expiring: boolean;
+            /**
+             * Deploy check errors for the deployment
+             */
+            deploy_check_errors: string;
+            /**
+             * When the deployment was finished
+             */
+            finished_at: string;
+            /**
+             * When the deployment was queued
+             */
+            queued_at: string;
+            /**
+             * When the deployment was ready for cutover
+             */
+            ready_to_cutover_at: string;
+            /**
+             * When the deployment was started
+             */
+            started_at: string;
+            /**
+             * The state the deployment is in
+             */
+            state: "pending" | "ready" | "no_changes" | "queued" | "submitting" | "in_progress" | "pending_cutover" | "in_progress_vschema" | "in_progress_cancel" | "in_progress_cutover" | "complete" | "complete_cancel" | "complete_error" | "complete_pending_revert" | "in_progress_revert" | "in_progress_revert_vschema" | "complete_revert" | "complete_revert_error" | "cancelled" | "error";
+            /**
+             * When the deployment was submitted
+             */
+            submitted_at: string;
+            /**
+             * When the deployment was last updated
+             */
+            updated_at: string;
+            /**
+             * The name of the base branch the deployment will be merged into
+             */
+            into_branch: string;
+            /**
+             * The number of the deploy request associated with this deployment
+             */
+            deploy_request_number: number;
+            /**
+             * Whether the deployment is deployable
+             */
+            deployable: boolean;
+            /**
+             * The deployments ahead of this one in the queue
+             */
+            preceding_deployments: Array<{
+                [key: string]: unknown;
+            }>;
+            deploy_operations: Array<{
+                /**
+                 * The ID for the deploy operation
+                 */
+                id: string;
+                /**
+                 * The state of the deploy operation
+                 */
+                state: "pending" | "queued" | "in_progress" | "complete" | "cancelled" | "error";
+                /**
+                 * The keyspace modified by the deploy operation
+                 */
+                keyspace_name: string;
+                /**
+                 * The name of the table modifed by the deploy operation
+                 */
+                table_name: string;
+                /**
+                 * The operation name of the deploy operation
+                 */
+                operation_name: string;
+                /**
+                 * The estimated seconds until completion for the deploy operation
+                 */
+                eta_seconds: number;
+                /**
+                 * The percent completion for the deploy operation
+                 */
+                progress_percentage: number;
+                /**
+                 * A link to documentation explaining the deploy error, if present
+                 */
+                deploy_error_docs_url: string;
+                /**
+                 * The DDL statement for the deploy operation
+                 */
+                ddl_statement: string;
+                /**
+                 * A syntax-highlighted DDL statement for the deploy operation
+                 */
+                syntax_highlighted_ddl: string;
+                /**
+                 * When the deploy operation was created
+                 */
+                created_at: string;
+                /**
+                 * When the deploy operation was last updated
+                 */
+                updated_at: string;
+                /**
+                 * When the deploy operation was last throttled
+                 */
+                throttled_at: string;
+                /**
+                 * Whether or not the deploy operation is capable of dropping data
+                 */
+                can_drop_data: boolean;
+                /**
+                 * Whether or not the table modified by the deploy operation is currently locked
+                 */
+                table_locked: boolean;
+                /**
+                 * Whether or not the table modified by the deploy operation was recently used
+                 */
+                table_recently_used: boolean;
+                /**
+                 * When the table modified by the deploy operation was last used
+                 */
+                table_recently_used_at: string;
+                /**
+                 * Names of foreign keys removed by this operation
+                 */
+                removed_foreign_key_names: Array<string>;
+                /**
+                 * Deploy errors for the deploy operation
+                 */
+                deploy_errors: string;
+            }>;
+            deploy_operation_summaries: Array<{
+                /**
+                 * The ID for the deploy operation summary
+                 */
+                id: string;
+                /**
+                 * When the deploy operation summary was created
+                 */
+                created_at: string;
+                /**
+                 * Deploy errors for the deploy operation summary
+                 */
+                deploy_errors: string;
+                /**
+                 * The DDL statement for the deploy operation summary
+                 */
+                ddl_statement: string;
+                /**
+                 * The estimated seconds until completion for the deploy operation summary
+                 */
+                eta_seconds: number;
+                /**
+                 * The keyspace modified by the deploy operation summary
+                 */
+                keyspace_name: string;
+                /**
+                 * The operation name of the deploy operation summary
+                 */
+                operation_name: string;
+                /**
+                 * The percent completion for the deploy operation summary
+                 */
+                progress_percentage: number;
+                /**
+                 * The state of the deploy operation summary
+                 */
+                state: "pending" | "in_progress" | "complete" | "cancelled" | "error";
+                /**
+                 * A syntax-highlighted DDL statement for the deploy operation summary
+                 */
+                syntax_highlighted_ddl: string;
+                /**
+                 * The name of the table modifed by the deploy operation summary
+                 */
+                table_name: string;
+                /**
+                 * When the table modified by the deploy operation summary was last used
+                 */
+                table_recently_used_at: string;
+                /**
+                 * When the deploy operation summary was last throttled
+                 */
+                throttled_at: string;
+                /**
+                 * Names of foreign keys removed by this operation summary
+                 */
+                removed_foreign_key_names: Array<string>;
+                /**
+                 * The number of shards in the keyspace modified by the deploy operation summary
+                 */
+                shard_count: number;
+                /**
+                 * Names of shards in the keyspace modified by the deploy operation summary
+                 */
+                shard_names: Array<string>;
+                /**
+                 * Whether or not the deploy operation summary is capable of dropping data
+                 */
+                can_drop_data: boolean;
+                /**
+                 * Whether or not the table modified by the deploy operation summary was recently used
+                 */
+                table_recently_used: boolean;
+                /**
+                 * Whether or not the keyspace modified by the deploy operation summary is sharded
+                 */
+                sharded: boolean;
+                operations: Array<{
+                    /**
+                     * The ID for the deploy operation
+                     */
+                    id: string;
+                    /**
+                     * The shard the deploy operation is being performed on
+                     */
+                    shard: string;
+                    /**
+                     * The state of the deploy operation
+                     */
+                    state: "pending" | "queued" | "in_progress" | "complete" | "cancelled" | "error";
+                    /**
+                     * The percent completion for the deploy operation
+                     */
+                    progress_percentage: number;
+                    /**
+                     * The estimated seconds until completion for the deploy operation
+                     */
+                    eta_seconds: number;
+                }>;
+            }>;
+            /**
+             * Schema lint errors preventing the deployment from completing
+             */
+            lint_errors: Array<{
+                [key: string]: unknown;
+            }>;
+            /**
+             * The schema dependencies that must be satisfied
+             */
+            sequential_diff_dependencies: Array<{
+                [key: string]: unknown;
+            }>;
+            /**
+             * Lookup Vitess index operations
+             */
+            lookup_vindex_operations: Array<{
+                [key: string]: unknown;
+            }>;
+            /**
+             * Deployment throttling configurations
+             */
+            throttler_configurations: Array<{
+                [key: string]: unknown;
+            }>;
+            /**
+             * The request to revert the schema operations in this deployment
+             */
+            deployment_revert_request: {
+                [key: string]: unknown;
+            };
+            actor: {
+                /**
+                 * The ID of the actor
+                 */
+                id: string;
+                /**
+                 * The name of the actor
+                 */
+                display_name: string;
+                /**
+                 * The URL of the actor's avatar
+                 */
+                avatar_url: string;
+            };
+            cutover_actor: {
+                /**
+                 * The ID of the actor
+                 */
+                id: string;
+                /**
+                 * The name of the actor
+                 */
+                display_name: string;
+                /**
+                 * The URL of the actor's avatar
+                 */
+                avatar_url: string;
+            };
+            cancelled_actor: {
+                /**
+                 * The ID of the actor
+                 */
+                id: string;
+                /**
+                 * The name of the actor
+                 */
+                display_name: string;
+                /**
+                 * The URL of the actor's avatar
+                 */
+                avatar_url: string;
+            };
+            /**
+             * When the schema was last updated for the deployment
+             */
+            schema_last_updated_at: string;
+            /**
+             * Whether or not the deployment has a table locked
+             */
+            table_locked: boolean;
+            /**
+             * The name of he table that is locked by the deployment
+             */
+            locked_table_name: string;
+            /**
+             * Whether or not the deployment is an instant DDL deployment
+             */
+            instant_ddl: boolean;
+            /**
+             * Whether or not the deployment is eligible for instant DDL
+             */
+            instant_ddl_eligible: boolean;
+        };
+        /**
+         * The number of comments on the deploy request
+         */
+        num_comments: number;
+        /**
+         * The PlanetScale app address for the deploy request
+         */
+        html_url: string;
+        /**
+         * Notes on the deploy request
+         */
+        notes: string;
+        /**
+         * The HTML body of the deploy request
+         */
+        html_body: string;
+        /**
+         * When the deploy request was created
+         */
+        created_at: string;
+        /**
+         * When the deploy request was last updated
+         */
+        updated_at: string;
+        /**
+         * When the deploy request was closed
+         */
+        closed_at: string;
+        /**
+         * When the deploy request was deployed
+         */
+        deployed_at: string;
+    }>;
+};
+export type DatabaseDeployRequest = {
+    /**
+     * The ID of the deploy request
+     */
+    id: string;
+    /**
+     * The number of the deploy request
+     */
+    number: number;
+    actor: {
+        /**
+         * The ID of the actor
+         */
+        id: string;
+        /**
+         * The name of the actor
+         */
+        display_name: string;
+        /**
+         * The URL of the actor's avatar
+         */
+        avatar_url: string;
+    };
+    closed_by: {
+        /**
+         * The ID of the actor
+         */
+        id: string;
+        /**
+         * The name of the actor
+         */
+        display_name: string;
+        /**
+         * The URL of the actor's avatar
+         */
+        avatar_url: string;
+    };
+    /**
+     * The name of the branch the deploy request was created from
+     */
+    branch: string;
+    /**
+     * The ID of the branch the deploy request was created from
+     */
+    branch_id: string;
+    /**
+     * Whether or not the deploy request branch was deleted
+     */
+    branch_deleted: boolean;
+    branch_deleted_by: {
+        /**
+         * The ID of the actor
+         */
+        id: string;
+        /**
+         * The name of the actor
+         */
+        display_name: string;
+        /**
+         * The URL of the actor's avatar
+         */
+        avatar_url: string;
+    };
+    /**
+     * When the deploy request branch was deleted
+     */
+    branch_deleted_at: string;
+    /**
+     * The name of the branch the deploy request will be merged into
+     */
+    into_branch: string;
+    /**
+     * Whether or not the branch the deploy request will be merged into is sharded
+     */
+    into_branch_sharded: boolean;
+    /**
+     * The number of shards the branch the deploy request will be merged into has
+     */
+    into_branch_shard_count: number;
+    /**
+     * Whether or not the deploy request is approved
+     */
+    approved: boolean;
+    /**
+     * Whether the deploy request is open or closed
+     */
+    state: "open" | "closed";
+    /**
+     * The deployment state of the deploy request
+     */
+    deployment_state: "pending" | "ready" | "no_changes" | "queued" | "submitting" | "in_progress" | "pending_cutover" | "in_progress_vschema" | "in_progress_cancel" | "in_progress_cutover" | "complete" | "complete_cancel" | "complete_error" | "complete_pending_revert" | "in_progress_revert" | "in_progress_revert_vschema" | "complete_revert" | "complete_revert_error" | "cancelled" | "error";
+    deployment: {
+        /**
+         * The ID of the deployment
+         */
+        id: string;
+        /**
+         * Whether or not to automatically cutover once deployment is finished
+         */
+        auto_cutover: boolean;
+        /**
+         * Whether or not to automatically delete the head branch once deployment is finished
+         */
+        auto_delete_branch: boolean;
+        /**
+         * When the deployment was created
+         */
+        created_at: string;
+        /**
+         * When the cutover for the deployment was initiated
+         */
+        cutover_at: string;
+        /**
+         * Whether or not the deployment cutover will expire soon
+         */
+        cutover_expiring: boolean;
+        /**
+         * Deploy check errors for the deployment
+         */
+        deploy_check_errors: string;
+        /**
+         * When the deployment was finished
+         */
+        finished_at: string;
+        /**
+         * When the deployment was queued
+         */
+        queued_at: string;
+        /**
+         * When the deployment was ready for cutover
+         */
+        ready_to_cutover_at: string;
+        /**
+         * When the deployment was started
+         */
+        started_at: string;
+        /**
+         * The state the deployment is in
+         */
+        state: "pending" | "ready" | "no_changes" | "queued" | "submitting" | "in_progress" | "pending_cutover" | "in_progress_vschema" | "in_progress_cancel" | "in_progress_cutover" | "complete" | "complete_cancel" | "complete_error" | "complete_pending_revert" | "in_progress_revert" | "in_progress_revert_vschema" | "complete_revert" | "complete_revert_error" | "cancelled" | "error";
+        /**
+         * When the deployment was submitted
+         */
+        submitted_at: string;
+        /**
+         * When the deployment was last updated
+         */
+        updated_at: string;
+        /**
+         * The name of the base branch the deployment will be merged into
+         */
+        into_branch: string;
+        /**
+         * The number of the deploy request associated with this deployment
+         */
+        deploy_request_number: number;
+        /**
+         * Whether the deployment is deployable
+         */
+        deployable: boolean;
+        /**
+         * The deployments ahead of this one in the queue
+         */
+        preceding_deployments: Array<{
+            [key: string]: unknown;
+        }>;
+        deploy_operations: Array<{
+            /**
+             * The ID for the deploy operation
+             */
+            id: string;
+            /**
+             * The state of the deploy operation
+             */
+            state: "pending" | "queued" | "in_progress" | "complete" | "cancelled" | "error";
+            /**
+             * The keyspace modified by the deploy operation
+             */
+            keyspace_name: string;
+            /**
+             * The name of the table modifed by the deploy operation
+             */
+            table_name: string;
+            /**
+             * The operation name of the deploy operation
+             */
+            operation_name: string;
+            /**
+             * The estimated seconds until completion for the deploy operation
+             */
+            eta_seconds: number;
+            /**
+             * The percent completion for the deploy operation
+             */
+            progress_percentage: number;
+            /**
+             * A link to documentation explaining the deploy error, if present
+             */
+            deploy_error_docs_url: string;
+            /**
+             * The DDL statement for the deploy operation
+             */
+            ddl_statement: string;
+            /**
+             * A syntax-highlighted DDL statement for the deploy operation
+             */
+            syntax_highlighted_ddl: string;
+            /**
+             * When the deploy operation was created
+             */
+            created_at: string;
+            /**
+             * When the deploy operation was last updated
+             */
+            updated_at: string;
+            /**
+             * When the deploy operation was last throttled
+             */
+            throttled_at: string;
+            /**
+             * Whether or not the deploy operation is capable of dropping data
+             */
+            can_drop_data: boolean;
+            /**
+             * Whether or not the table modified by the deploy operation is currently locked
+             */
+            table_locked: boolean;
+            /**
+             * Whether or not the table modified by the deploy operation was recently used
+             */
+            table_recently_used: boolean;
+            /**
+             * When the table modified by the deploy operation was last used
+             */
+            table_recently_used_at: string;
+            /**
+             * Names of foreign keys removed by this operation
+             */
+            removed_foreign_key_names: Array<string>;
+            /**
+             * Deploy errors for the deploy operation
+             */
+            deploy_errors: string;
+        }>;
+        deploy_operation_summaries: Array<{
+            /**
+             * The ID for the deploy operation summary
+             */
+            id: string;
+            /**
+             * When the deploy operation summary was created
+             */
+            created_at: string;
+            /**
+             * Deploy errors for the deploy operation summary
+             */
+            deploy_errors: string;
+            /**
+             * The DDL statement for the deploy operation summary
+             */
+            ddl_statement: string;
+            /**
+             * The estimated seconds until completion for the deploy operation summary
+             */
+            eta_seconds: number;
+            /**
+             * The keyspace modified by the deploy operation summary
+             */
+            keyspace_name: string;
+            /**
+             * The operation name of the deploy operation summary
+             */
+            operation_name: string;
+            /**
+             * The percent completion for the deploy operation summary
+             */
+            progress_percentage: number;
+            /**
+             * The state of the deploy operation summary
+             */
+            state: "pending" | "in_progress" | "complete" | "cancelled" | "error";
+            /**
+             * A syntax-highlighted DDL statement for the deploy operation summary
+             */
+            syntax_highlighted_ddl: string;
+            /**
+             * The name of the table modifed by the deploy operation summary
+             */
+            table_name: string;
+            /**
+             * When the table modified by the deploy operation summary was last used
+             */
+            table_recently_used_at: string;
+            /**
+             * When the deploy operation summary was last throttled
+             */
+            throttled_at: string;
+            /**
+             * Names of foreign keys removed by this operation summary
+             */
+            removed_foreign_key_names: Array<string>;
+            /**
+             * The number of shards in the keyspace modified by the deploy operation summary
+             */
+            shard_count: number;
+            /**
+             * Names of shards in the keyspace modified by the deploy operation summary
+             */
+            shard_names: Array<string>;
+            /**
+             * Whether or not the deploy operation summary is capable of dropping data
+             */
+            can_drop_data: boolean;
+            /**
+             * Whether or not the table modified by the deploy operation summary was recently used
+             */
+            table_recently_used: boolean;
+            /**
+             * Whether or not the keyspace modified by the deploy operation summary is sharded
+             */
+            sharded: boolean;
+            operations: Array<{
+                /**
+                 * The ID for the deploy operation
+                 */
+                id: string;
+                /**
+                 * The shard the deploy operation is being performed on
+                 */
+                shard: string;
+                /**
+                 * The state of the deploy operation
+                 */
+                state: "pending" | "queued" | "in_progress" | "complete" | "cancelled" | "error";
+                /**
+                 * The percent completion for the deploy operation
+                 */
+                progress_percentage: number;
+                /**
+                 * The estimated seconds until completion for the deploy operation
+                 */
+                eta_seconds: number;
+            }>;
+        }>;
+        /**
+         * Schema lint errors preventing the deployment from completing
+         */
+        lint_errors: Array<{
+            [key: string]: unknown;
+        }>;
+        /**
+         * The schema dependencies that must be satisfied
+         */
+        sequential_diff_dependencies: Array<{
+            [key: string]: unknown;
+        }>;
+        /**
+         * Lookup Vitess index operations
+         */
+        lookup_vindex_operations: Array<{
+            [key: string]: unknown;
+        }>;
+        /**
+         * Deployment throttling configurations
+         */
+        throttler_configurations: Array<{
+            [key: string]: unknown;
+        }>;
+        /**
+         * The request to revert the schema operations in this deployment
+         */
+        deployment_revert_request: {
+            [key: string]: unknown;
+        };
+        actor: {
+            /**
+             * The ID of the actor
+             */
+            id: string;
+            /**
+             * The name of the actor
+             */
+            display_name: string;
+            /**
+             * The URL of the actor's avatar
+             */
+            avatar_url: string;
+        };
+        cutover_actor: {
+            /**
+             * The ID of the actor
+             */
+            id: string;
+            /**
+             * The name of the actor
+             */
+            display_name: string;
+            /**
+             * The URL of the actor's avatar
+             */
+            avatar_url: string;
+        };
+        cancelled_actor: {
+            /**
+             * The ID of the actor
+             */
+            id: string;
+            /**
+             * The name of the actor
+             */
+            display_name: string;
+            /**
+             * The URL of the actor's avatar
+             */
+            avatar_url: string;
+        };
+        /**
+         * When the schema was last updated for the deployment
+         */
+        schema_last_updated_at: string;
+        /**
+         * Whether or not the deployment has a table locked
+         */
+        table_locked: boolean;
+        /**
+         * The name of he table that is locked by the deployment
+         */
+        locked_table_name: string;
+        /**
+         * Whether or not the deployment is an instant DDL deployment
+         */
+        instant_ddl: boolean;
+        /**
+         * Whether or not the deployment is eligible for instant DDL
+         */
+        instant_ddl_eligible: boolean;
+    };
+    /**
+     * The number of comments on the deploy request
+     */
+    num_comments: number;
+    /**
+     * The PlanetScale app address for the deploy request
+     */
+    html_url: string;
+    /**
+     * Notes on the deploy request
+     */
+    notes: string;
+    /**
+     * The HTML body of the deploy request
+     */
+    html_body: string;
+    /**
+     * When the deploy request was created
+     */
+    created_at: string;
+    /**
+     * When the deploy request was last updated
+     */
+    updated_at: string;
+    /**
+     * When the deploy request was closed
+     */
+    closed_at: string;
+    /**
+     * When the deploy request was deployed
+     */
+    deployed_at: string;
+};
+export type Deployment = {
+    /**
+     * The ID of the deployment
+     */
+    id: string;
+    /**
+     * Whether or not to automatically cutover once deployment is finished
+     */
+    auto_cutover: boolean;
+    /**
+     * Whether or not to automatically delete the head branch once deployment is finished
+     */
+    auto_delete_branch: boolean;
+    /**
+     * When the deployment was created
+     */
+    created_at: string;
+    /**
+     * When the cutover for the deployment was initiated
+     */
+    cutover_at: string;
+    /**
+     * Whether or not the deployment cutover will expire soon
+     */
+    cutover_expiring: boolean;
+    /**
+     * Deploy check errors for the deployment
+     */
+    deploy_check_errors: string;
+    /**
+     * When the deployment was finished
+     */
+    finished_at: string;
+    /**
+     * When the deployment was queued
+     */
+    queued_at: string;
+    /**
+     * When the deployment was ready for cutover
+     */
+    ready_to_cutover_at: string;
+    /**
+     * When the deployment was started
+     */
+    started_at: string;
+    /**
+     * The state the deployment is in
+     */
+    state: "pending" | "ready" | "no_changes" | "queued" | "submitting" | "in_progress" | "pending_cutover" | "in_progress_vschema" | "in_progress_cancel" | "in_progress_cutover" | "complete" | "complete_cancel" | "complete_error" | "complete_pending_revert" | "in_progress_revert" | "in_progress_revert_vschema" | "complete_revert" | "complete_revert_error" | "cancelled" | "error";
+    /**
+     * When the deployment was submitted
+     */
+    submitted_at: string;
+    /**
+     * When the deployment was last updated
+     */
+    updated_at: string;
+    /**
+     * The name of the base branch the deployment will be merged into
+     */
+    into_branch: string;
+    /**
+     * The number of the deploy request associated with this deployment
+     */
+    deploy_request_number: number;
+    /**
+     * Whether the deployment is deployable
+     */
+    deployable: boolean;
+    /**
+     * The deployments ahead of this one in the queue
+     */
+    preceding_deployments: Array<{
+        [key: string]: unknown;
+    }>;
+    deploy_operations: Array<{
+        /**
+         * The ID for the deploy operation
+         */
+        id: string;
+        /**
+         * The state of the deploy operation
+         */
+        state: "pending" | "queued" | "in_progress" | "complete" | "cancelled" | "error";
+        /**
+         * The keyspace modified by the deploy operation
+         */
+        keyspace_name: string;
+        /**
+         * The name of the table modifed by the deploy operation
+         */
+        table_name: string;
+        /**
+         * The operation name of the deploy operation
+         */
+        operation_name: string;
+        /**
+         * The estimated seconds until completion for the deploy operation
+         */
+        eta_seconds: number;
+        /**
+         * The percent completion for the deploy operation
+         */
+        progress_percentage: number;
+        /**
+         * A link to documentation explaining the deploy error, if present
+         */
+        deploy_error_docs_url: string;
+        /**
+         * The DDL statement for the deploy operation
+         */
+        ddl_statement: string;
+        /**
+         * A syntax-highlighted DDL statement for the deploy operation
+         */
+        syntax_highlighted_ddl: string;
+        /**
+         * When the deploy operation was created
+         */
+        created_at: string;
+        /**
+         * When the deploy operation was last updated
+         */
+        updated_at: string;
+        /**
+         * When the deploy operation was last throttled
+         */
+        throttled_at: string;
+        /**
+         * Whether or not the deploy operation is capable of dropping data
+         */
+        can_drop_data: boolean;
+        /**
+         * Whether or not the table modified by the deploy operation is currently locked
+         */
+        table_locked: boolean;
+        /**
+         * Whether or not the table modified by the deploy operation was recently used
+         */
+        table_recently_used: boolean;
+        /**
+         * When the table modified by the deploy operation was last used
+         */
+        table_recently_used_at: string;
+        /**
+         * Names of foreign keys removed by this operation
+         */
+        removed_foreign_key_names: Array<string>;
+        /**
+         * Deploy errors for the deploy operation
+         */
+        deploy_errors: string;
+    }>;
+    deploy_operation_summaries: Array<{
+        /**
+         * The ID for the deploy operation summary
+         */
+        id: string;
+        /**
+         * When the deploy operation summary was created
+         */
+        created_at: string;
+        /**
+         * Deploy errors for the deploy operation summary
+         */
+        deploy_errors: string;
+        /**
+         * The DDL statement for the deploy operation summary
+         */
+        ddl_statement: string;
+        /**
+         * The estimated seconds until completion for the deploy operation summary
+         */
+        eta_seconds: number;
+        /**
+         * The keyspace modified by the deploy operation summary
+         */
+        keyspace_name: string;
+        /**
+         * The operation name of the deploy operation summary
+         */
+        operation_name: string;
+        /**
+         * The percent completion for the deploy operation summary
+         */
+        progress_percentage: number;
+        /**
+         * The state of the deploy operation summary
+         */
+        state: "pending" | "in_progress" | "complete" | "cancelled" | "error";
+        /**
+         * A syntax-highlighted DDL statement for the deploy operation summary
+         */
+        syntax_highlighted_ddl: string;
+        /**
+         * The name of the table modifed by the deploy operation summary
+         */
+        table_name: string;
+        /**
+         * When the table modified by the deploy operation summary was last used
+         */
+        table_recently_used_at: string;
+        /**
+         * When the deploy operation summary was last throttled
+         */
+        throttled_at: string;
+        /**
+         * Names of foreign keys removed by this operation summary
+         */
+        removed_foreign_key_names: Array<string>;
+        /**
+         * The number of shards in the keyspace modified by the deploy operation summary
+         */
+        shard_count: number;
+        /**
+         * Names of shards in the keyspace modified by the deploy operation summary
+         */
+        shard_names: Array<string>;
+        /**
+         * Whether or not the deploy operation summary is capable of dropping data
+         */
+        can_drop_data: boolean;
+        /**
+         * Whether or not the table modified by the deploy operation summary was recently used
+         */
+        table_recently_used: boolean;
+        /**
+         * Whether or not the keyspace modified by the deploy operation summary is sharded
+         */
+        sharded: boolean;
+        operations: Array<{
+            /**
+             * The ID for the deploy operation
+             */
+            id: string;
+            /**
+             * The shard the deploy operation is being performed on
+             */
+            shard: string;
+            /**
+             * The state of the deploy operation
+             */
+            state: "pending" | "queued" | "in_progress" | "complete" | "cancelled" | "error";
+            /**
+             * The percent completion for the deploy operation
+             */
+            progress_percentage: number;
+            /**
+             * The estimated seconds until completion for the deploy operation
+             */
+            eta_seconds: number;
+        }>;
+    }>;
+    /**
+     * Schema lint errors preventing the deployment from completing
+     */
+    lint_errors: Array<{
+        [key: string]: unknown;
+    }>;
+    /**
+     * The schema dependencies that must be satisfied
+     */
+    sequential_diff_dependencies: Array<{
+        [key: string]: unknown;
+    }>;
+    /**
+     * Lookup Vitess index operations
+     */
+    lookup_vindex_operations: Array<{
+        [key: string]: unknown;
+    }>;
+    /**
+     * Deployment throttling configurations
+     */
+    throttler_configurations: Array<{
+        [key: string]: unknown;
+    }>;
+    /**
+     * The request to revert the schema operations in this deployment
+     */
+    deployment_revert_request: {
+        [key: string]: unknown;
+    };
+    actor: {
+        /**
+         * The ID of the actor
+         */
+        id: string;
+        /**
+         * The name of the actor
+         */
+        display_name: string;
+        /**
+         * The URL of the actor's avatar
+         */
+        avatar_url: string;
+    };
+    cutover_actor: {
+        /**
+         * The ID of the actor
+         */
+        id: string;
+        /**
+         * The name of the actor
+         */
+        display_name: string;
+        /**
+         * The URL of the actor's avatar
+         */
+        avatar_url: string;
+    };
+    cancelled_actor: {
+        /**
+         * The ID of the actor
+         */
+        id: string;
+        /**
+         * The name of the actor
+         */
+        display_name: string;
+        /**
+         * The URL of the actor's avatar
+         */
+        avatar_url: string;
+    };
+    /**
+     * When the schema was last updated for the deployment
+     */
+    schema_last_updated_at: string;
+    /**
+     * Whether or not the deployment has a table locked
+     */
+    table_locked: boolean;
+    /**
+     * The name of he table that is locked by the deployment
+     */
+    locked_table_name: string;
+    /**
+     * Whether or not the deployment is an instant DDL deployment
+     */
+    instant_ddl: boolean;
+    /**
+     * Whether or not the deployment is eligible for instant DDL
+     */
+    instant_ddl_eligible: boolean;
+};
+export type PaginatedDeployOperation = {
+    /**
+     * The current page number
+     */
+    current_page: number;
+    /**
+     * The next page number
+     */
+    next_page: number;
+    /**
+     * The next page of results
+     */
+    next_page_url: string;
+    /**
+     * The previous page number
+     */
+    prev_page: number;
+    /**
+     * The previous page of results
+     */
+    prev_page_url: string;
+    data: Array<{
+        /**
+         * The ID for the deploy operation
+         */
+        id: string;
+        /**
+         * The state of the deploy operation
+         */
+        state: "pending" | "queued" | "in_progress" | "complete" | "cancelled" | "error";
+        /**
+         * The keyspace modified by the deploy operation
+         */
+        keyspace_name: string;
+        /**
+         * The name of the table modifed by the deploy operation
+         */
+        table_name: string;
+        /**
+         * The operation name of the deploy operation
+         */
+        operation_name: string;
+        /**
+         * The estimated seconds until completion for the deploy operation
+         */
+        eta_seconds: number;
+        /**
+         * The percent completion for the deploy operation
+         */
+        progress_percentage: number;
+        /**
+         * A link to documentation explaining the deploy error, if present
+         */
+        deploy_error_docs_url: string;
+        /**
+         * The DDL statement for the deploy operation
+         */
+        ddl_statement: string;
+        /**
+         * A syntax-highlighted DDL statement for the deploy operation
+         */
+        syntax_highlighted_ddl: string;
+        /**
+         * When the deploy operation was created
+         */
+        created_at: string;
+        /**
+         * When the deploy operation was last updated
+         */
+        updated_at: string;
+        /**
+         * When the deploy operation was last throttled
+         */
+        throttled_at: string;
+        /**
+         * Whether or not the deploy operation is capable of dropping data
+         */
+        can_drop_data: boolean;
+        /**
+         * Whether or not the table modified by the deploy operation is currently locked
+         */
+        table_locked: boolean;
+        /**
+         * Whether or not the table modified by the deploy operation was recently used
+         */
+        table_recently_used: boolean;
+        /**
+         * When the table modified by the deploy operation was last used
+         */
+        table_recently_used_at: string;
+        /**
+         * Names of foreign keys removed by this operation
+         */
+        removed_foreign_key_names: Array<string>;
+        /**
+         * Deploy errors for the deploy operation
+         */
+        deploy_errors: string;
+    }>;
+};
+export type PaginatedDeployment = {
+    /**
+     * The current page number
+     */
+    current_page: number;
+    /**
+     * The next page number
+     */
+    next_page: number;
+    /**
+     * The next page of results
+     */
+    next_page_url: string;
+    /**
+     * The previous page number
+     */
+    prev_page: number;
+    /**
+     * The previous page of results
+     */
+    prev_page_url: string;
+    data: Array<{
+        /**
+         * The ID of the deployment
+         */
+        id: string;
+        /**
+         * Whether or not to automatically cutover once deployment is finished
+         */
+        auto_cutover: boolean;
+        /**
+         * Whether or not to automatically delete the head branch once deployment is finished
+         */
+        auto_delete_branch: boolean;
+        /**
+         * When the deployment was created
+         */
+        created_at: string;
+        /**
+         * When the cutover for the deployment was initiated
+         */
+        cutover_at: string;
+        /**
+         * Whether or not the deployment cutover will expire soon
+         */
+        cutover_expiring: boolean;
+        /**
+         * Deploy check errors for the deployment
+         */
+        deploy_check_errors: string;
+        /**
+         * When the deployment was finished
+         */
+        finished_at: string;
+        /**
+         * When the deployment was queued
+         */
+        queued_at: string;
+        /**
+         * When the deployment was ready for cutover
+         */
+        ready_to_cutover_at: string;
+        /**
+         * When the deployment was started
+         */
+        started_at: string;
+        /**
+         * The state the deployment is in
+         */
+        state: "pending" | "ready" | "no_changes" | "queued" | "submitting" | "in_progress" | "pending_cutover" | "in_progress_vschema" | "in_progress_cancel" | "in_progress_cutover" | "complete" | "complete_cancel" | "complete_error" | "complete_pending_revert" | "in_progress_revert" | "in_progress_revert_vschema" | "complete_revert" | "complete_revert_error" | "cancelled" | "error";
+        /**
+         * When the deployment was submitted
+         */
+        submitted_at: string;
+        /**
+         * When the deployment was last updated
+         */
+        updated_at: string;
+        /**
+         * The name of the base branch the deployment will be merged into
+         */
+        into_branch: string;
+        /**
+         * The number of the deploy request associated with this deployment
+         */
+        deploy_request_number: number;
+        /**
+         * Whether the deployment is deployable
+         */
+        deployable: boolean;
+        /**
+         * The deployments ahead of this one in the queue
+         */
+        preceding_deployments: Array<{
+            [key: string]: unknown;
+        }>;
+        deploy_operations: Array<{
+            /**
+             * The ID for the deploy operation
+             */
+            id: string;
+            /**
+             * The state of the deploy operation
+             */
+            state: "pending" | "queued" | "in_progress" | "complete" | "cancelled" | "error";
+            /**
+             * The keyspace modified by the deploy operation
+             */
+            keyspace_name: string;
+            /**
+             * The name of the table modifed by the deploy operation
+             */
+            table_name: string;
+            /**
+             * The operation name of the deploy operation
+             */
+            operation_name: string;
+            /**
+             * The estimated seconds until completion for the deploy operation
+             */
+            eta_seconds: number;
+            /**
+             * The percent completion for the deploy operation
+             */
+            progress_percentage: number;
+            /**
+             * A link to documentation explaining the deploy error, if present
+             */
+            deploy_error_docs_url: string;
+            /**
+             * The DDL statement for the deploy operation
+             */
+            ddl_statement: string;
+            /**
+             * A syntax-highlighted DDL statement for the deploy operation
+             */
+            syntax_highlighted_ddl: string;
+            /**
+             * When the deploy operation was created
+             */
+            created_at: string;
+            /**
+             * When the deploy operation was last updated
+             */
+            updated_at: string;
+            /**
+             * When the deploy operation was last throttled
+             */
+            throttled_at: string;
+            /**
+             * Whether or not the deploy operation is capable of dropping data
+             */
+            can_drop_data: boolean;
+            /**
+             * Whether or not the table modified by the deploy operation is currently locked
+             */
+            table_locked: boolean;
+            /**
+             * Whether or not the table modified by the deploy operation was recently used
+             */
+            table_recently_used: boolean;
+            /**
+             * When the table modified by the deploy operation was last used
+             */
+            table_recently_used_at: string;
+            /**
+             * Names of foreign keys removed by this operation
+             */
+            removed_foreign_key_names: Array<string>;
+            /**
+             * Deploy errors for the deploy operation
+             */
+            deploy_errors: string;
+        }>;
+        deploy_operation_summaries: Array<{
+            /**
+             * The ID for the deploy operation summary
+             */
+            id: string;
+            /**
+             * When the deploy operation summary was created
+             */
+            created_at: string;
+            /**
+             * Deploy errors for the deploy operation summary
+             */
+            deploy_errors: string;
+            /**
+             * The DDL statement for the deploy operation summary
+             */
+            ddl_statement: string;
+            /**
+             * The estimated seconds until completion for the deploy operation summary
+             */
+            eta_seconds: number;
+            /**
+             * The keyspace modified by the deploy operation summary
+             */
+            keyspace_name: string;
+            /**
+             * The operation name of the deploy operation summary
+             */
+            operation_name: string;
+            /**
+             * The percent completion for the deploy operation summary
+             */
+            progress_percentage: number;
+            /**
+             * The state of the deploy operation summary
+             */
+            state: "pending" | "in_progress" | "complete" | "cancelled" | "error";
+            /**
+             * A syntax-highlighted DDL statement for the deploy operation summary
+             */
+            syntax_highlighted_ddl: string;
+            /**
+             * The name of the table modifed by the deploy operation summary
+             */
+            table_name: string;
+            /**
+             * When the table modified by the deploy operation summary was last used
+             */
+            table_recently_used_at: string;
+            /**
+             * When the deploy operation summary was last throttled
+             */
+            throttled_at: string;
+            /**
+             * Names of foreign keys removed by this operation summary
+             */
+            removed_foreign_key_names: Array<string>;
+            /**
+             * The number of shards in the keyspace modified by the deploy operation summary
+             */
+            shard_count: number;
+            /**
+             * Names of shards in the keyspace modified by the deploy operation summary
+             */
+            shard_names: Array<string>;
+            /**
+             * Whether or not the deploy operation summary is capable of dropping data
+             */
+            can_drop_data: boolean;
+            /**
+             * Whether or not the table modified by the deploy operation summary was recently used
+             */
+            table_recently_used: boolean;
+            /**
+             * Whether or not the keyspace modified by the deploy operation summary is sharded
+             */
+            sharded: boolean;
+            operations: Array<{
+                /**
+                 * The ID for the deploy operation
+                 */
+                id: string;
+                /**
+                 * The shard the deploy operation is being performed on
+                 */
+                shard: string;
+                /**
+                 * The state of the deploy operation
+                 */
+                state: "pending" | "queued" | "in_progress" | "complete" | "cancelled" | "error";
+                /**
+                 * The percent completion for the deploy operation
+                 */
+                progress_percentage: number;
+                /**
+                 * The estimated seconds until completion for the deploy operation
+                 */
+                eta_seconds: number;
+            }>;
+        }>;
+        /**
+         * Schema lint errors preventing the deployment from completing
+         */
+        lint_errors: Array<{
+            [key: string]: unknown;
+        }>;
+        /**
+         * The schema dependencies that must be satisfied
+         */
+        sequential_diff_dependencies: Array<{
+            [key: string]: unknown;
+        }>;
+        /**
+         * Lookup Vitess index operations
+         */
+        lookup_vindex_operations: Array<{
+            [key: string]: unknown;
+        }>;
+        /**
+         * Deployment throttling configurations
+         */
+        throttler_configurations: Array<{
+            [key: string]: unknown;
+        }>;
+        /**
+         * The request to revert the schema operations in this deployment
+         */
+        deployment_revert_request: {
+            [key: string]: unknown;
+        };
+        actor: {
+            /**
+             * The ID of the actor
+             */
+            id: string;
+            /**
+             * The name of the actor
+             */
+            display_name: string;
+            /**
+             * The URL of the actor's avatar
+             */
+            avatar_url: string;
+        };
+        cutover_actor: {
+            /**
+             * The ID of the actor
+             */
+            id: string;
+            /**
+             * The name of the actor
+             */
+            display_name: string;
+            /**
+             * The URL of the actor's avatar
+             */
+            avatar_url: string;
+        };
+        cancelled_actor: {
+            /**
+             * The ID of the actor
+             */
+            id: string;
+            /**
+             * The name of the actor
+             */
+            display_name: string;
+            /**
+             * The URL of the actor's avatar
+             */
+            avatar_url: string;
+        };
+        /**
+         * When the schema was last updated for the deployment
+         */
+        schema_last_updated_at: string;
+        /**
+         * Whether or not the deployment has a table locked
+         */
+        table_locked: boolean;
+        /**
+         * The name of he table that is locked by the deployment
+         */
+        locked_table_name: string;
+        /**
+         * Whether or not the deployment is an instant DDL deployment
+         */
+        instant_ddl: boolean;
+        /**
+         * Whether or not the deployment is eligible for instant DDL
+         */
+        instant_ddl_eligible: boolean;
+    }>;
+};
+export type PaginatedDatabaseWebhook = {
+    /**
+     * The current page number
+     */
+    current_page: number;
+    /**
+     * The next page number
+     */
+    next_page: number;
+    /**
+     * The next page of results
+     */
+    next_page_url: string;
+    /**
+     * The previous page number
+     */
+    prev_page: number;
+    /**
+     * The previous page of results
+     */
+    prev_page_url: string;
+    data: Array<{
+        /**
+         * The ID of the webhook
+         */
+        id: string;
+        /**
+         * The URL the webhook will send events to
+         */
+        url: string;
+        /**
+         * The secret used to sign the webhook payloads
+         */
+        secret: string;
+        /**
+         * Whether the webhook is enabled
+         */
+        enabled: boolean;
+        /**
+         * The last result sent by the webhook
+         */
+        last_sent_result: string;
+        /**
+         * Whether the last sent was successful
+         */
+        last_sent_success: boolean;
+        /**
+         * When the last event was sent
+         */
+        last_sent_at: string;
+        /**
+         * When the webhook was created
+         */
+        created_at: string;
+        /**
+         * When the webhook was updated
+         */
+        updated_at: string;
+        /**
+         * The events this webhook subscribes to
+         */
+        events: Array<"branch.ready" | "branch.anomaly" | "branch.schema_recommendation" | "branch.sleeping" | "branch.start_maintenance" | "cluster.storage" | "database.access_request" | "deploy_request.closed" | "deploy_request.errored" | "deploy_request.in_progress" | "deploy_request.opened" | "deploy_request.pending_cutover" | "deploy_request.queued" | "deploy_request.reverted" | "deploy_request.schema_applied" | "keyspace.storage" | "webhook.test">;
+    }>;
+};
+export type DatabaseWebhook = {
+    /**
+     * The ID of the webhook
+     */
+    id: string;
+    /**
+     * The URL the webhook will send events to
+     */
+    url: string;
+    /**
+     * The secret used to sign the webhook payloads
+     */
+    secret: string;
+    /**
+     * Whether the webhook is enabled
+     */
+    enabled: boolean;
+    /**
+     * The last result sent by the webhook
+     */
+    last_sent_result: string;
+    /**
+     * Whether the last sent was successful
+     */
+    last_sent_success: boolean;
+    /**
+     * When the last event was sent
+     */
+    last_sent_at: string;
+    /**
+     * When the webhook was created
+     */
+    created_at: string;
+    /**
+     * When the webhook was updated
+     */
+    updated_at: string;
+    /**
+     * The events this webhook subscribes to
+     */
+    events: Array<"branch.ready" | "branch.anomaly" | "branch.schema_recommendation" | "branch.sleeping" | "branch.start_maintenance" | "cluster.storage" | "database.access_request" | "deploy_request.closed" | "deploy_request.errored" | "deploy_request.in_progress" | "deploy_request.opened" | "deploy_request.pending_cutover" | "deploy_request.queued" | "deploy_request.reverted" | "deploy_request.schema_applied" | "keyspace.storage" | "webhook.test">;
+};
+export type PaginatedLineItem = {
+    /**
+     * The current page number
+     */
+    current_page: number;
+    /**
+     * The next page number
+     */
+    next_page: number;
+    /**
+     * The next page of results
+     */
+    next_page_url: string;
+    /**
+     * The previous page number
+     */
+    prev_page: number;
+    /**
+     * The previous page of results
+     */
+    prev_page_url: string;
+    data: Array<{
+        /**
+         * The ID for the line item
+         */
+        id: string;
+        /**
+         * The total for the line item
+         */
+        subtotal: number;
+        /**
+         * The description for the line item
+         */
+        description: string;
+        /**
+         * The name of the billable item
+         */
+        metric_name: string;
+        /**
+         * The ID for the billed database
+         */
+        database_id: string;
+        /**
+         * The name for the billed database
+         */
+        database_name: string;
+        resource: {
+            /**
+             * The ID for the resource
+             */
+            id: string;
+            /**
+             * The name for the resource
+             */
+            name: string;
+            /**
+             * When the resource was created
+             */
+            created_at: string;
+            /**
+             * When the resource was last updated
+             */
+            updated_at: string;
+            /**
+             * When the resource was deleted, if deleted
+             */
+            deleted_at: string;
+        };
+    }>;
+};
+export type PaginatedInvoice = {
+    /**
+     * The current page number
+     */
+    current_page: number;
+    /**
+     * The next page number
+     */
+    next_page: number;
+    /**
+     * The next page of results
+     */
+    next_page_url: string;
+    /**
+     * The previous page number
+     */
+    prev_page: number;
+    /**
+     * The previous page of results
+     */
+    prev_page_url: string;
+    data: Array<{
+        /**
+         * The ID of the invoice
+         */
+        id: string;
+        /**
+         * The total amount of the invoice
+         */
+        total: number;
+        /**
+         * Start of the billing period
+         */
+        billing_period_start: string;
+        /**
+         * End of the billing period
+         */
+        billing_period_end: string;
+    }>;
+};
+export type Invoice = {
+    /**
+     * The ID of the invoice
+     */
+    id: string;
+    /**
+     * The total amount of the invoice
+     */
+    total: number;
+    /**
+     * Start of the billing period
+     */
+    billing_period_start: string;
+    /**
+     * End of the billing period
+     */
+    billing_period_end: string;
+};
+export type KeyspaceResizeRequest = {
+    id: string;
+    type: "KeyspaceResizeRequest";
+    state: "resizing" | "completed";
+    started_at: string;
+    completed_at: string;
+    created_at: string;
+    updated_at: string;
+    extra_replicas?: number;
+    vector_pool_allocation?: string;
+    previous_vector_pool_allocation?: string;
+    cluster_name?: string;
+    cluster_display_name?: string;
+    previous_cluster_name?: string;
+    previous_cluster_display_name?: string;
+    replicas?: number;
+    previous_replicas?: number;
+    cluster_rank?: number;
+    previous_cluster_rank?: number;
+    actor?: {
+        [key: string]: unknown;
+    };
+    cluster_rate_name?: string;
+    cluster_rate_display_name?: string;
+    previous_cluster_rate_name?: string;
+    previous_cluster_rate_display_name?: string;
+};
+export type PaginatedKeyspaceResizeRequest = {
+    /**
+     * The current page number
+     */
+    current_page: number;
+    /**
+     * The next page number
+     */
+    next_page: number;
+    /**
+     * The next page of results
+     */
+    next_page_url: string;
+    /**
+     * The previous page number
+     */
+    prev_page: number;
+    /**
+     * The previous page of results
+     */
+    prev_page_url: string;
+    data: Array<KeyspaceResizeRequest>;
+};
+export type GeneralError = {
+    code?: string;
+    message?: string;
+};
+export type ListOrganizationsData = {
+    body?: never;
+    path?: never;
+    query?: {
+        /**
+         * If provided, specifies the page offset of returned results
+         */
+        page?: number;
+        /**
+         * If provided, specifies the number of returned results
+         */
+        per_page?: number;
+    };
+    url: "/organizations";
+};
+export type ListOrganizationsErrors = {
+    /**
+     * Unauthorized
+     */
+    401: GeneralError;
+    /**
+     * Forbidden
+     */
+    403: GeneralError;
+    /**
+     * Not Found
+     */
+    404: GeneralError;
+    /**
+     * Internal Server Error
+     */
+    500: GeneralError;
+};
+export type ListOrganizationsError = ListOrganizationsErrors[keyof ListOrganizationsErrors];
+export type ListOrganizationsResponses = {
+    /**
+     * Gets the organizations for the current user
+     */
+    200: PaginatedOrganization;
+};
+export type ListOrganizationsResponse = ListOrganizationsResponses[keyof ListOrganizationsResponses];
+export type GetOrganizationData = {
+    body?: never;
+    path: {
+        /**
+         * The name of the organization
+         */
+        name: string;
+    };
+    query?: never;
+    url: "/organizations/{name}";
+};
+export type GetOrganizationErrors = {
+    /**
+     * Unauthorized
+     */
+    401: GeneralError;
+    /**
+     * Forbidden
+     */
+    403: GeneralError;
+    /**
+     * Not Found
+     */
+    404: GeneralError;
+    /**
+     * Internal Server Error
+     */
+    500: GeneralError;
+};
+export type GetOrganizationError = GetOrganizationErrors[keyof GetOrganizationErrors];
+export type GetOrganizationResponses = {
+    /**
+     * Returns an organization
+     */
+    200: Organization;
+};
+export type GetOrganizationResponse = GetOrganizationResponses[keyof GetOrganizationResponses];
+export type UpdateOrganizationData = {
+    body?: {
+        /**
+         * The billing email for the organization
+         */
+        billing_email?: string;
+        /**
+         * Whether or not the IdP provider is be responsible for managing roles in PlanetScale
+         */
+        idp_managed_roles?: boolean;
+        /**
+         * The expected monthly budget for the organization
+         */
+        invoice_budget_amount?: number;
+    };
+    path: {
+        /**
+         * The name of the organization
+         */
+        name: string;
+    };
+    query?: never;
+    url: "/organizations/{name}";
+};
+export type UpdateOrganizationErrors = {
+    /**
+     * Unauthorized
+     */
+    401: GeneralError;
+    /**
+     * Forbidden
+     */
+    403: GeneralError;
+    /**
+     * Not Found
+     */
+    404: GeneralError;
+    /**
+     * Internal Server Error
+     */
+    500: GeneralError;
+};
+export type UpdateOrganizationError = UpdateOrganizationErrors[keyof UpdateOrganizationErrors];
+export type UpdateOrganizationResponses = {
+    /**
+     * Returns the updated organization
+     */
+    200: Organization;
+};
+export type UpdateOrganizationResponse = UpdateOrganizationResponses[keyof UpdateOrganizationResponses];
+export type ListAuditLogsData = {
+    body?: never;
+    path: {
+        /**
+         * The name of the organization
+         */
+        name: string;
+    };
+    query?: never;
+    url: "/organizations/{name}/audit-log";
+};
+export type ListAuditLogsErrors = {
+    /**
+     * Unauthorized
+     */
+    401: GeneralError;
+    /**
+     * Forbidden
+     */
+    403: GeneralError;
+    /**
+     * Not Found
+     */
+    404: GeneralError;
+    /**
+     * Internal Server Error
+     */
+    500: GeneralError;
+};
+export type ListAuditLogsError = ListAuditLogsErrors[keyof ListAuditLogsErrors];
+export type ListAuditLogsResponses = {
+    /**
+     * Returns the audit log events
+     */
+    200: PaginatedAuditLogEvent;
+};
+export type ListAuditLogsResponse = ListAuditLogsResponses[keyof ListAuditLogsResponses];
+export type ListRegionsForOrganizationData = {
+    body?: never;
+    path: {
+        /**
+         * The name of the organization
+         */
+        name: string;
+    };
+    query?: {
+        /**
+         * If provided, specifies the page offset of returned results
+         */
+        page?: number;
+        /**
+         * If provided, specifies the number of returned results
+         */
+        per_page?: number;
+    };
+    url: "/organizations/{name}/regions";
+};
+export type ListRegionsForOrganizationErrors = {
+    /**
+     * Unauthorized
+     */
+    401: GeneralError;
+    /**
+     * Forbidden
+     */
+    403: GeneralError;
+    /**
+     * Not Found
+     */
+    404: GeneralError;
+    /**
+     * Internal Server Error
+     */
+    500: GeneralError;
+};
+export type ListRegionsForOrganizationError = ListRegionsForOrganizationErrors[keyof ListRegionsForOrganizationErrors];
+export type ListRegionsForOrganizationResponses = {
+    /**
+     * Returns the organization's regions
+     */
+    200: PaginatedPlanetscaleRegion;
+};
+export type ListRegionsForOrganizationResponse = ListRegionsForOrganizationResponses[keyof ListRegionsForOrganizationResponses];
+export type ListDatabasesData = {
+    body?: never;
+    path: {
+        /**
+         * The name of the organization the database belongs to
+         */
+        organization: string;
+    };
+    query?: {
+        /**
+         * Search term to filter databases by name
+         */
+        q?: string;
+        /**
+         * If provided, specifies the page offset of returned results
+         */
+        page?: number;
+        /**
+         * If provided, specifies the number of returned results
+         */
+        per_page?: number;
+    };
+    url: "/organizations/{organization}/databases";
+};
+export type ListDatabasesErrors = {
+    /**
+     * Unauthorized
+     */
+    401: GeneralError;
+    /**
+     * Forbidden
+     */
+    403: GeneralError;
+    /**
+     * Not Found
+     */
+    404: GeneralError;
+    /**
+     * Internal Server Error
+     */
+    500: GeneralError;
+};
+export type ListDatabasesError = ListDatabasesErrors[keyof ListDatabasesErrors];
+export type ListDatabasesResponses = {
+    /**
+     * Retrieves the databases for an organization
+     */
+    200: PaginatedDatabase;
+};
+export type ListDatabasesResponse = ListDatabasesResponses[keyof ListDatabasesResponses];
+export type CreateDatabaseData = {
+    body?: {
+        /**
+         * Name of the database
+         */
+        name: string;
+        /**
+         * The region the database will be deployed in. If left blank, defaults to the organization's default region.
+         */
+        region?: string;
+        /**
+         * The database cluster size. Options: PS_10, PS_20, PS_40, PS_80, PS_160, PS_320, PS_400, PS_640, PS_700, PS_900, PS_1280, PS_1400, PS_1800, PS_2100, PS_2560, PS_2700, PS_2800.
+         */
+        cluster_size: string;
+        /**
+         * The kind of database to create.
+         */
+        kind?: "mysql" | "postgresql";
+    };
+    path: {
+        /**
+         * The name of the organization the database belongs to
+         */
+        organization: string;
+    };
+    query?: never;
+    url: "/organizations/{organization}/databases";
+};
+export type CreateDatabaseErrors = {
+    /**
+     * Unauthorized
+     */
+    401: GeneralError;
+    /**
+     * Forbidden
+     */
+    403: GeneralError;
+    /**
+     * Not Found
+     */
+    404: GeneralError;
+    /**
+     * Internal Server Error
+     */
+    500: GeneralError;
+};
+export type CreateDatabaseError = CreateDatabaseErrors[keyof CreateDatabaseErrors];
+export type CreateDatabaseResponses = {
+    /**
+     * Returns the created database
+     */
+    201: Database;
+};
+export type CreateDatabaseResponse = CreateDatabaseResponses[keyof CreateDatabaseResponses];
+export type ListBranchesData = {
+    body?: never;
+    path: {
+        /**
+         * The name of the organization the branch belongs to
+         */
+        organization: string;
+        /**
+         * The name of the database the branch belongs to
+         */
+        database: string;
+    };
+    query?: {
+        /**
+         * Search branches by name
+         */
+        q?: string;
+        /**
+         * Filter branches by production status
+         */
+        production?: boolean;
+        /**
+         * Filter branches by safe migrations (DDL protection)
+         */
+        safe_migrations?: boolean;
+        /**
+         * Order branches by created_at time
+         */
+        order?: "asc" | "desc";
+        /**
+         * If provided, specifies the page offset of returned results
+         */
+        page?: number;
+        /**
+         * If provided, specifies the number of returned results
+         */
+        per_page?: number;
+    };
+    url: "/organizations/{organization}/databases/{database}/branches";
+};
+export type ListBranchesErrors = {
+    /**
+     * Unauthorized
+     */
+    401: GeneralError;
+    /**
+     * Forbidden
+     */
+    403: GeneralError;
+    /**
+     * Not Found
+     */
+    404: GeneralError;
+    /**
+     * Internal Server Error
+     */
+    500: GeneralError;
+};
+export type ListBranchesError = ListBranchesErrors[keyof ListBranchesErrors];
+export type ListBranchesResponses = {
+    /**
+     * Returns database branches
+     */
+    200: PaginatedDatabaseBranch;
+};
+export type ListBranchesResponse = ListBranchesResponses[keyof ListBranchesResponses];
+export type CreateBranchData = {
+    body?: {
+        /**
+         * The name of the branch
+         */
+        name: string;
+        /**
+         * Parent branch
+         */
+        parent_branch: string;
+        /**
+         * If provided, restores the backup's schema and data to the new branch. Must have `restore_production_branch_backup(s)` or `restore_backup(s)` access to do this.
+         */
+        backup_id?: string;
+        /**
+         * The region to create the branch in. If not provided, the branch will be created in the default region for its database.
+         */
+        region?: string;
+        /**
+         * Restore from a point-in-time recovery timestamp (e.g. 2023-01-01T00:00:00Z). Available only for PostgreSQL databases.
+         */
+        restore_point?: string;
+        /**
+         * If provided, restores the last successful backup's schema and data to the new branch. Must have `restore_production_branch_backup(s)` or `restore_backup(s)` access to do this, in addition to Data Branching™ being enabled for the branch.
+         */
+        seed_data?: "last_successful_backup";
+        /**
+         * The database cluster size is required if a backup_id is provided. Options: PS_10, PS_20, PS_40, ..., PS_2800
+         */
+        cluster_size?: string;
+    };
+    path: {
+        /**
+         * The name of the organization the branch belongs to
+         */
+        organization: string;
+        /**
+         * The name of the database the branch belongs to
+         */
+        database: string;
+    };
+    query?: never;
+    url: "/organizations/{organization}/databases/{database}/branches";
+};
+export type CreateBranchErrors = {
+    /**
+     * Unauthorized
+     */
+    401: GeneralError;
+    /**
+     * Forbidden
+     */
+    403: GeneralError;
+    /**
+     * Not Found
+     */
+    404: GeneralError;
+    /**
+     * Internal Server Error
+     */
+    500: GeneralError;
+};
+export type CreateBranchError = CreateBranchErrors[keyof CreateBranchErrors];
+export type CreateBranchResponses = {
+    /**
+     * Returns the created branch
+     */
+    201: DatabaseBranch;
+};
+export type CreateBranchResponse = CreateBranchResponses[keyof CreateBranchResponses];
+export type ListBackupsData = {
+    body?: never;
+    path: {
+        /**
+         * The name of the organization the branch belongs to
+         */
+        organization: string;
+        /**
+         * The name of the database the branch belongs to
+         */
+        database: string;
+        /**
+         * The name of the branch
+         */
+        branch: string;
+    };
+    query?: {
+        /**
+         * Whether to include all backups, including deleted ones
+         */
+        all?: boolean;
+        /**
+         * Filter backups by state
+         */
+        state?: "pending" | "running" | "success" | "failed" | "canceled" | "ignored";
+        /**
+         * Filter backups by backup policy ID
+         */
+        policy?: string;
+        /**
+         * Filter backups started after this date (e.g. 2023-01-01T00:00:00Z)
+         */
+        from?: string;
+        /**
+         * Filter backups started before this date (e.g. 2023-01-31T23:59:59Z)
+         */
+        to?: string;
+        /**
+         * Filter backups that are running during a specific time (e.g. 2023-01-01T00:00:00Z..2023-01-01T23:59:59Z)
+         */
+        running_at?: string;
+        /**
+         * Filter backups by production branch
+         */
+        production?: boolean;
+        /**
+         * If provided, specifies the page offset of returned results
+         */
+        page?: number;
+        /**
+         * If provided, specifies the number of returned results
+         */
+        per_page?: number;
+    };
+    url: "/organizations/{organization}/databases/{database}/branches/{branch}/backups";
+};
+export type ListBackupsErrors = {
+    /**
+     * Unauthorized
+     */
+    401: GeneralError;
+    /**
+     * Forbidden
+     */
+    403: GeneralError;
+    /**
+     * Not Found
+     */
+    404: GeneralError;
+    /**
+     * Internal Server Error
+     */
+    500: GeneralError;
+};
+export type ListBackupsError = ListBackupsErrors[keyof ListBackupsErrors];
+export type ListBackupsResponses = {
+    /**
+     * Returns database branch backups
+     */
+    200: PaginatedBackup;
+};
+export type ListBackupsResponse = ListBackupsResponses[keyof ListBackupsResponses];
+export type CreateBackupData = {
+    body?: {
+        /**
+         * Name for the backup
+         */
+        name?: string;
+        /**
+         * Unit for the retention period of the backup
+         */
+        retention_unit?: "hour" | "day" | "week" | "month" | "year";
+        /**
+         * Value between `1`` and `1000`` for the retention period of the backup (i.e retention_value `6`` and retention_unit `hour` means 6 hours)
+         */
+        retention_value?: number;
+        /**
+         * Whether the backup is an immediate backup that may affect database performance. Emergency backups are only supported for PostgreSQL databases.
+         */
+        emergency?: boolean;
+    };
+    path: {
+        /**
+         * The name of the organization the branch belongs to
+         */
+        organization: string;
+        /**
+         * The name of the database the branch belongs to
+         */
+        database: string;
+        /**
+         * The name of the branch
+         */
+        branch: string;
+    };
+    query?: never;
+    url: "/organizations/{organization}/databases/{database}/branches/{branch}/backups";
+};
+export type CreateBackupErrors = {
+    /**
+     * Unauthorized
+     */
+    401: GeneralError;
+    /**
+     * Forbidden
+     */
+    403: GeneralError;
+    /**
+     * Not Found
+     */
+    404: GeneralError;
+    /**
+     * Internal Server Error
+     */
+    500: GeneralError;
+};
+export type CreateBackupError = CreateBackupErrors[keyof CreateBackupErrors];
+export type CreateBackupResponses = {
+    /**
+     * Returns the created database branch backup
+     */
+    201: Backup;
+};
+export type CreateBackupResponse = CreateBackupResponses[keyof CreateBackupResponses];
+export type DeleteBackupData = {
+    body?: never;
+    path: {
+        /**
+         * The ID of the backup
+         */
+        id: string;
+        /**
+         * The name of the organization the branch belongs to
+         */
+        organization: string;
+        /**
+         * The name of the database the branch belongs to
+         */
+        database: string;
+        /**
+         * The name of the branch
+         */
+        branch: string;
+    };
+    query?: never;
+    url: "/organizations/{organization}/databases/{database}/branches/{branch}/backups/{id}";
+};
+export type DeleteBackupErrors = {
+    /**
+     * Unauthorized
+     */
+    401: GeneralError;
+    /**
+     * Forbidden
+     */
+    403: GeneralError;
+    /**
+     * Not Found
+     */
+    404: GeneralError;
+    /**
+     * Internal Server Error
+     */
+    500: GeneralError;
+};
+export type DeleteBackupError = DeleteBackupErrors[keyof DeleteBackupErrors];
+export type DeleteBackupResponses = {
+    /**
+     * Delete a backup
+     */
+    204: unknown;
+};
+export type GetBackupData = {
+    body?: never;
+    path: {
+        /**
+         * The ID for the backup
+         */
+        id: string;
+        /**
+         * The name of the organization the branch belongs to
+         */
+        organization: string;
+        /**
+         * The name of the database the branch belongs to
+         */
+        database: string;
+        /**
+         * The name of the branch
+         */
+        branch: string;
+    };
+    query?: never;
+    url: "/organizations/{organization}/databases/{database}/branches/{branch}/backups/{id}";
+};
+export type GetBackupErrors = {
+    /**
+     * Unauthorized
+     */
+    401: GeneralError;
+    /**
+     * Forbidden
+     */
+    403: GeneralError;
+    /**
+     * Not Found
+     */
+    404: GeneralError;
+    /**
+     * Internal Server Error
+     */
+    500: GeneralError;
+};
+export type GetBackupError = GetBackupErrors[keyof GetBackupErrors];
+export type GetBackupResponses = {
+    /**
+     * Returns a database branch backup
+     */
+    200: Backup;
+};
+export type GetBackupResponse = GetBackupResponses[keyof GetBackupResponses];
+export type UpdateBackupData = {
+    body?: {
+        /**
+         * Whether the backup is protected from deletion or not
+         */
+        protected?: boolean;
+    };
+    path: {
+        /**
+         * The ID of the backup
+         */
+        id: string;
+        /**
+         * The name of the organization the branch belongs to
+         */
+        organization: string;
+        /**
+         * The name of the database the branch belongs to
+         */
+        database: string;
+        /**
+         * The name of the branch
+         */
+        branch: string;
+    };
+    query?: never;
+    url: "/organizations/{organization}/databases/{database}/branches/{branch}/backups/{id}";
+};
+export type UpdateBackupErrors = {
+    /**
+     * Unauthorized
+     */
+    401: GeneralError;
+    /**
+     * Forbidden
+     */
+    403: GeneralError;
+    /**
+     * Not Found
+     */
+    404: GeneralError;
+    /**
+     * Internal Server Error
+     */
+    500: GeneralError;
+};
+export type UpdateBackupError = UpdateBackupErrors[keyof UpdateBackupErrors];
+export type UpdateBackupResponses = {
+    /**
+     * Returns the backup
+     */
+    200: Backup;
+};
+export type UpdateBackupResponse = UpdateBackupResponses[keyof UpdateBackupResponses];
+export type ListBranchChangeRequestsData = {
+    body?: never;
+    path: {
+        /**
+         * The name of the organization that owns this resource
+         */
+        organization: string;
+        /**
+         * The name of the database that owns this resource
+         */
+        database: string;
+        /**
+         * The name of the branch that owns this resource
+         */
+        branch: string;
+    };
+    query?: {
+        /**
+         * If provided, specifies the page offset of returned results
+         */
+        page?: number;
+        /**
+         * If provided, specifies the number of returned results
+         */
+        per_page?: number;
+    };
+    url: "/organizations/{organization}/databases/{database}/branches/{branch}/changes";
+};
+export type ListBranchChangeRequestsErrors = {
+    /**
+     * Unauthorized
+     */
+    401: GeneralError;
+    /**
+     * Forbidden
+     */
+    403: GeneralError;
+    /**
+     * Not Found
+     */
+    404: GeneralError;
+    /**
+     * Internal Server Error
+     */
+    500: GeneralError;
+};
+export type ListBranchChangeRequestsError = ListBranchChangeRequestsErrors[keyof ListBranchChangeRequestsErrors];
+export type ListBranchChangeRequestsResponses = {
+    /**
+     * Returns branch change requests
+     */
+    200: PaginatedPostgresClusterResizeRequest;
+};
+export type ListBranchChangeRequestsResponse = ListBranchChangeRequestsResponses[keyof ListBranchChangeRequestsResponses];
+export type UpdateBranchChangeRequestData = {
+    body: {
+        cluster_size: string;
+    };
+    path: {
+        /**
+         * The name of the organization that owns this resource
+         */
+        organization: string;
+        /**
+         * The name of the database that owns this resource
+         */
+        database: string;
+        /**
+         * The name of the branch that owns this resource
+         */
+        branch: string;
+    };
+    query?: never;
+    url: "/organizations/{organization}/databases/{database}/branches/{branch}/changes";
+};
+export type UpdateBranchChangeRequestErrors = {
+    /**
+     * Unauthorized
+     */
+    401: GeneralError;
+    /**
+     * Forbidden
+     */
+    403: GeneralError;
+    /**
+     * Not Found
+     */
+    404: GeneralError;
+    /**
+     * Internal Server Error
+     */
+    500: GeneralError;
+};
+export type UpdateBranchChangeRequestError = UpdateBranchChangeRequestErrors[keyof UpdateBranchChangeRequestErrors];
+export type UpdateBranchChangeRequestResponses = {
+    /**
+     * Returns the branch change request
+     */
+    200: PostgresClusterResizeRequest;
+};
+export type UpdateBranchChangeRequestResponse = UpdateBranchChangeRequestResponses[keyof UpdateBranchChangeRequestResponses];
+export type ListExtensionsData = {
+    body?: never;
+    path: {
+        /**
+         * The name of the organization that owns this resource
+         */
+        organization: string;
+        /**
+         * The name of the database that owns this resource
+         */
+        database: string;
+        /**
+         * The name of the branch that owns this resource
+         */
+        branch: string;
+    };
+    query?: never;
+    url: "/organizations/{organization}/databases/{database}/branches/{branch}/extensions";
+};
+export type ListExtensionsErrors = {
+    /**
+     * Unauthorized
+     */
+    401: GeneralError;
+    /**
+     * Forbidden
+     */
+    403: GeneralError;
+    /**
+     * Not Found
+     */
+    404: GeneralError;
+    /**
+     * Internal Server Error
+     */
+    500: GeneralError;
+};
+export type ListExtensionsError = ListExtensionsErrors[keyof ListExtensionsErrors];
+export type ListExtensionsResponses = {
+    /**
+     * Returns cluster extensions
+     */
+    200: Array<PostgresClusterExtension>;
+};
+export type ListExtensionsResponse = ListExtensionsResponses[keyof ListExtensionsResponses];
+export type ListKeyspacesData = {
+    body?: never;
+    path: {
+        /**
+         * The name of the organization the branch belongs to
+         */
+        organization: string;
+        /**
+         * The name of the database the branch belongs to
+         */
+        database: string;
+        /**
+         * The name of the branch
+         */
+        branch: string;
+    };
+    query?: {
+        /**
+         * If provided, specifies the page offset of returned results
+         */
+        page?: number;
+        /**
+         * If provided, specifies the number of returned results
+         */
+        per_page?: number;
+    };
+    url: "/organizations/{organization}/databases/{database}/branches/{branch}/keyspaces";
+};
+export type ListKeyspacesErrors = {
+    /**
+     * Unauthorized
+     */
+    401: GeneralError;
+    /**
+     * Forbidden
+     */
+    403: GeneralError;
+    /**
+     * Not Found
+     */
+    404: GeneralError;
+    /**
+     * Internal Server Error
+     */
+    500: GeneralError;
+};
+export type ListKeyspacesError = ListKeyspacesErrors[keyof ListKeyspacesErrors];
+export type ListKeyspacesResponses = {
+    /**
+     * Returns keyspaces
+     */
+    200: PaginatedDatabaseBranchKeyspace;
+};
+export type ListKeyspacesResponse = ListKeyspacesResponses[keyof ListKeyspacesResponses];
+export type CreateKeyspaceData = {
+    body?: {
+        /**
+         * The name of the keyspace
+         */
+        name: string;
+    };
+    path: {
+        /**
+         * The name of the organization the branch belongs to
+         */
+        organization: string;
+        /**
+         * The name of the database the branch belongs to
+         */
+        database: string;
+        /**
+         * The name of the branch
+         */
+        branch: string;
+    };
+    query?: never;
+    url: "/organizations/{organization}/databases/{database}/branches/{branch}/keyspaces";
+};
+export type CreateKeyspaceErrors = {
+    /**
+     * Unauthorized
+     */
+    401: GeneralError;
+    /**
+     * Forbidden
+     */
+    403: GeneralError;
+    /**
+     * Not Found
+     */
+    404: GeneralError;
+    /**
+     * Internal Server Error
+     */
+    500: GeneralError;
+};
+export type CreateKeyspaceError = CreateKeyspaceErrors[keyof CreateKeyspaceErrors];
+export type CreateKeyspaceResponses = {
+    /**
+     * Returns a created keyspace
+     */
+    200: DatabaseBranchKeyspace;
+};
+export type CreateKeyspaceResponse = CreateKeyspaceResponses[keyof CreateKeyspaceResponses];
+export type GetKeyspaceVschemaData = {
+    body?: never;
+    path: {
+        /**
+         * The name of the organization the branch belongs to
+         */
+        organization: string;
+        /**
+         * The name of the database the branch belongs to
+         */
+        database: string;
+        /**
+         * The name of the branch
+         */
+        branch: string;
+        /**
+         * The name of the keyspace
+         */
+        keyspace: string;
+    };
+    query?: never;
+    url: "/organizations/{organization}/databases/{database}/branches/{branch}/keyspaces/{keyspace}/vschema";
+};
+export type GetKeyspaceVschemaErrors = {
+    /**
+     * Unauthorized
+     */
+    401: GeneralError;
+    /**
+     * Forbidden
+     */
+    403: GeneralError;
+    /**
+     * Not Found
+     */
+    404: GeneralError;
+    /**
+     * Internal Server Error
+     */
+    500: GeneralError;
+};
+export type GetKeyspaceVschemaError = GetKeyspaceVschemaErrors[keyof GetKeyspaceVschemaErrors];
+export type GetKeyspaceVschemaResponses = {
+    /**
+     * Returns the VSchema for the keyspace
+     */
+    200: {
+        /**
+         * The keyspace's VSchema
+         */
+        raw: string;
+    };
+};
+export type GetKeyspaceVschemaResponse = GetKeyspaceVschemaResponses[keyof GetKeyspaceVschemaResponses];
+export type UpdateKeyspaceVschemaData = {
+    body?: {
+        /**
+         * The new VSchema for the keyspace
+         */
+        vschema: string;
+    };
+    path: {
+        /**
+         * The name of the organization the branch belongs to
+         */
+        organization: string;
+        /**
+         * The name of the database the branch belongs to
+         */
+        database: string;
+        /**
+         * The name of the branch
+         */
+        branch: string;
+        /**
+         * The name of the keyspace
+         */
+        keyspace: string;
+    };
+    query?: never;
+    url: "/organizations/{organization}/databases/{database}/branches/{branch}/keyspaces/{keyspace}/vschema";
+};
+export type UpdateKeyspaceVschemaErrors = {
+    /**
+     * Unauthorized
+     */
+    401: GeneralError;
+    /**
+     * Forbidden
+     */
+    403: GeneralError;
+    /**
+     * Not Found
+     */
+    404: GeneralError;
+    /**
+     * Unprocessable Content
+     */
+    422: GeneralError;
+    /**
+     * Internal Server Error
+     */
+    500: GeneralError;
+};
+export type UpdateKeyspaceVschemaError = UpdateKeyspaceVschemaErrors[keyof UpdateKeyspaceVschemaErrors];
+export type UpdateKeyspaceVschemaResponses = {
+    /**
+     * Returns the VSchema for the keyspace
+     */
+    200: {
+        /**
+         * The keyspace's VSchema
+         */
+        raw: string;
+    };
+};
+export type UpdateKeyspaceVschemaResponse = UpdateKeyspaceVschemaResponses[keyof UpdateKeyspaceVschemaResponses];
+export type DeleteKeyspaceData = {
+    body?: never;
+    path: {
+        /**
+         * The name of the organization the branch belongs to
+         */
+        organization: string;
+        /**
+         * The name of the database the branch belongs to
+         */
+        database: string;
+        /**
+         * The name of the branch
+         */
+        branch: string;
+        /**
+         * The name of the keyspace
+         */
+        name: string;
+    };
+    query?: never;
+    url: "/organizations/{organization}/databases/{database}/branches/{branch}/keyspaces/{name}";
+};
+export type DeleteKeyspaceErrors = {
+    /**
+     * Unauthorized
+     */
+    401: GeneralError;
+    /**
+     * Forbidden
+     */
+    403: GeneralError;
+    /**
+     * Not Found
+     */
+    404: GeneralError;
+    /**
+     * Internal Server Error
+     */
+    500: GeneralError;
+};
+export type DeleteKeyspaceError = DeleteKeyspaceErrors[keyof DeleteKeyspaceErrors];
+export type DeleteKeyspaceResponses = {
+    /**
+     * Delete a keyspace
+     */
+    204: unknown;
+};
+export type GetKeyspaceData = {
+    body?: never;
+    path: {
+        /**
+         * The name of the organization the branch belongs to
+         */
+        organization: string;
+        /**
+         * The name of the database the branch belongs to
+         */
+        database: string;
+        /**
+         * The name of the branch
+         */
+        branch: string;
+        /**
+         * The name of the keyspace
+         */
+        name: string;
+    };
+    query?: never;
+    url: "/organizations/{organization}/databases/{database}/branches/{branch}/keyspaces/{name}";
+};
+export type GetKeyspaceErrors = {
+    /**
+     * Unauthorized
+     */
+    401: GeneralError;
+    /**
+     * Forbidden
+     */
+    403: GeneralError;
+    /**
+     * Not Found
+     */
+    404: GeneralError;
+    /**
+     * Internal Server Error
+     */
+    500: GeneralError;
+};
+export type GetKeyspaceError = GetKeyspaceErrors[keyof GetKeyspaceErrors];
+export type GetKeyspaceResponses = {
+    /**
+     * Returns information about a keyspace
+     */
+    200: DatabaseBranchKeyspace;
+};
+export type GetKeyspaceResponse = GetKeyspaceResponses[keyof GetKeyspaceResponses];
+export type UpdateKeyspaceData = {
+    body?: never;
+    path: {
+        /**
+         * The name of the organization the branch belongs to
+         */
+        organization: string;
+        /**
+         * The name of the database the branch belongs to
+         */
+        database: string;
+        /**
+         * The name of the branch
+         */
+        branch: string;
+        /**
+         * The name of the keyspace
+         */
+        name: string;
+    };
+    query?: never;
+    url: "/organizations/{organization}/databases/{database}/branches/{branch}/keyspaces/{name}";
+};
+export type UpdateKeyspaceErrors = {
+    /**
+     * Unauthorized
+     */
+    401: GeneralError;
+    /**
+     * Forbidden
+     */
+    403: GeneralError;
+    /**
+     * Not Found
+     */
+    404: GeneralError;
+    /**
+     * Internal Server Error
+     */
+    500: GeneralError;
+};
+export type UpdateKeyspaceError = UpdateKeyspaceErrors[keyof UpdateKeyspaceErrors];
+export type UpdateKeyspaceResponses = {
+    /**
+     * Returns the keyspace
+     */
+    200: DatabaseBranchKeyspace;
+};
+export type UpdateKeyspaceResponse = UpdateKeyspaceResponses[keyof UpdateKeyspaceResponses];
+export type GetKeyspaceRolloutStatusData = {
+    body?: never;
+    path: {
+        /**
+         * The name of the organization the branch belongs to
+         */
+        organization: string;
+        /**
+         * The name of the database the branch belongs to
+         */
+        database: string;
+        /**
+         * The name of the branch
+         */
+        branch: string;
+        /**
+         * The name of the keyspace
+         */
+        name: string;
+    };
+    query?: never;
+    url: "/organizations/{organization}/databases/{database}/branches/{branch}/keyspaces/{name}/rollout-status";
+};
+export type GetKeyspaceRolloutStatusErrors = {
+    /**
+     * Unauthorized
+     */
+    401: GeneralError;
+    /**
+     * Forbidden
+     */
+    403: GeneralError;
+    /**
+     * Not Found
+     */
+    404: GeneralError;
+    /**
+     * Internal Server Error
+     */
+    500: GeneralError;
+};
+export type GetKeyspaceRolloutStatusError = GetKeyspaceRolloutStatusErrors[keyof GetKeyspaceRolloutStatusErrors];
+export type GetKeyspaceRolloutStatusResponses = {
+    /**
+     * Returns information about a keyspace's rollout
+     */
+    200: {
+        /**
+         * The name of the keyspace
+         */
+        name: string;
+        /**
+         * The current state of the rollout at the keyspace level
+         */
+        state: string;
+        shards: Array<{
+            /**
+             * The name of the shard
+             */
+            name: string;
+            /**
+             * The time at which the rollout started
+             */
+            last_rollout_started_at: string;
+            /**
+             * The time at which the rollout completed
+             */
+            last_rollout_finished_at: string;
+            /**
+             * The current state of the rollout at the shard level
+             */
+            state: string;
+        }>;
+    };
+};
+export type GetKeyspaceRolloutStatusResponse = GetKeyspaceRolloutStatusResponses[keyof GetKeyspaceRolloutStatusResponses];
+export type ListParametersData = {
+    body?: never;
+    path: {
+        /**
+         * The name of the organization that owns this resource
+         */
+        organization: string;
+        /**
+         * The name of the database that owns this resource
+         */
+        database: string;
+        /**
+         * The name of the branch that owns this resource
+         */
+        branch: string;
+    };
+    query?: never;
+    url: "/organizations/{organization}/databases/{database}/branches/{branch}/parameters";
+};
+export type ListParametersErrors = {
+    /**
+     * Unauthorized
+     */
+    401: GeneralError;
+    /**
+     * Forbidden
+     */
+    403: GeneralError;
+    /**
+     * Not Found
+     */
+    404: GeneralError;
+    /**
+     * Internal Server Error
+     */
+    500: GeneralError;
+};
+export type ListParametersError = ListParametersErrors[keyof ListParametersErrors];
+export type ListParametersResponses = {
+    /**
+     * Returns cluster parameters
+     */
+    200: Array<PostgresClusterParameter>;
+};
+export type ListParametersResponse = ListParametersResponses[keyof ListParametersResponses];
+export type ListPasswordsData = {
+    body?: never;
+    path: {
+        /**
+         * The name of the organization the password belongs to
+         */
+        organization: string;
+        /**
+         * The name of the database the password belongs to
+         */
+        database: string;
+        /**
+         * The name of the branch the password belongs to
+         */
+        branch: string;
+    };
+    query?: {
+        /**
+         * A read-only region of the database branch. If present, the password results will be filtered to only those in the region
+         */
+        read_only_region_id?: string;
+        /**
+         * If provided, specifies the page offset of returned results
+         */
+        page?: number;
+        /**
+         * If provided, specifies the number of returned results
+         */
+        per_page?: number;
+    };
+    url: "/organizations/{organization}/databases/{database}/branches/{branch}/passwords";
+};
+export type ListPasswordsErrors = {
+    /**
+     * Unauthorized
+     */
+    401: GeneralError;
+    /**
+     * Forbidden
+     */
+    403: GeneralError;
+    /**
+     * Not Found
+     */
+    404: GeneralError;
+    /**
+     * Internal Server Error
+     */
+    500: GeneralError;
+};
+export type ListPasswordsError = ListPasswordsErrors[keyof ListPasswordsErrors];
+export type ListPasswordsResponses = {
+    /**
+     * Returns passwords for the branch
+     */
+    200: PaginatedDatabaseBranchPassword;
+};
+export type ListPasswordsResponse = ListPasswordsResponses[keyof ListPasswordsResponses];
+export type CreatePasswordData = {
+    body?: {
+        /**
+         * Optional name of the password
+         */
+        name?: string;
+        /**
+         * The database role of the password (i.e. admin)
+         */
+        role?: "reader" | "writer" | "admin" | "readwriter";
+        /**
+         * Whether the password is for a read replica
+         */
+        replica?: boolean;
+        /**
+         * Time to live (in seconds) for the password. The password will be invalid when TTL has passed
+         */
+        ttl?: number;
+        /**
+         * List of IP addresses or CIDR ranges that can use this password
+         */
+        cidrs?: Array<string>;
+    };
+    path: {
+        /**
+         * The name of the organization the password belongs to
+         */
+        organization: string;
+        /**
+         * The name of the database the password belongs to
+         */
+        database: string;
+        /**
+         * The name of the branch the password belongs to
+         */
+        branch: string;
+    };
+    query?: never;
+    url: "/organizations/{organization}/databases/{database}/branches/{branch}/passwords";
+};
+export type CreatePasswordErrors = {
+    /**
+     * Unauthorized
+     */
+    401: GeneralError;
+    /**
+     * Forbidden
+     */
+    403: GeneralError;
+    /**
+     * Not Found
+     */
+    404: GeneralError;
+    /**
+     * Unprocessable Content
+     */
+    422: GeneralError;
+    /**
+     * Internal Server Error
+     */
+    500: GeneralError;
+};
+export type CreatePasswordError = CreatePasswordErrors[keyof CreatePasswordErrors];
+export type CreatePasswordResponses = {
+    /**
+     * Returns the new credentials
+     */
+    201: DatabaseBranchPassword;
+};
+export type CreatePasswordResponse = CreatePasswordResponses[keyof CreatePasswordResponses];
+export type DeletePasswordData = {
+    body?: never;
+    path: {
+        /**
+         * The name of the organization the password belongs to
+         */
+        organization: string;
+        /**
+         * The name of the database the password belongs to
+         */
+        database: string;
+        /**
+         * The name of the branch the password belongs to
+         */
+        branch: string;
+        /**
+         * The ID of the password
+         */
+        id: string;
+    };
+    query?: never;
+    url: "/organizations/{organization}/databases/{database}/branches/{branch}/passwords/{id}";
+};
+export type DeletePasswordErrors = {
+    /**
+     * Unauthorized
+     */
+    401: GeneralError;
+    /**
+     * Forbidden
+     */
+    403: GeneralError;
+    /**
+     * Not Found
+     */
+    404: GeneralError;
+    /**
+     * Internal Server Error
+     */
+    500: GeneralError;
+};
+export type DeletePasswordError = DeletePasswordErrors[keyof DeletePasswordErrors];
+export type DeletePasswordResponses = {
+    /**
+     * Deletes the password
+     */
+    204: unknown;
+};
+export type GetPasswordData = {
+    body?: never;
+    path: {
+        /**
+         * The name of the organization the password belongs to
+         */
+        organization: string;
+        /**
+         * The name of the database the password belongs to
+         */
+        database: string;
+        /**
+         * The name of the branch the password belongs to
+         */
+        branch: string;
+        /**
+         * The ID of the password
+         */
+        id: string;
+    };
+    query?: never;
+    url: "/organizations/{organization}/databases/{database}/branches/{branch}/passwords/{id}";
+};
+export type GetPasswordErrors = {
+    /**
+     * Unauthorized
+     */
+    401: GeneralError;
+    /**
+     * Forbidden
+     */
+    403: GeneralError;
+    /**
+     * Not Found
+     */
+    404: GeneralError;
+    /**
+     * Internal Server Error
+     */
+    500: GeneralError;
+};
+export type GetPasswordError = GetPasswordErrors[keyof GetPasswordErrors];
+export type GetPasswordResponses = {
+    /**
+     * Returns a password
+     */
+    200: DatabaseBranchPassword;
+};
+export type GetPasswordResponse = GetPasswordResponses[keyof GetPasswordResponses];
+export type UpdatePasswordData = {
+    body?: {
+        /**
+         * The name for the password
+         */
+        name?: string;
+        /**
+         * List of IP addresses or CIDR ranges that can use this password
+         */
+        cidrs?: Array<string>;
+    };
+    path: {
+        /**
+         * The name of the organization the password belongs to
+         */
+        organization: string;
+        /**
+         * The name of the database the password belongs to
+         */
+        database: string;
+        /**
+         * The name of the branch the password belongs to
+         */
+        branch: string;
+        /**
+         * The ID of the password
+         */
+        id: string;
+    };
+    query?: never;
+    url: "/organizations/{organization}/databases/{database}/branches/{branch}/passwords/{id}";
+};
+export type UpdatePasswordErrors = {
+    /**
+     * Unauthorized
+     */
+    401: GeneralError;
+    /**
+     * Forbidden
+     */
+    403: GeneralError;
+    /**
+     * Not Found
+     */
+    404: GeneralError;
+    /**
+     * Internal Server Error
+     */
+    500: GeneralError;
+};
+export type UpdatePasswordError = UpdatePasswordErrors[keyof UpdatePasswordErrors];
+export type UpdatePasswordResponses = {
+    /**
+     * Returns the updated password
+     */
+    200: DatabaseBranchPassword;
+};
+export type UpdatePasswordResponse = UpdatePasswordResponses[keyof UpdatePasswordResponses];
+export type RenewPasswordData = {
+    body?: never;
+    path: {
+        /**
+         * The name of the organization the password belongs to
+         */
+        organization: string;
+        /**
+         * The name of the database the password belongs to
+         */
+        database: string;
+        /**
+         * The name of the branch the password belongs to
+         */
+        branch: string;
+        /**
+         * The ID of the password
+         */
+        id: string;
+    };
+    query?: never;
+    url: "/organizations/{organization}/databases/{database}/branches/{branch}/passwords/{id}/renew";
+};
+export type RenewPasswordErrors = {
+    /**
+     * Unauthorized
+     */
+    401: GeneralError;
+    /**
+     * Forbidden
+     */
+    403: GeneralError;
+    /**
+     * Not Found
+     */
+    404: GeneralError;
+    /**
+     * Internal Server Error
+     */
+    500: GeneralError;
+};
+export type RenewPasswordError = RenewPasswordErrors[keyof RenewPasswordErrors];
+export type RenewPasswordResponses = {
+    /**
+     * Returns the renewed password
+     */
+    200: DatabaseBranchPassword;
+};
+export type RenewPasswordResponse = RenewPasswordResponses[keyof RenewPasswordResponses];
+export type ListGeneratedQueryPatternsReportsData = {
+    body?: never;
+    path: {
+        /**
+         * The name of the organization the branch belongs to
+         */
+        organization: string;
+        /**
+         * The name of the database the branch belongs to
+         */
+        database: string;
+        /**
+         * The name of the branch
+         */
+        branch: string;
+    };
+    query?: never;
+    url: "/organizations/{organization}/databases/{database}/branches/{branch}/query-patterns";
+};
+export type ListGeneratedQueryPatternsReportsErrors = {
+    /**
+     * Unauthorized
+     */
+    401: GeneralError;
+    /**
+     * Forbidden
+     */
+    403: GeneralError;
+    /**
+     * Not Found
+     */
+    404: GeneralError;
+    /**
+     * Internal Server Error
+     */
+    500: GeneralError;
+};
+export type ListGeneratedQueryPatternsReportsError = ListGeneratedQueryPatternsReportsErrors[keyof ListGeneratedQueryPatternsReportsErrors];
+export type ListGeneratedQueryPatternsReportsResponses = {
+    /**
+     * Returns the generated query patterns reports
+     */
+    200: PaginatedQueryPatternsDownload;
+};
+export type ListGeneratedQueryPatternsReportsResponse = ListGeneratedQueryPatternsReportsResponses[keyof ListGeneratedQueryPatternsReportsResponses];
+export type CreateQueryPatternsReportData = {
+    body?: never;
+    path: {
+        /**
+         * The name of the organization the branch belongs to
+         */
+        organization: string;
+        /**
+         * The name of the database the branch belongs to
+         */
+        database: string;
+        /**
+         * The name of the branch
+         */
+        branch: string;
+    };
+    query?: never;
+    url: "/organizations/{organization}/databases/{database}/branches/{branch}/query-patterns";
+};
+export type CreateQueryPatternsReportErrors = {
+    /**
+     * Unauthorized
+     */
+    401: GeneralError;
+    /**
+     * Forbidden
+     */
+    403: GeneralError;
+    /**
+     * Not Found
+     */
+    404: GeneralError;
+    /**
+     * Internal Server Error
+     */
+    500: GeneralError;
+};
+export type CreateQueryPatternsReportError = CreateQueryPatternsReportErrors[keyof CreateQueryPatternsReportErrors];
+export type CreateQueryPatternsReportResponses = {
+    /**
+     * The created query patterns download
+     */
+    201: QueryPatternsDownload;
+};
+export type CreateQueryPatternsReportResponse = CreateQueryPatternsReportResponses[keyof CreateQueryPatternsReportResponses];
+export type DeleteQueryPatternsReportData = {
+    body?: never;
+    path: {
+        /**
+         * The name of the organization the branch belongs to
+         */
+        organization: string;
+        /**
+         * The name of the database the branch belongs to
+         */
+        database: string;
+        /**
+         * The name of the branch
+         */
+        branch: string;
+        /**
+         * The ID of the query patterns report
+         */
+        id: string;
+    };
+    query?: never;
+    url: "/organizations/{organization}/databases/{database}/branches/{branch}/query-patterns/{id}";
+};
+export type DeleteQueryPatternsReportErrors = {
+    /**
+     * Unauthorized
+     */
+    401: GeneralError;
+    /**
+     * Forbidden
+     */
+    403: GeneralError;
+    /**
+     * Not Found
+     */
+    404: GeneralError;
+    /**
+     * Internal Server Error
+     */
+    500: GeneralError;
+};
+export type DeleteQueryPatternsReportError = DeleteQueryPatternsReportErrors[keyof DeleteQueryPatternsReportErrors];
+export type DeleteQueryPatternsReportResponses = {
+    /**
+     * Delete a query patterns report
+     */
+    204: unknown;
+};
+export type GetQueryPatternsReportStatusData = {
+    body?: never;
+    path: {
+        /**
+         * The name of the organization the branch belongs to
+         */
+        organization: string;
+        /**
+         * The name of the database the branch belongs to
+         */
+        database: string;
+        /**
+         * The name of the branch
+         */
+        branch: string;
+        /**
+         * The ID of the query patterns report
+         */
+        id: string;
+    };
+    query?: never;
+    url: "/organizations/{organization}/databases/{database}/branches/{branch}/query-patterns/{id}";
+};
+export type GetQueryPatternsReportStatusErrors = {
+    /**
+     * Unauthorized
+     */
+    401: GeneralError;
+    /**
+     * Forbidden
+     */
+    403: GeneralError;
+    /**
+     * Not Found
+     */
+    404: GeneralError;
+    /**
+     * Internal Server Error
+     */
+    500: GeneralError;
+};
+export type GetQueryPatternsReportStatusError = GetQueryPatternsReportStatusErrors[keyof GetQueryPatternsReportStatusErrors];
+export type GetQueryPatternsReportStatusResponses = {
+    /**
+     * The retrieved query patterns download
+     */
+    200: QueryPatternsDownload;
+};
+export type GetQueryPatternsReportStatusResponse = GetQueryPatternsReportStatusResponses[keyof GetQueryPatternsReportStatusResponses];
+export type GetQueryPatternsReportData = {
+    body?: never;
+    path: {
+        /**
+         * The name of the organization the branch belongs to
+         */
+        organization: string;
+        /**
+         * The name of the database the branch belongs to
+         */
+        database: string;
+        /**
+         * The name of the branch
+         */
+        branch: string;
+        /**
+         * The ID of the query patterns report
+         */
+        id: string;
+    };
+    query?: never;
+    url: "/organizations/{organization}/databases/{database}/branches/{branch}/query-patterns/{id}/download";
+};
+export type GetQueryPatternsReportErrors = {
+    /**
+     * Unauthorized
+     */
+    401: GeneralError;
+    /**
+     * Forbidden
+     */
+    403: GeneralError;
+    /**
+     * Not Found
+     */
+    404: GeneralError;
+    /**
+     * Internal Server Error
+     */
+    500: GeneralError;
+};
+export type GetQueryPatternsReportError = GetQueryPatternsReportErrors[keyof GetQueryPatternsReportErrors];
+export type CancelBranchChangeRequestData = {
+    body?: never;
+    path: {
+        /**
+         * The name of the organization that owns this resource
+         */
+        organization: string;
+        /**
+         * The name of the database that owns this resource
+         */
+        database: string;
+        /**
+         * The name of the branch that owns this resource
+         */
+        branch: string;
+    };
+    query?: never;
+    url: "/organizations/{organization}/databases/{database}/branches/{branch}/resizes";
+};
+export type CancelBranchChangeRequestErrors = {
+    /**
+     * Unauthorized
+     */
+    401: GeneralError;
+    /**
+     * Forbidden
+     */
+    403: GeneralError;
+    /**
+     * Not Found
+     */
+    404: GeneralError;
+    /**
+     * Internal Server Error
+     */
+    500: GeneralError;
+};
+export type CancelBranchChangeRequestError = CancelBranchChangeRequestErrors[keyof CancelBranchChangeRequestErrors];
+export type CancelBranchChangeRequestResponses = {
+    /**
+     * Cancels a change request
+     */
+    204: unknown;
+};
+export type ListRolesData = {
+    body?: never;
+    path: {
+        /**
+         * The name of the organization that owns this resource
+         */
+        organization: string;
+        /**
+         * The name of the database that owns this resource
+         */
+        database: string;
+        /**
+         * The name of the branch that owns this resource
+         */
+        branch: string;
+    };
+    query?: {
+        /**
+         * If provided, specifies the page offset of returned results
+         */
+        page?: number;
+        /**
+         * If provided, specifies the number of returned results
+         */
+        per_page?: number;
+    };
+    url: "/organizations/{organization}/databases/{database}/branches/{branch}/roles";
+};
+export type ListRolesErrors = {
+    /**
+     * Unauthorized
+     */
+    401: GeneralError;
+    /**
+     * Forbidden
+     */
+    403: GeneralError;
+    /**
+     * Not Found
+     */
+    404: GeneralError;
+    /**
+     * Internal Server Error
+     */
+    500: GeneralError;
+};
+export type ListRolesError = ListRolesErrors[keyof ListRolesErrors];
+export type ListRolesResponses = {
+    /**
+     * Returns roles
+     */
+    200: PaginatedPostgresRole;
+};
+export type ListRolesResponse = ListRolesResponses[keyof ListRolesResponses];
+export type CreateRoleData = {
+    body?: {
+        /**
+         * Time to live in seconds
+         */
+        ttl?: number;
+        /**
+         * Roles to inherit from
+         */
+        inherited_roles?: Array<"pg_checkpoint" | "pg_create_subscription" | "pg_maintain" | "pg_monitor" | "pg_read_all_data" | "pg_read_all_settings" | "pg_read_all_stats" | "pg_signal_backend" | "pg_stat_scan_tables" | "pg_use_reserved_connections" | "pg_write_all_data" | "postgres">;
+    };
+    path: {
+        /**
+         * The name of the organization that owns this resource
+         */
+        organization: string;
+        /**
+         * The name of the database that owns this resource
+         */
+        database: string;
+        /**
+         * The name of the branch that owns this resource
+         */
+        branch: string;
+    };
+    query?: never;
+    url: "/organizations/{organization}/databases/{database}/branches/{branch}/roles";
+};
+export type CreateRoleErrors = {
+    /**
+     * Unauthorized
+     */
+    401: GeneralError;
+    /**
+     * Forbidden
+     */
+    403: GeneralError;
+    /**
+     * Not Found
+     */
+    404: GeneralError;
+    /**
+     * Internal Server Error
+     */
+    500: GeneralError;
+};
+export type CreateRoleError = CreateRoleErrors[keyof CreateRoleErrors];
+export type CreateRoleResponses = {
+    /**
+     * Returns the new credentials
+     */
+    200: PostgresRole;
+};
+export type CreateRoleResponse = CreateRoleResponses[keyof CreateRoleResponses];
+export type DeleteRoleData = {
+    body?: {
+        /**
+         * The optional role to reassign ownership to before dropping
+         */
+        successor?: string;
+    };
+    path: {
+        /**
+         * The name of the organization that owns this resource
+         */
+        organization: string;
+        /**
+         * The name of the database that owns this resource
+         */
+        database: string;
+        /**
+         * The name of the branch that owns this resource
+         */
+        branch: string;
+        /**
+         * The ID of the role
+         */
+        id: string;
+    };
+    query?: never;
+    url: "/organizations/{organization}/databases/{database}/branches/{branch}/roles/{id}";
+};
+export type DeleteRoleErrors = {
+    /**
+     * Unauthorized
+     */
+    401: GeneralError;
+    /**
+     * Forbidden
+     */
+    403: GeneralError;
+    /**
+     * Not Found
+     */
+    404: GeneralError;
+    /**
+     * Internal Server Error
+     */
+    500: GeneralError;
+};
+export type DeleteRoleError = DeleteRoleErrors[keyof DeleteRoleErrors];
+export type DeleteRoleResponses = {
+    /**
+     * Deletes the role credentials
+     */
+    204: unknown;
+};
+export type GetRoleData = {
+    body?: never;
+    path: {
+        /**
+         * The name of the organization that owns this resource
+         */
+        organization: string;
+        /**
+         * The name of the database that owns this resource
+         */
+        database: string;
+        /**
+         * The name of the branch that owns this resource
+         */
+        branch: string;
+        /**
+         * The ID of the role
+         */
+        id: string;
+    };
+    query?: never;
+    url: "/organizations/{organization}/databases/{database}/branches/{branch}/roles/{id}";
+};
+export type GetRoleErrors = {
+    /**
+     * Unauthorized
+     */
+    401: GeneralError;
+    /**
+     * Forbidden
+     */
+    403: GeneralError;
+    /**
+     * Not Found
+     */
+    404: GeneralError;
+    /**
+     * Internal Server Error
+     */
+    500: GeneralError;
+};
+export type GetRoleError = GetRoleErrors[keyof GetRoleErrors];
+export type GetRoleResponses = {
+    /**
+     * Returns a role
+     */
+    200: PostgresRole;
+};
+export type GetRoleResponse = GetRoleResponses[keyof GetRoleResponses];
+export type UpdateRoleData = {
+    body?: {
+        /**
+         * The new name of the role
+         */
+        name?: string;
+    };
+    path: {
+        /**
+         * The name of the organization that owns this resource
+         */
+        organization: string;
+        /**
+         * The name of the database that owns this resource
+         */
+        database: string;
+        /**
+         * The name of the branch that owns this resource
+         */
+        branch: string;
+        /**
+         * The ID of the role
+         */
+        id: string;
+    };
+    query?: never;
+    url: "/organizations/{organization}/databases/{database}/branches/{branch}/roles/{id}";
+};
+export type UpdateRoleErrors = {
+    /**
+     * Unauthorized
+     */
+    401: GeneralError;
+    /**
+     * Forbidden
+     */
+    403: GeneralError;
+    /**
+     * Not Found
+     */
+    404: GeneralError;
+    /**
+     * Internal Server Error
+     */
+    500: GeneralError;
+};
+export type UpdateRoleError = UpdateRoleErrors[keyof UpdateRoleErrors];
+export type UpdateRoleResponses = {
+    /**
+     * Returns the updated role
+     */
+    200: PostgresRole;
+};
+export type UpdateRoleResponse = UpdateRoleResponses[keyof UpdateRoleResponses];
+export type RenewRoleData = {
+    body?: never;
+    path: {
+        /**
+         * The name of the organization that owns this resource
+         */
+        organization: string;
+        /**
+         * The name of the database that owns this resource
+         */
+        database: string;
+        /**
+         * The name of the branch that owns this resource
+         */
+        branch: string;
+        /**
+         * The ID of the role
+         */
+        id: string;
+    };
+    query?: never;
+    url: "/organizations/{organization}/databases/{database}/branches/{branch}/roles/{id}/renew";
+};
+export type RenewRoleErrors = {
+    /**
+     * Unauthorized
+     */
+    401: GeneralError;
+    /**
+     * Forbidden
+     */
+    403: GeneralError;
+    /**
+     * Not Found
+     */
+    404: GeneralError;
+    /**
+     * Internal Server Error
+     */
+    500: GeneralError;
+};
+export type RenewRoleError = RenewRoleErrors[keyof RenewRoleErrors];
+export type RenewRoleResponses = {
+    /**
+     * Returns the renewed role
+     */
+    200: PostgresRole;
+};
+export type RenewRoleResponse = RenewRoleResponses[keyof RenewRoleResponses];
+export type DeleteBranchData = {
+    body?: never;
+    path: {
+        /**
+         * The name of the organization the branch belongs to
+         */
+        organization: string;
+        /**
+         * The name of the database the branch belongs to
+         */
+        database: string;
+        /**
+         * The name of the branch
+         */
+        name: string;
+    };
+    query?: never;
+    url: "/organizations/{organization}/databases/{database}/branches/{name}";
+};
+export type DeleteBranchErrors = {
+    /**
+     * Unauthorized
+     */
+    401: GeneralError;
+    /**
+     * Forbidden
+     */
+    403: GeneralError;
+    /**
+     * Not Found
+     */
+    404: GeneralError;
+    /**
+     * Internal Server Error
+     */
+    500: GeneralError;
+};
+export type DeleteBranchError = DeleteBranchErrors[keyof DeleteBranchErrors];
+export type DeleteBranchResponses = {
+    /**
+     * Delete a branch
+     */
+    204: unknown;
+};
+export type GetBranchData = {
+    body?: never;
+    path: {
+        /**
+         * The name of the organization the branch belongs to
+         */
+        organization: string;
+        /**
+         * The name of the database the branch belongs to
+         */
+        database: string;
+        /**
+         * The name of the branch
+         */
+        name: string;
+    };
+    query?: never;
+    url: "/organizations/{organization}/databases/{database}/branches/{name}";
+};
+export type GetBranchErrors = {
+    /**
+     * Unauthorized
+     */
+    401: GeneralError;
+    /**
+     * Forbidden
+     */
+    403: GeneralError;
+    /**
+     * Not Found
+     */
+    404: GeneralError;
+    /**
+     * Internal Server Error
+     */
+    500: GeneralError;
+};
+export type GetBranchError = GetBranchErrors[keyof GetBranchErrors];
+export type GetBranchResponses = {
+    /**
+     * Returns information about a branch
+     */
+    200: DatabaseBranch;
+};
+export type GetBranchResponse = GetBranchResponses[keyof GetBranchResponses];
+export type UpdateBranchClusterConfigData = {
+    body?: {
+        /**
+         * The new size of the database cluster: PS_10, PS_20,…
+         */
+        cluster_size: string;
+    };
+    path: {
+        /**
+         * The name of the organization the branch belongs to
+         */
+        organization: string;
+        /**
+         * The name of the database the branch belongs to
+         */
+        database: string;
+        /**
+         * The name of the branch to configure
+         */
+        name: string;
+    };
+    query?: never;
+    url: "/organizations/{organization}/databases/{database}/branches/{name}/cluster";
+};
+export type UpdateBranchClusterConfigErrors = {
+    /**
+     * Unauthorized
+     */
+    401: GeneralError;
+    /**
+     * Forbidden
+     */
+    403: GeneralError;
+    /**
+     * Not Found
+     */
+    404: GeneralError;
+    /**
+     * Internal Server Error
+     */
+    500: GeneralError;
+};
+export type UpdateBranchClusterConfigError = UpdateBranchClusterConfigErrors[keyof UpdateBranchClusterConfigErrors];
+export type UpdateBranchClusterConfigResponses = {
+    /**
+     * Returns an empty response body
+     */
+    204: unknown;
+};
+export type DemoteBranchData = {
+    body?: never;
+    path: {
+        /**
+         * The name of the organization the branch belongs to
+         */
+        organization: string;
+        /**
+         * The name of the database the branch belongs to
+         */
+        database: string;
+        /**
+         * The name of the branch
+         */
+        name: string;
+    };
+    query?: never;
+    url: "/organizations/{organization}/databases/{database}/branches/{name}/demote";
+};
+export type DemoteBranchErrors = {
+    /**
+     * Unauthorized
+     */
+    401: GeneralError;
+    /**
+     * Forbidden
+     */
+    403: GeneralError;
+    /**
+     * Not Found
+     */
+    404: GeneralError;
+    /**
+     * Internal Server Error
+     */
+    500: GeneralError;
+};
+export type DemoteBranchError = DemoteBranchErrors[keyof DemoteBranchErrors];
+export type DemoteBranchResponses = {
+    /**
+     * Returns a development branch
+     */
+    200: DatabaseBranch;
+};
+export type DemoteBranchResponse = DemoteBranchResponses[keyof DemoteBranchResponses];
+export type PromoteBranchData = {
+    body?: never;
+    path: {
+        /**
+         * The name of the organization the branch belongs to
+         */
+        organization: string;
+        /**
+         * The name of the database the branch belongs to
+         */
+        database: string;
+        /**
+         * The name of the branch
+         */
+        name: string;
+    };
+    query?: never;
+    url: "/organizations/{organization}/databases/{database}/branches/{name}/promote";
+};
+export type PromoteBranchErrors = {
+    /**
+     * Unauthorized
+     */
+    401: GeneralError;
+    /**
+     * Forbidden
+     */
+    403: GeneralError;
+    /**
+     * Not Found
+     */
+    404: GeneralError;
+    /**
+     * Internal Server Error
+     */
+    500: GeneralError;
+};
+export type PromoteBranchError = PromoteBranchErrors[keyof PromoteBranchErrors];
+export type PromoteBranchResponses = {
+    /**
+     * Returns a production branch
+     */
+    200: DatabaseBranch;
+};
+export type PromoteBranchResponse = PromoteBranchResponses[keyof PromoteBranchResponses];
+export type DisableSafeMigrationsData = {
+    body?: never;
+    path: {
+        /**
+         * The name of the organization the branch belongs to
+         */
+        organization: string;
+        /**
+         * The name of the database the branch belongs to
+         */
+        database: string;
+        /**
+         * The name of the branch
+         */
+        name: string;
+    };
+    query?: never;
+    url: "/organizations/{organization}/databases/{database}/branches/{name}/safe-migrations";
+};
+export type DisableSafeMigrationsErrors = {
+    /**
+     * Unauthorized
+     */
+    401: GeneralError;
+    /**
+     * Forbidden
+     */
+    403: GeneralError;
+    /**
+     * Not Found
+     */
+    404: GeneralError;
+    /**
+     * Internal Server Error
+     */
+    500: GeneralError;
+};
+export type DisableSafeMigrationsError = DisableSafeMigrationsErrors[keyof DisableSafeMigrationsErrors];
+export type DisableSafeMigrationsResponses = {
+    /**
+     * Returns the branch with safe migrations disabled
+     */
+    200: DatabaseBranch;
+};
+export type DisableSafeMigrationsResponse = DisableSafeMigrationsResponses[keyof DisableSafeMigrationsResponses];
+export type EnableSafeMigrationsData = {
+    body?: never;
+    path: {
+        /**
+         * The name of the organization the branch belongs to
+         */
+        organization: string;
+        /**
+         * The name of the database the branch belongs to
+         */
+        database: string;
+        /**
+         * The name of the branch
+         */
+        name: string;
+    };
+    query?: never;
+    url: "/organizations/{organization}/databases/{database}/branches/{name}/safe-migrations";
+};
+export type EnableSafeMigrationsErrors = {
+    /**
+     * Unauthorized
+     */
+    401: GeneralError;
+    /**
+     * Forbidden
+     */
+    403: GeneralError;
+    /**
+     * Not Found
+     */
+    404: GeneralError;
+    /**
+     * Internal Server Error
+     */
+    500: GeneralError;
+};
+export type EnableSafeMigrationsError = EnableSafeMigrationsErrors[keyof EnableSafeMigrationsErrors];
+export type EnableSafeMigrationsResponses = {
+    /**
+     * Returns the branch with safe migrations enabled
+     */
+    200: DatabaseBranch;
+};
+export type EnableSafeMigrationsResponse = EnableSafeMigrationsResponses[keyof EnableSafeMigrationsResponses];
+export type GetBranchSchemaData = {
+    body?: never;
+    path: {
+        /**
+         * The name of the organization the branch belongs to
+         */
+        organization: string;
+        /**
+         * The name of the database the branch belongs to
+         */
+        database: string;
+        /**
+         * The name of the branch
+         */
+        name: string;
+    };
+    query?: {
+        /**
+         * Return the schema for a single Vitess keyspace
+         */
+        keyspace?: string;
+        /**
+         * Return the schema for a PostgreSQL catalog namespace in `<database>.<schema>` format (e.g. public.schema1)
+         */
+        namespace?: string;
+    };
+    url: "/organizations/{organization}/databases/{database}/branches/{name}/schema";
+};
+export type GetBranchSchemaErrors = {
+    /**
+     * Unauthorized
+     */
+    401: GeneralError;
+    /**
+     * Forbidden
+     */
+    403: GeneralError;
+    /**
+     * Not Found
+     */
+    404: GeneralError;
+    /**
+     * Internal Server Error
+     */
+    500: GeneralError;
+};
+export type GetBranchSchemaError = GetBranchSchemaErrors[keyof GetBranchSchemaErrors];
+export type GetBranchSchemaResponses = {
+    /**
+     * Gets the schema for the branch
+     */
+    200: {
+        data: Array<{
+            /**
+             * Name of the table
+             */
+            name: string;
+            /**
+             * Syntax highlighted HTML for the table's schema
+             */
+            html: string;
+            /**
+             * The table's schema
+             */
+            raw: string;
+        }>;
+    };
+};
+export type GetBranchSchemaResponse = GetBranchSchemaResponses[keyof GetBranchSchemaResponses];
+export type LintBranchSchemaData = {
+    body?: never;
+    path: {
+        /**
+         * The name of the organization the branch belongs to
+         */
+        organization: string;
+        /**
+         * The name of the database the branch belongs to
+         */
+        database: string;
+        /**
+         * The name of the branch
+         */
+        name: string;
+    };
+    query?: {
+        /**
+         * If provided, specifies the page offset of returned results
+         */
+        page?: number;
+        /**
+         * If provided, specifies the number of returned results
+         */
+        per_page?: number;
+    };
+    url: "/organizations/{organization}/databases/{database}/branches/{name}/schema/lint";
+};
+export type LintBranchSchemaErrors = {
+    /**
+     * Unauthorized
+     */
+    401: GeneralError;
+    /**
+     * Forbidden
+     */
+    403: GeneralError;
+    /**
+     * Not Found
+     */
+    404: GeneralError;
+    /**
+     * Internal Server Error
+     */
+    500: GeneralError;
+};
+export type LintBranchSchemaError = LintBranchSchemaErrors[keyof LintBranchSchemaErrors];
+export type LintBranchSchemaResponses = {
+    /**
+     * Returns a list of schema errors for a branch
+     */
+    200: PaginatedSchemaLintError;
+};
+export type LintBranchSchemaResponse = LintBranchSchemaResponses[keyof LintBranchSchemaResponses];
+export type GetDeployQueueData = {
+    body?: never;
+    path: {
+        /**
+         * The name of the deploy request's organization
+         */
+        organization: string;
+        /**
+         * The name of the deploy request's database
+         */
+        database: string;
+    };
+    query?: never;
+    url: "/organizations/{organization}/databases/{database}/deploy-queue";
+};
+export type GetDeployQueueErrors = {
+    /**
+     * Unauthorized
+     */
+    401: GeneralError;
+    /**
+     * Forbidden
+     */
+    403: GeneralError;
+    /**
+     * Not Found
+     */
+    404: GeneralError;
+    /**
+     * Internal Server Error
+     */
+    500: GeneralError;
+};
+export type GetDeployQueueError = GetDeployQueueErrors[keyof GetDeployQueueErrors];
+export type GetDeployQueueResponses = {
+    /**
+     * Returns the deploy queue for a database
+     */
+    200: PaginatedDeployment;
+};
+export type GetDeployQueueResponse = GetDeployQueueResponses[keyof GetDeployQueueResponses];
+export type ListDeployRequestsData = {
+    body?: never;
+    path: {
+        /**
+         * The name of the deploy request's organization
+         */
+        organization: string;
+        /**
+         * The name of the deploy request's database
+         */
+        database: string;
+    };
+    query?: {
+        /**
+         * Filter by state of the deploy request (open, closed, deployed)
+         */
+        state?: string;
+        /**
+         * Filter by the name of the branch the deploy request is created from
+         */
+        branch?: string;
+        /**
+         * Filter by the name of the branch the deploy request will be merged into
+         */
+        into_branch?: string;
+        /**
+         * Filter deploy requests by the date they were deployed. (e.g. 2023-01-01T00:00:00Z..2023-01-31T23:59:59Z)
+         */
+        deployed_at?: string;
+        /**
+         * Filter deploy requests by the date they were running. (e.g. 2023-01-01T00:00:00Z..2023-01-31T23:59:59Z)
+         */
+        running_at?: string;
+        /**
+         * If provided, specifies the page offset of returned results
+         */
+        page?: number;
+        /**
+         * If provided, specifies the number of returned results
+         */
+        per_page?: number;
+    };
+    url: "/organizations/{organization}/databases/{database}/deploy-requests";
+};
+export type ListDeployRequestsErrors = {
+    /**
+     * Unauthorized
+     */
+    401: GeneralError;
+    /**
+     * Forbidden
+     */
+    403: GeneralError;
+    /**
+     * Not Found
+     */
+    404: GeneralError;
+    /**
+     * Internal Server Error
+     */
+    500: GeneralError;
+};
+export type ListDeployRequestsError = ListDeployRequestsErrors[keyof ListDeployRequestsErrors];
+export type ListDeployRequestsResponses = {
+    /**
+     * Returns a list of deploy requests
+     */
+    200: PaginatedDatabaseDeployRequest;
+};
+export type ListDeployRequestsResponse = ListDeployRequestsResponses[keyof ListDeployRequestsResponses];
+export type CreateDeployRequestData = {
+    body?: {
+        /**
+         * The name of the branch the deploy request is created from
+         */
+        branch: string;
+        /**
+         * The name of the branch the deploy request will be merged into
+         */
+        into_branch: string;
+        /**
+         * Notes about the deploy request
+         */
+        notes?: string;
+        /**
+         * Whether or not to enable auto_cutover for the deploy request. When enabled, will auto cutover to the new schema as soon as it is ready.
+         */
+        auto_cutover?: boolean;
+        /**
+         * Whether or not to enable auto_delete_branch for the deploy request. When enabled, will delete the branch once the DR successfully completes.
+         */
+        auto_delete_branch?: boolean;
+    };
+    path: {
+        /**
+         * The name of the deploy request's organization
+         */
+        organization: string;
+        /**
+         * The name of the deploy request's database
+         */
+        database: string;
+    };
+    query?: never;
+    url: "/organizations/{organization}/databases/{database}/deploy-requests";
+};
+export type CreateDeployRequestErrors = {
+    /**
+     * Unauthorized
+     */
+    401: GeneralError;
+    /**
+     * Forbidden
+     */
+    403: GeneralError;
+    /**
+     * Not Found
+     */
+    404: GeneralError;
+    /**
+     * Internal Server Error
+     */
+    500: GeneralError;
+};
+export type CreateDeployRequestError = CreateDeployRequestErrors[keyof CreateDeployRequestErrors];
+export type CreateDeployRequestResponses = {
+    /**
+     * Returns the created deploy request
+     */
+    201: DatabaseDeployRequest;
+};
+export type CreateDeployRequestResponse = CreateDeployRequestResponses[keyof CreateDeployRequestResponses];
+export type GetDeployRequestData = {
+    body?: never;
+    path: {
+        /**
+         * The name of the deploy request's organization
+         */
+        organization: string;
+        /**
+         * The name of the deploy request's database
+         */
+        database: string;
+        /**
+         * The number of the deploy request
+         */
+        number: string;
+    };
+    query?: never;
+    url: "/organizations/{organization}/databases/{database}/deploy-requests/{number}";
+};
+export type GetDeployRequestErrors = {
+    /**
+     * Unauthorized
+     */
+    401: GeneralError;
+    /**
+     * Forbidden
+     */
+    403: GeneralError;
+    /**
+     * Not Found
+     */
+    404: GeneralError;
+    /**
+     * Internal Server Error
+     */
+    500: GeneralError;
+};
+export type GetDeployRequestError = GetDeployRequestErrors[keyof GetDeployRequestErrors];
+export type GetDeployRequestResponses = {
+    /**
+     * Returns information about a deploy request
+     */
+    200: DatabaseDeployRequest;
+};
+export type GetDeployRequestResponse = GetDeployRequestResponses[keyof GetDeployRequestResponses];
+export type CloseDeployRequestData = {
+    body?: {
+        /**
+         * The deploy request will be updated to this state
+         */
+        state?: "closed";
+    };
+    path: {
+        /**
+         * The name of the deploy request's organization
+         */
+        organization: string;
+        /**
+         * The name of the deploy request's database
+         */
+        database: string;
+        /**
+         * The number of the deploy request
+         */
+        number: string;
+    };
+    query?: never;
+    url: "/organizations/{organization}/databases/{database}/deploy-requests/{number}";
+};
+export type CloseDeployRequestErrors = {
+    /**
+     * Unauthorized
+     */
+    401: GeneralError;
+    /**
+     * Forbidden
+     */
+    403: GeneralError;
+    /**
+     * Not Found
+     */
+    404: GeneralError;
+    /**
+     * Internal Server Error
+     */
+    500: GeneralError;
+};
+export type CloseDeployRequestError = CloseDeployRequestErrors[keyof CloseDeployRequestErrors];
+export type CloseDeployRequestResponses = {
+    /**
+     * Returns the updated deploy request
+     */
+    200: DatabaseDeployRequest;
+};
+export type CloseDeployRequestResponse = CloseDeployRequestResponses[keyof CloseDeployRequestResponses];
+export type CompleteGatedDeployRequestData = {
+    body?: never;
+    path: {
+        /**
+         * The name of the deploy request's organization
+         */
+        organization: string;
+        /**
+         * The name of the deploy request's database
+         */
+        database: string;
+        /**
+         * The number of the deploy request
+         */
+        number: string;
+    };
+    query?: never;
+    url: "/organizations/{organization}/databases/{database}/deploy-requests/{number}/apply-deploy";
+};
+export type CompleteGatedDeployRequestErrors = {
+    /**
+     * Unauthorized
+     */
+    401: GeneralError;
+    /**
+     * Forbidden
+     */
+    403: GeneralError;
+    /**
+     * Not Found
+     */
+    404: GeneralError;
+    /**
+     * Internal Server Error
+     */
+    500: GeneralError;
+};
+export type CompleteGatedDeployRequestError = CompleteGatedDeployRequestErrors[keyof CompleteGatedDeployRequestErrors];
+export type CompleteGatedDeployRequestResponses = {
+    /**
+     * Returns the deploy request whose deployment has been completed
+     */
+    200: DatabaseDeployRequest;
+};
+export type CompleteGatedDeployRequestResponse = CompleteGatedDeployRequestResponses[keyof CompleteGatedDeployRequestResponses];
+export type UpdateAutoApplyData = {
+    body?: {
+        /**
+         * Whether or not to enable auto-apply for the deploy request
+         */
+        enable?: boolean;
+    };
+    path: {
+        /**
+         * The name of the deploy request's organization
+         */
+        organization: string;
+        /**
+         * The name of the deploy request's database
+         */
+        database: string;
+        /**
+         * The number of the deploy request
+         */
+        number: string;
+    };
+    query?: never;
+    url: "/organizations/{organization}/databases/{database}/deploy-requests/{number}/auto-apply";
+};
+export type UpdateAutoApplyErrors = {
+    /**
+     * Unauthorized
+     */
+    401: GeneralError;
+    /**
+     * Forbidden
+     */
+    403: GeneralError;
+    /**
+     * Not Found
+     */
+    404: GeneralError;
+    /**
+     * Internal Server Error
+     */
+    500: GeneralError;
+};
+export type UpdateAutoApplyError = UpdateAutoApplyErrors[keyof UpdateAutoApplyErrors];
+export type UpdateAutoApplyResponses = {
+    /**
+     * Returns the deploy request whose auto-apply setting was updated
+     */
+    200: DatabaseDeployRequest;
+};
+export type UpdateAutoApplyResponse = UpdateAutoApplyResponses[keyof UpdateAutoApplyResponses];
+export type CancelDeployRequestData = {
+    body?: never;
+    path: {
+        /**
+         * The name of the deploy request's organization
+         */
+        organization: string;
+        /**
+         * The name of the deploy request's database
+         */
+        database: string;
+        /**
+         * The number of the deploy request
+         */
+        number: string;
+    };
+    query?: never;
+    url: "/organizations/{organization}/databases/{database}/deploy-requests/{number}/cancel";
+};
+export type CancelDeployRequestErrors = {
+    /**
+     * Unauthorized
+     */
+    401: GeneralError;
+    /**
+     * Forbidden
+     */
+    403: GeneralError;
+    /**
+     * Not Found
+     */
+    404: GeneralError;
+    /**
+     * Internal Server Error
+     */
+    500: GeneralError;
+};
+export type CancelDeployRequestError = CancelDeployRequestErrors[keyof CancelDeployRequestErrors];
+export type CancelDeployRequestResponses = {
+    /**
+     * Returns the deploy request whose deployment was canceled
+     */
+    200: DatabaseDeployRequest;
+};
+export type CancelDeployRequestResponse = CancelDeployRequestResponses[keyof CancelDeployRequestResponses];
+export type CompleteErroredDeployData = {
+    body?: never;
+    path: {
+        /**
+         * The name of the deploy request's organization
+         */
+        organization: string;
+        /**
+         * The name of the deploy request's database
+         */
+        database: string;
+        /**
+         * The number of the deploy request
+         */
+        number: string;
+    };
+    query?: never;
+    url: "/organizations/{organization}/databases/{database}/deploy-requests/{number}/complete-deploy";
+};
+export type CompleteErroredDeployErrors = {
+    /**
+     * Unauthorized
+     */
+    401: GeneralError;
+    /**
+     * Forbidden
+     */
+    403: GeneralError;
+    /**
+     * Not Found
+     */
+    404: GeneralError;
+    /**
+     * Internal Server Error
+     */
+    500: GeneralError;
+};
+export type CompleteErroredDeployError = CompleteErroredDeployErrors[keyof CompleteErroredDeployErrors];
+export type CompleteErroredDeployResponses = {
+    /**
+     * Returns the completed deploy request
+     */
+    200: DatabaseDeployRequest;
+};
+export type CompleteErroredDeployResponse = CompleteErroredDeployResponses[keyof CompleteErroredDeployResponses];
+export type QueueDeployRequestData = {
+    body?: {
+        /**
+         * Whether or not to deploy the request with instant DDL. Defaults to false.
+         */
+        instant_ddl?: boolean;
+    };
+    path: {
+        /**
+         * The name of the deploy request's organization
+         */
+        organization: string;
+        /**
+         * The name of the deploy request's database
+         */
+        database: string;
+        /**
+         * The number of the deploy request
+         */
+        number: string;
+    };
+    query?: never;
+    url: "/organizations/{organization}/databases/{database}/deploy-requests/{number}/deploy";
+};
+export type QueueDeployRequestErrors = {
+    /**
+     * Unauthorized
+     */
+    401: GeneralError;
+    /**
+     * Forbidden
+     */
+    403: GeneralError;
+    /**
+     * Not Found
+     */
+    404: GeneralError;
+    /**
+     * Internal Server Error
+     */
+    500: GeneralError;
+};
+export type QueueDeployRequestError = QueueDeployRequestErrors[keyof QueueDeployRequestErrors];
+export type QueueDeployRequestResponses = {
+    /**
+     * Returns the deployed deploy request
+     */
+    200: DatabaseDeployRequest;
+};
+export type QueueDeployRequestResponse = QueueDeployRequestResponses[keyof QueueDeployRequestResponses];
+export type GetDeploymentData = {
+    body?: never;
+    path: {
+        /**
+         * The name of the deploy request's organization
+         */
+        organization: string;
+        /**
+         * The name of the deploy request's database
+         */
+        database: string;
+        /**
+         * The number of the deploy request
+         */
+        number: string;
+    };
+    query?: never;
+    url: "/organizations/{organization}/databases/{database}/deploy-requests/{number}/deployment";
+};
+export type GetDeploymentErrors = {
+    /**
+     * Unauthorized
+     */
+    401: GeneralError;
+    /**
+     * Forbidden
+     */
+    403: GeneralError;
+    /**
+     * Not Found
+     */
+    404: GeneralError;
+    /**
+     * Internal Server Error
+     */
+    500: GeneralError;
+};
+export type GetDeploymentError = GetDeploymentErrors[keyof GetDeploymentErrors];
+export type GetDeploymentResponses = {
+    /**
+     * Returns the deployment for a deploy request
+     */
+    200: Deployment;
+};
+export type GetDeploymentResponse = GetDeploymentResponses[keyof GetDeploymentResponses];
+export type ListDeployOperationsData = {
+    body?: never;
+    path: {
+        /**
+         * The number of the deploy request
+         */
+        number: string;
+        /**
+         * The name of the deploy request's organization
+         */
+        organization: string;
+        /**
+         * The name of the deploy request's database
+         */
+        database: string;
+    };
+    query?: {
+        /**
+         * If provided, specifies the page offset of returned results
+         */
+        page?: number;
+        /**
+         * If provided, specifies the number of returned results
+         */
+        per_page?: number;
+    };
+    url: "/organizations/{organization}/databases/{database}/deploy-requests/{number}/operations";
+};
+export type ListDeployOperationsErrors = {
+    /**
+     * Unauthorized
+     */
+    401: GeneralError;
+    /**
+     * Forbidden
+     */
+    403: GeneralError;
+    /**
+     * Not Found
+     */
+    404: GeneralError;
+    /**
+     * Internal Server Error
+     */
+    500: GeneralError;
+};
+export type ListDeployOperationsError = ListDeployOperationsErrors[keyof ListDeployOperationsErrors];
+export type ListDeployOperationsResponses = {
+    /**
+     * Returns deploy operations for the deploy request
+     */
+    200: PaginatedDeployOperation;
+};
+export type ListDeployOperationsResponse = ListDeployOperationsResponses[keyof ListDeployOperationsResponses];
+export type CompleteRevertData = {
+    body?: never;
+    path: {
+        /**
+         * The name of the deploy request's organization
+         */
+        organization: string;
+        /**
+         * The name of the deploy request's database
+         */
+        database: string;
+        /**
+         * The number of the deploy request
+         */
+        number: string;
+    };
+    query?: never;
+    url: "/organizations/{organization}/databases/{database}/deploy-requests/{number}/revert";
+};
+export type CompleteRevertErrors = {
+    /**
+     * Unauthorized
+     */
+    401: GeneralError;
+    /**
+     * Forbidden
+     */
+    403: GeneralError;
+    /**
+     * Not Found
+     */
+    404: GeneralError;
+    /**
+     * Internal Server Error
+     */
+    500: GeneralError;
+};
+export type CompleteRevertError = CompleteRevertErrors[keyof CompleteRevertErrors];
+export type CompleteRevertResponses = {
+    /**
+     * Returns the deploy request that was reverted
+     */
+    200: DatabaseDeployRequest;
+};
+export type CompleteRevertResponse = CompleteRevertResponses[keyof CompleteRevertResponses];
+export type ListDeployRequestReviewsData = {
+    body?: never;
+    path: {
+        /**
+         * The name of the organization the deploy request belongs to
+         */
+        organization: string;
+        /**
+         * The name of the database the deploy request belongs to
+         */
+        database: string;
+        /**
+         * The number of the deploy request
+         */
+        number: string;
+    };
+    query?: never;
+    url: "/organizations/{organization}/databases/{database}/deploy-requests/{number}/reviews";
+};
+export type ListDeployRequestReviewsErrors = {
+    /**
+     * Unauthorized
+     */
+    401: GeneralError;
+    /**
+     * Forbidden
+     */
+    403: GeneralError;
+    /**
+     * Not Found
+     */
+    404: GeneralError;
+    /**
+     * Internal Server Error
+     */
+    500: GeneralError;
+};
+export type ListDeployRequestReviewsError = ListDeployRequestReviewsErrors[keyof ListDeployRequestReviewsErrors];
+export type ListDeployRequestReviewsResponses = {
+    /**
+     * Returns an array of deploy request reviews
+     */
+    200: PaginatedDeployRequestReview;
+};
+export type ListDeployRequestReviewsResponse = ListDeployRequestReviewsResponses[keyof ListDeployRequestReviewsResponses];
+export type ReviewDeployRequestData = {
+    body?: {
+        /**
+         * Whether the review is a comment or approval. Service tokens must have corresponding access (either `approve_deploy_request` or `review_deploy_request`)
+         */
+        state?: "commented" | "approved";
+        /**
+         * Deploy request review comments
+         */
+        body?: string;
+    };
+    path: {
+        /**
+         * The name of the organization the deploy request belongs to
+         */
+        organization: string;
+        /**
+         * The name of the database the deploy request belongs to
+         */
+        database: string;
+        /**
+         * The number of the deploy request
+         */
+        number: string;
+    };
+    query?: never;
+    url: "/organizations/{organization}/databases/{database}/deploy-requests/{number}/reviews";
+};
+export type ReviewDeployRequestErrors = {
+    /**
+     * Unauthorized
+     */
+    401: GeneralError;
+    /**
+     * Forbidden
+     */
+    403: GeneralError;
+    /**
+     * Not Found
+     */
+    404: GeneralError;
+    /**
+     * Internal Server Error
+     */
+    500: GeneralError;
+};
+export type ReviewDeployRequestError = ReviewDeployRequestErrors[keyof ReviewDeployRequestErrors];
+export type ReviewDeployRequestResponses = {
+    /**
+     * Returns the created deploy request review
+     */
+    201: DeployRequestReview;
+};
+export type ReviewDeployRequestResponse = ReviewDeployRequestResponses[keyof ReviewDeployRequestResponses];
+export type SkipRevertPeriodData = {
+    body?: never;
+    path: {
+        /**
+         * The name of the deploy request's organization
+         */
+        organization: string;
+        /**
+         * The name of the deploy request's database
+         */
+        database: string;
+        /**
+         * The number of the deploy request
+         */
+        number: string;
+    };
+    query?: never;
+    url: "/organizations/{organization}/databases/{database}/deploy-requests/{number}/skip-revert";
+};
+export type SkipRevertPeriodErrors = {
+    /**
+     * Unauthorized
+     */
+    401: GeneralError;
+    /**
+     * Forbidden
+     */
+    403: GeneralError;
+    /**
+     * Not Found
+     */
+    404: GeneralError;
+    /**
+     * Internal Server Error
+     */
+    500: GeneralError;
+};
+export type SkipRevertPeriodError = SkipRevertPeriodErrors[keyof SkipRevertPeriodErrors];
+export type SkipRevertPeriodResponses = {
+    /**
+     * Returns the deploy request whose deploy revert was skipped
+     */
+    200: DatabaseDeployRequest;
+};
+export type SkipRevertPeriodResponse = SkipRevertPeriodResponses[keyof SkipRevertPeriodResponses];
+export type GetDeployRequestThrottlerData = {
+    body?: never;
+    path: {
+        /**
+         * The name of the deploy request's organization
+         */
+        organization: string;
+        /**
+         * The name of the deploy request's database
+         */
+        database: string;
+        /**
+         * The number of the deploy request
+         */
+        number: string;
+    };
+    query?: never;
+    url: "/organizations/{organization}/databases/{database}/deploy-requests/{number}/throttler";
+};
+export type GetDeployRequestThrottlerErrors = {
+    /**
+     * Unauthorized
+     */
+    401: GeneralError;
+    /**
+     * Forbidden
+     */
+    403: GeneralError;
+    /**
+     * Not Found
+     */
+    404: GeneralError;
+    /**
+     * Internal Server Error
+     */
+    500: GeneralError;
+};
+export type GetDeployRequestThrottlerError = GetDeployRequestThrottlerErrors[keyof GetDeployRequestThrottlerErrors];
+export type GetDeployRequestThrottlerResponses = {
+    /**
+     * Deploy request throttler configurations
+     */
+    200: ThrottlerConfigurations;
+};
+export type GetDeployRequestThrottlerResponse = GetDeployRequestThrottlerResponses[keyof GetDeployRequestThrottlerResponses];
+export type UpdateDeployRequestThrottlerData = {
+    body?: {
+        /**
+         * A throttler ratio between 0 and 95 that will apply to all keyspaces affected by the deploy request. 0 effectively disables throttler, while 95 drastically slows down migrations in the deploy request
+         */
+        ratio?: number;
+        /**
+         * If specifying throttler ratios per keyspace, an array of { "keyspace_name": "mykeyspace", "ratio": 10 }, one for each eligible keyspace
+         */
+        configurations?: Array<string>;
+    };
+    path: {
+        /**
+         * The name of the deploy request's organization
+         */
+        organization: string;
+        /**
+         * The name of the deploy request's database
+         */
+        database: string;
+        /**
+         * The number of the deploy request
+         */
+        number: string;
+    };
+    query?: never;
+    url: "/organizations/{organization}/databases/{database}/deploy-requests/{number}/throttler";
+};
+export type UpdateDeployRequestThrottlerErrors = {
+    /**
+     * Unauthorized
+     */
+    401: GeneralError;
+    /**
+     * Forbidden
+     */
+    403: GeneralError;
+    /**
+     * Not Found
+     */
+    404: GeneralError;
+    /**
+     * Internal Server Error
+     */
+    500: GeneralError;
+};
+export type UpdateDeployRequestThrottlerError = UpdateDeployRequestThrottlerErrors[keyof UpdateDeployRequestThrottlerErrors];
+export type UpdateDeployRequestThrottlerResponses = {
+    /**
+     * Deploy request throttler configurations
+     */
+    200: ThrottlerConfigurations;
+};
+export type UpdateDeployRequestThrottlerResponse = UpdateDeployRequestThrottlerResponses[keyof UpdateDeployRequestThrottlerResponses];
+export type GetDatabaseThrottlerData = {
+    body?: never;
+    path: {
+        /**
+         * The name of the organization that the throttled deploy requests belong to
+         */
+        organization: string;
+        /**
+         * The name of the database that the throttled deploy requests belong to
+         */
+        database: string;
+    };
+    query?: never;
+    url: "/organizations/{organization}/databases/{database}/throttler";
+};
+export type GetDatabaseThrottlerErrors = {
+    /**
+     * Unauthorized
+     */
+    401: GeneralError;
+    /**
+     * Forbidden
+     */
+    403: GeneralError;
+    /**
+     * Not Found
+     */
+    404: GeneralError;
+    /**
+     * Internal Server Error
+     */
+    500: GeneralError;
+};
+export type GetDatabaseThrottlerError = GetDatabaseThrottlerErrors[keyof GetDatabaseThrottlerErrors];
+export type GetDatabaseThrottlerResponses = {
+    /**
+     * Database throttler configurations
+     */
+    200: ThrottlerConfigurations;
+};
+export type GetDatabaseThrottlerResponse = GetDatabaseThrottlerResponses[keyof GetDatabaseThrottlerResponses];
+export type UpdateDatabaseThrottlerData = {
+    body?: {
+        /**
+         * A throttler ratio between 0 and 95 that will apply to all keyspaces in the database. 0 effectively disables throttler, while 95 drastically slows down deploy request migrations
+         */
+        ratio?: number;
+        /**
+         * If specifying throttler ratios per keyspace, an array of { "keyspace_name": "mykeyspace", "ratio": 10 }, one for each eligible keyspace
+         */
+        configurations?: Array<string>;
+    };
+    path: {
+        /**
+         * The name of the organization that the throttled deploy requests belong to
+         */
+        organization: string;
+        /**
+         * The name of the database that the throttled deploy requests belong to
+         */
+        database: string;
+    };
+    query?: never;
+    url: "/organizations/{organization}/databases/{database}/throttler";
+};
+export type UpdateDatabaseThrottlerErrors = {
+    /**
+     * Unauthorized
+     */
+    401: GeneralError;
+    /**
+     * Forbidden
+     */
+    403: GeneralError;
+    /**
+     * Not Found
+     */
+    404: GeneralError;
+    /**
+     * Internal Server Error
+     */
+    500: GeneralError;
+};
+export type UpdateDatabaseThrottlerError = UpdateDatabaseThrottlerErrors[keyof UpdateDatabaseThrottlerErrors];
+export type UpdateDatabaseThrottlerResponses = {
+    /**
+     * Database throttler configurations
+     */
+    200: ThrottlerConfigurations;
+};
+export type UpdateDatabaseThrottlerResponse = UpdateDatabaseThrottlerResponses[keyof UpdateDatabaseThrottlerResponses];
+export type ListWebhooksData = {
+    body?: never;
+    path: {
+        /**
+         * The name of the organization
+         */
+        organization: string;
+        /**
+         * The name of the database
+         */
+        database: string;
+    };
+    query?: {
+        /**
+         * If provided, specifies the page offset of returned results
+         */
+        page?: number;
+        /**
+         * If provided, specifies the number of returned results
+         */
+        per_page?: number;
+    };
+    url: "/organizations/{organization}/databases/{database}/webhooks";
+};
+export type ListWebhooksErrors = {
+    /**
+     * Unauthorized
+     */
+    401: GeneralError;
+    /**
+     * Forbidden
+     */
+    403: GeneralError;
+    /**
+     * Not Found
+     */
+    404: GeneralError;
+    /**
+     * Internal Server Error
+     */
+    500: GeneralError;
+};
+export type ListWebhooksError = ListWebhooksErrors[keyof ListWebhooksErrors];
+export type ListWebhooksResponses = {
+    /**
+     * Returns a list of webhooks for a database
+     */
+    200: PaginatedDatabaseWebhook;
+};
+export type ListWebhooksResponse = ListWebhooksResponses[keyof ListWebhooksResponses];
+export type CreateWebhookData = {
+    body?: {
+        /**
+         * The URL the webhook will send events to
+         */
+        url: string;
+        /**
+         * Whether the webhook should be enabled
+         */
+        enabled?: boolean;
+        /**
+         * The events this webhook should subscribe to
+         */
+        events?: Array<string>;
+    };
+    path: {
+        /**
+         * The name of the organization
+         */
+        organization: string;
+        /**
+         * The name of the database
+         */
+        database: string;
+    };
+    query?: never;
+    url: "/organizations/{organization}/databases/{database}/webhooks";
+};
+export type CreateWebhookErrors = {
+    /**
+     * Unauthorized
+     */
+    401: GeneralError;
+    /**
+     * Forbidden
+     */
+    403: GeneralError;
+    /**
+     * Not Found
+     */
+    404: GeneralError;
+    /**
+     * Internal Server Error
+     */
+    500: GeneralError;
+};
+export type CreateWebhookError = CreateWebhookErrors[keyof CreateWebhookErrors];
+export type CreateWebhookResponses = {
+    /**
+     * Returns the created webhook
+     */
+    201: DatabaseWebhook;
+};
+export type CreateWebhookResponse = CreateWebhookResponses[keyof CreateWebhookResponses];
+export type DeleteWebhookData = {
+    body?: never;
+    path: {
+        /**
+         * The name of the organization
+         */
+        organization: string;
+        /**
+         * The name of the database
+         */
+        database: string;
+        /**
+         * The ID of the webhook
+         */
+        id: string;
+    };
+    query?: never;
+    url: "/organizations/{organization}/databases/{database}/webhooks/{id}";
+};
+export type DeleteWebhookErrors = {
+    /**
+     * Unauthorized
+     */
+    401: GeneralError;
+    /**
+     * Forbidden
+     */
+    403: GeneralError;
+    /**
+     * Not Found
+     */
+    404: GeneralError;
+    /**
+     * Internal Server Error
+     */
+    500: GeneralError;
+};
+export type DeleteWebhookError = DeleteWebhookErrors[keyof DeleteWebhookErrors];
+export type DeleteWebhookResponses = {
+    /**
+     * Webhook successfully deleted
+     */
+    204: unknown;
+};
+export type GetWebhookData = {
+    body?: never;
+    path: {
+        /**
+         * The name of the organization
+         */
+        organization: string;
+        /**
+         * The name of the database
+         */
+        database: string;
+        /**
+         * The ID of the webhook
+         */
+        id: string;
+    };
+    query?: never;
+    url: "/organizations/{organization}/databases/{database}/webhooks/{id}";
+};
+export type GetWebhookErrors = {
+    /**
+     * Unauthorized
+     */
+    401: GeneralError;
+    /**
+     * Forbidden
+     */
+    403: GeneralError;
+    /**
+     * Not Found
+     */
+    404: GeneralError;
+    /**
+     * Internal Server Error
+     */
+    500: GeneralError;
+};
+export type GetWebhookError = GetWebhookErrors[keyof GetWebhookErrors];
+export type GetWebhookResponses = {
+    /**
+     * Returns the webhook
+     */
+    200: DatabaseWebhook;
+};
+export type GetWebhookResponse = GetWebhookResponses[keyof GetWebhookResponses];
+export type UpdateWebhookData = {
+    body?: {
+        /**
+         * The URL the webhook will send events to
+         */
+        url?: string;
+        /**
+         * Whether the webhook should be enabled
+         */
+        enabled?: boolean;
+        /**
+         * The events this webhook should subscribe to
+         */
+        events?: Array<string>;
+    };
+    path: {
+        /**
+         * The name of the organization
+         */
+        organization: string;
+        /**
+         * The name of the database
+         */
+        database: string;
+        /**
+         * The ID of the webhook
+         */
+        id: string;
+    };
+    query?: never;
+    url: "/organizations/{organization}/databases/{database}/webhooks/{id}";
+};
+export type UpdateWebhookErrors = {
+    /**
+     * Unauthorized
+     */
+    401: GeneralError;
+    /**
+     * Forbidden
+     */
+    403: GeneralError;
+    /**
+     * Not Found
+     */
+    404: GeneralError;
+    /**
+     * Internal Server Error
+     */
+    500: GeneralError;
+};
+export type UpdateWebhookError = UpdateWebhookErrors[keyof UpdateWebhookErrors];
+export type UpdateWebhookResponses = {
+    /**
+     * Returns the updated webhook
+     */
+    200: DatabaseWebhook;
+};
+export type UpdateWebhookResponse = UpdateWebhookResponses[keyof UpdateWebhookResponses];
+export type TestWebhookData = {
+    body?: never;
+    path: {
+        /**
+         * The name of the organization
+         */
+        organization: string;
+        /**
+         * The name of the database
+         */
+        database: string;
+        /**
+         * The ID of the webhook
+         */
+        id: string;
+    };
+    query?: never;
+    url: "/organizations/{organization}/databases/{database}/webhooks/{id}/test";
+};
+export type TestWebhookErrors = {
+    /**
+     * Unauthorized
+     */
+    401: GeneralError;
+    /**
+     * Forbidden
+     */
+    403: GeneralError;
+    /**
+     * Not Found
+     */
+    404: GeneralError;
+    /**
+     * Internal Server Error
+     */
+    500: GeneralError;
+};
+export type TestWebhookError = TestWebhookErrors[keyof TestWebhookErrors];
+export type TestWebhookResponses = {
+    /**
+     * Webhook test event successfully triggered
+     */
+    204: unknown;
+};
+export type ListWorkflowsData = {
+    body?: never;
+    path: {
+        /**
+         * The name of the organization the workflow belongs to
+         */
+        organization: string;
+        /**
+         * The name of the database the workflow belongs to
+         */
+        database: string;
+    };
+    query?: {
+        /**
+         * Filter workflows to those active during a time range (e.g. 2025-01-01T00:00:00Z..2025-01-01T23:59:59)
+         */
+        between?: string;
+        /**
+         * If provided, specifies the page offset of returned results
+         */
+        page?: number;
+        /**
+         * If provided, specifies the number of returned results
+         */
+        per_page?: number;
+    };
+    url: "/organizations/{organization}/databases/{database}/workflows";
+};
+export type ListWorkflowsErrors = {
+    /**
+     * Unauthorized
+     */
+    401: GeneralError;
+    /**
+     * Forbidden
+     */
+    403: GeneralError;
+    /**
+     * Not Found
+     */
+    404: GeneralError;
+    /**
+     * Internal Server Error
+     */
+    500: GeneralError;
+};
+export type ListWorkflowsError = ListWorkflowsErrors[keyof ListWorkflowsErrors];
+export type ListWorkflowsResponses = {
+    /**
+     * Returns workflows
+     */
+    200: PaginatedWorkflow;
+};
+export type ListWorkflowsResponse = ListWorkflowsResponses[keyof ListWorkflowsResponses];
+export type CreateWorkflowData = {
+    body?: {
+        /**
+         * Name the workflow
+         */
+        name: string;
+        /**
+         * Name of the source keyspace
+         */
+        source_keyspace: string;
+        /**
+         * Name of the target keyspace
+         */
+        target_keyspace: string;
+        /**
+         * Name of the global sequence keyspace
+         */
+        global_keyspace?: string;
+        /**
+         * Defer secondary keys
+         */
+        defer_secondary_keys?: boolean;
+        /**
+         * The behavior when DDL changes during the workflow
+         */
+        on_ddl?: "IGNORE" | "STOP" | "EXEC" | "EXEC_IGNORE";
+        /**
+         * List of tables to move
+         */
+        tables: Array<string>;
+    };
+    path: {
+        /**
+         * The name of the organization the workflow belongs to
+         */
+        organization: string;
+        /**
+         * The name of the database the workflow belongs to
+         */
+        database: string;
+    };
+    query?: never;
+    url: "/organizations/{organization}/databases/{database}/workflows";
+};
+export type CreateWorkflowErrors = {
+    /**
+     * Unauthorized
+     */
+    401: GeneralError;
+    /**
+     * Forbidden
+     */
+    403: GeneralError;
+    /**
+     * Not Found
+     */
+    404: GeneralError;
+    /**
+     * Internal Server Error
+     */
+    500: GeneralError;
+};
+export type CreateWorkflowError = CreateWorkflowErrors[keyof CreateWorkflowErrors];
+export type CreateWorkflowResponses = {
+    /**
+     * Returns the workflow
+     */
+    201: Workflow;
+};
+export type CreateWorkflowResponse = CreateWorkflowResponses[keyof CreateWorkflowResponses];
+export type WorkflowCancelData = {
+    body?: never;
+    path: {
+        /**
+         * The name of the organization the workflow belongs to
+         */
+        organization: string;
+        /**
+         * The name of the database the workflow belongs to
+         */
+        database: string;
+        /**
+         * The sequence number of the workflow
+         */
+        number: string;
+    };
+    query?: never;
+    url: "/organizations/{organization}/databases/{database}/workflows/{number}";
+};
+export type WorkflowCancelErrors = {
+    /**
+     * Unauthorized
+     */
+    401: GeneralError;
+    /**
+     * Forbidden
+     */
+    403: GeneralError;
+    /**
+     * Not Found
+     */
+    404: GeneralError;
+    /**
+     * Internal Server Error
+     */
+    500: GeneralError;
+};
+export type WorkflowCancelError = WorkflowCancelErrors[keyof WorkflowCancelErrors];
+export type WorkflowCancelResponses = {
+    /**
+     * Returns a workflow
+     */
+    200: Workflow;
+};
+export type WorkflowCancelResponse = WorkflowCancelResponses[keyof WorkflowCancelResponses];
+export type GetWorkflowData = {
+    body?: never;
+    path: {
+        /**
+         * The name of the organization the workflow belongs to
+         */
+        organization: string;
+        /**
+         * The name of the database the workflow belongs to
+         */
+        database: string;
+        /**
+         * The sequence number of the workflow
+         */
+        number: string;
+    };
+    query?: never;
+    url: "/organizations/{organization}/databases/{database}/workflows/{number}";
+};
+export type GetWorkflowErrors = {
+    /**
+     * Unauthorized
+     */
+    401: GeneralError;
+    /**
+     * Forbidden
+     */
+    403: GeneralError;
+    /**
+     * Not Found
+     */
+    404: GeneralError;
+    /**
+     * Internal Server Error
+     */
+    500: GeneralError;
+};
+export type GetWorkflowError = GetWorkflowErrors[keyof GetWorkflowErrors];
+export type GetWorkflowResponses = {
+    /**
+     * Returns a workflow
+     */
+    200: Workflow;
+};
+export type GetWorkflowResponse = GetWorkflowResponses[keyof GetWorkflowResponses];
+export type WorkflowCompleteData = {
+    body?: never;
+    path: {
+        /**
+         * The name of the organization the workflow belongs to
+         */
+        organization: string;
+        /**
+         * The name of the database the workflow belongs to
+         */
+        database: string;
+        /**
+         * The sequence number of the workflow
+         */
+        number: string;
+    };
+    query?: never;
+    url: "/organizations/{organization}/databases/{database}/workflows/{number}/complete";
+};
+export type WorkflowCompleteErrors = {
+    /**
+     * Unauthorized
+     */
+    401: GeneralError;
+    /**
+     * Forbidden
+     */
+    403: GeneralError;
+    /**
+     * Not Found
+     */
+    404: GeneralError;
+    /**
+     * Internal Server Error
+     */
+    500: GeneralError;
+};
+export type WorkflowCompleteError = WorkflowCompleteErrors[keyof WorkflowCompleteErrors];
+export type WorkflowCompleteResponses = {
+    /**
+     * Returns a workflow
+     */
+    200: Workflow;
+};
+export type WorkflowCompleteResponse = WorkflowCompleteResponses[keyof WorkflowCompleteResponses];
+export type WorkflowCutoverData = {
+    body?: never;
+    path: {
+        /**
+         * The name of the organization the workflow belongs to
+         */
+        organization: string;
+        /**
+         * The name of the database the workflow belongs to
+         */
+        database: string;
+        /**
+         * The sequence number of the workflow
+         */
+        number: string;
+    };
+    query?: never;
+    url: "/organizations/{organization}/databases/{database}/workflows/{number}/cutover";
+};
+export type WorkflowCutoverErrors = {
+    /**
+     * Unauthorized
+     */
+    401: GeneralError;
+    /**
+     * Forbidden
+     */
+    403: GeneralError;
+    /**
+     * Not Found
+     */
+    404: GeneralError;
+    /**
+     * Internal Server Error
+     */
+    500: GeneralError;
+};
+export type WorkflowCutoverError = WorkflowCutoverErrors[keyof WorkflowCutoverErrors];
+export type WorkflowCutoverResponses = {
+    /**
+     * Returns a workflow
+     */
+    200: Workflow;
+};
+export type WorkflowCutoverResponse = WorkflowCutoverResponses[keyof WorkflowCutoverResponses];
+export type WorkflowRetryData = {
+    body?: never;
+    path: {
+        /**
+         * The name of the organization the workflow belongs to
+         */
+        organization: string;
+        /**
+         * The name of the database the workflow belongs to
+         */
+        database: string;
+        /**
+         * The sequence number of the workflow
+         */
+        number: string;
+    };
+    query?: never;
+    url: "/organizations/{organization}/databases/{database}/workflows/{number}/retry";
+};
+export type WorkflowRetryErrors = {
+    /**
+     * Unauthorized
+     */
+    401: GeneralError;
+    /**
+     * Forbidden
+     */
+    403: GeneralError;
+    /**
+     * Not Found
+     */
+    404: GeneralError;
+    /**
+     * Internal Server Error
+     */
+    500: GeneralError;
+};
+export type WorkflowRetryError = WorkflowRetryErrors[keyof WorkflowRetryErrors];
+export type WorkflowRetryResponses = {
+    /**
+     * Returns a workflow
+     */
+    200: Workflow;
+};
+export type WorkflowRetryResponse = WorkflowRetryResponses[keyof WorkflowRetryResponses];
+export type WorkflowReverseCutoverData = {
+    body?: never;
+    path: {
+        /**
+         * The name of the organization the workflow belongs to
+         */
+        organization: string;
+        /**
+         * The name of the database the workflow belongs to
+         */
+        database: string;
+        /**
+         * The sequence number of the workflow
+         */
+        number: string;
+    };
+    query?: never;
+    url: "/organizations/{organization}/databases/{database}/workflows/{number}/reverse-cutover";
+};
+export type WorkflowReverseCutoverErrors = {
+    /**
+     * Unauthorized
+     */
+    401: GeneralError;
+    /**
+     * Forbidden
+     */
+    403: GeneralError;
+    /**
+     * Not Found
+     */
+    404: GeneralError;
+    /**
+     * Internal Server Error
+     */
+    500: GeneralError;
+};
+export type WorkflowReverseCutoverError = WorkflowReverseCutoverErrors[keyof WorkflowReverseCutoverErrors];
+export type WorkflowReverseCutoverResponses = {
+    /**
+     * Returns a workflow
+     */
+    200: Workflow;
+};
+export type WorkflowReverseCutoverResponse = WorkflowReverseCutoverResponses[keyof WorkflowReverseCutoverResponses];
+export type WorkflowReverseTrafficData = {
+    body?: never;
+    path: {
+        /**
+         * The name of the organization the workflow belongs to
+         */
+        organization: string;
+        /**
+         * The name of the database the workflow belongs to
+         */
+        database: string;
+        /**
+         * The sequence number of the workflow
+         */
+        number: string;
+    };
+    query?: never;
+    url: "/organizations/{organization}/databases/{database}/workflows/{number}/reverse-traffic";
+};
+export type WorkflowReverseTrafficErrors = {
+    /**
+     * Unauthorized
+     */
+    401: GeneralError;
+    /**
+     * Forbidden
+     */
+    403: GeneralError;
+    /**
+     * Not Found
+     */
+    404: GeneralError;
+    /**
+     * Internal Server Error
+     */
+    500: GeneralError;
+};
+export type WorkflowReverseTrafficError = WorkflowReverseTrafficErrors[keyof WorkflowReverseTrafficErrors];
+export type WorkflowReverseTrafficResponses = {
+    /**
+     * Returns a workflow
+     */
+    200: Workflow;
+};
+export type WorkflowReverseTrafficResponse = WorkflowReverseTrafficResponses[keyof WorkflowReverseTrafficResponses];
+export type WorkflowSwitchPrimariesData = {
+    body?: never;
+    path: {
+        /**
+         * The name of the organization the workflow belongs to
+         */
+        organization: string;
+        /**
+         * The name of the database the workflow belongs to
+         */
+        database: string;
+        /**
+         * The sequence number of the workflow
+         */
+        number: string;
+    };
+    query?: never;
+    url: "/organizations/{organization}/databases/{database}/workflows/{number}/switch-primaries";
+};
+export type WorkflowSwitchPrimariesErrors = {
+    /**
+     * Unauthorized
+     */
+    401: GeneralError;
+    /**
+     * Forbidden
+     */
+    403: GeneralError;
+    /**
+     * Not Found
+     */
+    404: GeneralError;
+    /**
+     * Internal Server Error
+     */
+    500: GeneralError;
+};
+export type WorkflowSwitchPrimariesError = WorkflowSwitchPrimariesErrors[keyof WorkflowSwitchPrimariesErrors];
+export type WorkflowSwitchPrimariesResponses = {
+    /**
+     * Returns a workflow
+     */
+    200: Workflow;
+};
+export type WorkflowSwitchPrimariesResponse = WorkflowSwitchPrimariesResponses[keyof WorkflowSwitchPrimariesResponses];
+export type WorkflowSwitchReplicasData = {
+    body?: never;
+    path: {
+        /**
+         * The name of the organization the workflow belongs to
+         */
+        organization: string;
+        /**
+         * The name of the database the workflow belongs to
+         */
+        database: string;
+        /**
+         * The sequence number of the workflow
+         */
+        number: string;
+    };
+    query?: never;
+    url: "/organizations/{organization}/databases/{database}/workflows/{number}/switch-replicas";
+};
+export type WorkflowSwitchReplicasErrors = {
+    /**
+     * Unauthorized
+     */
+    401: GeneralError;
+    /**
+     * Forbidden
+     */
+    403: GeneralError;
+    /**
+     * Not Found
+     */
+    404: GeneralError;
+    /**
+     * Internal Server Error
+     */
+    500: GeneralError;
+};
+export type WorkflowSwitchReplicasError = WorkflowSwitchReplicasErrors[keyof WorkflowSwitchReplicasErrors];
+export type WorkflowSwitchReplicasResponses = {
+    /**
+     * Returns a workflow
+     */
+    200: Workflow;
+};
+export type WorkflowSwitchReplicasResponse = WorkflowSwitchReplicasResponses[keyof WorkflowSwitchReplicasResponses];
+export type VerifyWorkflowData = {
+    body?: never;
+    path: {
+        /**
+         * The name of the organization the workflow belongs to
+         */
+        organization: string;
+        /**
+         * The name of the database the workflow belongs to
+         */
+        database: string;
+        /**
+         * The sequence number of the workflow
+         */
+        number: string;
+    };
+    query?: never;
+    url: "/organizations/{organization}/databases/{database}/workflows/{number}/verify-data";
+};
+export type VerifyWorkflowErrors = {
+    /**
+     * Unauthorized
+     */
+    401: GeneralError;
+    /**
+     * Forbidden
+     */
+    403: GeneralError;
+    /**
+     * Not Found
+     */
+    404: GeneralError;
+    /**
+     * Internal Server Error
+     */
+    500: GeneralError;
+};
+export type VerifyWorkflowError = VerifyWorkflowErrors[keyof VerifyWorkflowErrors];
+export type VerifyWorkflowResponses = {
+    /**
+     * Returns a workflow
+     */
+    200: Workflow;
+};
+export type VerifyWorkflowResponse = VerifyWorkflowResponses[keyof VerifyWorkflowResponses];
+export type DeleteDatabaseData = {
+    body?: never;
+    path: {
+        /**
+         * The name of the organization the database belongs to
+         */
+        organization: string;
+        /**
+         * The name of the database
+         */
+        name: string;
+    };
+    query?: never;
+    url: "/organizations/{organization}/databases/{name}";
+};
+export type DeleteDatabaseErrors = {
+    /**
+     * Unauthorized
+     */
+    401: GeneralError;
+    /**
+     * Forbidden
+     */
+    403: GeneralError;
+    /**
+     * Not Found
+     */
+    404: GeneralError;
+    /**
+     * Internal Server Error
+     */
+    500: GeneralError;
+};
+export type DeleteDatabaseError = DeleteDatabaseErrors[keyof DeleteDatabaseErrors];
+export type DeleteDatabaseResponses = {
+    /**
+     * Deletes a database
+     */
+    204: unknown;
+};
+export type GetDatabaseData = {
+    body?: never;
+    path: {
+        /**
+         * The name of the organization the database belongs to
+         */
+        organization: string;
+        /**
+         * The name of the database
+         */
+        name: string;
+    };
+    query?: never;
+    url: "/organizations/{organization}/databases/{name}";
+};
+export type GetDatabaseErrors = {
+    /**
+     * Unauthorized
+     */
+    401: GeneralError;
+    /**
+     * Forbidden
+     */
+    403: GeneralError;
+    /**
+     * Not Found
+     */
+    404: GeneralError;
+    /**
+     * Internal Server Error
+     */
+    500: GeneralError;
+};
+export type GetDatabaseError = GetDatabaseErrors[keyof GetDatabaseErrors];
+export type GetDatabaseResponses = {
+    /**
+     * Returns a database
+     */
+    200: Database;
+};
+export type GetDatabaseResponse = GetDatabaseResponses[keyof GetDatabaseResponses];
+export type UpdateDatabaseSettingsData = {
+    body?: {
+        /**
+         * The name to update the database to
+         */
+        new_name?: string;
+        /**
+         * Whether or not to copy migration data to new branches and in deploy requests.
+         */
+        automatic_migrations?: boolean;
+        /**
+         * A migration framework to use on the database
+         */
+        migration_framework?: string;
+        /**
+         * Name of table to use as migration table for the database
+         */
+        migration_table_name?: string;
+        /**
+         * Whether or not deploy requests must be approved by a database administrator other than the request creator
+         */
+        require_approval_for_deploy?: boolean;
+        /**
+         * Whether or not to limit branch creation to the same region as the one selected during database creation.
+         */
+        restrict_branch_region?: boolean;
+        /**
+         * Whether or not data branching is allowed on the database
+         */
+        allow_data_branching?: boolean;
+        /**
+         * Whether or not foreign key constraints are allowed on the database
+         */
+        allow_foreign_key_constraints?: boolean;
+        /**
+         * Whether or not full queries should be collected from the database
+         */
+        insights_raw_queries?: boolean;
+        /**
+         * Whether or not the web console can be used on the production branch of the database
+         */
+        production_branch_web_console?: boolean;
+        /**
+         * The default branch of the database
+         */
+        default_branch?: string;
+    };
+    path: {
+        /**
+         * The name of the organization the database belongs to
+         */
+        organization: string;
+        /**
+         * The name of the database
+         */
+        name: string;
+    };
+    query?: never;
+    url: "/organizations/{organization}/databases/{name}";
+};
+export type UpdateDatabaseSettingsErrors = {
+    /**
+     * Unauthorized
+     */
+    401: GeneralError;
+    /**
+     * Forbidden
+     */
+    403: GeneralError;
+    /**
+     * Not Found
+     */
+    404: GeneralError;
+    /**
+     * Internal Server Error
+     */
+    500: GeneralError;
+};
+export type UpdateDatabaseSettingsError = UpdateDatabaseSettingsErrors[keyof UpdateDatabaseSettingsErrors];
+export type UpdateDatabaseSettingsResponses = {
+    /**
+     * Returns the updated database
+     */
+    200: Database;
+};
+export type UpdateDatabaseSettingsResponse = UpdateDatabaseSettingsResponses[keyof UpdateDatabaseSettingsResponses];
+export type ListReadOnlyRegionsData = {
+    body?: never;
+    path: {
+        /**
+         * The name of the organization the database belongs to
+         */
+        organization: string;
+        /**
+         * The name of the database
+         */
+        name: string;
+    };
+    query?: {
+        /**
+         * If provided, specifies the page offset of returned results
+         */
+        page?: number;
+        /**
+         * If provided, specifies the number of returned results
+         */
+        per_page?: number;
+    };
+    url: "/organizations/{organization}/databases/{name}/read-only-regions";
+};
+export type ListReadOnlyRegionsErrors = {
+    /**
+     * Unauthorized
+     */
+    401: GeneralError;
+    /**
+     * Forbidden
+     */
+    403: GeneralError;
+    /**
+     * Not Found
+     */
+    404: GeneralError;
+    /**
+     * Internal Server Error
+     */
+    500: GeneralError;
+};
+export type ListReadOnlyRegionsError = ListReadOnlyRegionsErrors[keyof ListReadOnlyRegionsErrors];
+export type ListReadOnlyRegionsResponses = {
+    /**
+     * List of the database's read-only regions
+     */
+    200: PaginatedDatabaseBranchReadOnlyRegion;
+};
+export type ListReadOnlyRegionsResponse = ListReadOnlyRegionsResponses[keyof ListReadOnlyRegionsResponses];
+export type ListDatabaseRegionsData = {
+    body?: never;
+    path: {
+        /**
+         * The name of the organization the database belongs to
+         */
+        organization: string;
+        /**
+         * The name of the database
+         */
+        name: string;
+    };
+    query?: {
+        /**
+         * If provided, specifies the page offset of returned results
+         */
+        page?: number;
+        /**
+         * If provided, specifies the number of returned results
+         */
+        per_page?: number;
+    };
+    url: "/organizations/{organization}/databases/{name}/regions";
+};
+export type ListDatabaseRegionsErrors = {
+    /**
+     * Unauthorized
+     */
+    401: GeneralError;
+    /**
+     * Forbidden
+     */
+    403: GeneralError;
+    /**
+     * Not Found
+     */
+    404: GeneralError;
+    /**
+     * Internal Server Error
+     */
+    500: GeneralError;
+};
+export type ListDatabaseRegionsError = ListDatabaseRegionsErrors[keyof ListDatabaseRegionsErrors];
+export type ListDatabaseRegionsResponses = {
+    /**
+     * Returns the available regions for a database
+     */
+    200: PaginatedPlanetscaleRegion;
+};
+export type ListDatabaseRegionsResponse = ListDatabaseRegionsResponses[keyof ListDatabaseRegionsResponses];
+export type ListInvoicesData = {
+    body?: never;
+    path: {
+        /**
+         * The name of the organization
+         */
+        organization: string;
+    };
+    query?: {
+        /**
+         * If provided, specifies the page offset of returned results
+         */
+        page?: number;
+        /**
+         * If provided, specifies the number of returned results
+         */
+        per_page?: number;
+    };
+    url: "/organizations/{organization}/invoices";
+};
+export type ListInvoicesErrors = {
+    /**
+     * Unauthorized
+     */
+    401: GeneralError;
+    /**
+     * Forbidden
+     */
+    403: GeneralError;
+    /**
+     * Not Found
+     */
+    404: GeneralError;
+    /**
+     * Internal Server Error
+     */
+    500: GeneralError;
+};
+export type ListInvoicesError = ListInvoicesErrors[keyof ListInvoicesErrors];
+export type ListInvoicesResponses = {
+    /**
+     * Gets the invoices for an organization
+     */
+    200: PaginatedInvoice;
+};
+export type ListInvoicesResponse = ListInvoicesResponses[keyof ListInvoicesResponses];
+export type GetInvoiceData = {
+    body?: never;
+    path: {
+        /**
+         * The name of the organization
+         */
+        organization: string;
+        /**
+         * The ID of the invoice
+         */
+        id: string;
+    };
+    query?: never;
+    url: "/organizations/{organization}/invoices/{id}";
+};
+export type GetInvoiceErrors = {
+    /**
+     * Unauthorized
+     */
+    401: GeneralError;
+    /**
+     * Forbidden
+     */
+    403: GeneralError;
+    /**
+     * Not Found
+     */
+    404: GeneralError;
+    /**
+     * Internal Server Error
+     */
+    500: GeneralError;
+};
+export type GetInvoiceError = GetInvoiceErrors[keyof GetInvoiceErrors];
+export type GetInvoiceResponses = {
+    /**
+     * Returns an invoice
+     */
+    200: Invoice;
+};
+export type GetInvoiceResponse = GetInvoiceResponses[keyof GetInvoiceResponses];
+export type GetInvoiceLineItemsData = {
+    body?: never;
+    path: {
+        /**
+         * The name of the organization
+         */
+        organization: string;
+        /**
+         * The ID of the invoice
+         */
+        id: string;
+    };
+    query?: {
+        /**
+         * If provided, specifies the page offset of returned results
+         */
+        page?: number;
+        /**
+         * If provided, specifies the number of returned results
+         */
+        per_page?: number;
+    };
+    url: "/organizations/{organization}/invoices/{id}/line-items";
+};
+export type GetInvoiceLineItemsErrors = {
+    /**
+     * Unauthorized
+     */
+    401: GeneralError;
+    /**
+     * Forbidden
+     */
+    403: GeneralError;
+    /**
+     * Not Found
+     */
+    404: GeneralError;
+    /**
+     * Internal Server Error
+     */
+    500: GeneralError;
+};
+export type GetInvoiceLineItemsError = GetInvoiceLineItemsErrors[keyof GetInvoiceLineItemsErrors];
+export type GetInvoiceLineItemsResponses = {
+    /**
+     * Gets the line items for an invoice
+     */
+    200: PaginatedLineItem;
+};
+export type GetInvoiceLineItemsResponse = GetInvoiceLineItemsResponses[keyof GetInvoiceLineItemsResponses];
+export type ListOrganizationMembersData = {
+    body?: never;
+    path: {
+        /**
+         * The name of the organization
+         */
+        organization: string;
+    };
+    query?: {
+        /**
+         * If provided, specifies the page offset of returned results
+         */
+        page?: number;
+        /**
+         * If provided, specifies the number of returned results
+         */
+        per_page?: number;
+    };
+    url: "/organizations/{organization}/members";
+};
+export type ListOrganizationMembersErrors = {
+    /**
+     * Unauthorized
+     */
+    401: GeneralError;
+    /**
+     * Forbidden
+     */
+    403: GeneralError;
+    /**
+     * Not Found
+     */
+    404: GeneralError;
+    /**
+     * Internal Server Error
+     */
+    500: GeneralError;
+};
+export type ListOrganizationMembersError = ListOrganizationMembersErrors[keyof ListOrganizationMembersErrors];
+export type ListOrganizationMembersResponses = {
+    /**
+     * Returns members of the organization
+     */
+    200: PaginatedOrganizationMembership;
+};
+export type ListOrganizationMembersResponse = ListOrganizationMembersResponses[keyof ListOrganizationMembersResponses];
+export type ListOauthApplicationsData = {
+    body?: never;
+    path: {
+        /**
+         * The name of the organization the OAuth applications belong to
+         */
+        organization: string;
+    };
+    query?: {
+        /**
+         * If provided, specifies the page offset of returned results
+         */
+        page?: number;
+        /**
+         * If provided, specifies the number of returned results
+         */
+        per_page?: number;
+    };
+    url: "/organizations/{organization}/oauth-applications";
+};
+export type ListOauthApplicationsErrors = {
+    /**
+     * Unauthorized
+     */
+    401: GeneralError;
+    /**
+     * Forbidden
+     */
+    403: GeneralError;
+    /**
+     * Not Found
+     */
+    404: GeneralError;
+    /**
+     * Internal Server Error
+     */
+    500: GeneralError;
+};
+export type ListOauthApplicationsError = ListOauthApplicationsErrors[keyof ListOauthApplicationsErrors];
+export type ListOauthApplicationsResponses = {
+    /**
+     * Returns a list of the organization's oauth applications
+     */
+    200: PaginatedOauthApplication;
+};
+export type ListOauthApplicationsResponse = ListOauthApplicationsResponses[keyof ListOauthApplicationsResponses];
+export type GetOauthApplicationData = {
+    body?: never;
+    path: {
+        /**
+         * The name of the organization the OAuth application belongs to
+         */
+        organization: string;
+        /**
+         * The ID of the OAuth application
+         */
+        application_id: string;
+    };
+    query?: never;
+    url: "/organizations/{organization}/oauth-applications/{application_id}";
+};
+export type GetOauthApplicationErrors = {
+    /**
+     * Unauthorized
+     */
+    401: GeneralError;
+    /**
+     * Forbidden
+     */
+    403: GeneralError;
+    /**
+     * Not Found
+     */
+    404: GeneralError;
+    /**
+     * Internal Server Error
+     */
+    500: GeneralError;
+};
+export type GetOauthApplicationError = GetOauthApplicationErrors[keyof GetOauthApplicationErrors];
+export type GetOauthApplicationResponses = {
+    /**
+     * Returns information abuot an OAuth application
+     */
+    200: OauthApplication;
+};
+export type GetOauthApplicationResponse = GetOauthApplicationResponses[keyof GetOauthApplicationResponses];
+export type ListOauthTokensData = {
+    body?: never;
+    path: {
+        /**
+         * The name of the organization the OAuth application belongs to
+         */
+        organization: string;
+        /**
+         * The ID of the OAuth application
+         */
+        application_id: string;
+    };
+    query?: {
+        /**
+         * If provided, specifies the page offset of returned results
+         */
+        page?: number;
+        /**
+         * If provided, specifies the number of returned results
+         */
+        per_page?: number;
+    };
+    url: "/organizations/{organization}/oauth-applications/{application_id}/tokens";
+};
+export type ListOauthTokensErrors = {
+    /**
+     * Unauthorized
+     */
+    401: GeneralError;
+    /**
+     * Forbidden
+     */
+    403: GeneralError;
+    /**
+     * Not Found
+     */
+    404: GeneralError;
+    /**
+     * Internal Server Error
+     */
+    500: GeneralError;
+};
+export type ListOauthTokensError = ListOauthTokensErrors[keyof ListOauthTokensErrors];
+export type ListOauthTokensResponses = {
+    /**
+     * Returns the OAuth tokens issued on behalf of the OAuth application
+     */
+    200: PaginatedServiceToken;
+};
+export type ListOauthTokensResponse = ListOauthTokensResponses[keyof ListOauthTokensResponses];
+export type DeleteOauthTokenData = {
+    body?: never;
+    path: {
+        /**
+         * The name of the organization the OAuth application belongs to
+         */
+        organization: string;
+        /**
+         * The ID of the OAuth application
+         */
+        application_id: string;
+        /**
+         * The ID of the OAuth application token
+         */
+        token_id: string;
+    };
+    query?: never;
+    url: "/organizations/{organization}/oauth-applications/{application_id}/tokens/{token_id}";
+};
+export type DeleteOauthTokenErrors = {
+    /**
+     * Unauthorized
+     */
+    401: GeneralError;
+    /**
+     * Forbidden
+     */
+    403: GeneralError;
+    /**
+     * Not Found
+     */
+    404: GeneralError;
+    /**
+     * Internal Server Error
+     */
+    500: GeneralError;
+};
+export type DeleteOauthTokenError = DeleteOauthTokenErrors[keyof DeleteOauthTokenErrors];
+export type DeleteOauthTokenResponses = {
+    /**
+     * Deletes an OAuth application's OAuth token
+     */
+    204: unknown;
+};
+export type GetOauthTokenData = {
+    body?: never;
+    path: {
+        /**
+         * The name of the organization the OAuth application belongs to
+         */
+        organization: string;
+        /**
+         * The ID of the OAuth application
+         */
+        application_id: string;
+        /**
+         * The ID of the OAuth application token
+         */
+        token_id: string;
+    };
+    query?: never;
+    url: "/organizations/{organization}/oauth-applications/{application_id}/tokens/{token_id}";
+};
+export type GetOauthTokenErrors = {
+    /**
+     * Unauthorized
+     */
+    401: GeneralError;
+    /**
+     * Forbidden
+     */
+    403: GeneralError;
+    /**
+     * Not Found
+     */
+    404: GeneralError;
+    /**
+     * Internal Server Error
+     */
+    500: GeneralError;
+};
+export type GetOauthTokenError = GetOauthTokenErrors[keyof GetOauthTokenErrors];
+export type GetOauthTokenResponses = {
+    /**
+     * Returns an OAuth token that was issued on behalf of the OAuth application
+     */
+    200: ServiceToken;
+};
+export type GetOauthTokenResponse = GetOauthTokenResponses[keyof GetOauthTokenResponses];
+export type CreateOauthTokenData = {
+    body?: {
+        /**
+         * The OAuth application's client ID
+         */
+        client_id: string;
+        /**
+         * The OAuth application's client secret
+         */
+        client_secret: string;
+        /**
+         * Whether an OAuth grant code or a refresh token is being exchanged for an OAuth token
+         */
+        grant_type: "authorization_code" | "refresh_token";
+        /**
+         * The OAuth grant code provided to your OAuth application's redirect URI. Required when grant_type is authorization_code
+         */
+        code?: string;
+        /**
+         * The OAuth application's redirect URI. Required when grant_type is authorization_code
+         */
+        redirect_uri?: string;
+        /**
+         * The refresh token from the original OAuth token grant. Required when grant_type is refresh_token
+         */
+        refresh_token?: string;
+    };
+    path: {
+        /**
+         * The name of the organization the OAuth application belongs to
+         */
+        organization: string;
+        /**
+         * The ID of the OAuth application
+         */
+        id: string;
+    };
+    query?: never;
+    url: "/organizations/{organization}/oauth-applications/{id}/token";
+};
+export type CreateOauthTokenErrors = {
+    /**
+     * Forbidden
+     */
+    403: GeneralError;
+    /**
+     * Not Found
+     */
+    404: GeneralError;
+    /**
+     * Unprocessable Entity
+     */
+    422: GeneralError;
+    /**
+     * Internal Server Error
+     */
+    500: GeneralError;
+};
+export type CreateOauthTokenError = CreateOauthTokenErrors[keyof CreateOauthTokenErrors];
+export type CreateOauthTokenResponses = {
+    /**
+     * Returns the created OAuth token
+     */
+    200: ServiceToken;
+};
+export type CreateOauthTokenResponse = CreateOauthTokenResponses[keyof CreateOauthTokenResponses];
+export type ListPublicRegionsData = {
+    body?: never;
+    path?: never;
+    query?: {
+        /**
+         * If provided, specifies the page offset of returned results
+         */
+        page?: number;
+        /**
+         * If provided, specifies the number of returned results
+         */
+        per_page?: number;
+    };
+    url: "/regions";
+};
+export type ListPublicRegionsErrors = {
+    /**
+     * Unauthorized
+     */
+    401: GeneralError;
+    /**
+     * Forbidden
+     */
+    403: GeneralError;
+    /**
+     * Not Found
+     */
+    404: GeneralError;
+    /**
+     * Internal Server Error
+     */
+    500: GeneralError;
+};
+export type ListPublicRegionsError = ListPublicRegionsErrors[keyof ListPublicRegionsErrors];
+export type ListPublicRegionsResponses = {
+    /**
+     * Returns the available public PlanetScale regions
+     */
+    200: PaginatedPublicPlanetscaleRegionSerializer;
+};
+export type ListPublicRegionsResponse = ListPublicRegionsResponses[keyof ListPublicRegionsResponses];
+export type GetCurrentUserData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: "/user";
+};
+export type GetCurrentUserErrors = {
+    /**
+     * Unauthorized
+     */
+    401: GeneralError;
+    /**
+     * Forbidden
+     */
+    403: GeneralError;
+    /**
+     * Not Found
+     */
+    404: GeneralError;
+    /**
+     * Internal Server Error
+     */
+    500: GeneralError;
+};
+export type GetCurrentUserError = GetCurrentUserErrors[keyof GetCurrentUserErrors];
+export type GetCurrentUserResponses = {
+    /**
+     * Returns the user associated with this service token
+     */
+    200: User;
+};
+export type GetCurrentUserResponse = GetCurrentUserResponses[keyof GetCurrentUserResponses];
+export type ListKeyspaceResizesData = {
+    body?: never;
+    path: {
+        /**
+         * The name of the organization the branch belongs to
+         */
+        organization: string;
+        /**
+         * The name of the database the branch belongs to
+         */
+        database: string;
+        /**
+         * The name of the branch
+         */
+        branch: string;
+        /**
+         * The name of the keyspace
+         */
+        name: string;
+    };
+    query?: never;
+    url: "/organizations/{organization}/databases/{database}/branches/{branch}/keyspaces/{name}/resizes";
+};
+export type ListKeyspaceResizesErrors = {
+    /**
+     * Unauthorized
+     */
+    401: GeneralError;
+    /**
+     * Forbidden
+     */
+    403: GeneralError;
+    /**
+     * Not Found
+     */
+    404: GeneralError;
+    /**
+     * Internal Server Error
+     */
+    500: GeneralError;
+};
+export type ListKeyspaceResizesError = ListKeyspaceResizesErrors[keyof ListKeyspaceResizesErrors];
+export type ListKeyspaceResizesResponses = {
+    /**
+     * List the keyspace resize requests
+     */
+    200: PaginatedKeyspaceResizeRequest;
+};
+export type ListKeyspaceResizesResponse = ListKeyspaceResizesResponses[keyof ListKeyspaceResizesResponses];
+//# sourceMappingURL=types.gen.d.ts.map

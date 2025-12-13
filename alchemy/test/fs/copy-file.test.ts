@@ -89,7 +89,7 @@ describe("CopyFile Resource", () => {
       try {
         await fs.promises.unlink(sourceFilePath);
         await fs.promises.unlink(destinationFilePath);
-      } catch (_error) {
+      } catch {
         // Ignore errors if files don't exist
       }
 
@@ -146,7 +146,7 @@ describe("CopyFile Resource", () => {
       try {
         await fs.promises.unlink(sourceFilePath);
         await fs.promises.unlink(destinationFilePath);
-      } catch (_error) {
+      } catch {
         // Ignore errors if files don't exist
       }
     }

@@ -778,9 +778,8 @@ async function waitForFunctionStabilization(
   client: LambdaClient,
   functionName: string,
 ) {
-  const { GetFunctionConfigurationCommand } = await import(
-    "@aws-sdk/client-lambda"
-  );
+  const { GetFunctionConfigurationCommand } =
+    await import("@aws-sdk/client-lambda");
   while (true) {
     const config = await retry(() =>
       client.send(
