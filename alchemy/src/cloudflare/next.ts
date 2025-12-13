@@ -49,12 +49,15 @@ export async function Nextjs<const B extends Bindings>(
         NEXTJS_ENV: "production",
       },
     }),
-    dev: normalizeCommand(props.dev, {
-      command: `${runner} next dev`,
-      env: {
-        NEXTJS_ENV: "development",
-      },
-    }),
+    dev: {
+      ...normalizeCommand(props.dev, {
+        command: `${runner} next dev`,
+        env: {
+          NEXTJS_ENV: "development",
+        },
+      }),
+      domain: typeof props.dev === "object" ? props.dev.domain : undefined,
+    },
 
     // OpenNext generates the files, but relies on us to bundle them.
     noBundle: props.noBundle ?? false,
@@ -89,9 +92,7 @@ const isFileIgnored = async (filename: string, cwd?: string) => {
       const gitignoreContent = await fs.readFile(gitignorePath, "utf8");
       // unshift to prioritize local .gitignore
       gitignorePatterns.unshift(
-        ...gitignoreContent
-          .split("\n")
-          .filter((line) => line.trim() && !line.startsWith("#")),
+        ...gitignoreContent.split("\n").filter((line) => line.trim() && !line.startsWith("#")),
       );
     } catch {
       // .gitignore doesn't exist in this directory, continue up
@@ -115,8 +116,7 @@ const normalizeCommand = (
   },
 ) => {
   return {
-    command:
-      typeof input === "string" ? input : (input?.command ?? defaults.command),
+    command: typeof input === "string" ? input : (input?.command ?? defaults.command),
     env: {
       ...defaults.env,
       ...(typeof input === "object" ? (input?.env ?? {}) : {}),

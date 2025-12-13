@@ -35,7 +35,7 @@
     "claude:yolo": "claude --dangerously-skip-permissions",
     "gh": "./scripts/gh",
     "feat": "./scripts/feat",
-    "format": "oxfmt '.' '!./alchemy/lib/' '!/**/*.mdx' '!/examples/**/*.gen.ts' '!/examples/cloudflare-tanstack-start/src/routeTree.gen.ts' '!/examples/cloudflare-redwood/worker-configuration.d.ts' '!/examples/cloudflare-tanstack-start/.output/' '!/examples/cloudflare-nuxt-pipeline/.output/' '!/alchemy-web/src/scripts/posthog.js'",
+    "format": "oxfmt '.' '!./alchemy/lib/' '!/**/*.mdx' '!/examples/**/*.gen.ts' '!/examples/cloudflare-tanstack-start/src/routeTree.gen.ts' '!/examples/cloudflare-redwood/worker-configuration.d.ts' '!/examples/cloudflare-tanstack-start/.output/' '!/examples/cloudflare-nuxt-pipeline/.output/' '!/alchemy-web/src/scripts/posthog.js' '!**/*.json' '!**/*.md' '!**/*.css' '!**/*.html' '!**/*.js'",
     "format:check": "bun run format -- --check"
   },
   "workspaces": {
