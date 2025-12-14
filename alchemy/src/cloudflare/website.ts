@@ -18,8 +18,10 @@ import { computeWorkerDevDomain } from "./worker-subdomain.ts";
 import { type AssetsConfig, Worker, type WorkerProps } from "./worker.ts";
 import { WranglerJson, type WranglerJsonSpec } from "./wrangler.json.ts";
 
-export interface WebsiteProps<B extends Bindings>
-  extends Omit<WorkerProps<B>, "assets" | "dev"> {
+export interface WebsiteProps<B extends Bindings> extends Omit<
+  WorkerProps<B>,
+  "assets" | "dev"
+> {
   /**
    * Configuration for the build command
    *
@@ -156,7 +158,7 @@ export async function Website<B extends Bindings>(
   props: WebsiteProps<B>,
 ) {
   const {
-    name = Scope.current.createPhysicalName(id),
+    name = Scope.current.createPhysicalName(id).toLowerCase(),
     build: buildProps,
     assets,
     dev,
