@@ -82,9 +82,3 @@ jobs:
           else
             echo "Version ${{ steps.version.outputs.version }} already published to npm, skipping publish"
           fi
-
-      - name: Post Release to Discord
-        uses: SethCohen/github-releases-to-discord@v1
-        with:
-          webhook_url: ${{ secrets.DISCORD_WEBHOOK_URL }}
-          color: "6B46C1"
