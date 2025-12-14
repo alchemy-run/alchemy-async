@@ -3,6 +3,7 @@ import {
   defineConfig,
   type UserConfig,
 } from "@hey-api/openapi-ts";
+import fs from "node:fs/promises";
 import path from "pathe";
 import { patchNeonResponseTypes } from "./neon.ts";
 
@@ -28,10 +29,7 @@ export const generate = async () => {
   await $`rm -rf src/util/api`;
   await $`mkdir -p src/util/api`;
   await $`mv src/${clients[0]}/api/client/ src/${clients[0]}/api/core/ src/util/api/`;
-  const clientEntry = Bun.file(`alchemy/src/util/api/client/index.ts`);
-  await clientEntry.write(
-    (await clientEntry.text()).replaceAll(/(.*)\.gen/g, "$1.gen.ts"),
-  );
+  await patchSdkImports();
   await $`bun oxfmt src/util/api`;
 
   // 3. Remove unused code
@@ -46,6 +44,21 @@ export const generate = async () => {
     await patchClientImports(client);
     await $`bun oxfmt src/${client}/api`;
   }
+};
+
+const patchSdkImports = async () => {
+  const files = await fs.readdir("alchemy/src/util/api", {
+    recursive: true,
+    withFileTypes: true,
+  });
+  await Promise.all(
+    files.map(async (dirent) => {
+      if (dirent.isDirectory()) return;
+      const file = Bun.file(path.join(dirent.parentPath, dirent.name));
+      const content = await file.text();
+      await file.write(content.replaceAll(/(.*)\.gen/g, "$1.gen.ts"));
+    }),
+  );
 };
 
 const patchClientImports = async (client: string) => {
