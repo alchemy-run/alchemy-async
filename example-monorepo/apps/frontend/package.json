@@ -19,8 +19,8 @@
     "analytics": "workspace:*",
     "backend": "workspace:*",
     "alchemy": "catalog:",
-    "@cloudflare/vite-plugin": "^1.7.4",
-    "@cloudflare/workers-types": "^4.20250805.0",
+    "@cloudflare/vite-plugin": "catalog:",
+    "@cloudflare/workers-types": "catalog:",
     "miniflare": "^4.20250617.3",
     "@eslint/js": "^9.25.0",
     "@types/react": "^19.1.2",
@@ -32,6 +32,6 @@
     "globals": "^16.0.0",
     "typescript": "^5.8.3",
     "typescript-eslint": "^8.30.1",
-    "vite": "^6.3.5"
+    "vite": "catalog:"
   }
 }

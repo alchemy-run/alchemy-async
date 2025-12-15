@@ -1,6 +1,6 @@
-import fs from "fs-extra";
-import path from "node:path";
+import path from "pathe";
 
+import { readJson, writeJson } from "fs-extra";
 import {
   type DependencyVersionMap,
   dependencyVersionMap,
@@ -15,7 +15,7 @@ export const addPackageDependencies = async (opts: {
 
   const pkgJsonPath = path.join(projectDir, "package.json");
 
-  const pkgJson = await fs.readJson(pkgJsonPath);
+  const pkgJson = await readJson(pkgJsonPath);
 
   if (!pkgJson.dependencies) pkgJson.dependencies = {};
   if (!pkgJson.devDependencies) pkgJson.devDependencies = {};
@@ -34,7 +34,7 @@ export const addPackageDependencies = async (opts: {
     }
   }
 
-  await fs.writeJson(pkgJsonPath, pkgJson, {
+  await writeJson(pkgJsonPath, pkgJson, {
     spaces: 2,
   });
 };

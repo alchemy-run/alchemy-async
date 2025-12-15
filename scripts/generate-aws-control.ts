@@ -972,7 +972,9 @@ async function generateDocumentation(
 ): Promise<void> {
   console.log("Generating documentation...");
   console.log(
-    `Overwrite mode: ${overwrite ? "enabled" : "disabled (will skip existing files)"}`,
+    `Overwrite mode: ${
+      overwrite ? "enabled" : "disabled (will skip existing files)"
+    }`,
   );
   console.log(`Maximum concurrent tasks: ${MAX_CONCURRENT_TASKS}`);
 

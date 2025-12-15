@@ -218,10 +218,15 @@ export async function Container<T>(
   const isDev = scope.local && !props.dev?.remote;
   if (isDev) {
     const image = await Image(id, {
+      ...props,
       name: `cloudflare-dev/${name}`, // prefix used by Miniflare
       tag,
-      build: props.build,
-    });
+      build: props.build ?? {
+        dockerfile: "Dockerfile",
+        platform: "linux/amd64",
+        context: process.cwd(),
+      },
+    } as ImageProps);
 
     return {
       ...output,
@@ -235,16 +240,23 @@ export async function Container<T>(
   const image = await Image(id, {
     name: `${api.accountId}/${name}`,
     tag,
-    build: {
-      platform: props.build?.platform ?? "linux/amd64",
-      ...props.build,
-    },
+    build: props.build
+      ? {
+          platform: props.build?.platform ?? "linux/amd64",
+          ...props.build,
+        }
+      : {
+          dockerfile: "Dockerfile",
+          platform: "linux/amd64",
+          context: process.cwd(),
+        },
+    image: props.image,
     registry: {
       server: "registry.cloudflare.com",
       username: credentials.username || credentials.user!,
       password: secret(credentials.password),
     },
-  });
+  } as ImageProps);
 
   return {
     ...output,
@@ -557,9 +569,6 @@ export const ContainerApplication = Resource(
       instance_type: props.instanceType ?? "dev",
       observability: {
         logs: {
-          enabled: true,
-        },
-        logging: {
           enabled: true,
         },
       },
@@ -1034,9 +1043,6 @@ interface CreateRolloutApplicationResponse {
     image: string;
     observability?: {
       logs?: {
-        enabled: boolean;
-      };
-      logging?: {
         enabled: boolean;
       };
     };

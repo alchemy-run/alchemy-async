@@ -3,7 +3,6 @@ import {
   getDefaultConfigPath,
   getDefaultPersistPath,
   validateConfigPath,
-  validatePersistPath,
 } from "../miniflare/paths.ts";
 
 const alchemy = (
@@ -15,9 +14,7 @@ const alchemy = (
       configPath: validateConfigPath(
         options.dev?.configPath ?? getDefaultConfigPath(),
       ),
-      persistDir: validatePersistPath(
-        options.dev?.persistDir ?? getDefaultPersistPath(),
-      ),
+      persistDir: options.dev?.persistDir ?? getDefaultPersistPath(),
       ...options.dev,
     },
     ...options,

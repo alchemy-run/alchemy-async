@@ -1,0 +1,39 @@
+{
+  "name": "cloudflare-vite-container",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "build": "tsc -b && vite build",
+    "deploy": "alchemy deploy --env-file ../../.env",
+    "destroy": "alchemy destroy --env-file ../../.env",
+    "dev": "alchemy dev --env-file ../../.env",
+    "lint": "eslint .",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "hono": "^4.9.2",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
+  },
+  "devDependencies": {
+    "@cloudflare/containers": "catalog:",
+    "@cloudflare/vite-plugin": "catalog:",
+    "@eslint/js": "^9.21.0",
+    "@types/node": "^22.13.10",
+    "@types/react": "^19.0.10",
+    "@types/react-dom": "^19.0.4",
+    "@vitejs/plugin-react": "^4.3.4",
+    "alchemy": "workspace:*",
+    "cloudflare": "^4.2.0",
+    "dotenv": "^16.4.7",
+    "eslint": "^9.21.0",
+    "eslint-plugin-react-hooks": "^5.1.0",
+    "eslint-plugin-react-refresh": "^0.4.19",
+    "globals": "^15.15.0",
+    "tsx": "^4.19.3",
+    "typescript": "catalog:",
+    "typescript-eslint": "^8.24.1",
+    "vite": "catalog:"
+  }
+}

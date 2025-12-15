@@ -1,4 +1,4 @@
-import path from "node:path";
+import path from "pathe";
 
 // Common MIME types
 const mimeTypes: Record<string, string> = {

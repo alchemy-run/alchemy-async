@@ -354,6 +354,38 @@ Alchemy integrates with popular web frameworks, so you can use them with Alchemy
     });
     ```
   </TabItem>
+  <TabItem label="BunSPA">
+    :::note
+    The BunSPA requires bun. It does NOT require Vite, Vite config or any Vite plugins.
+    :::
+
+    First, use the `BunSPA` resource in your `alchemy.run.ts` script:
+
+    ```ts title="alchemy.run.ts"
+    import { BunSPA } from "alchemy/cloudflare";
+
+    const bunsite = await BunSPA("my-bun-app", {
+      frontend: "src/index.html",
+      entrypoint: "src/worker.ts",
+    });
+    ```
+
+    Create a `bunfig.toml` file:
+
+    ```toml title="bunfig.toml"
+    [serve.static]
+    env='BUN_PUBLIC_*'
+    ```
+
+    :::tip
+    The `bunfig.toml` configuration allows Bun to expose `BUN_PUBLIC_*` environment variables to your frontend during development. This enables your client-side code to access the backend URL via `process.env.BUN_PUBLIC_BACKEND_URL`.
+    :::
+
+    BunSPA provides automatic integration:
+    - **Frontend:** Bun's native dev server with hot module reloading
+    - **Backend:** alchemy dev runs your Worker locally with full binding support
+    - No additional configuration needed - just run `alchemy dev`
+  </TabItem>
   <TabItem label="SvelteKit">
     First, use the `SvelteKit` resource in your `alchemy.run.ts` script:
 

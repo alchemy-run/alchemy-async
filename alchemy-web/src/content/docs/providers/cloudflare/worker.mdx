@@ -627,6 +627,34 @@ export const service = await Worker("auth-service", {
 });
 ```
 
+### Subdomain Bindings
+
+A Worker by default is allocated a `workers.dev` subdomain computed from its name and your account's worker subdomain.
+
+E.g.
+```sh
+${workerName}.${subdomain}.workers.dev
+```
+
+Use the `Worker.DevDomain` or `Worker.DevUrl` binding to inject a Worker's own subdomain or URL into its script.
+
+```ts
+import { Worker } from "alchemy/cloudflare";
+
+const worker = await Worker("api", {
+  name: "api-worker",
+  entrypoint: "./src/api.ts",
+  // workers.dev URL must be enabled (is by default)
+  // url: true,
+  bindings: {
+    // ${workerName}.${subdomain}.workers.dev
+    DEV_DOMAIN: Worker.DevDomain,
+    // https://${workerName}.${subdomain}.workers.dev
+    DEV_URL: Worker.DevUrl,
+  },
+});
+```
+
 ### Circular Dependencies
 
 Break circular dependencies with WorkerStub:
@@ -805,7 +833,8 @@ In your `alchemy.run.ts` script, import the `type MyRPC` and set it as the `rpc`
 
 ```diff lang='ts'
 // alchemy.run.ts
-import { Worker, type } from "alchemy/cloudflare";
+import { type } from "alchemy";
+import { Worker } from "alchemy/cloudflare";
 import type MyRPC from "./src/rpc.ts";
 
 export const rpcWorker = await Worker("rpc", {

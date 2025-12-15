@@ -1,8 +1,8 @@
 import * as esbuild from "esbuild";
 import { glob } from "glob";
 import { exec, spawn } from "node:child_process";
-import path from "node:path";
 import { promisify } from "node:util";
+import path from "pathe";
 
 const execAsync = promisify(exec);
 

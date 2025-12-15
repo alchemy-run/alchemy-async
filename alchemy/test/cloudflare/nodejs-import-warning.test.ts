@@ -1,4 +1,4 @@
-import path from "node:path";
+import path from "pathe";
 import { afterEach, describe, expect, vi } from "vitest";
 import { alchemy } from "../../src/alchemy.ts";
 import { Worker } from "../../src/cloudflare/worker.ts";

@@ -2,7 +2,7 @@ import { execa } from "execa";
 import { Buffer } from "node:buffer";
 import { spawn } from "node:child_process";
 import fs from "node:fs/promises";
-import path from "node:path";
+import path from "pathe";
 import type { Duration, HealthcheckConfig } from "./container.ts";
 
 /**
@@ -67,6 +67,12 @@ type VolumeInfo = {
   Name: string;
   Options: Record<string, string>;
   Scope: string;
+};
+
+type ContainerInfo = {
+  Id: string;
+  State: { Status: "created" | "running" | "paused" | "stopped" | "exited" };
+  Created: string;
 };
 
 /**
@@ -134,7 +140,8 @@ export class DockerApi {
     } catch (error: any) {
       const message = stderr || error.message || "Command failed";
       if (
-        message.includes("unexpected status from HEAD request") &&
+        (message.includes("unexpected status from HEAD request") ||
+          message.includes("502 Bad Gateway")) &&
         remainingAttempts > 0
       ) {
         await new Promise((resolve) => setTimeout(resolve, 1000));
@@ -159,7 +166,9 @@ export class DockerApi {
       return true;
     } catch (error) {
       console.log(
-        `Docker daemon not running: ${error instanceof Error ? error.message : String(error)}`,
+        `Docker daemon not running: ${
+          error instanceof Error ? error.message : String(error)
+        }`,
       );
       return false;
     }
@@ -173,6 +182,13 @@ export class DockerApi {
    */
   async pullImage(image: string): Promise<{ stdout: string; stderr: string }> {
     return this.exec(["pull", image]);
+  }
+
+  async tagImage(
+    source: string,
+    target: string,
+  ): Promise<{ stdout: string; stderr: string }> {
+    return this.exec(["tag", source, target]);
   }
 
   /**
@@ -342,6 +358,21 @@ export class DockerApi {
   }
 
   /**
+   * Get Docker container information
+   *
+   * @param containerId Container ID or name
+   * @returns Container details in JSON format
+   */
+  async inspectContainer(containerId: string): Promise<ContainerInfo[]> {
+    const { stdout } = await this.exec(["container", "inspect", containerId]);
+    try {
+      return JSON.parse(stdout.trim()) as ContainerInfo[];
+    } catch (_error) {
+      return [];
+    }
+  }
+
+  /**
    * Check if a container exists
    *
    * @param containerId Container ID or name
@@ -349,7 +380,7 @@ export class DockerApi {
    */
   async containerExists(containerId: string): Promise<boolean> {
     try {
-      await this.exec(["inspect", containerId]);
+      await this.inspectContainer(containerId);
       return true;
     } catch (_error) {
       return false;

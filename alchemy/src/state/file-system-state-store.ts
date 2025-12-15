@@ -1,5 +1,5 @@
 import fs from "node:fs";
-import path from "node:path";
+import path from "pathe";
 import { ResourceScope } from "../resource.ts";
 import type { Scope } from "../scope.ts";
 import { deserialize, serialize } from "../serde.ts";

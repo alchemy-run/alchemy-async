@@ -1,4 +1,4 @@
-/// <reference types="node" />
+/// <reference types="bun-types-no-globals" />
 
 import alchemy from "alchemy";
 import { BunSPA, KVNamespace } from "alchemy/cloudflare";
@@ -11,8 +11,8 @@ export const kv = await KVNamespace("kv", {
 });
 
 export const bunsite = await BunSPA("website", {
-  entrypoint: "src/server.ts",
-  frontend: ["index.html", "about.html"],
+  entrypoint: "src/worker.ts",
+  frontend: ["src/index.html", "src/about.html"],
   noBundle: false,
   adopt: true,
   bindings: {

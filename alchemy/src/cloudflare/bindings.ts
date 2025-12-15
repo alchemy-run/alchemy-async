@@ -26,10 +26,10 @@ import type { SecretRef as CloudflareSecretRef } from "./secret-ref.ts";
 import type { Secret as CloudflareSecret } from "./secret.ts";
 import type { VectorizeIndex } from "./vectorize-index.ts";
 import type { VersionMetadata } from "./version-metadata.ts";
+import type { WorkerLoader } from "./worker-loader.ts";
 import type { WorkerRef } from "./worker-ref.ts";
 import type { WorkerStub } from "./worker-stub.ts";
 import type { Worker } from "./worker.ts";
-import type { WorkerLoader } from "./worker-loader.ts";
 import type { Workflow } from "./workflow.ts";
 
 export type Bindings = {
@@ -72,6 +72,8 @@ export type Binding =
   | string
   | VectorizeIndex
   | Worker
+  | Worker.DevDomain
+  | Worker.DevUrl
   | WorkerStub
   | WorkerRef
   | WorkerEntrypoint

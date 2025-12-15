@@ -1,6 +1,6 @@
 import * as fs from "node:fs/promises";
 import * as os from "node:os";
-import * as path from "node:path";
+import path from "pathe";
 import { describe, expect } from "vitest";
 import { alchemy } from "../../src/alchemy.ts";
 import {
@@ -11,6 +11,7 @@ import {
   createDatabase,
   D1Database,
   deleteDatabase,
+  getDatabase,
   listDatabases,
 } from "../../src/cloudflare/d1-database.ts";
 import {
@@ -18,7 +19,7 @@ import {
   getAppliedMigrations,
 } from "../../src/cloudflare/d1-migrations.ts";
 import { Worker } from "../../src/cloudflare/worker.ts";
-import { BRANCH_PREFIX } from "../util.ts";
+import { BRANCH_PREFIX, waitFor } from "../util.ts";
 
 import { destroy } from "../../src/destroy.ts";
 import "../../src/test/vitest.ts";
@@ -111,8 +112,15 @@ describe("D1 Database Resource", async () => {
       );
       expect(getResponse.ok).toBe(true);
 
-      const dbData: any = await getResponse.json();
-      expect(dbData.result.read_replication?.mode).toEqual("auto");
+      await waitFor(
+        async () =>
+          (
+            await api.get(
+              `/accounts/${api.accountId}/d1/database/${database.id}`,
+            )
+          ).json(),
+        (dbData: any) => dbData.result.read_replication?.mode === "auto",
+      );
     } finally {
       await alchemy.destroy(scope);
     }
@@ -576,7 +584,7 @@ describe("D1 Database Resource", async () => {
 
       await fs.writeFile(
         path.join(tempDir, "0004_add_users_data.sql"),
-        `INSERT INTO users (name, email) VALUES 
+        `INSERT INTO users (name, email) VALUES
           ('Alice', 'alice@example.com'),
           ('Bob', 'bob@example.com');`,
       );
@@ -612,7 +620,7 @@ describe("D1 Database Resource", async () => {
       );
 
       // Step 3: Insert some fake migration records into the legacy table (simulating old migrations)
-      const insertLegacySQL = `INSERT INTO ${legacyMigrationsTable} (id, applied_at) VALUES 
+      const insertLegacySQL = `INSERT INTO ${legacyMigrationsTable} (id, applied_at) VALUES
         ('0000_initial_setup.sql', datetime('now', '-1 day')),
         ('0001_add_indexes.sql', datetime('now', '-1 hour'));`;
 
@@ -703,7 +711,7 @@ describe("D1 Database Resource", async () => {
       // Step 9: Add a new migration file after initial adoption to test subsequent updates
       await fs.writeFile(
         path.join(tempDir, "0005_add_posts_data.sql"),
-        `INSERT INTO posts (user_id, title, content) VALUES 
+        `INSERT INTO posts (user_id, title, content) VALUES
           (1, 'First Post', 'This is Alice first post'),
           (2, 'Welcome Post', 'Bob welcomes everyone');`,
       );
@@ -790,7 +798,7 @@ describe("D1 Database Resource", async () => {
       // Step 14: Add another migration file and verify ID continues sequentially
       await fs.writeFile(
         path.join(tempDir, "0006_add_more_data.sql"),
-        `INSERT INTO posts (user_id, title, content) VALUES 
+        `INSERT INTO posts (user_id, title, content) VALUES
           (1, 'Second Post', 'Alice second post'),
           (2, 'Another Post', 'Bob another post');`,
       );
@@ -852,6 +860,56 @@ describe("D1 Database Resource", async () => {
       }
     }
   }, 120000); // Extended timeout for complex migration operations
+
+  test("d1 with jurisdiction", async (scope) => {
+    const api = await createCloudflareApi();
+    const euD1Name = `${testId}-eu`;
+    let euD1: D1Database | undefined;
+
+    try {
+      euD1 = await D1Database(euD1Name, {
+        name: euD1Name,
+        jurisdiction: "eu",
+        adopt: true,
+      });
+      expect(euD1.name).toEqual(euD1Name);
+      expect(euD1.jurisdiction).toEqual("eu");
+
+      const gotD1 = await getDatabase(api, euD1Name);
+      expect(gotD1.result.name).toEqual(euD1Name);
+      expect(gotD1.result.jurisdiction).toEqual("eu");
+    } finally {
+      await alchemy.destroy(scope);
+      if (euD1) {
+        await assertDatabaseDeleted(euD1);
+      }
+    }
+  });
+
+  test("d1 with default jurisdiction", async (scope) => {
+    const api = await createCloudflareApi();
+    const defaultD1Name = `${testId}-default`;
+    let defaultD1: D1Database | undefined;
+
+    try {
+      defaultD1 = await D1Database(defaultD1Name, {
+        name: defaultD1Name,
+        jurisdiction: "default",
+        adopt: true,
+      });
+      expect(defaultD1.name).toEqual(defaultD1Name);
+      expect(defaultD1.jurisdiction).toEqual("default");
+
+      const gotD1 = await getDatabase(api, defaultD1Name);
+      expect(gotD1.result.name).toEqual(defaultD1Name);
+      expect(gotD1.result.jurisdiction).toEqual(null);
+    } finally {
+      await alchemy.destroy(scope);
+      if (defaultD1) {
+        await assertDatabaseDeleted(defaultD1);
+      }
+    }
+  });
 });
 
 async function getResults(

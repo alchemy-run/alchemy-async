@@ -3,7 +3,6 @@ import {
   getDefaultConfigPath,
   getDefaultPersistPath,
   validateConfigPath,
-  validatePersistPath,
 } from "./miniflare/paths.ts";
 
 export const getCloudflareEnvProxy = async <E>(
@@ -17,17 +16,17 @@ export const getCloudflareEnvProxy = async <E>(
 
 export const getPlatformProxyOptions = (
   input: GetPlatformProxyOptions = {},
+  throws: boolean = true,
 ): GetPlatformProxyOptions => {
   const persist =
     input.persist === false
       ? false
       : {
-          path: validatePersistPath(
+          path:
             typeof input.persist === "object" &&
-              typeof input.persist.path === "string"
+            typeof input.persist.path === "string"
               ? input.persist.path
               : getDefaultPersistPath(),
-          ),
         };
   if (!persist) {
     const message =
@@ -39,11 +38,11 @@ export const getPlatformProxyOptions = (
   }
   return {
     ...input,
-    configPath: validateConfigPath(input.configPath ?? getDefaultConfigPath()),
+    configPath: validateConfigPath(
+      input.configPath ?? getDefaultConfigPath(),
+      throws,
+    ),
     persist,
-    experimental: (input as any).experimental ?? {
-      remoteBindings: true,
-    },
   };
 };
 

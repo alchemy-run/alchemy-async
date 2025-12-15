@@ -3,6 +3,7 @@ import z from "zod";
 export const TEMPLATE_DEFINITIONS = [
   { name: "hono", description: "Hono" },
   { name: "vite", description: "React Vite" },
+  { name: "bun-spa", description: "Bun SPA" },
   { name: "astro", description: "Astro SSR" },
   { name: "react-router", description: "React Router" },
   { name: "sveltekit", description: "SvelteKit" },

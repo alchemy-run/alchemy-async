@@ -1,6 +1,6 @@
 import fs from "node:fs/promises";
 import os from "node:os";
-import path from "node:path";
+import path from "pathe";
 import lockfile from "proper-lockfile";
 
 const LOCK_DIR = path.join(os.homedir(), ".alchemy", "lock");

@@ -291,4 +291,100 @@ describe("Container", () => {
       await alchemy.destroy(scope);
     }
   });
+
+  test("should fail to create a container when name already exists without adopt", async (scope) => {
+    const api = new DockerApi();
+    const containerName = `${BRANCH_PREFIX}-adopt-test-no-adopt`;
+
+    try {
+      // Manually create a container outside of Alchemy
+      await api.exec(["create", "--name", containerName, "hello-world:latest"]);
+
+      // Attempt to create a container with the same name without adopt flag
+      await expect(
+        Container("adopt-test-no-adopt", {
+          image: "hello-world:latest",
+          name: containerName,
+          start: false,
+        }),
+      ).rejects.toThrow(
+        `Container "${containerName}" already exists. Use adopt: true to adopt it.`,
+      );
+    } finally {
+      // Clean up manually created container
+      await api.removeContainer(containerName, true);
+      await alchemy.destroy(scope);
+    }
+  });
+
+  test("should adopt an existing container when adopt is true", async (scope) => {
+    const api = new DockerApi();
+    const containerName = `${BRANCH_PREFIX}-adopt-test-with-adopt`;
+
+    try {
+      // Manually create a container outside of Alchemy
+      const { stdout } = await api.exec([
+        "create",
+        "--name",
+        containerName,
+        "hello-world:latest",
+      ]);
+      const manualContainerId = stdout.trim();
+
+      // Adopt the existing container
+      const container = await Container("adopt-test-with-adopt", {
+        image: "hello-world:latest",
+        name: containerName,
+        adopt: true,
+        start: false,
+      });
+
+      // Verify the container was adopted (same ID)
+      expect(container.id).toBe(manualContainerId);
+      expect(container.name).toBe(containerName);
+      expect(container.state).toBe("created");
+    } finally {
+      await alchemy.destroy(scope);
+
+      // Verify container was removed
+      const exists = await api.containerExists(containerName);
+      expect(exists).toBe(false);
+    }
+  });
+
+  test("should adopt and start an existing stopped container", async (scope) => {
+    const api = new DockerApi();
+    const containerName = `${BRANCH_PREFIX}-adopt-test-start`;
+
+    try {
+      // Manually create a container outside of Alchemy
+      const { stdout } = await api.exec([
+        "create",
+        "--name",
+        containerName,
+        "nginx:latest",
+      ]);
+      const manualContainerId = stdout.trim();
+
+      // Adopt and start the existing container
+      const container = await Container("adopt-test-start", {
+        image: "nginx:latest",
+        name: containerName,
+        adopt: true,
+        start: true,
+      });
+
+      // Verify the container was adopted and started
+      expect(container.id).toBe(manualContainerId);
+      expect(container.name).toBe(containerName);
+      expect(container.state).toBe("running");
+
+      // Verify it's actually running via Docker inspect
+      const containerInfos = await api.inspectContainer(containerName);
+      const containerInfo = containerInfos[0];
+      expect(containerInfo.State.Status).toBe("running");
+    } finally {
+      await alchemy.destroy(scope);
+    }
+  });
 });

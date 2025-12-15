@@ -1,5 +1,4 @@
 import { initLogger } from "braintrust";
-// biome-ignore lint/style/useNodejsImportProtocol: we are testing `crypto` and `node:crypto`
 import crypto from "crypto";
 import * as grammy from "grammy";
 import crypto2 from "node:crypto";

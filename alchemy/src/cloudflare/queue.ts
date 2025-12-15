@@ -502,34 +502,92 @@ export async function updateQueue(
 /**
  * List all Cloudflare Queues in an account
  */
-export async function listQueues(
+type CloudflareQueueListItem = {
+  queue_name: string;
+  queue_id: string;
+  created_on?: string;
+  modified_on?: string;
+  settings?: {
+    delivery_delay?: number;
+    delivery_paused?: boolean;
+    message_retention_period?: number;
+  };
+};
+
+type CloudflareQueueListResponse = {
+  success: boolean;
+  errors?: Array<{ code: number; message: string }>;
+  result?: CloudflareQueueListItem[];
+  result_info?: {
+    per_page?: number;
+    total_pages?: number;
+  };
+};
+
+const CLOUDFLARE_QUEUE_PAGE_SIZE = 100;
+
+async function fetchQueuePage(
   api: CloudflareApi,
-): Promise<{ name: string; id: string }[]> {
-  const response = await api.get(`/accounts/${api.accountId}/queues`);
+  page: number,
+  perPage = CLOUDFLARE_QUEUE_PAGE_SIZE,
+): Promise<CloudflareQueueListResponse> {
+  const searchParams = new URLSearchParams({
+    page: page.toString(),
+    per_page: perPage.toString(),
+  });
+  const response = await api.get(
+    `/accounts/${api.accountId}/queues?${searchParams.toString()}`,
+  );
 
   if (!response.ok) {
-    throw new CloudflareApiError(
-      `Failed to list queues: ${response.statusText}`,
-      response,
-    );
+    return await handleApiError(response, "listing", "Queues", "");
   }
 
-  const data = (await response.json()) as {
-    success: boolean;
-    errors?: Array<{ code: number; message: string }>;
-    result?: Array<{
-      queue_name: string;
-      queue_id: string;
-    }>;
-  };
+  const data = (await response.json()) as CloudflareQueueListResponse;
 
   if (!data.success) {
     const errorMessage = data.errors?.[0]?.message || "Unknown error";
     throw new Error(`Failed to list queues: ${errorMessage}`);
   }
 
+  return data;
+}
+
+function hasMoreQueuePages(
+  data: CloudflareQueueListResponse,
+  currentPage: number,
+  perPage: number,
+): boolean {
+  if (data.result_info?.total_pages !== undefined) {
+    return currentPage < data.result_info.total_pages;
+  }
+
+  const pageSize = data.result_info?.per_page ?? perPage;
+  const currentCount = data.result?.length ?? 0;
+
+  return currentCount > 0 && currentCount >= pageSize;
+}
+
+export async function listQueues(
+  api: CloudflareApi,
+): Promise<{ name: string; id: string }[]> {
+  const queues: CloudflareQueueListItem[] = [];
+  let page = 1;
+
+  // Paginate through all queues to ensure nothing is missed on later pages
+  while (true) {
+    const data = await fetchQueuePage(api, page);
+    queues.push(...(data.result ?? []));
+
+    if (!hasMoreQueuePages(data, page, CLOUDFLARE_QUEUE_PAGE_SIZE)) {
+      break;
+    }
+
+    page += 1;
+  }
+
   // Transform API response
-  return (data.result || []).map((queue) => ({
+  return queues.map((queue) => ({
     name: queue.queue_name,
     id: queue.queue_id,
   }));
@@ -542,48 +600,31 @@ export async function findQueueByName(
   api: CloudflareApi,
   queueName: string,
 ): Promise<CloudflareQueueResponse | null> {
-  const response = await api.get(`/accounts/${api.accountId}/queues`);
+  let page = 1;
 
-  if (!response.ok) {
-    return await handleApiError(response, "listing", "Queues", "");
-  }
+  while (true) {
+    const data = await fetchQueuePage(api, page);
+    const queue = data.result?.find((q) => q.queue_name === queueName);
 
-  const data = (await response.json()) as {
-    success: boolean;
-    errors?: Array<{ code: number; message: string }>;
-    result?: Array<{
-      queue_name: string;
-      queue_id: string;
-      created_on?: string;
-      modified_on?: string;
-      settings?: {
-        delivery_delay?: number;
-        delivery_paused?: boolean;
-        message_retention_period?: number;
+    if (queue) {
+      return {
+        result: {
+          queue_id: queue.queue_id,
+          queue_name: queue.queue_name,
+          created_on: queue.created_on,
+          modified_on: queue.modified_on,
+          settings: queue.settings,
+        },
+        success: true,
+        errors: [],
+        messages: [],
       };
-    }>;
-  };
+    }
 
-  if (!data.success) {
-    const errorMessage = data.errors?.[0]?.message || "Unknown error";
-    throw new Error(`Failed to list queues: ${errorMessage}`);
+    if (!hasMoreQueuePages(data, page, CLOUDFLARE_QUEUE_PAGE_SIZE)) {
+      return null;
+    }
+
+    page += 1;
   }
-
-  const queue = data.result?.find((q) => q.queue_name === queueName);
-  if (!queue) {
-    return null;
-  }
-
-  return {
-    result: {
-      queue_id: queue.queue_id,
-      queue_name: queue.queue_name,
-      created_on: queue.created_on,
-      modified_on: queue.modified_on,
-      settings: queue.settings,
-    },
-    success: true,
-    errors: [],
-    messages: [],
-  };
 }

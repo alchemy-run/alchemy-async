@@ -5,7 +5,7 @@ import {
   LambdaClient,
   ResourceNotFoundException,
 } from "@aws-sdk/client-lambda";
-import path from "node:path";
+import path from "pathe";
 import { describe, expect } from "vitest";
 import { alchemy } from "../../src/alchemy.js";
 import { Function } from "../../src/aws/function.js";

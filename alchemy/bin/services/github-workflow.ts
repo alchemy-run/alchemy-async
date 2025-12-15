@@ -1,7 +1,6 @@
-/** biome-ignore-all lint/suspicious/noTemplateCurlyInString: we are building a github template workflow */
 import { spinner } from "@clack/prompts";
-import fs from "fs-extra";
-import path from "node:path";
+import { ensureDir, readFile, writeFile } from "fs-extra";
+import path from "pathe";
 import YAML from "yaml";
 import { throwWithContext } from "../errors.ts";
 import type { ProjectContext } from "../types.ts";
@@ -17,7 +16,7 @@ export async function addGitHubWorkflowToAlchemy(
 
   try {
     const workflowDir = path.join(context.path, ".github", "workflows");
-    await fs.ensureDir(workflowDir);
+    await ensureDir(workflowDir);
 
     const pmCommands =
       PackageManager[context.packageManager] ?? PackageManager.bun;
@@ -69,7 +68,7 @@ export async function addGitHubWorkflowToAlchemy(
       run: installCmd,
     };
 
-    await fs.writeFile(
+    await writeFile(
       path.join(workflowDir, "pr-preview.yml"),
       YAML.stringify({
         name: "Preview",
@@ -146,7 +145,7 @@ export async function addGitHubWorkflowToAlchemy(
         },
       } as const),
     );
-    await fs.writeFile(
+    await writeFile(
       path.join(workflowDir, "publish.yml"),
       YAML.stringify({
         name: "Publish",
@@ -220,7 +219,7 @@ export async function addGitHubWorkflowToAlchemy(
       } as const),
     );
 
-    let code = await fs.readFile(alchemyFilePath, "utf-8");
+    let code = await readFile(alchemyFilePath, "utf-8");
 
     const alchemyImportRegex = /(import alchemy from "alchemy";)/;
     const alchemyImportMatch = code.match(alchemyImportRegex);
@@ -255,7 +254,7 @@ import { CloudflareStateStore } from "alchemy/state";`;
       const githubWorkflowCode = `
 if (process.env.PULL_REQUEST) {
   const previewUrl = worker.url;
-  
+
   await GitHubComment("pr-preview-comment", {
     owner: process.env.GITHUB_REPOSITORY_OWNER || "your-username",
     repository: process.env.GITHUB_REPOSITORY_NAME || "${context.name}",
@@ -263,7 +262,7 @@ if (process.env.PULL_REQUEST) {
     body: \`
 ## 🚀 Preview Deployed
 
-Your preview is ready! 
+Your preview is ready!
 
 **Preview URL:** \${previewUrl}
 
@@ -279,7 +278,7 @@ This preview was built from commit \${process.env.GITHUB_SHA}
       code = code.replace(finalizeRegex, `${githubWorkflowCode}$1`);
     }
 
-    await fs.writeFile(alchemyFilePath, code, "utf-8");
+    await writeFile(alchemyFilePath, code, "utf-8");
 
     s.stop("GitHub Actions configured");
   } catch (error) {

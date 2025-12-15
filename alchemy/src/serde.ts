@@ -183,7 +183,7 @@ export async function deserialize(
             "See: https://alchemy.run/concepts/secret/#encryption-password",
         );
       }
-      if (typeof value["@secret"] === "object") {
+      if (typeof value["@secret"] === "object" && "data" in value["@secret"]) {
         return new Secret(
           JSON.parse(
             await decryptWithKey(value["@secret"].data, scope.password),

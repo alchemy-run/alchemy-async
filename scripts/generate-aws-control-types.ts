@@ -621,16 +621,16 @@ export default updateTypes;
   console.log("Successfully wrote update types file");
 }
 
-async function runBiomeFix(): Promise<void> {
-  console.log("Running biome fix on generated files...");
+async function runOxlintFix(): Promise<void> {
+  console.log("Running oxlint fix on generated files...");
 
   try {
-    await $`bunx @biomejs/biome check --write ${OUTPUT_FILE} ${PROPERTIES_FILE} ${UPDATE_TYPES_FILE}`;
-    console.log("Successfully applied biome fixes to generated files");
+    await $`bunx oxlint ${OUTPUT_FILE} ${PROPERTIES_FILE} ${UPDATE_TYPES_FILE}`;
+    console.log("Successfully applied oxlint fixes to generated files");
   } catch (error) {
-    console.warn("Warning: biome fix failed:", error);
+    console.warn("Warning: oxlint fix failed:", error);
     console.warn(
-      "Generated files may not be properly formatted according to biome rules",
+      "Generated files may not be properly formatted according to oxlint rules",
     );
   }
 }
@@ -674,8 +674,8 @@ export async function generateAwsControlTypes(): Promise<{
   const updateTypes = generateUpdateTypesObject(resourceTypesByService);
   await writeUpdateTypes(updateTypes);
 
-  // Run biome fix on the generated files
-  await runBiomeFix();
+  // Run oxlint fix on the generated files
+  await runOxlintFix();
 
   // Emit metrics
   const totalServices = Object.keys(resourceTypesByService).length;

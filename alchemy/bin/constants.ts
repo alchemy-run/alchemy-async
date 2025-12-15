@@ -1,4 +1,4 @@
-import path from "node:path";
+import path from "pathe";
 import { fileURLToPath } from "node:url";
 import { getPackageVersion } from "./services/get-package-version.ts";
 
@@ -10,7 +10,7 @@ export const dependencyVersionMap = {
   alchemy:
     process.env.NODE_ENV === "test"
       ? `file:${path.resolve(PKG_ROOT)}`
-      : getPackageVersion(),
+      : await getPackageVersion(),
 
   miniflare: "^4.20250617.3",
 

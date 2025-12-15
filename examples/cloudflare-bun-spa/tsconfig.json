@@ -7,5 +7,5 @@
     "noEmit": true
   },
   "include": ["bun-env.d.ts", "src/**/*.ts", "src/**/*.tsx"],
-  "references": [{ "path": "../../alchemy/tsconfig.json" }]
+  "references": [{ "path": "../../alchemy/tsconfig.json" }],
 }

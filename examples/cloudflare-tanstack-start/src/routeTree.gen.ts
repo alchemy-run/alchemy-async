@@ -8,150 +8,150 @@
 // You should NOT make any changes in this file as it will be overwritten.
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
-import { Route as rootRouteImport } from './routes/__root'
-import { Route as IndexRouteImport } from './routes/index'
-import { Route as ApiDemoNamesRouteImport } from './routes/api.demo-names'
-import { Route as DemoStartServerFuncsRouteImport } from './routes/demo.start.server-funcs'
-import { Route as DemoStartApiRequestRouteImport } from './routes/demo.start.api-request'
-import { Route as ApiTestEnvRouteImport } from './routes/api.test.env'
-import { Route as ApiTestKvIdRouteImport } from './routes/api.test.kv.$id'
+import { Route as rootRouteImport } from "./routes/__root";
+import { Route as IndexRouteImport } from "./routes/index";
+import { Route as ApiDemoNamesRouteImport } from "./routes/api.demo-names";
+import { Route as DemoStartServerFuncsRouteImport } from "./routes/demo.start.server-funcs";
+import { Route as DemoStartApiRequestRouteImport } from "./routes/demo.start.api-request";
+import { Route as ApiTestEnvRouteImport } from "./routes/api.test.env";
+import { Route as ApiTestKvIdRouteImport } from "./routes/api.test.kv.$id";
 
 const IndexRoute = IndexRouteImport.update({
-  id: '/',
-  path: '/',
+  id: "/",
+  path: "/",
   getParentRoute: () => rootRouteImport,
-} as any)
+} as any);
 const ApiDemoNamesRoute = ApiDemoNamesRouteImport.update({
-  id: '/api/demo-names',
-  path: '/api/demo-names',
+  id: "/api/demo-names",
+  path: "/api/demo-names",
   getParentRoute: () => rootRouteImport,
-} as any)
+} as any);
 const DemoStartServerFuncsRoute = DemoStartServerFuncsRouteImport.update({
-  id: '/demo/start/server-funcs',
-  path: '/demo/start/server-funcs',
+  id: "/demo/start/server-funcs",
+  path: "/demo/start/server-funcs",
   getParentRoute: () => rootRouteImport,
-} as any)
+} as any);
 const DemoStartApiRequestRoute = DemoStartApiRequestRouteImport.update({
-  id: '/demo/start/api-request',
-  path: '/demo/start/api-request',
+  id: "/demo/start/api-request",
+  path: "/demo/start/api-request",
   getParentRoute: () => rootRouteImport,
-} as any)
+} as any);
 const ApiTestEnvRoute = ApiTestEnvRouteImport.update({
-  id: '/api/test/env',
-  path: '/api/test/env',
+  id: "/api/test/env",
+  path: "/api/test/env",
   getParentRoute: () => rootRouteImport,
-} as any)
+} as any);
 const ApiTestKvIdRoute = ApiTestKvIdRouteImport.update({
-  id: '/api/test/kv/$id',
-  path: '/api/test/kv/$id',
+  id: "/api/test/kv/$id",
+  path: "/api/test/kv/$id",
   getParentRoute: () => rootRouteImport,
-} as any)
+} as any);
 
 export interface FileRoutesByFullPath {
-  '/': typeof IndexRoute
-  '/api/demo-names': typeof ApiDemoNamesRoute
-  '/api/test/env': typeof ApiTestEnvRoute
-  '/demo/start/api-request': typeof DemoStartApiRequestRoute
-  '/demo/start/server-funcs': typeof DemoStartServerFuncsRoute
-  '/api/test/kv/$id': typeof ApiTestKvIdRoute
+  "/": typeof IndexRoute;
+  "/api/demo-names": typeof ApiDemoNamesRoute;
+  "/api/test/env": typeof ApiTestEnvRoute;
+  "/demo/start/api-request": typeof DemoStartApiRequestRoute;
+  "/demo/start/server-funcs": typeof DemoStartServerFuncsRoute;
+  "/api/test/kv/$id": typeof ApiTestKvIdRoute;
 }
 export interface FileRoutesByTo {
-  '/': typeof IndexRoute
-  '/api/demo-names': typeof ApiDemoNamesRoute
-  '/api/test/env': typeof ApiTestEnvRoute
-  '/demo/start/api-request': typeof DemoStartApiRequestRoute
-  '/demo/start/server-funcs': typeof DemoStartServerFuncsRoute
-  '/api/test/kv/$id': typeof ApiTestKvIdRoute
+  "/": typeof IndexRoute;
+  "/api/demo-names": typeof ApiDemoNamesRoute;
+  "/api/test/env": typeof ApiTestEnvRoute;
+  "/demo/start/api-request": typeof DemoStartApiRequestRoute;
+  "/demo/start/server-funcs": typeof DemoStartServerFuncsRoute;
+  "/api/test/kv/$id": typeof ApiTestKvIdRoute;
 }
 export interface FileRoutesById {
-  __root__: typeof rootRouteImport
-  '/': typeof IndexRoute
-  '/api/demo-names': typeof ApiDemoNamesRoute
-  '/api/test/env': typeof ApiTestEnvRoute
-  '/demo/start/api-request': typeof DemoStartApiRequestRoute
-  '/demo/start/server-funcs': typeof DemoStartServerFuncsRoute
-  '/api/test/kv/$id': typeof ApiTestKvIdRoute
+  __root__: typeof rootRouteImport;
+  "/": typeof IndexRoute;
+  "/api/demo-names": typeof ApiDemoNamesRoute;
+  "/api/test/env": typeof ApiTestEnvRoute;
+  "/demo/start/api-request": typeof DemoStartApiRequestRoute;
+  "/demo/start/server-funcs": typeof DemoStartServerFuncsRoute;
+  "/api/test/kv/$id": typeof ApiTestKvIdRoute;
 }
 export interface FileRouteTypes {
-  fileRoutesByFullPath: FileRoutesByFullPath
+  fileRoutesByFullPath: FileRoutesByFullPath;
   fullPaths:
-    | '/'
-    | '/api/demo-names'
-    | '/api/test/env'
-    | '/demo/start/api-request'
-    | '/demo/start/server-funcs'
-    | '/api/test/kv/$id'
-  fileRoutesByTo: FileRoutesByTo
+    | "/"
+    | "/api/demo-names"
+    | "/api/test/env"
+    | "/demo/start/api-request"
+    | "/demo/start/server-funcs"
+    | "/api/test/kv/$id";
+  fileRoutesByTo: FileRoutesByTo;
   to:
-    | '/'
-    | '/api/demo-names'
-    | '/api/test/env'
-    | '/demo/start/api-request'
-    | '/demo/start/server-funcs'
-    | '/api/test/kv/$id'
+    | "/"
+    | "/api/demo-names"
+    | "/api/test/env"
+    | "/demo/start/api-request"
+    | "/demo/start/server-funcs"
+    | "/api/test/kv/$id";
   id:
-    | '__root__'
-    | '/'
-    | '/api/demo-names'
-    | '/api/test/env'
-    | '/demo/start/api-request'
-    | '/demo/start/server-funcs'
-    | '/api/test/kv/$id'
-  fileRoutesById: FileRoutesById
+    | "__root__"
+    | "/"
+    | "/api/demo-names"
+    | "/api/test/env"
+    | "/demo/start/api-request"
+    | "/demo/start/server-funcs"
+    | "/api/test/kv/$id";
+  fileRoutesById: FileRoutesById;
 }
 export interface RootRouteChildren {
-  IndexRoute: typeof IndexRoute
-  ApiDemoNamesRoute: typeof ApiDemoNamesRoute
-  ApiTestEnvRoute: typeof ApiTestEnvRoute
-  DemoStartApiRequestRoute: typeof DemoStartApiRequestRoute
-  DemoStartServerFuncsRoute: typeof DemoStartServerFuncsRoute
-  ApiTestKvIdRoute: typeof ApiTestKvIdRoute
+  IndexRoute: typeof IndexRoute;
+  ApiDemoNamesRoute: typeof ApiDemoNamesRoute;
+  ApiTestEnvRoute: typeof ApiTestEnvRoute;
+  DemoStartApiRequestRoute: typeof DemoStartApiRequestRoute;
+  DemoStartServerFuncsRoute: typeof DemoStartServerFuncsRoute;
+  ApiTestKvIdRoute: typeof ApiTestKvIdRoute;
 }
 
-declare module '@tanstack/react-router' {
+declare module "@tanstack/react-router" {
   interface FileRoutesByPath {
-    '/': {
-      id: '/'
-      path: '/'
-      fullPath: '/'
-      preLoaderRoute: typeof IndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/demo-names': {
-      id: '/api/demo-names'
-      path: '/api/demo-names'
-      fullPath: '/api/demo-names'
-      preLoaderRoute: typeof ApiDemoNamesRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/demo/start/server-funcs': {
-      id: '/demo/start/server-funcs'
-      path: '/demo/start/server-funcs'
-      fullPath: '/demo/start/server-funcs'
-      preLoaderRoute: typeof DemoStartServerFuncsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/demo/start/api-request': {
-      id: '/demo/start/api-request'
-      path: '/demo/start/api-request'
-      fullPath: '/demo/start/api-request'
-      preLoaderRoute: typeof DemoStartApiRequestRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/test/env': {
-      id: '/api/test/env'
-      path: '/api/test/env'
-      fullPath: '/api/test/env'
-      preLoaderRoute: typeof ApiTestEnvRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/test/kv/$id': {
-      id: '/api/test/kv/$id'
-      path: '/api/test/kv/$id'
-      fullPath: '/api/test/kv/$id'
-      preLoaderRoute: typeof ApiTestKvIdRouteImport
-      parentRoute: typeof rootRouteImport
-    }
+    "/": {
+      id: "/";
+      path: "/";
+      fullPath: "/";
+      preLoaderRoute: typeof IndexRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
+    "/api/demo-names": {
+      id: "/api/demo-names";
+      path: "/api/demo-names";
+      fullPath: "/api/demo-names";
+      preLoaderRoute: typeof ApiDemoNamesRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
+    "/demo/start/server-funcs": {
+      id: "/demo/start/server-funcs";
+      path: "/demo/start/server-funcs";
+      fullPath: "/demo/start/server-funcs";
+      preLoaderRoute: typeof DemoStartServerFuncsRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
+    "/demo/start/api-request": {
+      id: "/demo/start/api-request";
+      path: "/demo/start/api-request";
+      fullPath: "/demo/start/api-request";
+      preLoaderRoute: typeof DemoStartApiRequestRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
+    "/api/test/env": {
+      id: "/api/test/env";
+      path: "/api/test/env";
+      fullPath: "/api/test/env";
+      preLoaderRoute: typeof ApiTestEnvRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
+    "/api/test/kv/$id": {
+      id: "/api/test/kv/$id";
+      path: "/api/test/kv/$id";
+      fullPath: "/api/test/kv/$id";
+      preLoaderRoute: typeof ApiTestKvIdRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
   }
 }
 
@@ -162,16 +162,16 @@ const rootRouteChildren: RootRouteChildren = {
   DemoStartApiRequestRoute: DemoStartApiRequestRoute,
   DemoStartServerFuncsRoute: DemoStartServerFuncsRoute,
   ApiTestKvIdRoute: ApiTestKvIdRoute,
-}
+};
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
-  ._addFileTypes<FileRouteTypes>()
+  ._addFileTypes<FileRouteTypes>();
 
-import type { getRouter } from './router.tsx'
-import type { createStart } from '@tanstack/react-start'
-declare module '@tanstack/react-start' {
+import type { getRouter } from "./router.tsx";
+import type { createStart } from "@tanstack/react-start";
+declare module "@tanstack/react-start" {
   interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
+    ssr: true;
+    router: Awaited<ReturnType<typeof getRouter>>;
   }
 }

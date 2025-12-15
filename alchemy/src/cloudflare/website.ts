@@ -1,19 +1,20 @@
 import assert from "node:assert";
 import fs from "node:fs/promises";
-import path from "node:path";
+import path from "pathe";
 import { Exec } from "../os/index.ts";
 import { Scope } from "../scope.ts";
 import { dedent } from "../util/dedent.ts";
 import { logger } from "../util/logger.ts";
+import { createCloudflareApi } from "./api.ts";
 import { Assets } from "./assets.ts";
 import type { Bindings } from "./bindings.ts";
-import { DEFAULT_COMPATIBILITY_DATE } from "./compatibility-date.gen.ts";
+import { DEFAULT_COMPATIBILITY_DATE } from "./compatibility-date.ts";
 import { unionCompatibilityFlags } from "./compatibility-presets.ts";
-import { writeMiniflareSymlink } from "./miniflare/symlink-miniflare-state.ts";
 import {
   extractStringAndSecretBindings,
   unencryptSecrets,
 } from "./util/filter-env-bindings.ts";
+import { computeWorkerDevDomain } from "./worker-subdomain.ts";
 import { type AssetsConfig, Worker, type WorkerProps } from "./worker.ts";
 import { WranglerJson, type WranglerJsonSpec } from "./wrangler.json.ts";
 
@@ -71,6 +72,10 @@ export interface WebsiteProps<B extends Bindings>
          * The command to run to start the dev server
          */
         command?: string;
+        /**
+         * The local domain to use for the dev server
+         */
+        domain?: string;
         /**
          * Additional environment variables to set when running the dev command
          */
@@ -151,7 +156,7 @@ export async function Website<B extends Bindings>(
   props: WebsiteProps<B>,
 ) {
   const {
-    name = Scope.current.createPhysicalName(id),
+    name = Scope.current.createPhysicalName(id).toLowerCase(),
     build: buildProps,
     assets,
     dev,
@@ -226,11 +231,46 @@ export async function Website<B extends Bindings>(
     };
   })();
   const secrets = props.wrangler?.secrets ?? !props.wrangler?.path;
+
   const env = {
-    ...(process.env ?? {}),
-    ...(props.env ?? {}),
+    ...process.env,
+    ...props.env,
     ...extractStringAndSecretBindings(props.bindings ?? {}, secrets),
   };
+  if (props.bindings) {
+    for (const [key, value] of Object.entries(props.bindings)) {
+      if (typeof value !== "object") continue;
+      if (
+        value.type === "cloudflare::Worker::DevDomain" ||
+        value.type === "cloudflare::Worker::DevUrl"
+      ) {
+        if (Scope.current.local) {
+          const domain = typeof dev === "object" ? dev.domain : undefined;
+          if (!domain) {
+            // we can't know which port the local web server (e.g. vite dev) will use
+            // vite dev # default to 5173 or configured in vite.config.ts
+            // vite dev --port XYZ
+            // next dev # who fucking knows
+            // for now: we require the user tell us the local domain
+            throw new Error(
+              "You must set `dev.domain` when running in local development mode and a Worker.DevDomain binding",
+            );
+          }
+          env[key] =
+            value.type === "cloudflare::Worker::DevDomain"
+              ? domain
+              : `http://${domain}`;
+        } else {
+          const api = await createCloudflareApi(props);
+          const domain = await computeWorkerDevDomain(api, name);
+          env[key] =
+            value.type === "cloudflare::Worker::DevDomain"
+              ? domain
+              : `https://${domain}`;
+        }
+      }
+    }
+  }
   const worker = {
     ...workerProps,
     name,
@@ -261,10 +301,6 @@ export async function Website<B extends Bindings>(
           },
       };`;
     await fs.writeFile(paths.entrypoint, content);
-  }
-
-  if (Scope.current.local) {
-    await writeMiniflareSymlink(Scope.current.rootDir, paths.cwd);
   }
 
   await WranglerJson({

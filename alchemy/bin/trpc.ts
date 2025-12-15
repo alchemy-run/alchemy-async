@@ -38,6 +38,13 @@ const loggingMiddleware = t.middleware(async ({ path, next }) => {
         result.error.cause,
       );
     } else {
+      log.error(
+        result.error.message
+          .split("\n")
+          .map((line) => pc.gray(`  ${line}`))
+          .join("\n"),
+      );
+      cancel();
       await createAndSendEvent(
         {
           event: "cli.error",

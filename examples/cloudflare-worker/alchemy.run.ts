@@ -46,7 +46,15 @@ export const worker = await Worker("worker", {
     RPC: rpc,
   },
   url: true,
-  eventSources: [queue],
+  eventSources: [
+    {
+      queue,
+      settings: {
+        maxWaitTimeMs: 1000,
+        batchSize: 10,
+      },
+    },
+  ],
   bundle: {
     metafile: true,
     format: "esm",

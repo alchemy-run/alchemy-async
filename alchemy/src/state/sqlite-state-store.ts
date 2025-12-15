@@ -1,6 +1,6 @@
 import type { Config as LibSQLConfig } from "@libsql/client";
 import fs from "node:fs/promises";
-import path from "node:path";
+import path from "pathe";
 import type { Scope } from "../scope.ts";
 import { exists } from "../util/exists.ts";
 import { memoize } from "../util/memoize.ts";

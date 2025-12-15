@@ -1,5 +1,5 @@
 import * as fs from "node:fs/promises";
-import * as path from "node:path";
+import path from "pathe";
 import { describe, expect } from "vitest";
 import { alchemy } from "../../src/alchemy.ts";
 import { AnalyticsEngineDataset } from "../../src/cloudflare/analytics-engine.ts";
@@ -998,9 +998,12 @@ describe("Worker Resource", () => {
 
       if (worker.url) {
         // Test that the worker was updated correctly
-        const response = await fetchAndExpectOK(worker.url);
-        const text = await response.text();
-        expect(text).toEqual("Hello from updated entrypoint file!");
+        await waitFor(
+          async () => {
+            return (await fetchAndExpectOK(worker.url!)).text();
+          },
+          (text) => text === "Hello from updated entrypoint file!",
+        );
 
         // Test the updated JSON endpoint
         const data = await waitFor(
@@ -2252,6 +2255,17 @@ describe("Worker Resource", () => {
       expect(metadata.default_environment.script.observability).toEqual({
         enabled: true,
         head_sampling_rate: 0.5,
+        logs: {
+          enabled: true,
+          head_sampling_rate: 0.5,
+          invocation_logs: true,
+          persist: true,
+        },
+        traces: {
+          enabled: false,
+          head_sampling_rate: 0.5,
+          persist: true,
+        },
       });
 
       expect(worker.observability).toEqual(baseObservability);
@@ -2266,13 +2280,12 @@ describe("Worker Resource", () => {
           persist: true,
           destinations: [],
         },
-        // TODO(sam): i don't have permission to set this in my account
-        // traces: {
-        //   enabled: true,
-        //   headSamplingRate: 0.1,
-        //   persist: true,
-        //   destinations: [],
-        // },
+        traces: {
+          enabled: true,
+          headSamplingRate: 0.1,
+          persist: true,
+          destinations: [],
+        },
       } satisfies WorkerObservability;
 
       worker = await Worker(workerName, {
@@ -2294,9 +2307,15 @@ describe("Worker Resource", () => {
         enabled: true,
         head_sampling_rate: 0.5,
         logs: {
-          head_sampling_rate: null,
+          head_sampling_rate: 0.5,
           enabled: true,
           invocation_logs: false,
+          persist: true,
+          destinations: [],
+        },
+        traces: {
+          enabled: true,
+          head_sampling_rate: 0.1,
           persist: true,
           destinations: [],
         },
@@ -2353,6 +2372,43 @@ describe("Worker Resource", () => {
       });
     } finally {
       await destroy(scope);
+    }
+  });
+
+  test("create worker with subdomain binding", async (scope) => {
+    const workerName = `${BRANCH_PREFIX}-test-worker-subdomain`;
+
+    let worker: Worker | undefined;
+    try {
+      worker = await Worker(workerName, {
+        name: workerName,
+        adopt: true,
+        script: `
+          export default {
+            async fetch(request, env, ctx) {
+              return Response.json({
+                domain: env.DEV_DOMAIN,
+                url: env.DEV_URL,
+              });
+            }
+          };
+        `,
+        bindings: {
+          DEV_DOMAIN: Worker.DevDomain,
+          DEV_URL: Worker.DevUrl,
+        },
+      });
+
+      const response = await fetchAndExpectOK(worker.url!);
+      const { domain, url } = (await response.json()) as {
+        domain: string;
+        url: string;
+      };
+      expect(`https://${domain}`).toEqual(worker.url);
+      expect(url).toEqual(worker.url);
+    } finally {
+      await destroy(scope);
+      await assertWorkerDoesNotExist(api, workerName);
     }
   });
 });

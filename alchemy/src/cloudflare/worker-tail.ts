@@ -110,7 +110,9 @@ class TailClient {
         const status = event.response?.status ?? 500;
         // TODO: make this look nicer
         logger.log(
-          `${prefix} ${pc.gray(event.request.method)} ${url.pathname} ${pc.dim(">")} ${status >= 200 && status < 300 ? pc.green(status) : pc.red(status)} ${pc.gray(`(cpu: ${Math.round(data.cpuTime)}ms, wall: ${Math.round(data.wallTime)}ms)`)}`,
+          `${prefix} ${pc.gray(event.request.method)} ${url.pathname} ${pc.dim(">")} ${
+            status >= 200 && status < 300 ? pc.green(status) : pc.red(status)
+          } ${pc.gray(`(cpu: ${Math.round(data.cpuTime)}ms, wall: ${Math.round(data.wallTime)}ms)`)}`,
         );
       }
       for (const log of data.logs) {

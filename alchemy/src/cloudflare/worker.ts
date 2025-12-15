@@ -20,7 +20,7 @@ import type {
   WorkerBindingSpec,
 } from "./bindings.ts";
 import type { Bound } from "./bound.ts";
-import { DEFAULT_COMPATIBILITY_DATE } from "./compatibility-date.gen.ts";
+import { DEFAULT_COMPATIBILITY_DATE } from "./compatibility-date.ts";
 import {
   type CompatibilityPreset,
   unionCompatibilityFlags,
@@ -34,6 +34,7 @@ import {
 } from "./durable-object-namespace.ts";
 import { type EventSource, isQueueEventSource } from "./event-source.ts";
 import { deleteMiniflareWorkerData } from "./miniflare/delete.ts";
+import { MiniflareController } from "./miniflare/miniflare-controller.ts";
 import {
   QueueConsumer,
   deleteQueueConsumer,
@@ -50,16 +51,23 @@ import {
 import {
   type WorkerScriptMetadata,
   bumpMigrationTagVersion,
+  getWorkerSettings,
   prepareWorkerMetadata,
 } from "./worker-metadata.ts";
 import { WorkerSubdomain, disableWorkerSubdomain } from "./worker-subdomain.ts";
 import { createTail } from "./worker-tail.ts";
-import { Workflow, isWorkflow, upsertWorkflow } from "./workflow.ts";
+import {
+  Workflow,
+  deleteWorkflow,
+  isWorkflow,
+  upsertWorkflow,
+} from "./workflow.ts";
 
 // Previous versions of `Worker` used the `Bundle` resource.
 // This import is here to avoid errors when destroying the `Bundle` resource.
 import "../esbuild/bundle.ts";
 import { Scope } from "../scope.ts";
+import { extractCloudflareResult } from "./api-response.ts";
 import type { WorkerRef } from "./worker-ref.ts";
 import { createEmptyWorker, exists } from "./worker-stub.ts";
 
@@ -69,11 +77,13 @@ import { createEmptyWorker, exists } from "./worker-stub.ts";
 export interface AssetsConfig {
   /**
    * The contents of a _headers file (used to attach custom headers on asset responses)
+   * @default the `_headers` file in the assets directory, if present
    */
   _headers?: string;
 
   /**
    * The contents of a _redirects file (used to apply redirects or proxy paths ahead of asset serving)
+   * @default the `_redirects` file in the assets directory, if present
    */
   _redirects?: string;
 
@@ -799,6 +809,17 @@ export function Worker<const B extends Bindings>(
   return _Worker(id, props as WorkerProps<B>);
 }
 
+export namespace Worker {
+  export type DevDomain = typeof DevDomain;
+  export const DevDomain = {
+    type: "cloudflare::Worker::DevDomain" as const,
+  };
+  export type DevUrl = typeof DevUrl;
+  export const DevUrl = {
+    type: "cloudflare::Worker::DevUrl" as const,
+  };
+}
+
 Worker.experimentalEntrypoint = <RPC extends Rpc.WorkerEntrypointBranded>(
   worker: Worker | WorkerRef | Self,
   entrypoint: string,
@@ -830,7 +851,9 @@ const _Worker = Resource(
   ) {
     let adopt = props.adopt ?? this.scope.adopt;
     const workerName =
-      props.name ?? this.output?.name ?? this.scope.createPhysicalName(id);
+      props.name ??
+      this.output?.name ??
+      this.scope.createPhysicalName(id).toLowerCase();
     if (this.phase === "create" && !props.adopt) {
       // it is possible that this worker already exists and was created by the old Website wrapper with a nested scope
       // we need to detect this and set adopt=true so that the previous version will be adopted seamlessly
@@ -945,7 +968,10 @@ const _Worker = Resource(
             await createEmptyWorker(api, options.name, props.version);
           }
         } else {
-          await deleteQueueConsumers(api, options.name);
+          await Promise.all([
+            deleteQueueConsumers(api, options.name),
+            deleteWorkflows(api, options.name),
+          ]);
           await deleteWorker(api, {
             scriptName: options.name,
             dispatchNamespace: options.dispatchNamespace,
@@ -966,9 +992,6 @@ const _Worker = Resource(
       if (props.dev?.url) {
         url = props.dev.url;
       } else {
-        const { MiniflareController } = await import(
-          "./miniflare/miniflare-controller.js"
-        );
         const controller = MiniflareController.singleton;
         url = await controller.add({
           api,
@@ -1586,54 +1609,40 @@ export async function putWorker(
   return withExponentialBackoff(
     async () => {
       const { body, endpoint, method } = await prepareWorkerUpload(api, props);
-      const uploadResponse = await api.fetch(endpoint, {
-        method,
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-        body,
-      });
-
-      // Check if the upload was successful
-      if (!uploadResponse.ok) {
-        try {
-          return await handleApiError(
-            uploadResponse,
-            version ? "uploading worker version" : "uploading worker script",
-            "worker",
-            workerName,
-          );
-        } catch (error) {
-          if (error instanceof CloudflareApiError && error.status === 412) {
-            // this happens when adopting a Worker managed with Wrangler
-            // because wrangler includes a migration tag and we do not
-            // currently, the only way to discover the old_tag is through the error message
-            // Get Worker Script Settings is meant to return it (according to the docs)
-            // but it doesn't work at runtime
-            //
-            // so, we catch the error and parse out the tag and then retry
-            if (error.message.includes("when expected tag is")) {
-              const newTag = error.message.match(
-                /when expected tag is ['"]?(v\d+)['"]?/,
-              )?.[1];
-              if (newTag) {
-                return await putWorker(api, {
-                  ...props,
-                  migrationTag: newTag,
-                });
-              }
-            } else {
-              throw error;
-            }
-          } else {
-            throw error;
+      try {
+        return await extractCloudflareResult<PutWorkerResult>(
+          version
+            ? `upload version for worker "${workerName}"`
+            : `upload worker script "${workerName}"`,
+          api.fetch(endpoint, {
+            method,
+            headers: {
+              "Content-Type": "multipart/form-data",
+            },
+            body,
+          }),
+        );
+      } catch (error) {
+        if (error instanceof CloudflareApiError && error.status === 412) {
+          // this happens when adopting a Worker managed with Wrangler
+          // because wrangler includes a migration tag and we do not
+          // currently, the only way to discover the old_tag is through the error message
+          // Get Worker Script Settings is meant to return it (according to the docs)
+          // but it doesn't work at runtime
+          //
+          // so, we catch the error and parse out the tag and then retry
+          const newTag = error.message.match(
+            /when expected tag is ['"]?([^'"]+)['"]?/,
+          )?.[1];
+          if (newTag) {
+            return await putWorker(api, {
+              ...props,
+              migrationTag: newTag,
+            });
           }
         }
+        throw error;
       }
-      const responseData = (await uploadResponse.json()) as {
-        result: PutWorkerResult;
-      };
-      return responseData.result;
     },
     (err) =>
       err.status === 404 ||
@@ -1715,6 +1724,20 @@ async function deleteQueueConsumers(api: CloudflareApi, scriptName: string) {
   await Promise.all(
     consumers.map(async (consumer) => {
       await deleteQueueConsumer(api, consumer.queueId, consumer.consumerId);
+    }),
+  );
+}
+
+async function deleteWorkflows(api: CloudflareApi, scriptName: string) {
+  const settings = await getWorkerSettings(api, scriptName);
+  await Promise.all(
+    (settings?.bindings ?? []).map(async (binding) => {
+      if (
+        binding.type === "workflow" &&
+        (binding.script_name === scriptName || !binding.script_name)
+      ) {
+        await deleteWorkflow(api, binding.workflow_name);
+      }
     }),
   );
 }

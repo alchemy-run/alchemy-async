@@ -87,7 +87,9 @@ export async function disableWorkerSubdomain(
     `disable subdomain for "${scriptName}"`,
     api.post(
       `/accounts/${api.accountId}/workers/scripts/${scriptName}/subdomain`,
-      { enabled: false },
+      {
+        enabled: false,
+      },
     ),
   ).catch((error) => {
     if (error.status === 404) {
@@ -107,13 +109,23 @@ export async function enableWorkerSubdomain(
         `enable subdomain for "${scriptName}"`,
         api.post(
           `/accounts/${api.accountId}/workers/scripts/${scriptName}/subdomain`,
-          { enabled: true, previews_enabled: true },
+          {
+            enabled: true,
+            previews_enabled: true,
+          },
         ),
       ),
     (error) => error instanceof CloudflareApiError && error.status === 404,
     20,
     1000,
   );
+}
+
+export async function computeWorkerDevDomain(
+  api: CloudflareApi,
+  scriptName: string,
+) {
+  return `${scriptName}.${await getAccountSubdomain(api)}.workers.dev`;
 }
 
 export async function getWorkerSubdomain(
@@ -126,7 +138,6 @@ export async function getWorkerSubdomain(
       `/accounts/${api.accountId}/workers/scripts/${scriptName}/subdomain`,
     ),
   ).catch((error): SubdomainResponse => {
-    console.log("error", error);
     if (error.status === 404) {
       return { enabled: false, previews_enabled: false };
     }

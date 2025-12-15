@@ -30,6 +30,7 @@ export default {
   }
 }`,
     url: true,
+    adopt: true,
   });
 }
 

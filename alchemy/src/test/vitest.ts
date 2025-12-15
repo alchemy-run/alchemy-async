@@ -1,4 +1,4 @@
-import path from "node:path";
+import path from "pathe";
 import { afterAll, beforeAll, it } from "vitest";
 import { alchemy } from "../alchemy.ts";
 import { Scope } from "../scope.ts";
@@ -128,7 +128,9 @@ export function test(
 
   const scope = new Scope({
     parent: undefined,
-    scopeName: `${defaultOptions.prefix ? `${defaultOptions.prefix}-` : ""}${path.basename(meta.filename)}`,
+    scopeName: `${
+      defaultOptions.prefix ? `${defaultOptions.prefix}-` : ""
+    }${path.basename(meta.filename)}`,
     stateStore: defaultOptions?.stateStore,
     phase: "up",
     noTrack: true,

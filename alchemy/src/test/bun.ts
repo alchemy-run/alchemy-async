@@ -1,7 +1,7 @@
 /// <reference types="bun" />
 
 import { afterAll, beforeAll, it } from "bun:test";
-import path from "node:path";
+import path from "pathe";
 import { alchemy } from "../alchemy.ts";
 import { Scope } from "../scope.ts";
 import type { TestOptions } from "./options.ts";
@@ -98,7 +98,9 @@ export function test(meta: ImportMeta, defaultOptions?: TestOptions): test {
   // Create local test scope based on filename
   const scope = new Scope({
     parent: undefined,
-    scopeName: `${defaultOptions.prefix ? `${defaultOptions.prefix}-` : ""}${path.basename(meta.filename)}`,
+    scopeName: `${
+      defaultOptions.prefix ? `${defaultOptions.prefix}-` : ""
+    }${path.basename(meta.filename)}`,
     // parent: globalTestScope,
     stateStore: defaultOptions?.stateStore,
     phase: "up",

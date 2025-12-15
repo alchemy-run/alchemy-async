@@ -1,5 +1,6 @@
 import { describe, expect } from "vitest";
 import { alchemy } from "../../src/alchemy.ts";
+import { createCloudflareApi } from "../../src/cloudflare/api.ts";
 import { Worker } from "../../src/cloudflare/worker.ts";
 import { Workflow } from "../../src/cloudflare/workflow.ts";
 import { destroy } from "../../src/destroy.ts";
@@ -11,6 +12,7 @@ import "../../src/test/vitest.ts";
 const test = alchemy.test(import.meta, {
   prefix: BRANCH_PREFIX,
 });
+const api = await createCloudflareApi();
 
 // Helper function to create client worker scripts
 function createClientWorkerScript(
@@ -219,6 +221,7 @@ describe("Workflow", () => {
       });
 
       await new Promise((resolve) => setTimeout(resolve, 1000));
+      await assertWorkflowStatus("email-notification-workflow", 200);
 
       expect(worker.id).toBeTruthy();
       expect(worker.name).toEqual(workerName);
@@ -263,6 +266,7 @@ describe("Workflow", () => {
       });
 
       await new Promise((resolve) => setTimeout(resolve, 1000));
+      await assertWorkflowStatus("order-processing-workflow", 200);
 
       expect(worker.bindings).toBeDefined();
       expect(Object.keys(worker.bindings || {})).toHaveLength(2);
@@ -287,6 +291,8 @@ describe("Workflow", () => {
     } finally {
       // Explicitly destroy resources since destroy: false is set
       await destroy(scope);
+      await assertWorkflowStatus("email-notification-workflow", 404);
+      await assertWorkflowStatus("order-processing-workflow", 404);
     }
   });
 
@@ -581,4 +587,11 @@ function createWorkflowProviderScript(
         }
       };
     `;
+}
+
+async function assertWorkflowStatus(workflowName: string, statusCode: number) {
+  const response = await api.get(
+    `/accounts/${api.accountId}/workflows/${workflowName}`,
+  );
+  expect(response.status).toEqual(statusCode);
 }

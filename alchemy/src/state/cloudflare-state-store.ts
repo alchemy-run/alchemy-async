@@ -2,7 +2,7 @@ import { alchemy } from "../alchemy.ts";
 import type { CloudflareApiOptions } from "../cloudflare/api.ts";
 import { createCloudflareApi } from "../cloudflare/api.ts";
 import { getInternalWorkerBundle } from "../cloudflare/bundle/internal-worker-bundle.ts";
-import { DEFAULT_COMPATIBILITY_DATE } from "../cloudflare/compatibility-date.gen.ts";
+import { DEFAULT_COMPATIBILITY_DATE } from "../cloudflare/compatibility-date.ts";
 import { DurableObjectNamespace } from "../cloudflare/durable-object-namespace.ts";
 import { getWorkerSettings } from "../cloudflare/worker-metadata.ts";
 import {

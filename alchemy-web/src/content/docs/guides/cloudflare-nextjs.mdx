@@ -68,7 +68,7 @@ Before you can deploy, authenticate with your Cloudflare account:
 </Tabs>
 
 :::tip
-Alchemy automatically re-uses your Wrangler OAuth tokens. See the [Cloudflare](/guides/cloudflare) guide for other authentication options.
+Alchemy login creates Cloudflare OAuth tokens for alchemy. See the [Cloudflare](/guides/cloudflare) guide for other options.
 :::
 
 ## Deploy
@@ -179,8 +179,6 @@ ALCHEMY_PASSWORD=change-me
 The infrastructure setup with KV storage for demonstration:
 
 ```typescript
-/// <reference types="@types/node" />
-
 import alchemy from "alchemy";
 import { KVNamespace, Nextjs } from "alchemy/cloudflare";
 

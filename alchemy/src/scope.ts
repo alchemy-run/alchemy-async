@@ -1,6 +1,9 @@
 import { AsyncLocalStorage } from "node:async_hooks";
-import path from "node:path";
+import { spawn } from "node:child_process";
+import { once } from "node:events";
+import fs from "node:fs/promises";
 import util from "node:util";
+import path from "pathe";
 import pc from "picocolors";
 import type { Phase } from "./alchemy.ts";
 import { destroy, destroyAll, DestroyStrategy } from "./destroy.ts";
@@ -40,7 +43,7 @@ export class RootScopeStateAttemptError extends Error {
 
 export interface ScopeOptions extends ProviderCredentials {
   stage?: string;
-  parent: Scope | undefined;
+  parent: Scope | undefined | null;
   scopeName: string;
   password?: string;
   stateStore?: StateStoreType;
@@ -173,8 +176,8 @@ export class Scope {
 
   public static readonly KIND = "alchemy::Scope" as const;
 
-  public static storage = (globalThis.__ALCHEMY_STORAGE__ ??=
-    new AsyncLocalStorage<Scope>());
+  public static storage = globalThis.__ALCHEMY_STORAGE__ ??=
+    new AsyncLocalStorage<Scope>();
 
   public static getScope(): Scope | undefined {
     return Scope.storage.getStore();
@@ -260,7 +263,7 @@ export class Scope {
 
     this.scopeName = scopeName;
     this.name = this.scopeName;
-    this.parent = parent ?? Scope.getScope();
+    this.parent = parent === null ? undefined : (parent ?? Scope.getScope());
     this.rootDir = rootDir ?? this.parent?.rootDir ?? ALCHEMY_ROOT;
     this.isSelected = isSelected ?? this.parent?.isSelected;
     this.startedAt = startedAt ?? this.parent?.startedAt ?? performance.now();
@@ -355,6 +358,30 @@ export class Scope {
     });
     this.onCleanup(result.stop);
     return result.extracted as any;
+  }
+
+  public async exec(
+    id: string,
+    command: string,
+  ): Promise<{ exitCode: number; stdout: string; stderr: string }> {
+    const logFilePath = path.join(this.dotAlchemy, "logs", `${id}.log`);
+    const [cmd, ...args] = command.split(/\s+/);
+    const child = spawn(cmd, args, { stdio: "pipe" });
+    await once(child, "spawn"); // throws if command not found
+    await fs.mkdir(path.dirname(logFilePath), { recursive: true });
+    const logFile = await fs.open(logFilePath, "w");
+    let stdout = "";
+    let stderr = "";
+    child.stdout.on("data", (chunk) => {
+      stdout += chunk.toString();
+      logFile.write(chunk);
+    });
+    child.stderr.on("data", (chunk) => {
+      stderr += chunk.toString();
+      logFile.write(chunk);
+    });
+    const [exitCode] = (await once(child, "exit")) as [number];
+    return { exitCode, stdout, stderr };
   }
 
   /**

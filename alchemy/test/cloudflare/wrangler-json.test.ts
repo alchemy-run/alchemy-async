@@ -1,5 +1,5 @@
 import * as fs from "node:fs/promises";
-import * as path from "node:path";
+import path from "pathe";
 import { describe, expect } from "vitest";
 import { alchemy } from "../../src/alchemy.ts";
 import { Ai } from "../../src/cloudflare/ai.ts";
@@ -843,6 +843,54 @@ describe("WranglerJson Resource", () => {
       });
     } finally {
       await fs.rm(tempDir, { recursive: true, force: true });
+      await destroy(scope);
+    }
+  });
+
+  test("create worker with subdomain binding", async (scope) => {
+    const workerName = `${BRANCH_PREFIX}-test-worker-subdomain-binding`;
+
+    const tempDir = path.join(".out", "alchemy-direct-queue-test");
+    const entrypoint = path.join(tempDir, "worker.ts");
+
+    let worker: Worker | undefined;
+    try {
+      // Create a temporary directory for the entrypoint file
+      await fs.rm(tempDir, { recursive: true, force: true });
+      await fs.mkdir(tempDir, { recursive: true });
+      await fs.writeFile(
+        entrypoint,
+        `
+          export default {
+            async fetch(request, env, ctx) {
+              return Response.json({
+                domain: env.DEV_DOMAIN,
+              });
+            }
+          };
+        `,
+      );
+
+      worker = await Worker(workerName, {
+        name: workerName,
+        adopt: true,
+        entrypoint,
+        bindings: {
+          DEV_DOMAIN: Worker.DevDomain,
+          DEV_URL: Worker.DevUrl,
+        },
+      });
+
+      const { spec } = await WranglerJson({ worker });
+
+      expect(spec).toMatchObject({
+        name: workerName,
+        vars: {
+          DEV_DOMAIN: worker.url!.replace("https://", ""),
+          DEV_URL: worker.url!,
+        },
+      });
+    } finally {
       await destroy(scope);
     }
   });

@@ -35,7 +35,7 @@
     "alchemy": "workspace:*",
     "jsdom": "^26.0.0",
     "typescript": "^5.7.2",
-    "vite": "^7.1.7",
+    "vite": "^7.1.9",
     "vitest": "^3.0.5",
     "web-vitals": "^4.2.4"
   }

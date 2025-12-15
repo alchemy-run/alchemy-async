@@ -2,8 +2,8 @@ import { Listr, type ListrTask } from "listr2";
 import { spawn } from "node:child_process";
 import { createWriteStream } from "node:fs";
 import fs, { access, mkdir, readdir, stat, unlink } from "node:fs/promises";
-import path, { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
+import path, { dirname, join } from "pathe";
 import pc from "picocolors";
 import { AsyncMutex } from "../src/util/mutex.ts";
 
@@ -138,7 +138,7 @@ const tasks = new Listr(
           title: variantName,
           task: async (_ctx, task) => {
             try {
-              const projectPath = path.join(smokeDir, variantName);
+              const projectPath = join(smokeDir, variantName);
               const exec = createExec(task, projectPath, variantName);
 
               await clearLog(variantName);
@@ -183,7 +183,7 @@ const tasks = new Listr(
         ({
           title: variantName,
           task: async (_ctx, task) => {
-            const projectPath = path.join(smokeDir, variantName);
+            const projectPath = join(smokeDir, variantName);
             const exec = createExec(task, projectPath, variantName);
             try {
               await clearLog(variantName);
@@ -552,11 +552,11 @@ async function log(name: string, message: string) {
 
 async function install(projectPath: string) {
   const packageJson = JSON.parse(
-    await fs.readFile(path.join(projectPath, "package.json"), "utf-8"),
+    await fs.readFile(join(projectPath, "package.json"), "utf-8"),
   );
   packageJson.devDependencies.alchemy = "link:alchemy";
   await fs.writeFile(
-    path.join(projectPath, "package.json"),
+    join(projectPath, "package.json"),
     JSON.stringify(packageJson, null, 2),
   );
   // having problems installing dependencies in parallel

@@ -1,13 +1,15 @@
+import { alchemy } from "../alchemy.ts";
 import type { Context } from "../context.ts";
 import { Resource } from "../resource.ts";
 import { createNeonApi, type NeonApiOptions } from "./api.ts";
+import type { NeonClient } from "./api/sdk.gen.ts";
 import type * as neon from "./api/types.gen.ts";
 import {
   formatConnectionUri,
   formatRole,
-  waitForOperations,
   type NeonConnectionUri,
   type NeonRole,
+  waitForOperations,
 } from "./utils.ts";
 
 /**
@@ -32,6 +34,18 @@ export type NeonPgVersion = 14 | 15 | 16 | 17 | 18;
  * Properties for creating or updating a Neon project
  */
 export interface NeonProjectProps extends NeonApiOptions {
+  /**
+   * When `true`, will adopt an existing project by `name`
+   */
+  adopt?: true;
+
+  /**
+   * Whether to delete the database when the resource is destroyed.
+   * When false, the database will only be removed from the state but not deleted via API.
+   * @default true, unless the resource was adopted
+   */
+  delete?: boolean;
+
   /**
    * Name of the project
    *
@@ -165,6 +179,13 @@ export interface NeonProject {
  * });
  *
  * @example
+ * // Adopt an existing Neon project by name:
+ * const project = await NeonProject("my-project", {
+ *   adopt: true
+ *   name: "adjective-noun-123",
+ * });
+ *
+ * @example
  * // Create a Neon project in a specific region with a specific PostgreSQL version:
  * const euProject = await NeonProject("my-eu-project", {
  *   name: "My EU Project",
@@ -193,6 +214,17 @@ export const NeonProject = Resource(
 
     switch (this.phase) {
       case "create": {
+        if (props.adopt) {
+          try {
+            return await fetchProject(api, { ...props, name });
+          } catch (error) {
+            if (!(error instanceof NeonProjectNotFound)) {
+              throw error;
+            }
+            // project not found, continue with creation
+          }
+        }
+
         const { data } = await api.createProject({
           body: {
             project: {
@@ -276,8 +308,9 @@ export const NeonProject = Resource(
           history_retention_seconds: data.project.history_retention_seconds,
         };
       }
+
       case "delete": {
-        if (this.output?.id) {
+        if (props.delete !== false && this.output?.id) {
           const response = await api.deleteProject({
             path: {
               project_id: this.output.id,
@@ -298,3 +331,125 @@ export const NeonProject = Resource(
     }
   },
 );
+
+/**
+ * References an existing Neon project by name. You can use this to reference an existing NeonProject without adopting it.
+ *
+ * @example
+ * const project = await NeonProjectRef({
+ *   name: "my-project"
+ * });
+ *
+ * @warning Project names must be unique when referencing existing projects. If multiple projects are found with the same name, an error will be thrown.
+ */
+export async function NeonProjectRef(
+  props: NeonProjectProps & { name: string },
+): Promise<NeonProject> {
+  return await fetchProject(createNeonApi(props), props);
+}
+
+async function fetchProject(
+  api: NeonClient,
+  props: NeonProjectProps & { name: string },
+): Promise<NeonProject> {
+  const project = await api
+    .listProjects({
+      query: { search: props.name },
+    })
+    .then(({ data: { projects } }) => {
+      if (!projects.length) {
+        throw new NeonProjectNotFound(props.name);
+      }
+      if (projects.length > 1) {
+        throw new Error(
+          `Multiple projects found with name "${props.name}". Name must be unique when referencing existing projects.`,
+        );
+      }
+      return projects[0];
+    });
+  const endpointsPromise = api
+    .listProjectEndpoints({
+      path: { project_id: project.id },
+    })
+    .then((res) => res.data.endpoints as [neon.Endpoint, ...neon.Endpoint[]]);
+  const branch = await api
+    .listProjectBranches({
+      path: { project_id: project.id },
+      query: { search: props.default_branch_name ?? "main" },
+    })
+    .then((res) => {
+      if (!res.data.branches.length) {
+        throw new Error(
+          `Branch ${props.default_branch_name ?? "main"} does not exist in Neon project "${props.name}" (${project.id}).`,
+        );
+      }
+      return res.data.branches[0];
+    });
+  const rolesPromise = api
+    .listProjectBranchRoles({
+      path: { project_id: project.id, branch_id: branch.id },
+    })
+    .then((res) => res.data.roles.map(formatRole) as [NeonRole, ...NeonRole[]]);
+  const databases = await api
+    .listProjectBranchDatabases({
+      path: { project_id: project.id, branch_id: branch.id },
+    })
+    .then((res) => res.data.databases as [neon.Database, ...neon.Database[]]);
+  const [connection_uris, endpoints, roles] = await Promise.all([
+    Promise.all(databases.map(fetchConnectionUri)) as Promise<
+      [NeonConnectionUri, ...NeonConnectionUri[]]
+    >,
+    endpointsPromise,
+    rolesPromise,
+  ]);
+  return {
+    id: project.id,
+    name: project.name,
+    created_at: project.created_at,
+    updated_at: project.updated_at,
+    proxy_host: project.proxy_host,
+    region_id: project.region_id as NeonRegion,
+    pg_version: project.pg_version as NeonPgVersion,
+    settings: project.settings,
+    default_endpoint_settings: project.default_endpoint_settings,
+    history_retention_seconds: project.history_retention_seconds ?? 86400,
+    connection_uris,
+    roles,
+    databases,
+    branch,
+    endpoints,
+  };
+
+  async function fetchConnectionUri(
+    database: neon.Database,
+  ): Promise<NeonConnectionUri> {
+    const {
+      data: { uri },
+    } = await api.getConnectionUri({
+      path: { project_id: project.id },
+      query: {
+        branch_id: database.branch_id,
+        database_name: database.name,
+        role_name: database.owner_name,
+        pooled: false, // match default behavior from create endpoint (should this be true?)
+      },
+    });
+    const url = new URL(uri);
+    return {
+      connection_uri: alchemy.secret(uri),
+      connection_parameters: {
+        database: database.name,
+        host: url.host,
+        port: 5432,
+        user: url.username,
+        password: alchemy.secret(url.password),
+      },
+    };
+  }
+}
+
+class NeonProjectNotFound extends Error {
+  constructor(name: string) {
+    super(`Failed to find existing project "${name}".`);
+  }
+}

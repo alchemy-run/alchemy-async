@@ -116,3 +116,12 @@ export async function upsertWorkflow(
 
   return body.result;
 }
+
+export async function deleteWorkflow(api: CloudflareApi, name: string) {
+  const response = await api.delete(
+    `/accounts/${api.accountId}/workflows/${name}`,
+  );
+  if (!response.ok && response.status !== 404) {
+    await handleApiError(response, "delete", "workflow", name);
+  }
+}

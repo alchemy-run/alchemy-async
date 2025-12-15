@@ -1,7 +1,5 @@
-/// <reference types="node" />
-
 import alchemy from "alchemy";
-import { KVNamespace, Vite } from "alchemy/cloudflare";
+import { KVNamespace, Vite, Worker } from "alchemy/cloudflare";
 
 const app = await alchemy("cloudflare-vite");
 
@@ -17,9 +15,11 @@ export const website = await Vite("website", {
   bindings: {
     KV: kv,
     ALCHEMY_TEST_VALUE: alchemy.secret("Hello from Alchemy!"),
+    VITE_PUBLIC_DOMAIN: Worker.DevDomain,
   },
   dev: {
     command: "vite dev --port 5006",
+    domain: "localhost:5006",
   },
 });
 
@@ -28,6 +28,7 @@ console.log({
 });
 
 if (process.env.ALCHEMY_E2E) {
+  await new Promise((resolve) => setTimeout(resolve, 1000));
   const { test } = await import("./test/e2e.js");
   await test({
     url: website.url,

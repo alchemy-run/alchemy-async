@@ -1,3 +1,307 @@
+## v0.81.3
+
+### &nbsp;&nbsp;&nbsp;🐞 Bug Fixes
+
+- **cloudflare**: Website resources properly lowercase worker names &nbsp;-&nbsp; by **Michael K** in https://github.com/alchemy-run/alchemy/issues/1268 [<samp>(82834)</samp>](https://github.com/alchemy-run/alchemy/commit/828345c1)
+- **core**: Add missing ".ts" extensions to hey api client &nbsp;-&nbsp; by **John Royal** in https://github.com/alchemy-run/alchemy/issues/1269 [<samp>(808c3)</samp>](https://github.com/alchemy-run/alchemy/commit/808c3687)
+
+##### &nbsp;&nbsp;&nbsp;&nbsp;[View changes on GitHub](https://github.com/alchemy-run/alchemy/compare/v0.81.2...v0.81.3)
+
+---
+
+## v0.81.2
+
+### &nbsp;&nbsp;&nbsp;🐞 Bug Fixes
+
+- **cloudflare**:
+  - Miniflare compatibility date warning &nbsp;-&nbsp; by **John Royal** in https://github.com/alchemy-run/alchemy/issues/1256 [<samp>(4992e)</samp>](https://github.com/alchemy-run/alchemy/commit/4992e56d)
+  - Support dev.domain in NextJS &nbsp;-&nbsp; by **Sam Goodwin** in https://github.com/alchemy-run/alchemy/issues/1264 [<samp>(d80a0)</samp>](https://github.com/alchemy-run/alchemy/commit/d80a0ce8)
+  - Handle next.js 16 absolute paths in wasm imports &nbsp;-&nbsp; by **John Royal** in https://github.com/alchemy-run/alchemy/issues/1259 [<samp>(5363d)</samp>](https://github.com/alchemy-run/alchemy/commit/5363d641)
+- **core**:
+  - Do not wait for consistent state when destroying &nbsp;-&nbsp; by **Sam Goodwin** in https://github.com/alchemy-run/alchemy/issues/1252 [<samp>(8eae9)</samp>](https://github.com/alchemy-run/alchemy/commit/8eae9c75)
+- **prisma-postgres**:
+  - Properly build `connectionString` &nbsp;-&nbsp; by **Yanqi Zong** in https://github.com/alchemy-run/alchemy/issues/1253 [<samp>(eb4a8)</samp>](https://github.com/alchemy-run/alchemy/commit/eb4a8600)
+
+##### &nbsp;&nbsp;&nbsp;&nbsp;[View changes on GitHub](https://github.com/alchemy-run/alchemy/compare/v0.81.1...v0.81.2)
+
+---
+
+## v0.81.1
+
+### &nbsp;&nbsp;&nbsp;🐞 Bug Fixes
+
+- **cloudflare**: Resolve zoneId in RedirectRule and use individual Rule apis &nbsp;-&nbsp; by **Sam Goodwin** in https://github.com/alchemy-run/alchemy/issues/1250 [<samp>(0978c)</samp>](https://github.com/alchemy-run/alchemy/commit/0978cc3e)
+
+##### &nbsp;&nbsp;&nbsp;&nbsp;[View changes on GitHub](https://github.com/alchemy-run/alchemy/compare/v0.81.0...v0.81.1)
+
+---
+
+## v0.81.0
+
+### &nbsp;&nbsp;&nbsp;🚀 Features
+
+- **cloudflare**:
+  - Add missing cache fields to hyperdrive &nbsp;-&nbsp; by **John Royal** in https://github.com/alchemy-run/alchemy/issues/1240 [<samp>(c1c8f)</samp>](https://github.com/alchemy-run/alchemy/commit/c1c8f3f5)
+  - Resources for warp device profiles and CIDR Routes for tunnels &nbsp;-&nbsp; by **Andrew Jefferson** in https://github.com/alchemy-run/alchemy/issues/1243 [<samp>(48731)</samp>](https://github.com/alchemy-run/alchemy/commit/487314aa)
+
+### &nbsp;&nbsp;&nbsp;🐞 Bug Fixes
+
+- **cloudflare**:
+  - Pass safe user headers to miniflare websocket &nbsp;-&nbsp; by **John Royal** in https://github.com/alchemy-run/alchemy/issues/1235 [<samp>(b533a)</samp>](https://github.com/alchemy-run/alchemy/commit/b533ac9a)
+  - Paginate Cloudflare queue lookup &nbsp;-&nbsp; by **Riley Tomasek** and **CharlieHelps** in https://github.com/alchemy-run/alchemy/issues/1245 [<samp>(52a3e)</samp>](https://github.com/alchemy-run/alchemy/commit/52a3e639)
+- **core**:
+  - Ensure root Scope is always root and monorepo improvements &nbsp;-&nbsp; by **Sam Goodwin** in https://github.com/alchemy-run/alchemy/issues/1249 [<samp>(88b73)</samp>](https://github.com/alchemy-run/alchemy/commit/88b738d3)
+
+##### &nbsp;&nbsp;&nbsp;&nbsp;[View changes on GitHub](https://github.com/alchemy-run/alchemy/compare/v0.80.1...v0.81.0)
+
+---
+
+## v0.80.1
+
+### &nbsp;&nbsp;&nbsp;🚀 Features
+
+- **cloudflare**: Infer local dev port command or vite.config.ts &nbsp;-&nbsp; by **Sam Goodwin** in https://github.com/alchemy-run/alchemy/issues/1237 [<samp>(2731d)</samp>](https://github.com/alchemy-run/alchemy/commit/2731db03)
+
+##### &nbsp;&nbsp;&nbsp;&nbsp;[View changes on GitHub](https://github.com/alchemy-run/alchemy/compare/v0.80.0...v0.80.1)
+
+---
+
+## v0.80.0
+
+### &nbsp;&nbsp;&nbsp;🚀 Features
+
+- **cloudflare**: Worker.DevDomain and Worker.DevUrl &nbsp;-&nbsp; by **Sam Goodwin** in https://github.com/alchemy-run/alchemy/issues/1236 [<samp>(28565)</samp>](https://github.com/alchemy-run/alchemy/commit/28565ac9)
+- **docker**: Support `adopt` for `Container` and `Volume` &nbsp;-&nbsp; by **David Mo** and **Sam Goodwin** in https://github.com/alchemy-run/alchemy/issues/1227 [<samp>(77b40)</samp>](https://github.com/alchemy-run/alchemy/commit/77b40fbf)
+- **neon**: NeonProject supports `adopt` &nbsp;-&nbsp; by **Eric Clemmons** and **John Royal** in https://github.com/alchemy-run/alchemy/issues/1224 [<samp>(0d3cf)</samp>](https://github.com/alchemy-run/alchemy/commit/0d3cf225)
+
+##### &nbsp;&nbsp;&nbsp;&nbsp;[View changes on GitHub](https://github.com/alchemy-run/alchemy/compare/v0.79.0...v0.80.0)
+
+---
+
+## v0.79.0
+
+### &nbsp;&nbsp;&nbsp;🐞 Bug Fixes
+
+- **cloudflare**:
+  - Delete workflows on worker delete &nbsp;-&nbsp; by **John Royal** in https://github.com/alchemy-run/alchemy/issues/1226 [<samp>(fba20)</samp>](https://github.com/alchemy-run/alchemy/commit/fba20b59)
+- **docker**:
+  - Retry 502 Bad Gateway &nbsp;-&nbsp; by **Sam Goodwin** in https://github.com/alchemy-run/alchemy/issues/1231 [<samp>(6dbce)</samp>](https://github.com/alchemy-run/alchemy/commit/6dbce478)
+- **util**:
+  - Preserve primitive arrays in `camelToSnakeObjectDeep` &nbsp;-&nbsp; by **Riley Tomasek** and **CharlieHelps** in https://github.com/alchemy-run/alchemy/issues/1232 [<samp>(f236a)</samp>](https://github.com/alchemy-run/alchemy/commit/f236a510)
+  - CamelToSnake return nested primitives and add tests &nbsp;-&nbsp; by **bjorntechCarl** and **Sam Goodwin** in https://github.com/alchemy-run/alchemy/issues/1229 [<samp>(b571f)</samp>](https://github.com/alchemy-run/alchemy/commit/b571f57b)
+
+##### &nbsp;&nbsp;&nbsp;&nbsp;[View changes on GitHub](https://github.com/alchemy-run/alchemy/compare/v0.78.0...v0.79.0)
+
+---
+
+## v0.78.0
+
+### &nbsp;&nbsp;&nbsp;🐞 Bug Fixes
+
+- **cli**:
+  - Use r2 instead of node:fs in cloudflare tanstack template &nbsp;-&nbsp; by **John Royal** in https://github.com/alchemy-run/alchemy/issues/1208 [<samp>(100e6)</samp>](https://github.com/alchemy-run/alchemy/commit/100e6a67)
+  - Env file handled incorrectly with pnpm &nbsp;-&nbsp; by **John Royal** and **Sam Goodwin** in https://github.com/alchemy-run/alchemy/issues/1204 [<samp>(adf98)</samp>](https://github.com/alchemy-run/alchemy/commit/adf98d11)
+- **cloudflare**:
+  - Include ".sql": "text" loader for workers by default &nbsp;-&nbsp; by **John Royal** in https://github.com/alchemy-run/alchemy/issues/1211 [<samp>(cc86a)</samp>](https://github.com/alchemy-run/alchemy/commit/cc86a2b0)
+  - Disable path validation during astro check &nbsp;-&nbsp; by **John Royal** in https://github.com/alchemy-run/alchemy/issues/1203 [<samp>(96e30)</samp>](https://github.com/alchemy-run/alchemy/commit/96e30eac)
+  - Add missing oauth scopes and correct descriptions &nbsp;-&nbsp; by **John Royal** in https://github.com/alchemy-run/alchemy/issues/1212 [<samp>(163bd)</samp>](https://github.com/alchemy-run/alchemy/commit/163bdb23)
+  - Allow setting "default" as jurisdiction on d1 &nbsp;-&nbsp; by **Michael K** in https://github.com/alchemy-run/alchemy/issues/1218 [<samp>(f4498)</samp>](https://github.com/alchemy-run/alchemy/commit/f4498823)
+  - Properly export types for worker-loader and workflow &nbsp;-&nbsp; by **Michael K** in https://github.com/alchemy-run/alchemy/issues/1219 [<samp>(af989)</samp>](https://github.com/alchemy-run/alchemy/commit/af989076)
+  - Remove incorrect `observability.logging` key &nbsp;-&nbsp; by **Eric Clemmons** in https://github.com/alchemy-run/alchemy/issues/1221 [<samp>(9b423)</samp>](https://github.com/alchemy-run/alchemy/commit/9b42360e)
+  - Default Container is ./Dockerfile &nbsp;-&nbsp; by **Sam Goodwin** in https://github.com/alchemy-run/alchemy/issues/1214 [<samp>(19138)</samp>](https://github.com/alchemy-run/alchemy/commit/19138f43)
+  - Honor _headers and _redirects files in worker assets &nbsp;-&nbsp; by **John Royal** in https://github.com/alchemy-run/alchemy/issues/1223 [<samp>(dc126)</samp>](https://github.com/alchemy-run/alchemy/commit/dc126511)
+- **test**:
+  - Export ./test/bun &nbsp;-&nbsp; by **Sam Goodwin** in https://github.com/alchemy-run/alchemy/issues/1222 [<samp>(102fb)</samp>](https://github.com/alchemy-run/alchemy/commit/102fb86c)
+
+##### &nbsp;&nbsp;&nbsp;&nbsp;[View changes on GitHub](https://github.com/alchemy-run/alchemy/compare/v0.77.5...v0.78.0)
+
+---
+
+## v0.77.5
+
+### &nbsp;&nbsp;&nbsp;🐞 Bug Fixes
+
+- **cloudflare**: Error if D1 jurisdiction changes &nbsp;-&nbsp; by **Sam Goodwin** [<samp>(4e116)</samp>](https://github.com/alchemy-run/alchemy/commit/4e11613e)
+
+##### &nbsp;&nbsp;&nbsp;&nbsp;[View changes on GitHub](https://github.com/alchemy-run/alchemy/compare/v0.77.4...v0.77.5)
+
+---
+
+## v0.77.4
+
+### &nbsp;&nbsp;&nbsp;🐞 Bug Fixes
+
+- **cloudflare**: Fix d1 jursidiction &nbsp;-&nbsp; by **Michael K** in https://github.com/alchemy-run/alchemy/issues/1206 [<samp>(12875)</samp>](https://github.com/alchemy-run/alchemy/commit/128757e6)
+
+##### &nbsp;&nbsp;&nbsp;&nbsp;[View changes on GitHub](https://github.com/alchemy-run/alchemy/compare/v0.77.3...v0.77.4)
+
+---
+
+## v0.77.3
+
+### &nbsp;&nbsp;&nbsp;🐞 Bug Fixes
+
+- **cli**: Do not import undici into CLI &nbsp;-&nbsp; by **Sam Goodwin** in https://github.com/alchemy-run/alchemy/issues/1205 [<samp>(f8f15)</samp>](https://github.com/alchemy-run/alchemy/commit/f8f15626)
+
+##### &nbsp;&nbsp;&nbsp;&nbsp;[View changes on GitHub](https://github.com/alchemy-run/alchemy/compare/v0.77.2...v0.77.3)
+
+---
+
+## v0.77.2
+
+### &nbsp;&nbsp;&nbsp;🐞 Bug Fixes
+
+- **cloudflare**: Use .ts suffix in bucket-custom-domain.ts &nbsp;-&nbsp; by **Sam Goodwin** [<samp>(977c2)</samp>](https://github.com/alchemy-run/alchemy/commit/977c2200)
+
+##### &nbsp;&nbsp;&nbsp;&nbsp;[View changes on GitHub](https://github.com/alchemy-run/alchemy/compare/v0.77.1...v0.77.2)
+
+---
+
+## v0.77.1
+
+### &nbsp;&nbsp;&nbsp;🚀 Features
+
+- **cloudflare**:
+  - Add jurisdiction property to d1 &nbsp;-&nbsp; by **Michael K** in https://github.com/alchemy-run/alchemy/issues/1201 [<samp>(cd49a)</samp>](https://github.com/alchemy-run/alchemy/commit/cd49ac6b)
+  - Support pre-built Images for Containers &nbsp;-&nbsp; by **Sam Goodwin** in https://github.com/alchemy-run/alchemy/issues/1199 [<samp>(966d8)</samp>](https://github.com/alchemy-run/alchemy/commit/966d8553)
+- **docker**:
+  - Add build.cacheTo and build.options escape hatch to docker image &nbsp;-&nbsp; by **Erik Müller** in https://github.com/alchemy-run/alchemy/issues/1198 [<samp>(568fa)</samp>](https://github.com/alchemy-run/alchemy/commit/568fa554)
+
+##### &nbsp;&nbsp;&nbsp;&nbsp;[View changes on GitHub](https://github.com/alchemy-run/alchemy/compare/v0.77.0...v0.77.1)
+
+---
+
+## v0.77.0
+
+### &nbsp;&nbsp;&nbsp;🚀 Features
+
+- **cloudflare**:
+  - Make container bindings work and use official wrangler json spec &nbsp;-&nbsp; by **Rahul Mishra** and **John Royal** in https://github.com/alchemy-run/alchemy/issues/1173 [<samp>(72893)</samp>](https://github.com/alchemy-run/alchemy/commit/72893923)
+  - Support cloudflare access for remote bindings &nbsp;-&nbsp; by **John Royal** in https://github.com/alchemy-run/alchemy/issues/1171 [<samp>(e3410)</samp>](https://github.com/alchemy-run/alchemy/commit/e3410f67)
+  - R2 bucket custom domain &nbsp;-&nbsp; by **John Royal** in https://github.com/alchemy-run/alchemy/issues/1181 [<samp>(2c24c)</samp>](https://github.com/alchemy-run/alchemy/commit/2c24c26f)
+- **core**:
+  - Improve secret encryption &nbsp;-&nbsp; by **John Royal** in https://github.com/alchemy-run/alchemy/issues/1063 [<samp>(c8e54)</samp>](https://github.com/alchemy-run/alchemy/commit/c8e5487a)
+
+### &nbsp;&nbsp;&nbsp;🐞 Bug Fixes
+
+- **aws**:
+  - Export all aws resources and add aws/ec2 &nbsp;-&nbsp; by **Sam Goodwin** in https://github.com/alchemy-run/alchemy/issues/1182 [<samp>(ff3a7)</samp>](https://github.com/alchemy-run/alchemy/commit/ff3a740d)
+- **cli**:
+  - Use default env file if not specified &nbsp;-&nbsp; by **John Royal** in https://github.com/alchemy-run/alchemy/issues/1180 [<samp>(efe1b)</samp>](https://github.com/alchemy-run/alchemy/commit/efe1b696)
+- **cloudflare**:
+  - Upgrade unenv &nbsp;-&nbsp; by **Sam Goodwin** in https://github.com/alchemy-run/alchemy/issues/1161 [<samp>(46404)</samp>](https://github.com/alchemy-run/alchemy/commit/46404200)
+  - Prevent esbuild errors from crashing reload &nbsp;-&nbsp; by **Michael K** in https://github.com/alchemy-run/alchemy/issues/1170 [<samp>(4f350)</samp>](https://github.com/alchemy-run/alchemy/commit/4f350a40)
+  - Remove excess error log when getting worker subdomain &nbsp;-&nbsp; by **Michael K** in https://github.com/alchemy-run/alchemy/issues/1184 [<samp>(3a31c)</samp>](https://github.com/alchemy-run/alchemy/commit/3a31ce32)
+  - Worker sourcemaps are now correctly formatted &nbsp;-&nbsp; by **Michael K** in https://github.com/alchemy-run/alchemy/issues/1185 [<samp>(9eaaa)</samp>](https://github.com/alchemy-run/alchemy/commit/9eaaa9f5)
+  - Environment undefined when using react router with rolldown-vite &nbsp;-&nbsp; by **John Royal** in https://github.com/alchemy-run/alchemy/issues/1172 [<samp>(33756)</samp>](https://github.com/alchemy-run/alchemy/commit/33756b60)
+  - While adopting non alchemy worker check if old binding is a container &nbsp;-&nbsp; by **Rahul Mishra** and **John Royal** in https://github.com/alchemy-run/alchemy/issues/1189 [<samp>(20379)</samp>](https://github.com/alchemy-run/alchemy/commit/20379730)
+- **planetscale**:
+  - Add default successor to postgres roles &nbsp;-&nbsp; by **Michael K** in https://github.com/alchemy-run/alchemy/issues/1190 [<samp>(f8fd0)</samp>](https://github.com/alchemy-run/alchemy/commit/f8fd09fe)
+- **telemetry**:
+  - Telemetry will timeout if unable to send in 1 second &nbsp;-&nbsp; by **Michael K** in https://github.com/alchemy-run/alchemy/issues/1186 [<samp>(f5395)</samp>](https://github.com/alchemy-run/alchemy/commit/f5395277)
+
+##### &nbsp;&nbsp;&nbsp;&nbsp;[View changes on GitHub](https://github.com/alchemy-run/alchemy/compare/v0.76.1...v0.77.0)
+
+---
+
+## v0.76.1
+
+### &nbsp;&nbsp;&nbsp;🐞 Bug Fixes
+
+- **cloudflare**:
+  - Add vectorize:index to default scopes &nbsp;-&nbsp; by **Sam Goodwin** in https://github.com/alchemy-run/alchemy/issues/1164 [<samp>(21ce5)</samp>](https://github.com/alchemy-run/alchemy/commit/21ce5313)
+  - Convert maxWaitTimeMs to seconds in miniflare &nbsp;-&nbsp; by **Sam Goodwin** in https://github.com/alchemy-run/alchemy/issues/1165 [<samp>(bc423)</samp>](https://github.com/alchemy-run/alchemy/commit/bc423684)
+
+##### &nbsp;&nbsp;&nbsp;&nbsp;[View changes on GitHub](https://github.com/alchemy-run/alchemy/compare/v0.76.0...v0.76.1)
+
+---
+
+## v0.76.0
+
+### &nbsp;&nbsp;&nbsp;🐞 Bug Fixes
+
+- Improve workspace root detection &nbsp;-&nbsp; by **John Royal** in https://github.com/alchemy-run/alchemy/issues/1156 [<samp>(0e1a2)</samp>](https://github.com/alchemy-run/alchemy/commit/0e1a2b8c)
+- **CLI**:
+  - Make god token warning less aggressive &nbsp;-&nbsp; by **Michael K** in https://github.com/alchemy-run/alchemy/issues/1145 [<samp>(24321)</samp>](https://github.com/alchemy-run/alchemy/commit/2432155c)
+- **cli**:
+  - Add message telling user where to get global api key &nbsp;-&nbsp; by **Michael K** in https://github.com/alchemy-run/alchemy/issues/1153 [<samp>(edf6e)</samp>](https://github.com/alchemy-run/alchemy/commit/edf6e356)
+- **cloudflare**:
+  - Lowercase auto-generated worker name &nbsp;-&nbsp; by **John Royal** in https://github.com/alchemy-run/alchemy/issues/1158 [<samp>(e12cf)</samp>](https://github.com/alchemy-run/alchemy/commit/e12cf144)
+  - Avoid fetching settings when inferring zone id &nbsp;-&nbsp; by **John Royal** in https://github.com/alchemy-run/alchemy/issues/1159 [<samp>(2d79a)</samp>](https://github.com/alchemy-run/alchemy/commit/2d79afe0)
+
+##### &nbsp;&nbsp;&nbsp;&nbsp;[View changes on GitHub](https://github.com/alchemy-run/alchemy/compare/v0.75.1...v0.76.0)
+
+---
+
+## v0.75.1
+
+### &nbsp;&nbsp;&nbsp;🐞 Bug Fixes
+
+- **cloudflare**: Use workspace root for persist path &nbsp;-&nbsp; by **John Royal** in https://github.com/alchemy-run/alchemy/issues/1143 [<samp>(5d094)</samp>](https://github.com/alchemy-run/alchemy/commit/5d0940f8)
+- **core**: Warn if a resource isn't stable after 10s in a monorepo &nbsp;-&nbsp; by **Sam Goodwin** in https://github.com/alchemy-run/alchemy/issues/1141 [<samp>(66333)</samp>](https://github.com/alchemy-run/alchemy/commit/663331d0)
+
+##### &nbsp;&nbsp;&nbsp;&nbsp;[View changes on GitHub](https://github.com/alchemy-run/alchemy/compare/v0.75.0...v0.75.1)
+
+---
+
+## v0.75.0
+
+### &nbsp;&nbsp;&nbsp;🐞 Bug Fixes
+
+- **cli**:
+  - Log errors when cli exits with an generic Error &nbsp;-&nbsp; by **Rahul Mishra** in https://github.com/alchemy-run/alchemy/issues/1137 [<samp>(6f8b9)</samp>](https://github.com/alchemy-run/alchemy/commit/6f8b95b5)
+- **cloudflare**:
+  - Insert kv records to miniflare &nbsp;-&nbsp; by **John Royal** in https://github.com/alchemy-run/alchemy/issues/1139 [<samp>(8c995)</samp>](https://github.com/alchemy-run/alchemy/commit/8c995c30)
+  - Local workers fail to initialize concurrently &nbsp;-&nbsp; by **John Royal** in https://github.com/alchemy-run/alchemy/issues/1132 [<samp>(f9a50)</samp>](https://github.com/alchemy-run/alchemy/commit/f9a50206)
+  - Add missing quote to bun-spa &nbsp;-&nbsp; by **Sam Goodwin** [<samp>(b03ce)</samp>](https://github.com/alchemy-run/alchemy/commit/b03ce242)
+  - Get the tunnel token when it's not returned by the first API call &nbsp;-&nbsp; by **Andrew Jefferson** in https://github.com/alchemy-run/alchemy/issues/1138 [<samp>(a69e8)</samp>](https://github.com/alchemy-run/alchemy/commit/a69e8915)
+- **core**:
+  - Error on mismatch between options.phase and CLI args &nbsp;-&nbsp; by **Jacob M-G Evans** and **Sam Goodwin** in https://github.com/alchemy-run/alchemy/issues/1121 [<samp>(706b7)</samp>](https://github.com/alchemy-run/alchemy/commit/706b7b31)
+
+##### &nbsp;&nbsp;&nbsp;&nbsp;[View changes on GitHub](https://github.com/alchemy-run/alchemy/compare/v0.74.2...v0.75.0)
+
+---
+
+## v0.74.2
+
+### &nbsp;&nbsp;&nbsp;🐞 Bug Fixes
+
+- **docker**: Do not mutate props in Volume &nbsp;-&nbsp; by **Sam Goodwin** [<samp>(3af75)</samp>](https://github.com/alchemy-run/alchemy/commit/3af75fbe)
+
+##### &nbsp;&nbsp;&nbsp;&nbsp;[View changes on GitHub](https://github.com/alchemy-run/alchemy/compare/v0.74.1...v0.74.2)
+
+---
+
+## v0.74.1
+
+### &nbsp;&nbsp;&nbsp;🐞 Bug Fixes
+
+- **core**: Fix bug where miniflare symlink did not work in a split monorepo &nbsp;-&nbsp; by **Sam Goodwin** in https://github.com/alchemy-run/alchemy/issues/1131 [<samp>(57a49)</samp>](https://github.com/alchemy-run/alchemy/commit/57a49197)
+
+##### &nbsp;&nbsp;&nbsp;&nbsp;[View changes on GitHub](https://github.com/alchemy-run/alchemy/compare/v0.74.0...v0.74.1)
+
+---
+
+## v0.74.0
+
+### &nbsp;&nbsp;&nbsp;🚀 Features
+
+- **cli**: Add command to make a cloudflare god token &nbsp;-&nbsp; by **Michael K** in https://github.com/alchemy-run/alchemy/issues/1089 [<samp>(541c9)</samp>](https://github.com/alchemy-run/alchemy/commit/541c9c7f)
+- **planetscale**: Allow planetscale resources to be not deleted &nbsp;-&nbsp; by **Rahul Mishra** in https://github.com/alchemy-run/alchemy/issues/1118 [<samp>(4ed2a)</samp>](https://github.com/alchemy-run/alchemy/commit/4ed2a51c)
+- **prisma-postgres**: Implement prisma postgres &nbsp;-&nbsp; by **Michael K** in https://github.com/alchemy-run/alchemy/issues/1123 [<samp>(27af7)</samp>](https://github.com/alchemy-run/alchemy/commit/27af708b)
+
+### &nbsp;&nbsp;&nbsp;🐞 Bug Fixes
+
+- **cloudflare**:
+  - Support optional bindings &nbsp;-&nbsp; by **Sam Goodwin** in https://github.com/alchemy-run/alchemy/issues/1124 [<samp>(74fdc)</samp>](https://github.com/alchemy-run/alchemy/commit/74fdcf7b)
+  - Improve websocket proxy handling &nbsp;-&nbsp; by **John Royal** in https://github.com/alchemy-run/alchemy/issues/1098 [<samp>(5a409)</samp>](https://github.com/alchemy-run/alchemy/commit/5a409f43)
+  - Auto-detect server entry for tanstack start &nbsp;-&nbsp; by **John Royal** in https://github.com/alchemy-run/alchemy/issues/1127 [<samp>(29e28)</samp>](https://github.com/alchemy-run/alchemy/commit/29e28a7d)
+  - Update vite + plugin no longer watches .alchemy &nbsp;-&nbsp; by **Michael K** in https://github.com/alchemy-run/alchemy/issues/1114 [<samp>(f99b1)</samp>](https://github.com/alchemy-run/alchemy/commit/f99b1cf5)
+
+##### &nbsp;&nbsp;&nbsp;&nbsp;[View changes on GitHub](https://github.com/alchemy-run/alchemy/compare/v0.73.1...v0.74.0)
+
+---
+
 ## v0.73.1
 
 ### &nbsp;&nbsp;&nbsp;🐞 Bug Fixes

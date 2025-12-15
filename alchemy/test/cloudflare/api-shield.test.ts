@@ -1,6 +1,6 @@
 import os from "node:os";
-import path from "node:path";
 import type { OpenAPIV3 } from "openapi-types";
+import path from "pathe";
 import { describe, expect } from "vitest";
 import { alchemy } from "../../src/alchemy.ts";
 import {

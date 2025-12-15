@@ -11,7 +11,7 @@
     "noEmit": true,
     "types": ["@cloudflare/workers-types"],
   },
-  "include": ["src/**/*", "types/**/*", "alchemy.run.ts"],
+  "include": ["src/**/*", "types/**/*", "alchemy.run.ts", "e2e.test.ts"],
   "references": [
     {
       "path": "../../alchemy/tsconfig.json"

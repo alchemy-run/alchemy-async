@@ -97,6 +97,8 @@ async function _apply<Out extends ResourceAttributes>(
 
       // -> poll until it does not (i.e. when the owner process applies the change and updates the state store)
       async function waitForConsistentState() {
+        const isDestroy = process.argv.includes("--destroy");
+        let startTime = Date.now();
         while (true) {
           if (state === undefined) {
             // state doesn't exist yet
@@ -115,6 +117,21 @@ async function _apply<Out extends ResourceAttributes>(
           } else if (await inputsAreEqual(state)) {
             // sweet, we've reached a stable state and read can progress
             return state;
+          } else if (isDestroy) {
+            // this means the current app is being imported by an app being destroyed
+            return state;
+          } else {
+            const elapsed = Date.now() - startTime;
+            if (
+              // looks stable but the props are different on our side, it's likely that the input props are not deterministic
+              (state.status === "created" || state.status === "updated") &&
+              elapsed > 1_000
+            ) {
+              logger.warn(
+                `Resource '${resource[ResourceFQN]}' is not in a stable state after ${elapsed}ms, be sure to check if your input props are deterministic:`,
+                state.props,
+              );
+            }
           }
           // jitter between 100-300ms
           const jitter = 100 + Math.random() * 200;
@@ -332,7 +349,9 @@ async function _apply<Out extends ResourceAttributes>(
           phase === "create" ? "created" : isReplaced ? "replaced" : "updated",
         prefixColor: "greenBright",
         resource: formatFQN(resource[ResourceFQN]),
-        message: `${phase === "create" ? "Created" : isReplaced ? "Replaced" : "Updated"} Resource`,
+        message: `${
+          phase === "create" ? "Created" : isReplaced ? "Replaced" : "Updated"
+        } Resource`,
         status: "success",
       });
     }

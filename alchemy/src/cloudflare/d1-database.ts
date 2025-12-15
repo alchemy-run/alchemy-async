@@ -8,12 +8,15 @@ import {
   type CloudflareApi,
   type CloudflareApiOptions,
 } from "./api.ts";
+import { withJurisdiction } from "./bucket.ts";
 import { cloneD1Database } from "./d1-clone.ts";
 import { applyLocalD1Migrations } from "./d1-local-migrations.ts";
 import { applyMigrations, listMigrationsFiles } from "./d1-migrations.ts";
 import { deleteMiniflareBinding } from "./miniflare/delete.ts";
 
 const DEFAULT_MIGRATIONS_TABLE = "d1_migrations";
+
+export type D1DatabaseJurisdiction = "default" | "eu" | "fedramp";
 
 type PrimaryLocationHint =
   | "wnam"
@@ -115,6 +118,12 @@ export interface D1DatabaseProps extends CloudflareApiOptions {
      */
     force?: boolean;
   };
+
+  /**
+   * Optional jurisdiction for the bucket
+   * Determines the regulatory jurisdiction the bucket data falls under
+   */
+  jurisdiction?: D1DatabaseJurisdiction;
 }
 
 export function isD1Database(resource: any): resource is D1Database {
@@ -157,6 +166,11 @@ export type D1Database = Pick<
      */
     remote: boolean;
   };
+
+  /**
+   * The jurisdiction of the database
+   */
+  jurisdiction: D1DatabaseJurisdiction;
 };
 
 /**
@@ -260,10 +274,11 @@ const _D1Database = Resource(
   async function (
     this: Context<D1Database>,
     id: string,
-    props: D1DatabaseProps = {},
+    props: D1DatabaseProps,
   ): Promise<D1Database> {
     const databaseName =
       props.name ?? this.output?.name ?? this.scope.createPhysicalName(id);
+    const jurisdiction = props.jurisdiction ?? "default";
 
     if (this.phase === "update" && this.output?.name !== databaseName) {
       this.replace();
@@ -294,6 +309,7 @@ const _D1Database = Resource(
         migrationsDir: props.migrationsDir,
         migrationsTable: props.migrationsTable ?? DEFAULT_MIGRATIONS_TABLE,
         dev,
+        jurisdiction,
       };
     }
 
@@ -304,7 +320,7 @@ const _D1Database = Resource(
         await deleteMiniflareBinding(this.scope, "d1", this.output.dev.id);
       }
       if (props.delete !== false && this.output?.id) {
-        await deleteDatabase(api, this.output.id);
+        await deleteDatabase(api, this.output.id, props);
       }
       // Return void (a deleted database has no content)
       return this.destroy();
@@ -318,7 +334,6 @@ const _D1Database = Resource(
       // after that, the ID will remain the UUID for the lifetime of the database
       !this.output?.id
     ) {
-      logger.log("Creating D1 database:", databaseName);
       try {
         dbData = await createDatabase(api, databaseName, props);
 
@@ -329,7 +344,7 @@ const _D1Database = Resource(
 
         // If clone property is provided, perform cloning after database creation
         if (props.clone && dbData.result.uuid) {
-          await cloneDb(api, props.clone, dbData.result.uuid);
+          await cloneDb(api, props.clone, dbData.result.uuid, jurisdiction);
         }
       } catch (error) {
         // Check if this is a "database already exists" error and adopt is enabled
@@ -340,7 +355,7 @@ const _D1Database = Resource(
         ) {
           logger.log(`Database ${databaseName} already exists, adopting it`);
           // Find the existing database by name
-          const databases = await listDatabases(api, databaseName);
+          const databases = await listDatabases(api, databaseName, props);
           const existingDb = databases.find((db) => db.name === databaseName);
 
           if (!existingDb) {
@@ -350,13 +365,10 @@ const _D1Database = Resource(
           }
 
           // Get the database details using its ID
-          dbData = await getDatabase(api, existingDb.id);
+          dbData = await getDatabase(api, existingDb.id, props);
 
           // Update the database with the provided properties
           if (props.readReplication) {
-            logger.log(
-              `Updating adopted database ${databaseName} with new properties`,
-            );
             dbData = await updateDatabase(api, existingDb.id, props);
           }
         } else {
@@ -374,15 +386,18 @@ const _D1Database = Resource(
           `Cannot update primaryLocationHint from '${this.output.primaryLocationHint}' to '${props.primaryLocationHint}' after database creation.`,
         );
       }
-      logger.log("Updating D1 database:", databaseName);
+      if (
+        (props.jurisdiction ?? "default") !==
+        (this.output?.jurisdiction ?? "default")
+      ) {
+        throw new Error(
+          `Cannot update jurisdiction from '${this.output.jurisdiction}' to '${props.jurisdiction}' after database creation.`,
+        );
+      }
       // Update the database with new properties
       dbData = await updateDatabase(api, this.output.id, props);
     } else {
       // If no ID exists, fall back to creating a new database
-      logger.log(
-        "No existing database ID found, creating new D1 database:",
-        databaseName,
-      );
       dbData = await createDatabase(api, databaseName, props);
     }
 
@@ -417,11 +432,12 @@ const _D1Database = Resource(
       type: "d1",
       id: dbData.result.uuid!,
       name: databaseName,
-      readReplication: dbData.result.read_replication,
+      readReplication: props.readReplication,
       primaryLocationHint: props.primaryLocationHint,
       dev,
       migrationsDir: props.migrationsDir,
       migrationsTable: props.migrationsTable ?? DEFAULT_MIGRATIONS_TABLE,
+      jurisdiction,
     };
   },
 );
@@ -437,6 +453,7 @@ interface CloudflareD1Response {
     read_replication?: {
       mode: "auto" | "disabled";
     };
+    jurisdiction?: string;
   };
   success: boolean;
   errors: Array<{ code: number; message: string }>;
@@ -454,6 +471,8 @@ export async function createDatabase(
   // Create new D1 database
   const createPayload: any = {
     name: databaseName,
+    jurisdiction:
+      props.jurisdiction !== "default" ? props.jurisdiction : undefined,
   };
 
   if (props.primaryLocationHint) {
@@ -463,6 +482,9 @@ export async function createDatabase(
   const createResponse = await api.post(
     `/accounts/${api.accountId}/d1/database`,
     createPayload,
+    {
+      headers: withJurisdiction(props),
+    },
   );
 
   if (!createResponse.ok) {
@@ -483,6 +505,7 @@ export async function createDatabase(
 export async function getDatabase(
   api: CloudflareApi,
   databaseId?: string,
+  props: D1DatabaseProps = {},
 ): Promise<CloudflareD1Response> {
   if (!databaseId) {
     throw new Error("Database ID is required");
@@ -490,6 +513,9 @@ export async function getDatabase(
 
   const response = await api.get(
     `/accounts/${api.accountId}/d1/database/${databaseId}`,
+    {
+      headers: withJurisdiction(props),
+    },
   );
 
   if (!response.ok) {
@@ -505,6 +531,7 @@ export async function getDatabase(
 export async function deleteDatabase(
   api: CloudflareApi,
   databaseId?: string,
+  props: D1DatabaseProps = {},
 ): Promise<void> {
   if (!databaseId) {
     logger.log("No database ID provided, skipping delete");
@@ -514,6 +541,9 @@ export async function deleteDatabase(
   // Delete D1 database
   const deleteResponse = await api.delete(
     `/accounts/${api.accountId}/d1/database/${databaseId}`,
+    {
+      headers: withJurisdiction(props),
+    },
   );
 
   if (!deleteResponse.ok && deleteResponse.status !== 404) {
@@ -533,12 +563,16 @@ export async function deleteDatabase(
 export async function listDatabases(
   api: CloudflareApi,
   name?: string,
+  props: D1DatabaseProps = {},
 ): Promise<{ name: string; id: string }[]> {
   // Construct query string if name is provided
   const queryParams = name ? `?name=${encodeURIComponent(name)}` : "";
 
   const response = await api.get(
     `/accounts/${api.accountId}/d1/database${queryParams}`,
+    {
+      headers: withJurisdiction(props),
+    },
   );
 
   if (!response.ok) {
@@ -591,6 +625,9 @@ export async function updateDatabase(
   const updateResponse = await api.patch(
     `/accounts/${api.accountId}/d1/database/${databaseId}`,
     updatePayload,
+    {
+      headers: withJurisdiction(props),
+    },
   );
 
   if (!updateResponse.ok) {
@@ -617,6 +654,7 @@ async function cloneDb(
   api: CloudflareApi,
   sourceDb: D1Database | { id: string } | { name: string },
   targetDbId: string,
+  jurisdiction: D1DatabaseJurisdiction,
 ): Promise<void> {
   let sourceId: string;
 
@@ -626,7 +664,9 @@ async function cloneDb(
     sourceId = sourceDb.id;
   } else if ("name" in sourceDb && sourceDb.name) {
     // Look up ID by name
-    const databases = await listDatabases(api, sourceDb.name);
+    const databases = await listDatabases(api, sourceDb.name, {
+      jurisdiction,
+    });
     const foundDb = databases.find((db) => db.name === sourceDb.name);
 
     if (!foundDb) {
