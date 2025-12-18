@@ -51,6 +51,12 @@ export interface HyperdrivePublicOrigin {
    * Database user
    */
   user: string;
+
+  /**
+   * Whether to delete the hyperdrive config when the resource is deleted
+   * @default true
+   */
+  delete?: boolean;
 }
 
 /**
@@ -361,6 +367,7 @@ interface InternalHyperdriveProps extends CloudflareApiOptions {
     force?: boolean;
   };
   adopt?: boolean;
+  delete?: boolean;
 }
 
 const _Hyperdrive = Resource(
@@ -390,6 +397,12 @@ const _Hyperdrive = Resource(
     const api = await createCloudflareApi(props);
 
     if (this.phase === "delete") {
+      if (props.delete === false) {
+        logger.warn(
+          `Delete is disabled for hyperdrive "${name}" (${id}), removing from state`,
+        );
+        return this.destroy();
+      }
       if (!hyperdriveId) {
         logger.warn(`No hyperdriveId found for ${id}, skipping delete`);
         return this.destroy();
