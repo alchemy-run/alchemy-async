@@ -13,7 +13,7 @@ import { cloneD1Database } from "./d1-clone.ts";
 import { importD1Database } from "./d1-import.ts";
 import { applyLocalD1Migrations } from "./d1-local-migrations.ts";
 import { applyMigrations } from "./d1-migrations.ts";
-import { listSqlFiles, type D1SqlFile } from "./d1-sql-file.ts";
+import { listSqlFiles, readSqlFile, type D1SqlFile } from "./d1-sql-file.ts";
 import { deleteMiniflareBinding } from "./miniflare/delete.ts";
 
 const DEFAULT_MIGRATIONS_TABLE = "d1_migrations";
@@ -87,10 +87,10 @@ export interface D1DatabaseProps extends CloudflareApiOptions {
   clone?: D1Database | { id: string } | { name: string };
 
   /**
-   * Directory containing import SQL files.
+   * The names of SQL files to import.
    * After migrations are applied, these files will be run using [Cloudflare's D1 import API](https://developers.cloudflare.com/d1/best-practices/import-export-data/).
    */
-  importDir?: string;
+  importFiles?: string[];
 
   /**
    * Name of the table used to track migrations. Only used if migrationsDir is specified. Defaults to 'd1_migrations'
@@ -141,7 +141,7 @@ export type D1Database = Pick<
   | "migrationsTable"
   | "primaryLocationHint"
   | "readReplication"
-  | "importDir"
+  | "importFiles"
 > & {
   type: "d1";
   /**
@@ -254,11 +254,17 @@ export type D1Database = Pick<
  */
 export async function D1Database(
   id: string,
-  props: Omit<D1DatabaseProps, "migrationsFiles" | "importFiles"> = {},
+  props: Omit<D1DatabaseProps, "migrationsFiles"> = {},
 ): Promise<D1Database> {
   const [migrationsFiles, importFiles] = await Promise.all([
     props.migrationsDir ? await listSqlFiles(props.migrationsDir) : [],
-    props.importDir ? await listSqlFiles(props.importDir) : [],
+    props.importFiles
+      ? await Promise.all(
+          props.importFiles.map((file) =>
+            readSqlFile(Scope.current.rootDir, file),
+          ),
+        )
+      : [],
   ]);
 
   return _D1Database(id, {
@@ -279,9 +285,9 @@ const _D1Database = Resource(
   async function (
     this: Context<D1Database>,
     id: string,
-    props: D1DatabaseProps & {
-      migrationsFiles: Array<D1SqlFile>;
-      importFiles: Array<D1SqlFile>;
+    props: Omit<D1DatabaseProps, "importFiles"> & {
+      migrationsFiles: D1SqlFile[] | undefined;
+      importFiles: D1SqlFile[] | undefined;
     },
   ): Promise<D1Database> {
     const databaseName =
@@ -317,7 +323,6 @@ const _D1Database = Resource(
         primaryLocationHint: props.primaryLocationHint,
         migrationsDir: props.migrationsDir,
         migrationsTable: props.migrationsTable ?? DEFAULT_MIGRATIONS_TABLE,
-        importDir: props.importDir,
         dev,
         jurisdiction,
       };
@@ -455,7 +460,6 @@ const _D1Database = Resource(
       dev,
       migrationsDir: props.migrationsDir,
       migrationsTable: props.migrationsTable ?? DEFAULT_MIGRATIONS_TABLE,
-      importDir: props.importDir,
       jurisdiction,
     };
   },

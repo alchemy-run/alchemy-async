@@ -30,16 +30,19 @@ export async function listSqlFiles(directory: string): Promise<D1SqlFile[]> {
     return a.localeCompare(b);
   });
 
-  return Promise.all(
-    sortedFiles.map(async (id) => {
-      const sql = await fs.readFile(path.join(directory, id), "utf-8");
-      const hash = crypto.createHash("sha256").update(sql).digest("hex");
-      const file: D1SqlFile = { id, sql, hash };
-      // Make the sql property non-enumerable so it's not included in state. This prevents state store errors caused by large sql files.
-      Object.defineProperty(file, "sql", { enumerable: false });
-      return file;
-    }),
-  );
+  return Promise.all(sortedFiles.map((id) => readSqlFile(directory, id)));
+}
+
+export async function readSqlFile(
+  directory: string,
+  name: string,
+): Promise<D1SqlFile> {
+  const sql = await fs.readFile(path.resolve(directory, name), "utf-8");
+  const hash = crypto.createHash("sha256").update(sql).digest("hex");
+  const file: D1SqlFile = { id: name, sql, hash };
+  // Make the sql property non-enumerable so it's not included in state. This prevents state store errors caused by large sql files.
+  Object.defineProperty(file, "sql", { enumerable: false });
+  return file;
 }
 
 const getPrefix = (name: string) => {

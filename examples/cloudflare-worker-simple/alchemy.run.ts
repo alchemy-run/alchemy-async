@@ -40,7 +40,7 @@ const [d1, kv, r2] = await Promise.all([
     name: `${app.name}-${app.stage}-d1`,
     adopt: true,
     migrationsDir: "migrations",
-    importDir: "imports",
+    importFiles: ["imports/seed.sql"],
     dev: { remote },
   }),
   KVNamespace("kv", {

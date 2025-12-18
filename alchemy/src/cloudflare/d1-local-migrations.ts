@@ -10,7 +10,9 @@ export interface D1LocalMigrationOptions {
   imports: Array<D1SqlFile>;
 }
 
-export const applyLocalD1Migrations = async (options: D1LocalMigrationOptions) => {
+export const applyLocalD1Migrations = async (
+  options: D1LocalMigrationOptions,
+) => {
   const miniflare = new mf.Miniflare({
     script: "",
     modules: true,
@@ -40,7 +42,9 @@ export const applyLocalD1Migrations = async (options: D1LocalMigrationOptions) =
     const applied: {
       results: { name: string; type: "migration" | "import" }[];
     } = await session
-      .prepare(`SELECT name, type FROM ${options.migrationsTable} ORDER BY applied_at ASC`)
+      .prepare(
+        `SELECT name, type FROM ${options.migrationsTable} ORDER BY applied_at ASC`,
+      )
       .all();
     const insertRecord = session.prepare(
       `INSERT INTO ${options.migrationsTable} (name, type) VALUES (?, ?)`,
@@ -49,7 +53,9 @@ export const applyLocalD1Migrations = async (options: D1LocalMigrationOptions) =
       if (applied.results.some((m) => m.name === id)) {
         continue;
       }
-      const statements = sql.split("--> statement-breakpoint").map((s) => session.prepare(s));
+      const statements = sql
+        .split("--> statement-breakpoint")
+        .map((s) => session.prepare(s));
       statements.push(insertRecord.bind(id, "migration"));
       await session.batch(statements);
     }
