@@ -51,12 +51,6 @@ export interface HyperdrivePublicOrigin {
    * Database user
    */
   user: string;
-
-  /**
-   * Whether to delete the hyperdrive config when the resource is deleted
-   * @default true
-   */
-  delete?: boolean;
 }
 
 /**
@@ -203,6 +197,12 @@ export interface HyperdriveProps extends CloudflareApiOptions {
    * @default false
    */
   adopt?: boolean;
+
+  /**
+   * Whether to delete the hyperdrive config when the resource is deleted
+   * @default true
+   */
+  delete?: boolean;
 
   dev?: {
     /**
