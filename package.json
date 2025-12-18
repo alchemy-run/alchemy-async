@@ -41,11 +41,11 @@
   "workspaces": {
     "catalog": {
       "@cloudflare/containers": "^0.0.30",
-      "@cloudflare/workers-types": "^4.20250805.0",
-      "@cloudflare/vite-plugin": "^1.13.14",
+      "@cloudflare/workers-types": "^4.20251217.0",
+      "@cloudflare/vite-plugin": "^1.19.0",
       "vite": "^7.1.9",
       "typescript": "^5.8.3",
-      "wrangler": "^4.42.2"
+      "wrangler": "^4.56.0"
     },
     "packages": [
       "alchemy-web",
@@ -70,12 +70,10 @@
     "glob": "^11.0.3",
     "jsonc-parser": "^3.3.1",
     "openai": "^4.103.0",
+    "oxfmt": "^0.18.0",
     "typescript": "catalog:",
     "vite": "catalog:",
     "vitest": "^3.1.4",
     "yaml": "^2.7.1"
-  },
-  "dependencies": {
-    "oxfmt": "^0.5.0"
   }
 }
