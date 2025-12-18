@@ -93,17 +93,16 @@ const upsertDatabase = async (api: CloudflareApi, databaseName: string) => {
   };
   const databases = await listDatabases(api, databaseName);
   if (databases[0]) {
-    await migrate(databases[0].id);
+    await migrate(databases[0].uuid);
     return {
-      id: databases[0].id,
+      id: databases[0].uuid,
     };
   }
-  const res = await createDatabase(api, databaseName, {
+  const database = await createDatabase(api, databaseName, {
     readReplication: { mode: "disabled" },
   });
-  assert(res.result.uuid, "Missing UUID for database");
-  await migrate(res.result.uuid);
+  await migrate(database.uuid);
   return {
-    id: res.result.uuid,
+    id: database.uuid,
   };
 };
