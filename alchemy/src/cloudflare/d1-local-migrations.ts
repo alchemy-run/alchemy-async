@@ -10,9 +10,7 @@ export interface D1LocalMigrationOptions {
   imports: Array<D1SqlFile>;
 }
 
-export const applyLocalD1Migrations = async (
-  options: D1LocalMigrationOptions,
-) => {
+export const applyLocalD1Migrations = async (options: D1LocalMigrationOptions) => {
   const miniflare = new mf.Miniflare({
     script: "",
     modules: true,
@@ -42,9 +40,7 @@ export const applyLocalD1Migrations = async (
     const applied: {
       results: { name: string; type: "migration" | "import" }[];
     } = await session
-      .prepare(
-        `SELECT name, type FROM ${options.migrationsTable} ORDER BY applied_at ASC`,
-      )
+      .prepare(`SELECT name, type FROM ${options.migrationsTable} ORDER BY applied_at ASC`)
       .all();
     const insertRecord = session.prepare(
       `INSERT INTO ${options.migrationsTable} (name, type) VALUES (?, ?)`,
@@ -53,23 +49,23 @@ export const applyLocalD1Migrations = async (
       if (applied.results.some((m) => m.name === id)) {
         continue;
       }
-      await session.prepare(sql).run();
-      await insertRecord.bind(id, "migration").run();
+      const statements = sql.split("--> statement-breakpoint").map((s) => session.prepare(s));
+      statements.push(insertRecord.bind(id, "migration"));
+      await session.batch(statements);
     }
     for (const { id, sql, hash } of options.imports) {
       const name = `${id}-${hash}`;
       if (applied.results.some((m) => m.name === name)) {
         continue;
       }
-      await session.batch(
-        // Split into statements to prevent D1_ERROR: statement too long: SQLITE_TOOBIG.
-        // This is split naively by semicolons followed by newlines - not perfect but should work 99% of the time.
-        sql
-          .split(/;\r?\n/)
-          .filter((s) => s.trim())
-          .map((s) => session.prepare(s)),
-      );
-      await insertRecord.bind(name, "import").run();
+      // Split into statements to prevent D1_ERROR: statement too long: SQLITE_TOOBIG.
+      // This is split naively by semicolons followed by newlines - not perfect but should work 99% of the time.
+      const statements = sql
+        .split(/;\r?\n/)
+        .filter((s) => s.trim())
+        .map((s) => session.prepare(s));
+      statements.push(insertRecord.bind(name, "import"));
+      await session.batch(statements);
     }
   } finally {
     await miniflare.dispose();
