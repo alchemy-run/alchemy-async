@@ -300,7 +300,7 @@ const _D1Database = Resource(
 
     const local = this.scope.local && !props.dev?.remote;
     const dev = {
-      id: this.output?.dev?.id ?? this.output?.id ?? id,
+      id: this.output?.dev?.id ?? this.output?.id ?? databaseName,
       remote: props.dev?.remote ?? false,
     };
     const adopt = props.adopt ?? this.scope.adopt;

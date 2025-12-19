@@ -25,20 +25,34 @@ export const applyLocalD1Migrations = async (
     await miniflare.ready;
     const db = await miniflare.getD1Database("DB");
     const session = db.withSession("first-primary");
-    await session
-      .prepare(
-        `CREATE TABLE IF NOT EXISTS ${options.migrationsTable} (
+    const tableInfo = await session
+      .prepare(`PRAGMA table_info(${options.migrationsTable});`)
+      .all<{
+        cid: number;
+        name: string;
+        type: string;
+        notnull: number;
+        dflt_value: string | null;
+        pk: number;
+      }>();
+    if (tableInfo.results.length === 0) {
+      await session
+        .prepare(
+          `CREATE TABLE ${options.migrationsTable} (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         name TEXT NOT NULL,
-        applied_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL
+        applied_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
+        type TEXT NOT NULL
     )`,
-      )
-      .run();
-    await session
-      .prepare(
-        `ALTER TABLE ${options.migrationsTable} ADD COLUMN type TEXT NOT NULL DEFAULT 'migration';`,
-      )
-      .run();
+        )
+        .run();
+    } else if (!tableInfo.results.some((col) => col.name === "type")) {
+      await session
+        .prepare(
+          `ALTER TABLE ${options.migrationsTable} ADD COLUMN type TEXT NOT NULL DEFAULT 'migration';`,
+        )
+        .run();
+    }
     const applied: {
       results: { name: string; type: "migration" | "import" }[];
     } = await session
@@ -55,6 +69,7 @@ export const applyLocalD1Migrations = async (
       }
       const statements = sql
         .split("--> statement-breakpoint")
+        .filter((s) => s.trim())
         .map((s) => session.prepare(s));
       statements.push(insertRecord.bind(id, "migration"));
       await session.batch(statements);
