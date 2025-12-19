@@ -43,7 +43,7 @@ export class RootScopeStateAttemptError extends Error {
 
 export interface ScopeOptions extends ProviderCredentials {
   stage?: string;
-  parent: Scope | undefined;
+  parent: Scope | undefined | null;
   scopeName: string;
   password?: string;
   stateStore?: StateStoreType;
@@ -263,7 +263,7 @@ export class Scope {
 
     this.scopeName = scopeName;
     this.name = this.scopeName;
-    this.parent = parent ?? Scope.getScope();
+    this.parent = parent === null ? undefined : (parent ?? Scope.getScope());
     this.rootDir = rootDir ?? this.parent?.rootDir ?? ALCHEMY_ROOT;
     this.isSelected = isSelected ?? this.parent?.isSelected;
     this.startedAt = startedAt ?? this.parent?.startedAt ?? performance.now();

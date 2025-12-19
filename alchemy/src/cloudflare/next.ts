@@ -32,6 +32,42 @@ export async function Nextjs<const B extends Bindings>(
       ].join(" "),
     );
   }
+  const dev = normalizeCommand(props.dev, {
+    command: `${runner} next dev`,
+    env: {
+      NEXTJS_ENV: "development",
+    },
+  });
+  let domain = typeof props.dev === "object" ? props.dev.domain : undefined;
+  if (!domain) {
+    let port;
+    const args = dev.command.split(" ");
+
+    const findArg = (arg: string) => {
+      if (args.find((arg) => arg.startsWith(`${arg}=`))) {
+        return args.find((arg) => arg.startsWith(`${arg}=`))?.split("=")[1];
+      } else if (args.includes(arg)) {
+        const index = args.indexOf(arg);
+        return args[index + 1];
+      }
+      return undefined;
+    };
+    if ((port = findArg("--port"))) {
+      domain = `localhost:${port}`;
+    } else if ((port = findArg("-p"))) {
+      domain = `localhost:${port}`;
+    } else {
+      try {
+        const config = await import(
+          path.resolve(props.cwd ?? process.cwd(), "next.config.ts")
+        );
+        port = config.default?.devServer?.port ?? 3000;
+      } catch {}
+    }
+    if (port) {
+      domain = `localhost:${port}`;
+    }
+  }
   return await Website(id, {
     bundle: {
       minify: true,
@@ -49,12 +85,10 @@ export async function Nextjs<const B extends Bindings>(
         NEXTJS_ENV: "production",
       },
     }),
-    dev: normalizeCommand(props.dev, {
-      command: `${runner} next dev`,
-      env: {
-        NEXTJS_ENV: "development",
-      },
-    }),
+    dev: {
+      ...dev,
+      domain,
+    },
 
     // OpenNext generates the files, but relies on us to bundle them.
     noBundle: props.noBundle ?? false,

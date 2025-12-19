@@ -68,7 +68,7 @@ export const Folder = Resource(
       if (props?.delete !== false) {
         // we just do a best effort attempt
         await ignore(["ENOENT", "ENOTEMPTY"], async () =>
-          fs.promises.rmdir(dirPath, { recursive: props?.clean ?? false }),
+          fs.promises.rm(dirPath, { recursive: props?.clean ?? false }),
         );
       }
       return this.destroy();

@@ -21,6 +21,7 @@ import {
 import { Worker } from "../../src/cloudflare/worker.ts";
 import { BRANCH_PREFIX, waitFor } from "../util.ts";
 
+import { CloudflareApiError } from "../../src/cloudflare/api-error.ts";
 import { destroy } from "../../src/destroy.ts";
 import "../../src/test/vitest.ts";
 import { fetchAndExpectOK } from "../../src/util/safe-fetch.ts";
@@ -54,7 +55,7 @@ describe("D1 Database Resource", async () => {
       const databases = await listDatabases(api);
       const foundDatabase = databases.find((db) => db.name === testId);
       expect(foundDatabase).toBeTruthy();
-      expect(foundDatabase?.id).toEqual(database.id);
+      expect(foundDatabase?.uuid).toEqual(database.id);
     } finally {
       await alchemy.destroy(scope);
 
@@ -552,7 +553,7 @@ describe("D1 Database Resource", async () => {
           (db) => db.name === legacyMigrationDb,
         );
         if (existingDb) {
-          await deleteDatabase(api, existingDb.id);
+          await deleteDatabase(api, existingDb.uuid);
         }
       } catch {}
 
@@ -594,7 +595,7 @@ describe("D1 Database Resource", async () => {
         primaryLocationHint: "wnam",
       });
 
-      databaseId = dbResponse.result.uuid;
+      databaseId = dbResponse.uuid;
       expect(databaseId).toBeTruthy();
 
       if (!databaseId) {
@@ -852,6 +853,12 @@ describe("D1 Database Resource", async () => {
         try {
           await deleteDatabase(api, databaseId);
         } catch (cleanupError) {
+          if (
+            cleanupError instanceof CloudflareApiError &&
+            cleanupError.status === 404
+          ) {
+            return;
+          }
           console.warn(
             "Failed to clean up manually created database:",
             cleanupError,
@@ -876,8 +883,8 @@ describe("D1 Database Resource", async () => {
       expect(euD1.jurisdiction).toEqual("eu");
 
       const gotD1 = await getDatabase(api, euD1Name);
-      expect(gotD1.result.name).toEqual(euD1Name);
-      expect(gotD1.result.jurisdiction).toEqual("eu");
+      expect(gotD1.name).toEqual(euD1Name);
+      expect(gotD1.jurisdiction).toEqual("eu");
     } finally {
       await alchemy.destroy(scope);
       if (euD1) {
@@ -901,8 +908,8 @@ describe("D1 Database Resource", async () => {
       expect(defaultD1.jurisdiction).toEqual("default");
 
       const gotD1 = await getDatabase(api, defaultD1Name);
-      expect(gotD1.result.name).toEqual(defaultD1Name);
-      expect(gotD1.result.jurisdiction).toEqual(null);
+      expect(gotD1.name).toEqual(defaultD1Name);
+      expect(gotD1.jurisdiction).toEqual(null);
     } finally {
       await alchemy.destroy(scope);
       if (defaultD1) {
@@ -947,7 +954,7 @@ async function assertDatabaseDeleted(database: D1Database) {
 
     // Try to list databases and check if our database is still there
     const databases = await listDatabases(api);
-    const foundDatabase = databases.find((db) => db.id === database.id);
+    const foundDatabase = databases.find((db) => db.uuid === database.id);
 
     if (foundDatabase) {
       throw new Error(`Database ${database.name} was not deleted as expected`);

@@ -14,6 +14,11 @@ import { ExitSignal } from "../trpc.ts";
 import { CDPProxy } from "./cdp-manager/cdp-proxy.ts";
 import { CDPManager } from "./cdp-manager/server.ts";
 
+import { exec as _exec } from "child_process";
+import { promisify } from "node:util";
+
+const exec = promisify(_exec);
+
 export const entrypoint = z
   .string()
   .optional()
@@ -213,17 +218,24 @@ export async function execAlchemy(
 
   const argsString = args.join(" ");
   const execArgsString = execArgs.join(" ");
-  // Determine the command to run based on package manager and file extension
-  const isTypeScript = main.endsWith("ts");
 
-  const node = isTypeScript
-    ? `npx tsx ${execArgsString} ${main} ${argsString}`
-    : `node ${execArgsString} ${main} ${argsString}`;
+  const node = `node ${execArgsString} ${main} ${argsString}`;
   const commands = {
     bun: `bun ${execArgsString} ${main} ${argsString}`,
     deno: `deno run -A ${execArgsString} ${main} ${argsString}`,
   };
-  const command = commands[packageManager] ?? commands[runtime] ?? node;
+  let command = commands[packageManager] ?? commands[runtime] ?? node;
+  if (command.startsWith("node")) {
+    const nodeVersion = (await exec(`node --version`)).stdout;
+    // example output: v24.10.0
+    const [major, minor] = nodeVersion.replace("v", "").split(".").map(Number);
+    if (major < 22 || (major === 22 && minor < 18)) {
+      // see: https://nodejs.org/en/learn/typescript/run-natively
+      command = `node --experimental-${
+        major === 22 && minor >= 7 ? "transform" : "strip"
+      }-types ${execArgsString} ${main} ${argsString}`;
+    }
+  }
 
   const childRuntime = command.split(" ")[0];
 

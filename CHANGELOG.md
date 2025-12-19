@@ -1,3 +1,85 @@
+## v0.82.0
+
+### &nbsp;&nbsp;&nbsp;🚀 Features
+
+- **neon**: Add support for 'adopt' prop in neon branches &nbsp;-&nbsp; by **utopy** in https://github.com/alchemy-run/alchemy/issues/1273 [<samp>(6c795)</samp>](https://github.com/alchemy-run/alchemy/commit/6c7957a1)
+
+##### &nbsp;&nbsp;&nbsp;&nbsp;[View changes on GitHub](https://github.com/alchemy-run/alchemy/compare/v0.81.4...v0.82.0)
+
+---
+
+## v0.81.4
+
+### &nbsp;&nbsp;&nbsp;🚀 Features
+
+- **cloudflare**: Add "delete: false" option to hyperdrive &nbsp;-&nbsp; by **John Royal** in https://github.com/alchemy-run/alchemy/issues/1276 [<samp>(a5f6a)</samp>](https://github.com/alchemy-run/alchemy/commit/a5f6ad47)
+
+### &nbsp;&nbsp;&nbsp;🐞 Bug Fixes
+
+- **cli**: Include hyperdrive in generated tokens with workers:* scope &nbsp;-&nbsp; by **John Royal** in https://github.com/alchemy-run/alchemy/issues/1275 [<samp>(f6753)</samp>](https://github.com/alchemy-run/alchemy/commit/f67534d5)
+
+##### &nbsp;&nbsp;&nbsp;&nbsp;[View changes on GitHub](https://github.com/alchemy-run/alchemy/compare/v0.81.3...v0.81.4)
+
+---
+
+## v0.81.3
+
+### &nbsp;&nbsp;&nbsp;🐞 Bug Fixes
+
+- **cloudflare**: Website resources properly lowercase worker names &nbsp;-&nbsp; by **Michael K** in https://github.com/alchemy-run/alchemy/issues/1268 [<samp>(82834)</samp>](https://github.com/alchemy-run/alchemy/commit/828345c1)
+- **core**: Add missing ".ts" extensions to hey api client &nbsp;-&nbsp; by **John Royal** in https://github.com/alchemy-run/alchemy/issues/1269 [<samp>(808c3)</samp>](https://github.com/alchemy-run/alchemy/commit/808c3687)
+
+##### &nbsp;&nbsp;&nbsp;&nbsp;[View changes on GitHub](https://github.com/alchemy-run/alchemy/compare/v0.81.2...v0.81.3)
+
+---
+
+## v0.81.2
+
+### &nbsp;&nbsp;&nbsp;🐞 Bug Fixes
+
+- **cloudflare**:
+  - Miniflare compatibility date warning &nbsp;-&nbsp; by **John Royal** in https://github.com/alchemy-run/alchemy/issues/1256 [<samp>(4992e)</samp>](https://github.com/alchemy-run/alchemy/commit/4992e56d)
+  - Support dev.domain in NextJS &nbsp;-&nbsp; by **Sam Goodwin** in https://github.com/alchemy-run/alchemy/issues/1264 [<samp>(d80a0)</samp>](https://github.com/alchemy-run/alchemy/commit/d80a0ce8)
+  - Handle next.js 16 absolute paths in wasm imports &nbsp;-&nbsp; by **John Royal** in https://github.com/alchemy-run/alchemy/issues/1259 [<samp>(5363d)</samp>](https://github.com/alchemy-run/alchemy/commit/5363d641)
+- **core**:
+  - Do not wait for consistent state when destroying &nbsp;-&nbsp; by **Sam Goodwin** in https://github.com/alchemy-run/alchemy/issues/1252 [<samp>(8eae9)</samp>](https://github.com/alchemy-run/alchemy/commit/8eae9c75)
+- **prisma-postgres**:
+  - Properly build `connectionString` &nbsp;-&nbsp; by **Yanqi Zong** in https://github.com/alchemy-run/alchemy/issues/1253 [<samp>(eb4a8)</samp>](https://github.com/alchemy-run/alchemy/commit/eb4a8600)
+
+##### &nbsp;&nbsp;&nbsp;&nbsp;[View changes on GitHub](https://github.com/alchemy-run/alchemy/compare/v0.81.1...v0.81.2)
+
+---
+
+## v0.81.1
+
+### &nbsp;&nbsp;&nbsp;🐞 Bug Fixes
+
+- **cloudflare**: Resolve zoneId in RedirectRule and use individual Rule apis &nbsp;-&nbsp; by **Sam Goodwin** in https://github.com/alchemy-run/alchemy/issues/1250 [<samp>(0978c)</samp>](https://github.com/alchemy-run/alchemy/commit/0978cc3e)
+
+##### &nbsp;&nbsp;&nbsp;&nbsp;[View changes on GitHub](https://github.com/alchemy-run/alchemy/compare/v0.81.0...v0.81.1)
+
+---
+
+## v0.81.0
+
+### &nbsp;&nbsp;&nbsp;🚀 Features
+
+- **cloudflare**:
+  - Add missing cache fields to hyperdrive &nbsp;-&nbsp; by **John Royal** in https://github.com/alchemy-run/alchemy/issues/1240 [<samp>(c1c8f)</samp>](https://github.com/alchemy-run/alchemy/commit/c1c8f3f5)
+  - Resources for warp device profiles and CIDR Routes for tunnels &nbsp;-&nbsp; by **Andrew Jefferson** in https://github.com/alchemy-run/alchemy/issues/1243 [<samp>(48731)</samp>](https://github.com/alchemy-run/alchemy/commit/487314aa)
+
+### &nbsp;&nbsp;&nbsp;🐞 Bug Fixes
+
+- **cloudflare**:
+  - Pass safe user headers to miniflare websocket &nbsp;-&nbsp; by **John Royal** in https://github.com/alchemy-run/alchemy/issues/1235 [<samp>(b533a)</samp>](https://github.com/alchemy-run/alchemy/commit/b533ac9a)
+  - Paginate Cloudflare queue lookup &nbsp;-&nbsp; by **Riley Tomasek** and **CharlieHelps** in https://github.com/alchemy-run/alchemy/issues/1245 [<samp>(52a3e)</samp>](https://github.com/alchemy-run/alchemy/commit/52a3e639)
+- **core**:
+  - Ensure root Scope is always root and monorepo improvements &nbsp;-&nbsp; by **Sam Goodwin** in https://github.com/alchemy-run/alchemy/issues/1249 [<samp>(88b73)</samp>](https://github.com/alchemy-run/alchemy/commit/88b738d3)
+
+##### &nbsp;&nbsp;&nbsp;&nbsp;[View changes on GitHub](https://github.com/alchemy-run/alchemy/compare/v0.80.1...v0.81.0)
+
+---
+
 ## v0.80.1
 
 ### &nbsp;&nbsp;&nbsp;🚀 Features

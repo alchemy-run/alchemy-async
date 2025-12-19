@@ -402,6 +402,7 @@ export const CLOUDFLARE_OAUTH_SCOPES_TO_PERMISSION_GROUP_NAMES: Record<
     "Workers KV Storage Write",
     "Workers R2 Storage Write",
     "Workers R2 Storage Read",
+    "Hyperdrive Write",
   ],
   "workers_builds:read": ["Workers CI Read"],
   "workers_builds:write": ["Workers CI Write"],
@@ -429,5 +430,6 @@ export const CLOUDFLARE_OAUTH_SCOPES_TO_PERMISSION_GROUP_NAMES: Record<
     "Workers KV Storage Read",
     "Workers R2 Storage Read",
     "Workers Routes Read",
+    "Hyperdrive Read",
   ],
 };

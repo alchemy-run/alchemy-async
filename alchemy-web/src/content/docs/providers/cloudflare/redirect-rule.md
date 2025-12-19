@@ -19,6 +19,21 @@ const redirect = await RedirectRule("basic-redirect", {
 });
 ```
 
+## With Custom Description
+
+Add a custom description to identify the rule in the Cloudflare dashboard:
+
+```ts
+import { RedirectRule } from "alchemy/cloudflare";
+
+const redirect = await RedirectRule("basic-redirect", {
+  zone: "example.com",
+  description: "Redirect legacy URLs to new homepage",
+  targetUrl: "https://example.com/",
+  statusCode: 301,
+});
+```
+
 ## Wildcard Redirect
 
 Redirect from a wildcard pattern to a target URL with placeholders:

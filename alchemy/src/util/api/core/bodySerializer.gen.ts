@@ -4,7 +4,7 @@ import type {
   ArrayStyle,
   ObjectStyle,
   SerializerOptions,
-} from "./pathSerializer.gen";
+} from "./pathSerializer.gen.ts";
 
 export type QuerySerializer = (query: Record<string, unknown>) => string;
 

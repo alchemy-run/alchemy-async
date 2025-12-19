@@ -79,6 +79,16 @@ export async function createMiniflareWorkerProxy(options: {
     const protocols = req.headers["sec-websocket-protocol"]
       ?.split(",")
       .map((p) => p.trim());
+    const userHeaders = Object.fromEntries(
+      // filter headers that are set automatically by `ws` (if we set them manually, this causes errors)
+      Object.entries(req.headers).filter(
+        ([key]) =>
+          !key.startsWith("sec-websocket-") &&
+          key !== "host" &&
+          key !== "connection" &&
+          key !== "upgrade",
+      ),
+    );
 
     // Get worker name to set MF-Route-Override header
     const info = parseIncomingMessage(req);
@@ -88,6 +98,7 @@ export async function createMiniflareWorkerProxy(options: {
     return new WebSocket(url, protocols, {
       headers: {
         "MF-Route-Override": name,
+        ...userHeaders,
       },
     });
   };

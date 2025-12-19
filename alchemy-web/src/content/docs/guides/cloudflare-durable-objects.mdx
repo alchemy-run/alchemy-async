@@ -108,9 +108,9 @@ This is a step-by-step guide to deploy a Durable Object, for a complete API refe
 
 5. **(Optional) Rename the Class**
 
-   Alchemy takes care of migrations automatically when you rename the class name.
+   Alchemy takes care of migrations automatically when you rename the class name. You need to update both the configuration file and the worker file:
 
-   ```diff lang='ts'
+   ```diff lang='ts' title="alchemy.run.ts"
     import { DurableObjectNamespace } from "alchemy/cloudflare";
 
     const counter = DurableObjectNamespace("counter", {
@@ -119,6 +119,16 @@ This is a step-by-step guide to deploy a Durable Object, for a complete API refe
      // whether you want a sqllite db per DO (usually yes!)
      sqlite: true,
     });
+   ```
+
+   ```diff lang='ts' title="index.ts"
+    import type { worker } from "./alchemy.run";
+    import { DurableObject } from "cloudflare:workers";
+
+   -export class Counter extends DurableObject {
+   +export class MyCounter extends DurableObject {
+      // ... rest of the class
+    }
    ```
 
    :::caution

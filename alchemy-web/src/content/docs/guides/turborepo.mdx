@@ -14,6 +14,10 @@ In this guide, we'll walk through how to:
 
 ![dev](/turborepo-dev.png)
 
+:::caution
+Monorepos only work reliably with Bun, Deno or Node 24+ because it relies on `.ts` export conditions.
+:::
+
 <Steps>
 1. Set up the `deploy` and `dev` tasks to run in dependency order (`backend → frontend`):
 
@@ -112,11 +116,7 @@ In this guide, we'll walk through how to:
         "bun": "./src/index.ts",
         "import": "./lib/src/index.js",
       },
-    +  "./alchemy": {
-    +    "bun": "./alchemy.run.ts",
-    +    "import": "./lib/alchemy.run.js"
-    +    "types": "./alchemy.run.ts"
-    +  }
+    +  "./alchemy": "./alchemy.run.ts"
     },
     ```
 

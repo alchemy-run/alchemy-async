@@ -41,6 +41,9 @@ describe("Prisma Database Connection", async () => {
       expect(connection.database).toBe(database.id);
       expect(connection.createdAt).toBeDefined();
       expect(connection.connectionString.unencrypted).toBeDefined();
+      expect(connection.prismaConnectionString.unencrypted).toBeDefined();
+      expect(connection.host).toBeDefined();
+      expect(connection.user).toBeDefined();
     } finally {
       await alchemy.destroy(scope);
 
