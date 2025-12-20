@@ -163,6 +163,7 @@ fi`,
               ALCHEMY_PASSWORD: "${{ secrets.ALCHEMY_PASSWORD }}",
               ALCHEMY_STATE_TOKEN: "${{ secrets.ALCHEMY_STATE_TOKEN }}",
               CLOUDFLARE_API_TOKEN: "${{ secrets.CLOUDFLARE_API_TOKEN }}",
+              CLOUDFLARE_ACCOUNT_ID: "${{ secrets.CLOUDFLARE_ACCOUNT_ID }}",
               CLOUDFLARE_EMAIL: "${{ secrets.CLOUDFLARE_EMAIL }}",
               PULL_REQUEST: "${{ github.event.number }}",
             },
@@ -192,12 +193,14 @@ As part of this guide, we'll:
    ALCHEMY_PASSWORD=your-encryption-password
    ALCHEMY_STATE_TOKEN=your-state-token
    CLOUDFLARE_API_TOKEN=your-cloudflare-api-token
+   CLOUDFLARE_ACCOUNT_ID=your-cloudflare-account-id
    CLOUDFLARE_EMAIL=your-cloudflare-email
    ```
 
    :::tip
    1. See the [Cloudflare Auth Guide](/guides/cloudflare#api-token) if you don't have a `CLOUDFLARE_API_TOKEN`. We reccomend using our cli to create a token matching your alchemy profile.
    2. See the [Cloudflare State Store Guide](/guides/cloudflare-state-store) if you don't have a `ALCHEMY_STATE_TOKEN`
+   3. See the [Cloudflare find account id](https://developers.cloudflare.com/fundamentals/account/find-account-and-zone-ids/) for getting account id if you dont know it.
    :::
 
 2. **Set up preview environments in your Alchemy script**
