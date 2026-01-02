@@ -139,6 +139,10 @@
       "bun": "./src/prisma-postgres/index.ts",
       "import": "./lib/prisma-postgres/index.js"
     },
+    "./railway": {
+      "bun": "./src/railway/index.ts",
+      "import": "./lib/railway/index.js"
+    }, 
     "./random": {
       "bun": "./src/random/index.ts",
       "import": "./lib/random/index.js"

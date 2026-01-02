@@ -1,0 +1,215 @@
+---
+title: Railway
+description: Deploy applications and databases to Railway using Alchemy.
+sidebar:
+  order: 22
+---
+
+import { Steps, Tabs, TabItem } from "@astrojs/starlight/components";
+
+This guide walks you through deploying an application with a PostgreSQL database to Railway using Alchemy.
+
+<Steps>
+
+0. Install and setup Alchemy
+
+	<Tabs syncKey="pkgManager">
+	<TabItem label="bun">
+
+	```bash
+	bun add alchemy
+	```
+
+	</TabItem>
+	<TabItem label="npm">
+
+	```bash
+	npm install alchemy
+	```
+
+	</TabItem>
+	<TabItem label="pnpm">
+
+	```bash
+	pnpm add alchemy
+	```
+
+	</TabItem>
+	<TabItem label="yarn">
+
+	```bash
+	yarn add alchemy
+	```
+
+	</TabItem>
+	</Tabs>
+
+	:::tip
+	If you're new to Alchemy, see the [Getting Started](/getting-started/) guide.
+	:::
+
+1. **Get Railway API Token**
+
+   Create an API token from your [Railway account settings](https://railway.com/account/tokens).
+
+2. **Configure environment variables**
+
+   Add the token to your `.env` file:
+
+   ```bash
+   RAILWAY_API_TOKEN=your_railway_api_token
+   ```
+
+3. **Create your infrastructure**
+
+   Create `alchemy.run.ts` with a Railway project, service, and database:
+
+   ```ts title="alchemy.run.ts"
+   import alchemy from "alchemy";
+   import {
+     Project,
+     Service,
+     PostgresDatabase,
+     Domain,
+     Variable,
+   } from "alchemy/railway";
+
+   const app = await alchemy("my-railway-app");
+
+   // Create a Railway project
+   const project = await Project("my-project", {
+     name: "My App",
+     description: "My application on Railway",
+   });
+
+   // Deploy a PostgreSQL database
+   const db = await PostgresDatabase("db", {
+     project,
+     name: "postgres",
+   });
+
+   // Deploy the API service from Docker image
+   const api = await Service("api", {
+     project,
+     name: "api",
+     source: {
+       image: "nginx:alpine", // Replace with your image
+     },
+   });
+
+   // Get the production environment
+   const productionEnv = project.environments[0];
+
+   // Add database URL to the service
+   if (productionEnv) {
+     await Variable("db-url", {
+       project,
+       environment: productionEnv.id,
+       service: api,
+       name: "DATABASE_URL",
+       value: db.connectionUrl,
+     });
+
+     // Create a public domain
+     const domain = await Domain("api-domain", {
+       service: api,
+       environment: productionEnv.id,
+     });
+
+     console.log(`API will be available at: https://${domain.domain}`);
+   }
+
+   await app.finalize();
+   ```
+
+4. **Deploy from GitHub (Alternative)**
+
+   To deploy from a GitHub repository instead of a Docker image:
+
+   ```diff lang="ts" title="alchemy.run.ts"
+   const api = await Service("api", {
+     project,
+     name: "api",
+   -  source: {
+   -    image: "nginx:alpine",
+   -  },
+   +  source: {
+   +    repo: "your-username/your-repo",
+   +    branch: "main",
+   +  },
+   +  buildCommand: "npm run build",
+   +  startCommand: "npm start",
+   });
+   ```
+
+5. **Deploy your application**
+
+   Use the Alchemy CLI to deploy:
+
+   <Tabs syncKey="pkgManager">
+     <TabItem label="bun">
+       ```sh
+       bun alchemy deploy
+       ```
+     </TabItem>
+     <TabItem label="npm">
+       ```sh
+       npx alchemy deploy
+       ```
+     </TabItem>
+     <TabItem label="pnpm">
+       ```sh
+       pnpm alchemy deploy
+       ```
+     </TabItem>
+     <TabItem label="yarn">
+       ```sh
+       yarn alchemy deploy
+       ```
+     </TabItem>
+   </Tabs>
+
+   This will create your Railway project, database, and service. The console will output your service URL.
+
+6. **Verify deployment**
+
+   Visit the [Railway dashboard](https://railway.com) to see your deployed resources. You can also test your service by visiting the domain URL output in the previous step.
+
+7. **(Optional) Tear down**
+
+   Use the Alchemy CLI to delete all resources:
+
+   <Tabs syncKey="pkgManager">
+     <TabItem label="bun">
+       ```sh
+       bun alchemy destroy
+       ```
+     </TabItem>
+     <TabItem label="npm">
+       ```sh
+       npx alchemy destroy
+       ```
+     </TabItem>
+     <TabItem label="pnpm">
+       ```sh
+       pnpm alchemy destroy
+       ```
+     </TabItem>
+     <TabItem label="yarn">
+       ```sh
+       yarn alchemy destroy
+       ```
+     </TabItem>
+   </Tabs>
+
+   :::caution
+   This will delete your database and all its data. Use `delete: false` on your database resource to preserve data.
+   :::
+
+</Steps>
+
+## Next Steps
+
+- [Railway Provider Documentation](/providers/railway/) - Full API reference
+- [Railway Official Docs](https://docs.railway.com) - Learn more about Railway features
+- [Railway Templates](https://railway.app/templates) - Pre-built templates for common stacks

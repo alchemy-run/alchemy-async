@@ -1,0 +1,16 @@
+{
+  "name": "railway-example",
+  "version": "0.0.0",
+  "description": "Deploy a service with PostgreSQL to Railway using Alchemy",
+  "type": "module",
+  "scripts": {
+    "build": "tsc -b",
+    "deploy": "alchemy deploy --env-file ../../.env",
+    "destroy": "alchemy destroy --env-file ../../.env"
+  },
+  "devDependencies": {
+    "@types/node": "^24.0.1",
+    "alchemy": "workspace:*",
+    "typescript": "catalog:"
+  }
+}
