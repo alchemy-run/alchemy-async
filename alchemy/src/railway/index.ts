@@ -61,22 +61,3 @@ export {
   type TcpProxyProps,
   type TcpProxy as TcpProxyOutput,
 } from "./tcp-proxy.ts";
-
-export {
-  PostgresDatabase,
-  MysqlDatabase,
-  RedisDatabase,
-  MongoDatabase,
-  isPostgresDatabase,
-  isMysqlDatabase,
-  isRedisDatabase,
-  isMongoDatabase,
-  type PostgresDatabaseProps,
-  type MysqlDatabaseProps,
-  type RedisDatabaseProps,
-  type MongoDatabaseProps,
-  type PostgresDatabase as PostgresDatabaseOutput,
-  type MysqlDatabase as MysqlDatabaseOutput,
-  type RedisDatabase as RedisDatabaseOutput,
-  type MongoDatabase as MongoDatabaseOutput,
-} from "./database.ts";
