@@ -83,111 +83,93 @@ export type Options<
   meta?: Record<string, unknown>;
 };
 
-class HeyApiClient {
-  protected client: Client;
+class _HeyApiClient {
+  protected _client: Client = client;
 
   constructor(args?: { client?: Client }) {
-    this.client = args?.client ?? client;
-  }
-}
-
-class HeyApiRegistry<T> {
-  private readonly defaultKey = "default";
-
-  private readonly instances: Map<string, T> = new Map();
-
-  get(key?: string): T {
-    const instance = this.instances.get(key ?? this.defaultKey);
-    if (!instance) {
-      throw new Error(
-        `No SDK client found. Create one with "new PrismaClient()" to fix this error.`,
-      );
+    if (args?.client) {
+      this._client = args.client;
     }
-    return instance;
-  }
-
-  set(value: T, key?: string): void {
-    this.instances.set(key ?? this.defaultKey, value);
   }
 }
 
-export class PrismaClient extends HeyApiClient {
-  public static readonly __registry = new HeyApiRegistry<PrismaClient>();
-
-  constructor(args?: { client?: Client; key?: string }) {
-    super(args);
-    PrismaClient.__registry.set(this, args?.key);
-  }
-
+export class PrismaClient extends _HeyApiClient {
   /**
    * Delete database connection string
-   *
    * Deletes the database connection string with the given ID.
    */
   public deleteDatabaseConnectionString<ThrowOnError extends boolean = true>(
     options: Options<DeleteDatabaseConnectionStringData, ThrowOnError>,
   ) {
-    return (options.client ?? this.client).delete<
+    return (options.client ?? this._client).delete<
       DeleteDatabaseConnectionStringResponses,
       DeleteDatabaseConnectionStringErrors,
       ThrowOnError
-    >({ url: "/v1/connections/{id}", ...options });
+    >({
+      url: "/v1/connections/{id}",
+      ...options,
+    });
   }
 
   /**
    * Delete database
-   *
    * Deletes the database with the given ID.
    */
   public deleteDatabase<ThrowOnError extends boolean = true>(
     options: Options<DeleteDatabaseData, ThrowOnError>,
   ) {
-    return (options.client ?? this.client).delete<
+    return (options.client ?? this._client).delete<
       DeleteDatabaseResponses,
       DeleteDatabaseErrors,
       ThrowOnError
-    >({ url: "/v1/databases/{databaseId}", ...options });
+    >({
+      url: "/v1/databases/{databaseId}",
+      ...options,
+    });
   }
 
   /**
    * Get database
-   *
    * Returns the database with the given ID.
    */
   public getDatabase<ThrowOnError extends boolean = true>(
     options: Options<GetDatabaseData, ThrowOnError>,
   ) {
-    return (options.client ?? this.client).get<
+    return (options.client ?? this._client).get<
       GetDatabaseResponses,
       GetDatabaseErrors,
       ThrowOnError
-    >({ url: "/v1/databases/{databaseId}", ...options });
+    >({
+      url: "/v1/databases/{databaseId}",
+      ...options,
+    });
   }
 
   /**
    * Get list of database connections
-   *
    * Returns all connections for the given database.
    */
   public listDatabaseConnections<ThrowOnError extends boolean = true>(
     options: Options<ListDatabaseConnectionsData, ThrowOnError>,
   ) {
-    return (options.client ?? this.client).get<
+    return (options.client ?? this._client).get<
       ListDatabaseConnectionsResponses,
       ListDatabaseConnectionsErrors,
       ThrowOnError
-    >({ url: "/v1/databases/{databaseId}/connections", ...options });
+    >({
+      url: "/v1/databases/{databaseId}/connections",
+      ...options,
+    });
   }
 
   /**
    * Create database connection string
-   *
    * Creates a new connection string for the given database.
    */
   public createDatabaseConnectionString<ThrowOnError extends boolean = true>(
     options: Options<CreateDatabaseConnectionStringData, ThrowOnError>,
   ) {
-    return (options.client ?? this.client).post<
+    return (options.client ?? this._client).post<
       CreateDatabaseConnectionStringResponses,
       CreateDatabaseConnectionStringErrors,
       ThrowOnError
@@ -203,58 +185,63 @@ export class PrismaClient extends HeyApiClient {
 
   /**
    * Get list of backups
-   *
    * Returns backups for the specified database.
    */
   public listBackups<ThrowOnError extends boolean = true>(
     options: Options<ListBackupsData, ThrowOnError>,
   ) {
-    return (options.client ?? this.client).get<
+    return (options.client ?? this._client).get<
       ListBackupsResponses,
       ListBackupsErrors,
       ThrowOnError
-    >({ url: "/v1/databases/{databaseId}/backups", ...options });
+    >({
+      url: "/v1/databases/{databaseId}/backups",
+      ...options,
+    });
   }
 
   /**
    * Get database usage metrics
-   *
    * Returns usage metrics for the specified database.
    */
   public getDatabaseUsageMetrics<ThrowOnError extends boolean = true>(
     options: Options<GetDatabaseUsageMetricsData, ThrowOnError>,
   ) {
-    return (options.client ?? this.client).get<
+    return (options.client ?? this._client).get<
       GetDatabaseUsageMetricsResponses,
       GetDatabaseUsageMetricsErrors,
       ThrowOnError
-    >({ url: "/v1/databases/{databaseId}/usage", ...options });
+    >({
+      url: "/v1/databases/{databaseId}/usage",
+      ...options,
+    });
   }
 
   /**
    * Get list of projects
-   *
    * Returns the list of projects the token has access to.
    */
   public listProjects<ThrowOnError extends boolean = true>(
     options?: Options<ListProjectsData, ThrowOnError>,
   ) {
-    return (options?.client ?? this.client).get<
+    return (options?.client ?? this._client).get<
       ListProjectsResponses,
       ListProjectsErrors,
       ThrowOnError
-    >({ url: "/v1/projects", ...options });
+    >({
+      url: "/v1/projects",
+      ...options,
+    });
   }
 
   /**
    * Create project with a postgres database
-   *
    * Creates a new project with a postgres database.
    */
   public createProjectWithPostgresDatabase<ThrowOnError extends boolean = true>(
     options?: Options<CreateProjectWithPostgresDatabaseData, ThrowOnError>,
   ) {
-    return (options?.client ?? this.client).post<
+    return (options?.client ?? this._client).post<
       CreateProjectWithPostgresDatabaseResponses,
       CreateProjectWithPostgresDatabaseErrors,
       ThrowOnError
@@ -270,43 +257,46 @@ export class PrismaClient extends HeyApiClient {
 
   /**
    * Delete project
-   *
    * Deletes the project with the given ID.
    */
   public deleteProject<ThrowOnError extends boolean = true>(
     options: Options<DeleteProjectData, ThrowOnError>,
   ) {
-    return (options.client ?? this.client).delete<
+    return (options.client ?? this._client).delete<
       DeleteProjectResponses,
       DeleteProjectErrors,
       ThrowOnError
-    >({ url: "/v1/projects/{id}", ...options });
+    >({
+      url: "/v1/projects/{id}",
+      ...options,
+    });
   }
 
   /**
    * Get project
-   *
    * Returns the project with the given ID.
    */
   public getProject<ThrowOnError extends boolean = true>(
     options: Options<GetProjectData, ThrowOnError>,
   ) {
-    return (options.client ?? this.client).get<
+    return (options.client ?? this._client).get<
       GetProjectResponses,
       GetProjectErrors,
       ThrowOnError
-    >({ url: "/v1/projects/{id}", ...options });
+    >({
+      url: "/v1/projects/{id}",
+      ...options,
+    });
   }
 
   /**
    * Transfer project
-   *
    * Transfer the project with the given ID to the new owner's workspace
    */
   public transferProject<ThrowOnError extends boolean = true>(
     options: Options<TransferProjectData, ThrowOnError>,
   ) {
-    return (options.client ?? this.client).post<
+    return (options.client ?? this._client).post<
       TransferProjectResponses,
       TransferProjectErrors,
       ThrowOnError
@@ -322,28 +312,29 @@ export class PrismaClient extends HeyApiClient {
 
   /**
    * Get list of databases
-   *
    * Returns databases for the given project.
    */
   public listDatabases<ThrowOnError extends boolean = true>(
     options: Options<ListDatabasesData, ThrowOnError>,
   ) {
-    return (options.client ?? this.client).get<
+    return (options.client ?? this._client).get<
       ListDatabasesResponses,
       ListDatabasesErrors,
       ThrowOnError
-    >({ url: "/v1/projects/{projectId}/databases", ...options });
+    >({
+      url: "/v1/projects/{projectId}/databases",
+      ...options,
+    });
   }
 
   /**
    * Create database
-   *
    * Creates a new database for the given project.
    */
   public createDatabase<ThrowOnError extends boolean = true>(
     options: Options<CreateDatabaseData, ThrowOnError>,
   ) {
-    return (options.client ?? this.client).post<
+    return (options.client ?? this._client).post<
       CreateDatabaseResponses,
       CreateDatabaseErrors,
       ThrowOnError
@@ -359,28 +350,29 @@ export class PrismaClient extends HeyApiClient {
 
   /**
    * Get list of integrations
-   *
    * Returns integrations for the given workspace.
    */
   public listIntegrations<ThrowOnError extends boolean = true>(
     options: Options<ListIntegrationsData, ThrowOnError>,
   ) {
-    return (options.client ?? this.client).get<
+    return (options.client ?? this._client).get<
       ListIntegrationsResponses,
       ListIntegrationsErrors,
       ThrowOnError
-    >({ url: "/v1/workspaces/{workspaceId}/integrations", ...options });
+    >({
+      url: "/v1/workspaces/{workspaceId}/integrations",
+      ...options,
+    });
   }
 
   /**
    * Revoke integration tokens
-   *
    * Revokes the integration tokens with the given client ID.
    */
   public revokeIntegrationTokens<ThrowOnError extends boolean = true>(
     options: Options<RevokeIntegrationTokensData, ThrowOnError>,
   ) {
-    return (options.client ?? this.client).delete<
+    return (options.client ?? this._client).delete<
       RevokeIntegrationTokensResponses,
       RevokeIntegrationTokensErrors,
       ThrowOnError
@@ -392,46 +384,52 @@ export class PrismaClient extends HeyApiClient {
 
   /**
    * Get Prisma Postgres regions
-   *
    * Returns all available regions for Prisma Postgres.
    */
   public getPrismaPostgresRegions<ThrowOnError extends boolean = true>(
     options?: Options<GetPrismaPostgresRegionsData, ThrowOnError>,
   ) {
-    return (options?.client ?? this.client).get<
+    return (options?.client ?? this._client).get<
       GetPrismaPostgresRegionsResponses,
       GetPrismaPostgresRegionsErrors,
       ThrowOnError
-    >({ url: "/v1/regions/postgres", ...options });
+    >({
+      url: "/v1/regions/postgres",
+      ...options,
+    });
   }
 
   /**
    * Get Prisma Accelerate regions
-   *
    * Returns all available regions for Prisma Accelerate.
    */
   public getPrismaAccelerateRegions<ThrowOnError extends boolean = true>(
     options?: Options<GetPrismaAccelerateRegionsData, ThrowOnError>,
   ) {
-    return (options?.client ?? this.client).get<
+    return (options?.client ?? this._client).get<
       GetPrismaAccelerateRegionsResponses,
       GetPrismaAccelerateRegionsErrors,
       ThrowOnError
-    >({ url: "/v1/regions/accelerate", ...options });
+    >({
+      url: "/v1/regions/accelerate",
+      ...options,
+    });
   }
 
   /**
    * Get list of workspaces
-   *
    * Returns the list of workspaces the current token can access.
    */
   public listWorkspaces<ThrowOnError extends boolean = true>(
     options?: Options<ListWorkspacesData, ThrowOnError>,
   ) {
-    return (options?.client ?? this.client).get<
+    return (options?.client ?? this._client).get<
       ListWorkspacesResponses,
       ListWorkspacesErrors,
       ThrowOnError
-    >({ url: "/v1/workspaces", ...options });
+    >({
+      url: "/v1/workspaces",
+      ...options,
+    });
   }
 }

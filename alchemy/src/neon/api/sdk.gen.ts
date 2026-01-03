@@ -10,12 +10,6 @@ import type {
   AcceptProjectTransferRequestData,
   AcceptProjectTransferRequestErrors,
   AcceptProjectTransferRequestResponses,
-  AddBranchNeonAuthOauthProviderData,
-  AddBranchNeonAuthOauthProviderErrors,
-  AddBranchNeonAuthOauthProviderResponses,
-  AddBranchNeonAuthTrustedDomainData,
-  AddBranchNeonAuthTrustedDomainErrors,
-  AddBranchNeonAuthTrustedDomainResponses,
   AddNeonAuthDomainToRedirectUriWhitelistData,
   AddNeonAuthDomainToRedirectUriWhitelistErrors,
   AddNeonAuthDomainToRedirectUriWhitelistResponses,
@@ -37,11 +31,6 @@ import type {
   CreateApiKeyData,
   CreateApiKeyErrors,
   CreateApiKeyResponses,
-  CreateBranchNeonAuthNewUserData,
-  CreateBranchNeonAuthNewUserErrors,
-  CreateBranchNeonAuthNewUserResponses,
-  CreateNeonAuthData,
-  CreateNeonAuthErrors,
   CreateNeonAuthIntegrationData,
   CreateNeonAuthIntegrationErrors,
   CreateNeonAuthIntegrationResponses,
@@ -51,16 +40,12 @@ import type {
   CreateNeonAuthProviderSdkKeysData,
   CreateNeonAuthProviderSdkKeysErrors,
   CreateNeonAuthProviderSdkKeysResponses,
-  CreateNeonAuthResponses,
   CreateOrganizationInvitationsData,
   CreateOrganizationInvitationsErrors,
   CreateOrganizationInvitationsResponses,
   CreateOrgApiKeyData,
   CreateOrgApiKeyErrors,
   CreateOrgApiKeyResponses,
-  CreateProjectBranchAnonymizedData,
-  CreateProjectBranchAnonymizedErrors,
-  CreateProjectBranchAnonymizedResponses,
   CreateProjectBranchData,
   CreateProjectBranchDataApiData,
   CreateProjectBranchDataApiErrors,
@@ -85,15 +70,6 @@ import type {
   CreateSnapshotData,
   CreateSnapshotErrors,
   CreateSnapshotResponses,
-  DeleteBranchNeonAuthOauthProviderData,
-  DeleteBranchNeonAuthOauthProviderErrors,
-  DeleteBranchNeonAuthOauthProviderResponses,
-  DeleteBranchNeonAuthTrustedDomainData,
-  DeleteBranchNeonAuthTrustedDomainErrors,
-  DeleteBranchNeonAuthTrustedDomainResponses,
-  DeleteBranchNeonAuthUserData,
-  DeleteBranchNeonAuthUserErrors,
-  DeleteBranchNeonAuthUserResponses,
   DeleteNeonAuthDomainFromRedirectUriWhitelistData,
   DeleteNeonAuthDomainFromRedirectUriWhitelistErrors,
   DeleteNeonAuthDomainFromRedirectUriWhitelistResponses,
@@ -136,18 +112,12 @@ import type {
   DeleteSnapshotData,
   DeleteSnapshotErrors,
   DeleteSnapshotResponses,
-  DisableNeonAuthData,
-  DisableNeonAuthErrors,
-  DisableNeonAuthResponses,
   FinalizeRestoreBranchData,
   FinalizeRestoreBranchErrors,
   FinalizeRestoreBranchResponses,
   GetActiveRegionsData,
   GetActiveRegionsErrors,
   GetActiveRegionsResponses,
-  GetAnonymizedBranchStatusData,
-  GetAnonymizedBranchStatusErrors,
-  GetAnonymizedBranchStatusResponses,
   GetAuthDetailsData,
   GetAuthDetailsErrors,
   GetAuthDetailsResponses,
@@ -169,24 +139,9 @@ import type {
   GetCurrentUserOrganizationsData,
   GetCurrentUserOrganizationsErrors,
   GetCurrentUserOrganizationsResponses,
-  GetMaskingRulesData,
-  GetMaskingRulesErrors,
-  GetMaskingRulesResponses,
-  GetNeonAuthAllowLocalhostData,
-  GetNeonAuthAllowLocalhostErrors,
-  GetNeonAuthAllowLocalhostResponses,
-  GetNeonAuthData,
-  GetNeonAuthEmailAndPasswordConfigData,
-  GetNeonAuthEmailAndPasswordConfigErrors,
-  GetNeonAuthEmailAndPasswordConfigResponses,
-  GetNeonAuthEmailProviderData,
-  GetNeonAuthEmailProviderErrors,
-  GetNeonAuthEmailProviderResponses,
   GetNeonAuthEmailServerData,
   GetNeonAuthEmailServerErrors,
   GetNeonAuthEmailServerResponses,
-  GetNeonAuthErrors,
-  GetNeonAuthResponses,
   GetOrganizationData,
   GetOrganizationErrors,
   GetOrganizationInvitationsData,
@@ -235,21 +190,12 @@ import type {
   GetProjectOperationErrors,
   GetProjectOperationResponses,
   GetProjectResponses,
-  GetSnapshotScheduleData,
-  GetSnapshotScheduleErrors,
-  GetSnapshotScheduleResponses,
   GrantPermissionToProjectData,
   GrantPermissionToProjectErrors,
   GrantPermissionToProjectResponses,
   ListApiKeysData,
   ListApiKeysErrors,
   ListApiKeysResponses,
-  ListBranchNeonAuthOauthProvidersData,
-  ListBranchNeonAuthOauthProvidersErrors,
-  ListBranchNeonAuthOauthProvidersResponses,
-  ListBranchNeonAuthTrustedDomainsData,
-  ListBranchNeonAuthTrustedDomainsErrors,
-  ListBranchNeonAuthTrustedDomainsResponses,
   ListNeonAuthIntegrationsData,
   ListNeonAuthIntegrationsErrors,
   ListNeonAuthIntegrationsResponses,
@@ -301,9 +247,9 @@ import type {
   ListSnapshotsData,
   ListSnapshotsErrors,
   ListSnapshotsResponses,
-  RecoverProjectData,
-  RecoverProjectErrors,
-  RecoverProjectResponses,
+  RefreshSchemaCacheDataApiData,
+  RefreshSchemaCacheDataApiErrors,
+  RefreshSchemaCacheDataApiResponses,
   RemoveOrganizationMemberData,
   RemoveOrganizationMemberErrors,
   RemoveOrganizationMemberResponses,
@@ -316,9 +262,6 @@ import type {
   RestoreProjectBranchData,
   RestoreProjectBranchErrors,
   RestoreProjectBranchResponses,
-  RestoreProjectData,
-  RestoreProjectErrors,
-  RestoreProjectResponses,
   RestoreSnapshotData,
   RestoreSnapshotErrors,
   RestoreSnapshotResponses,
@@ -331,18 +274,9 @@ import type {
   RevokePermissionFromProjectData,
   RevokePermissionFromProjectErrors,
   RevokePermissionFromProjectResponses,
-  SendNeonAuthTestEmailData,
-  SendNeonAuthTestEmailErrors,
-  SendNeonAuthTestEmailResponses,
   SetDefaultProjectBranchData,
   SetDefaultProjectBranchErrors,
   SetDefaultProjectBranchResponses,
-  SetSnapshotScheduleData,
-  SetSnapshotScheduleErrors,
-  SetSnapshotScheduleResponses,
-  StartAnonymizationData,
-  StartAnonymizationErrors,
-  StartAnonymizationResponses,
   StartProjectEndpointData,
   StartProjectEndpointErrors,
   StartProjectEndpointResponses,
@@ -358,37 +292,16 @@ import type {
   TransferProjectsFromUserToOrgData,
   TransferProjectsFromUserToOrgErrors,
   TransferProjectsFromUserToOrgResponses,
-  UpdateBranchNeonAuthOauthProviderData,
-  UpdateBranchNeonAuthOauthProviderErrors,
-  UpdateBranchNeonAuthOauthProviderResponses,
-  UpdateMaskingRulesData,
-  UpdateMaskingRulesErrors,
-  UpdateMaskingRulesResponses,
-  UpdateNeonAuthAllowLocalhostData,
-  UpdateNeonAuthAllowLocalhostErrors,
-  UpdateNeonAuthAllowLocalhostResponses,
-  UpdateNeonAuthEmailAndPasswordConfigData,
-  UpdateNeonAuthEmailAndPasswordConfigErrors,
-  UpdateNeonAuthEmailAndPasswordConfigResponses,
-  UpdateNeonAuthEmailProviderData,
-  UpdateNeonAuthEmailProviderErrors,
-  UpdateNeonAuthEmailProviderResponses,
   UpdateNeonAuthEmailServerData,
   UpdateNeonAuthEmailServerErrors,
   UpdateNeonAuthEmailServerResponses,
   UpdateNeonAuthOauthProviderData,
   UpdateNeonAuthOauthProviderErrors,
   UpdateNeonAuthOauthProviderResponses,
-  UpdateNeonAuthUserRoleData,
-  UpdateNeonAuthUserRoleErrors,
-  UpdateNeonAuthUserRoleResponses,
   UpdateOrganizationMemberData,
   UpdateOrganizationMemberErrors,
   UpdateOrganizationMemberResponses,
   UpdateProjectBranchData,
-  UpdateProjectBranchDataApiData,
-  UpdateProjectBranchDataApiErrors,
-  UpdateProjectBranchDataApiResponses,
   UpdateProjectBranchDatabaseData,
   UpdateProjectBranchDatabaseErrors,
   UpdateProjectBranchDatabaseResponses,
@@ -422,45 +335,19 @@ export type Options<
   meta?: Record<string, unknown>;
 };
 
-class HeyApiClient {
-  protected client: Client;
+class _HeyApiClient {
+  protected _client: Client = client;
 
   constructor(args?: { client?: Client }) {
-    this.client = args?.client ?? client;
-  }
-}
-
-class HeyApiRegistry<T> {
-  private readonly defaultKey = "default";
-
-  private readonly instances: Map<string, T> = new Map();
-
-  get(key?: string): T {
-    const instance = this.instances.get(key ?? this.defaultKey);
-    if (!instance) {
-      throw new Error(
-        `No SDK client found. Create one with "new NeonClient()" to fix this error.`,
-      );
+    if (args?.client) {
+      this._client = args.client;
     }
-    return instance;
-  }
-
-  set(value: T, key?: string): void {
-    this.instances.set(key ?? this.defaultKey, value);
   }
 }
 
-export class NeonClient extends HeyApiClient {
-  public static readonly __registry = new HeyApiRegistry<NeonClient>();
-
-  constructor(args?: { client?: Client; key?: string }) {
-    super(args);
-    NeonClient.__registry.set(this, args?.key);
-  }
-
+export class NeonClient extends _HeyApiClient {
   /**
    * List API keys
-   *
    * Retrieves the API keys for your Neon account.
    * The response does not include API key tokens. A token is only provided when creating an API key.
    * API keys can also be managed in the Neon Console.
@@ -470,16 +357,18 @@ export class NeonClient extends HeyApiClient {
   public listApiKeys<ThrowOnError extends boolean = true>(
     options?: Options<ListApiKeysData, ThrowOnError>,
   ) {
-    return (options?.client ?? this.client).get<
+    return (options?.client ?? this._client).get<
       ListApiKeysResponses,
       ListApiKeysErrors,
       ThrowOnError
-    >({ url: "/api_keys", ...options });
+    >({
+      url: "/api_keys",
+      ...options,
+    });
   }
 
   /**
    * Create API key
-   *
    * Creates an API key.
    * The `key_name` is a user-specified name for the key.
    * This method returns an `id` and `key`. The `key` is a randomly generated, 64-bit token required to access the Neon API.
@@ -490,7 +379,7 @@ export class NeonClient extends HeyApiClient {
   public createApiKey<ThrowOnError extends boolean = true>(
     options: Options<CreateApiKeyData, ThrowOnError>,
   ) {
-    return (options.client ?? this.client).post<
+    return (options.client ?? this._client).post<
       CreateApiKeyResponses,
       CreateApiKeyErrors,
       ThrowOnError
@@ -506,7 +395,6 @@ export class NeonClient extends HeyApiClient {
 
   /**
    * Revoke API key
-   *
    * Revokes the specified API key.
    * An API key that is no longer needed can be revoked.
    * This action cannot be reversed.
@@ -518,16 +406,18 @@ export class NeonClient extends HeyApiClient {
   public revokeApiKey<ThrowOnError extends boolean = true>(
     options: Options<RevokeApiKeyData, ThrowOnError>,
   ) {
-    return (options.client ?? this.client).delete<
+    return (options.client ?? this._client).delete<
       RevokeApiKeyResponses,
       RevokeApiKeyErrors,
       ThrowOnError
-    >({ url: "/api_keys/{key_id}", ...options });
+    >({
+      url: "/api_keys/{key_id}",
+      ...options,
+    });
   }
 
   /**
    * Retrieve operation details
-   *
    * Retrieves details for the specified operation.
    * An operation is an action performed on a Neon project resource.
    * You can obtain a `project_id` by listing the projects for your Neon account.
@@ -537,16 +427,18 @@ export class NeonClient extends HeyApiClient {
   public getProjectOperation<ThrowOnError extends boolean = true>(
     options: Options<GetProjectOperationData, ThrowOnError>,
   ) {
-    return (options.client ?? this.client).get<
+    return (options.client ?? this._client).get<
       GetProjectOperationResponses,
       GetProjectOperationErrors,
       ThrowOnError
-    >({ url: "/projects/{project_id}/operations/{operation_id}", ...options });
+    >({
+      url: "/projects/{project_id}/operations/{operation_id}",
+      ...options,
+    });
   }
 
   /**
    * List projects
-   *
    * Retrieves a list of projects for an organization.
    * You may need to specify an org_id parameter depending on your API key type.
    * For more information, see [Manage projects](https://neon.tech/docs/manage/projects/).
@@ -555,16 +447,18 @@ export class NeonClient extends HeyApiClient {
   public listProjects<ThrowOnError extends boolean = true>(
     options?: Options<ListProjectsData, ThrowOnError>,
   ) {
-    return (options?.client ?? this.client).get<
+    return (options?.client ?? this._client).get<
       ListProjectsResponses,
       ListProjectsErrors,
       ThrowOnError
-    >({ url: "/projects", ...options });
+    >({
+      url: "/projects",
+      ...options,
+    });
   }
 
   /**
    * Create project
-   *
    * Creates a Neon project within an organization.
    * You may need to specify an org_id parameter depending on your API key type.
    * Plan limits define how many projects you can create.
@@ -578,7 +472,7 @@ export class NeonClient extends HeyApiClient {
   public createProject<ThrowOnError extends boolean = true>(
     options: Options<CreateProjectData, ThrowOnError>,
   ) {
-    return (options.client ?? this.client).post<
+    return (options.client ?? this._client).post<
       CreateProjectResponses,
       CreateProjectErrors,
       ThrowOnError
@@ -594,7 +488,6 @@ export class NeonClient extends HeyApiClient {
 
   /**
    * List shared projects
-   *
    * Retrieves a list of projects shared with your Neon account.
    * For more information, see [Manage projects](https://neon.tech/docs/manage/projects/).
    *
@@ -602,16 +495,18 @@ export class NeonClient extends HeyApiClient {
   public listSharedProjects<ThrowOnError extends boolean = true>(
     options?: Options<ListSharedProjectsData, ThrowOnError>,
   ) {
-    return (options?.client ?? this.client).get<
+    return (options?.client ?? this._client).get<
       ListSharedProjectsResponses,
       ListSharedProjectsErrors,
       ThrowOnError
-    >({ url: "/projects/shared", ...options });
+    >({
+      url: "/projects/shared",
+      ...options,
+    });
   }
 
   /**
    * Delete project
-   *
    * Deletes the specified project.
    * You can obtain a `project_id` by listing the projects for your Neon account.
    * Deleting a project is a permanent action.
@@ -621,16 +516,18 @@ export class NeonClient extends HeyApiClient {
   public deleteProject<ThrowOnError extends boolean = true>(
     options: Options<DeleteProjectData, ThrowOnError>,
   ) {
-    return (options.client ?? this.client).delete<
+    return (options.client ?? this._client).delete<
       DeleteProjectResponses,
       DeleteProjectErrors,
       ThrowOnError
-    >({ url: "/projects/{project_id}", ...options });
+    >({
+      url: "/projects/{project_id}",
+      ...options,
+    });
   }
 
   /**
    * Retrieve project details
-   *
    * Retrieves information about the specified project.
    * You can obtain a `project_id` by listing the projects for an organization.
    *
@@ -638,16 +535,18 @@ export class NeonClient extends HeyApiClient {
   public getProject<ThrowOnError extends boolean = true>(
     options: Options<GetProjectData, ThrowOnError>,
   ) {
-    return (options.client ?? this.client).get<
+    return (options.client ?? this._client).get<
       GetProjectResponses,
       GetProjectErrors,
       ThrowOnError
-    >({ url: "/projects/{project_id}", ...options });
+    >({
+      url: "/projects/{project_id}",
+      ...options,
+    });
   }
 
   /**
    * Update project
-   *
    * Updates the specified project.
    * You can obtain a `project_id` by listing the projects for your Neon account.
    *
@@ -655,7 +554,7 @@ export class NeonClient extends HeyApiClient {
   public updateProject<ThrowOnError extends boolean = true>(
     options: Options<UpdateProjectData, ThrowOnError>,
   ) {
-    return (options.client ?? this.client).patch<
+    return (options.client ?? this._client).patch<
       UpdateProjectResponses,
       UpdateProjectErrors,
       ThrowOnError
@@ -670,44 +569,7 @@ export class NeonClient extends HeyApiClient {
   }
 
   /**
-   * Restore a deleted project
-   *
-   * DEPRECATED, use `/projects/{project_id}/recover` instead. Restores a deleted project during the deletion grace period.
-   * You can obtain a `project_id` by listing the projects for your Neon account.
-   *
-   *
-   * @deprecated
-   */
-  public restoreProject<ThrowOnError extends boolean = true>(
-    options: Options<RestoreProjectData, ThrowOnError>,
-  ) {
-    return (options.client ?? this.client).post<
-      RestoreProjectResponses,
-      RestoreProjectErrors,
-      ThrowOnError
-    >({ url: "/projects/{project_id}/restore", ...options });
-  }
-
-  /**
-   * Recover a deleted project
-   *
-   * Recovers a deleted project during the deletion grace period.
-   * You can obtain a `project_id` by listing the projects for your Neon account.
-   *
-   */
-  public recoverProject<ThrowOnError extends boolean = true>(
-    options: Options<RecoverProjectData, ThrowOnError>,
-  ) {
-    return (options.client ?? this.client).post<
-      RecoverProjectResponses,
-      RecoverProjectErrors,
-      ThrowOnError
-    >({ url: "/projects/{project_id}/recover", ...options });
-  }
-
-  /**
    * List operations
-   *
    * Retrieves a list of operations for the specified Neon project.
    * You can obtain a `project_id` by listing the projects for your Neon account.
    * The number of operations returned can be large.
@@ -720,37 +582,41 @@ export class NeonClient extends HeyApiClient {
   public listProjectOperations<ThrowOnError extends boolean = true>(
     options: Options<ListProjectOperationsData, ThrowOnError>,
   ) {
-    return (options.client ?? this.client).get<
+    return (options.client ?? this._client).get<
       ListProjectOperationsResponses,
       ListProjectOperationsErrors,
       ThrowOnError
-    >({ url: "/projects/{project_id}/operations", ...options });
+    >({
+      url: "/projects/{project_id}/operations",
+      ...options,
+    });
   }
 
   /**
    * List project access
-   *
    * Retrieves details about users who have access to the project, including the permission `id`, the granted-to email address, and the date project access was granted.
    */
   public listProjectPermissions<ThrowOnError extends boolean = true>(
     options: Options<ListProjectPermissionsData, ThrowOnError>,
   ) {
-    return (options.client ?? this.client).get<
+    return (options.client ?? this._client).get<
       ListProjectPermissionsResponses,
       ListProjectPermissionsErrors,
       ThrowOnError
-    >({ url: "/projects/{project_id}/permissions", ...options });
+    >({
+      url: "/projects/{project_id}/permissions",
+      ...options,
+    });
   }
 
   /**
    * Grant project access
-   *
    * Grants project access to the account associated with the specified email address
    */
   public grantPermissionToProject<ThrowOnError extends boolean = true>(
     options: Options<GrantPermissionToProjectData, ThrowOnError>,
   ) {
-    return (options.client ?? this.client).post<
+    return (options.client ?? this._client).post<
       GrantPermissionToProjectResponses,
       GrantPermissionToProjectErrors,
       ThrowOnError
@@ -766,13 +632,12 @@ export class NeonClient extends HeyApiClient {
 
   /**
    * Revoke project access
-   *
    * Revokes project access from the user associated with the specified permission `id`. You can retrieve a user's permission `id` by listing project access.
    */
   public revokePermissionFromProject<ThrowOnError extends boolean = true>(
     options: Options<RevokePermissionFromProjectData, ThrowOnError>,
   ) {
-    return (options.client ?? this.client).delete<
+    return (options.client ?? this._client).delete<
       RevokePermissionFromProjectResponses,
       RevokePermissionFromProjectErrors,
       ThrowOnError
@@ -784,13 +649,12 @@ export class NeonClient extends HeyApiClient {
 
   /**
    * Return available shared preload libraries
-   *
    * Return available shared preload libraries
    */
   public getAvailablePreloadLibraries<ThrowOnError extends boolean = true>(
     options: Options<GetAvailablePreloadLibrariesData, ThrowOnError>,
   ) {
-    return (options.client ?? this.client).get<
+    return (options.client ?? this._client).get<
       GetAvailablePreloadLibrariesResponses,
       GetAvailablePreloadLibrariesErrors,
       ThrowOnError
@@ -802,7 +666,6 @@ export class NeonClient extends HeyApiClient {
 
   /**
    * Create a project transfer request
-   *
    * Creates a transfer request for the specified project. A transfer request allows
    * the project to be transferred to another account or organization. The request
    * has an expiration time after which it can no longer be used. To accept/claim
@@ -810,13 +673,14 @@ export class NeonClient extends HeyApiClient {
    * `/projects/{project_id}/transfer_requests/{request_id}` API endpoint, or visit
    * `https://console.neon.tech/app/claim?p={project_id}&tr={request_id}&ru={redirect_url}`
    * in the Neon Console. The `ru` parameter is optional and can be used to redirect
-   * the user after accepting the transfer request.
+   * the user after accepting the transfer request. This feature is currently in
+   * private preview. Get in touch with us to get access.
    *
    */
   public createProjectTransferRequest<ThrowOnError extends boolean = true>(
     options: Options<CreateProjectTransferRequestData, ThrowOnError>,
   ) {
-    return (options.client ?? this.client).post<
+    return (options.client ?? this._client).post<
       CreateProjectTransferRequestResponses,
       CreateProjectTransferRequestErrors,
       ThrowOnError
@@ -832,7 +696,6 @@ export class NeonClient extends HeyApiClient {
 
   /**
    * Accept a project transfer request
-   *
    * Accepts a transfer request for the specified project, transferring it to the specified organization
    * or user. If org_id is not passed, the project will be transferred to the current user or organization account.
    *
@@ -840,7 +703,7 @@ export class NeonClient extends HeyApiClient {
   public acceptProjectTransferRequest<ThrowOnError extends boolean = true>(
     options: Options<AcceptProjectTransferRequestData, ThrowOnError>,
   ) {
-    return (options.client ?? this.client).put<
+    return (options.client ?? this._client).put<
       AcceptProjectTransferRequestResponses,
       AcceptProjectTransferRequestErrors,
       ThrowOnError
@@ -856,23 +719,24 @@ export class NeonClient extends HeyApiClient {
 
   /**
    * List JWKS URLs
-   *
    * Returns the JWKS URLs available for verifying JWTs used as the authentication mechanism for the specified project.
    *
    */
   public getProjectJwks<ThrowOnError extends boolean = true>(
     options: Options<GetProjectJwksData, ThrowOnError>,
   ) {
-    return (options.client ?? this.client).get<
+    return (options.client ?? this._client).get<
       GetProjectJwksResponses,
       GetProjectJwksErrors,
       ThrowOnError
-    >({ url: "/projects/{project_id}/jwks", ...options });
+    >({
+      url: "/projects/{project_id}/jwks",
+      ...options,
+    });
   }
 
   /**
    * Add JWKS URL
-   *
    * Add a new JWKS URL to a project, such that it can be used for verifying JWTs used as the authentication mechanism for the specified project.
    *
    * The URL must be a valid HTTPS URL that returns a JSON Web Key Set.
@@ -889,7 +753,7 @@ export class NeonClient extends HeyApiClient {
   public addProjectJwks<ThrowOnError extends boolean = true>(
     options: Options<AddProjectJwksData, ThrowOnError>,
   ) {
-    return (options.client ?? this.client).post<
+    return (options.client ?? this._client).post<
       AddProjectJwksResponses,
       AddProjectJwksErrors,
       ThrowOnError
@@ -905,22 +769,23 @@ export class NeonClient extends HeyApiClient {
 
   /**
    * Delete JWKS URL
-   *
    * Deletes a JWKS URL from the specified project
    */
   public deleteProjectJwks<ThrowOnError extends boolean = true>(
     options: Options<DeleteProjectJwksData, ThrowOnError>,
   ) {
-    return (options.client ?? this.client).delete<
+    return (options.client ?? this._client).delete<
       DeleteProjectJwksResponses,
       DeleteProjectJwksErrors,
       ThrowOnError
-    >({ url: "/projects/{project_id}/jwks/{jwks_id}", ...options });
+    >({
+      url: "/projects/{project_id}/jwks/{jwks_id}",
+      ...options,
+    });
   }
 
   /**
    * Delete Neon Data API
-   *
    * Deletes the Neon Data API for the specified branch.
    * You can obtain the `project_id` and `branch_id` by listing the projects and branches for your Neon account.
    *
@@ -928,7 +793,7 @@ export class NeonClient extends HeyApiClient {
   public deleteProjectBranchDataApi<ThrowOnError extends boolean = true>(
     options: Options<DeleteProjectBranchDataApiData, ThrowOnError>,
   ) {
-    return (options.client ?? this.client).delete<
+    return (options.client ?? this._client).delete<
       DeleteProjectBranchDataApiResponses,
       DeleteProjectBranchDataApiErrors,
       ThrowOnError
@@ -940,14 +805,13 @@ export class NeonClient extends HeyApiClient {
 
   /**
    * Get Neon Data API
-   *
    * Retrieves the Neon Data API for the specified branch.
    *
    */
   public getProjectBranchDataApi<ThrowOnError extends boolean = true>(
     options: Options<GetProjectBranchDataApiData, ThrowOnError>,
   ) {
-    return (options.client ?? this.client).get<
+    return (options.client ?? this._client).get<
       GetProjectBranchDataApiResponses,
       GetProjectBranchDataApiErrors,
       ThrowOnError
@@ -958,34 +822,26 @@ export class NeonClient extends HeyApiClient {
   }
 
   /**
-   * Update Neon Data API
-   *
-   * Updates the Neon Data API configuration for the specified branch.
-   * You can optionally provide settings to update the Data API configuration.
-   * The schema cache is always refreshed as part of this operation.
+   * Refresh schema cache
+   * Refreshes the schema cache for the Neon Data API in the specified branch.
    * You can obtain the `project_id` and `branch_id` by listing the projects and branches for your Neon account.
    *
    */
-  public updateProjectBranchDataApi<ThrowOnError extends boolean = true>(
-    options: Options<UpdateProjectBranchDataApiData, ThrowOnError>,
+  public refreshSchemaCacheDataApi<ThrowOnError extends boolean = true>(
+    options: Options<RefreshSchemaCacheDataApiData, ThrowOnError>,
   ) {
-    return (options.client ?? this.client).patch<
-      UpdateProjectBranchDataApiResponses,
-      UpdateProjectBranchDataApiErrors,
+    return (options.client ?? this._client).patch<
+      RefreshSchemaCacheDataApiResponses,
+      RefreshSchemaCacheDataApiErrors,
       ThrowOnError
     >({
       url: "/projects/{project_id}/branches/{branch_id}/data-api/{database_name}",
       ...options,
-      headers: {
-        "Content-Type": "application/json",
-        ...options.headers,
-      },
     });
   }
 
   /**
    * Create Neon Data API
-   *
    * Creates a new instance of Neon Data API in the specified branch.
    * You can obtain the `project_id` and `branch_id` by listing the projects and branches for your Neon account.
    *
@@ -993,7 +849,7 @@ export class NeonClient extends HeyApiClient {
   public createProjectBranchDataApi<ThrowOnError extends boolean = true>(
     options: Options<CreateProjectBranchDataApiData, ThrowOnError>,
   ) {
-    return (options.client ?? this.client).post<
+    return (options.client ?? this._client).post<
       CreateProjectBranchDataApiResponses,
       CreateProjectBranchDataApiErrors,
       ThrowOnError
@@ -1009,17 +865,14 @@ export class NeonClient extends HeyApiClient {
 
   /**
    * Create Neon Auth integration
-   *
-   * DEPRECATED, use `/projects/{project_id}/branches/{branch_id}/auth` instead. Creates a project on a third-party authentication provider's platform for use with Neon Auth.
+   * Creates a project on a third-party authentication provider's platform for use with Neon Auth.
    * Use this endpoint if the frontend integration flow can't be used.
    *
-   *
-   * @deprecated
    */
   public createNeonAuthIntegration<ThrowOnError extends boolean = true>(
     options: Options<CreateNeonAuthIntegrationData, ThrowOnError>,
   ) {
-    return (options.client ?? this.client).post<
+    return (options.client ?? this._client).post<
       CreateNeonAuthIntegrationResponses,
       CreateNeonAuthIntegrationErrors,
       ThrowOnError
@@ -1034,71 +887,9 @@ export class NeonClient extends HeyApiClient {
   }
 
   /**
-   * Disables Neon Auth for the branch
-   */
-  public disableNeonAuth<ThrowOnError extends boolean = true>(
-    options: Options<DisableNeonAuthData, ThrowOnError>,
-  ) {
-    return (options.client ?? this.client).delete<
-      DisableNeonAuthResponses,
-      DisableNeonAuthErrors,
-      ThrowOnError
-    >({
-      url: "/projects/{project_id}/branches/{branch_id}/auth",
-      ...options,
-      headers: {
-        "Content-Type": "application/json",
-        ...options.headers,
-      },
-    });
-  }
-
-  /**
-   * Get details of Neon Auth for the branch
-   *
-   * / Fetches the details of the Neon Auth for the specified branch. You can obtain the `project_id` and `branch_id` by listing the projects and branches for your Neon account.
-   */
-  public getNeonAuth<ThrowOnError extends boolean = true>(
-    options: Options<GetNeonAuthData, ThrowOnError>,
-  ) {
-    return (options.client ?? this.client).get<
-      GetNeonAuthResponses,
-      GetNeonAuthErrors,
-      ThrowOnError
-    >({ url: "/projects/{project_id}/branches/{branch_id}/auth", ...options });
-  }
-
-  /**
-   * Enable Neon Auth for the branch
-   *
-   * Enables Neon Auth integrationfor the branch.
-   * You can obtain the `project_id` and `branch_id` by listing the projects and branches for your Neon account.
-   *
-   */
-  public createNeonAuth<ThrowOnError extends boolean = true>(
-    options: Options<CreateNeonAuthData, ThrowOnError>,
-  ) {
-    return (options.client ?? this.client).post<
-      CreateNeonAuthResponses,
-      CreateNeonAuthErrors,
-      ThrowOnError
-    >({
-      url: "/projects/{project_id}/branches/{branch_id}/auth",
-      ...options,
-      headers: {
-        "Content-Type": "application/json",
-        ...options.headers,
-      },
-    });
-  }
-
-  /**
    * Delete domain from redirect_uri whitelist
+   * Deletes a domain from the redirect_uri whitelist for the specified project.
    *
-   * DEPRECATED, use `/projects/{project_id}/branches/{branch_id}/auth/domains` instead. Deletes a domain from the redirect_uri whitelist for the specified project.
-   *
-   *
-   * @deprecated
    */
   public deleteNeonAuthDomainFromRedirectUriWhitelist<
     ThrowOnError extends boolean = true,
@@ -1108,7 +899,7 @@ export class NeonClient extends HeyApiClient {
       ThrowOnError
     >,
   ) {
-    return (options.client ?? this.client).delete<
+    return (options.client ?? this._client).delete<
       DeleteNeonAuthDomainFromRedirectUriWhitelistResponses,
       DeleteNeonAuthDomainFromRedirectUriWhitelistErrors,
       ThrowOnError
@@ -1124,38 +915,35 @@ export class NeonClient extends HeyApiClient {
 
   /**
    * List domains in redirect_uri whitelist
+   * Lists the domains in the redirect_uri whitelist for the specified project.
    *
-   * DEPRECATED, use `/projects/{project_id}/branches/{branch_id}/auth/domains` instead. Lists the domains in the redirect_uri whitelist for the specified project.
-   *
-   *
-   * @deprecated
    */
   public listNeonAuthRedirectUriWhitelistDomains<
     ThrowOnError extends boolean = true,
   >(
     options: Options<ListNeonAuthRedirectUriWhitelistDomainsData, ThrowOnError>,
   ) {
-    return (options.client ?? this.client).get<
+    return (options.client ?? this._client).get<
       ListNeonAuthRedirectUriWhitelistDomainsResponses,
       ListNeonAuthRedirectUriWhitelistDomainsErrors,
       ThrowOnError
-    >({ url: "/projects/{project_id}/auth/domains", ...options });
+    >({
+      url: "/projects/{project_id}/auth/domains",
+      ...options,
+    });
   }
 
   /**
    * Add domain to redirect_uri whitelist
+   * Adds a domain to the redirect_uri whitelist for the specified project.
    *
-   * DEPRECATED, use `/projects/{project_id}/branches/{branch_id}/auth/domains` instead. Adds a domain to the redirect_uri whitelist for the specified project.
-   *
-   *
-   * @deprecated
    */
   public addNeonAuthDomainToRedirectUriWhitelist<
     ThrowOnError extends boolean = true,
   >(
     options: Options<AddNeonAuthDomainToRedirectUriWhitelistData, ThrowOnError>,
   ) {
-    return (options.client ?? this.client).post<
+    return (options.client ?? this._client).post<
       AddNeonAuthDomainToRedirectUriWhitelistResponses,
       AddNeonAuthDomainToRedirectUriWhitelistErrors,
       ThrowOnError
@@ -1170,73 +958,7 @@ export class NeonClient extends HeyApiClient {
   }
 
   /**
-   * Delete domain from redirect_uri whitelist
-   *
-   * Deletes a domain from the redirect_uri whitelist for the specified project.
-   *
-   */
-  public deleteBranchNeonAuthTrustedDomain<ThrowOnError extends boolean = true>(
-    options: Options<DeleteBranchNeonAuthTrustedDomainData, ThrowOnError>,
-  ) {
-    return (options.client ?? this.client).delete<
-      DeleteBranchNeonAuthTrustedDomainResponses,
-      DeleteBranchNeonAuthTrustedDomainErrors,
-      ThrowOnError
-    >({
-      url: "/projects/{project_id}/branches/{branch_id}/auth/domains",
-      ...options,
-      headers: {
-        "Content-Type": "application/json",
-        ...options.headers,
-      },
-    });
-  }
-
-  /**
-   * List domains in redirect_uri whitelist
-   *
-   * Lists the domains in the redirect_uri whitelist for the specified project.
-   *
-   */
-  public listBranchNeonAuthTrustedDomains<ThrowOnError extends boolean = true>(
-    options: Options<ListBranchNeonAuthTrustedDomainsData, ThrowOnError>,
-  ) {
-    return (options.client ?? this.client).get<
-      ListBranchNeonAuthTrustedDomainsResponses,
-      ListBranchNeonAuthTrustedDomainsErrors,
-      ThrowOnError
-    >({
-      url: "/projects/{project_id}/branches/{branch_id}/auth/domains",
-      ...options,
-    });
-  }
-
-  /**
-   * Add domain to redirect_uri whitelist
-   *
-   * Adds a domain to the redirect_uri whitelist for the specified project.
-   *
-   */
-  public addBranchNeonAuthTrustedDomain<ThrowOnError extends boolean = true>(
-    options: Options<AddBranchNeonAuthTrustedDomainData, ThrowOnError>,
-  ) {
-    return (options.client ?? this.client).post<
-      AddBranchNeonAuthTrustedDomainResponses,
-      AddBranchNeonAuthTrustedDomainErrors,
-      ThrowOnError
-    >({
-      url: "/projects/{project_id}/branches/{branch_id}/auth/domains",
-      ...options,
-      headers: {
-        "Content-Type": "application/json",
-        ...options.headers,
-      },
-    });
-  }
-
-  /**
    * Create Auth Provider SDK keys
-   *
    * Generates SDK or API Keys for the auth provider. These might be called different things depending
    * on the auth provider you're using, but are generally used for setting up the frontend and backend SDKs.
    *
@@ -1244,7 +966,7 @@ export class NeonClient extends HeyApiClient {
   public createNeonAuthProviderSdkKeys<ThrowOnError extends boolean = true>(
     options: Options<CreateNeonAuthProviderSdkKeysData, ThrowOnError>,
   ) {
-    return (options.client ?? this.client).post<
+    return (options.client ?? this._client).post<
       CreateNeonAuthProviderSdkKeysResponses,
       CreateNeonAuthProviderSdkKeysErrors,
       ThrowOnError
@@ -1260,17 +982,14 @@ export class NeonClient extends HeyApiClient {
 
   /**
    * Create new auth user
-   *
-   * DEPRECATED, use `/projects/{project_id}/branches/{branch_id}/auth/users` instead. Creates a new user in Neon Auth.
+   * Creates a new user in Neon Auth.
    * The user will be created in your neon_auth.users_sync table and automatically propagated to your auth project, whether Neon-managed or provider-owned.
    *
-   *
-   * @deprecated
    */
   public createNeonAuthNewUser<ThrowOnError extends boolean = true>(
     options: Options<CreateNeonAuthNewUserData, ThrowOnError>,
   ) {
-    return (options.client ?? this.client).post<
+    return (options.client ?? this._client).post<
       CreateNeonAuthNewUserResponses,
       CreateNeonAuthNewUserErrors,
       ThrowOnError
@@ -1285,98 +1004,32 @@ export class NeonClient extends HeyApiClient {
   }
 
   /**
-   * Create new auth user
-   *
-   * Creates a new user in Neon Auth.
-   *
-   */
-  public createBranchNeonAuthNewUser<ThrowOnError extends boolean = true>(
-    options: Options<CreateBranchNeonAuthNewUserData, ThrowOnError>,
-  ) {
-    return (options.client ?? this.client).post<
-      CreateBranchNeonAuthNewUserResponses,
-      CreateBranchNeonAuthNewUserErrors,
-      ThrowOnError
-    >({
-      url: "/projects/{project_id}/branches/{branch_id}/auth/users",
-      ...options,
-      headers: {
-        "Content-Type": "application/json",
-        ...options.headers,
-      },
-    });
-  }
-
-  /**
    * Delete auth user
-   *
    * Deletes the auth user for the specified project.
    *
-   */
-  public deleteBranchNeonAuthUser<ThrowOnError extends boolean = true>(
-    options: Options<DeleteBranchNeonAuthUserData, ThrowOnError>,
-  ) {
-    return (options.client ?? this.client).delete<
-      DeleteBranchNeonAuthUserResponses,
-      DeleteBranchNeonAuthUserErrors,
-      ThrowOnError
-    >({
-      url: "/projects/{project_id}/branches/{branch_id}/auth/users/{auth_user_id}",
-      ...options,
-    });
-  }
-
-  /**
-   * Update auth user role
-   *
-   * Updates the role of an auth user for the specified project.
-   *
-   */
-  public updateNeonAuthUserRole<ThrowOnError extends boolean = true>(
-    options: Options<UpdateNeonAuthUserRoleData, ThrowOnError>,
-  ) {
-    return (options.client ?? this.client).put<
-      UpdateNeonAuthUserRoleResponses,
-      UpdateNeonAuthUserRoleErrors,
-      ThrowOnError
-    >({
-      url: "/projects/{project_id}/branches/{branch_id}/auth/users/{auth_user_id}/role",
-      ...options,
-      headers: {
-        "Content-Type": "application/json",
-        ...options.headers,
-      },
-    });
-  }
-
-  /**
-   * Delete auth user
-   *
-   * DEPRECATED, use `/projects/{project_id}/branches/{branch_id}/auth/users/{auth_user_id}` instead. Deletes the auth user for the specified project.
-   *
-   *
-   * @deprecated
    */
   public deleteNeonAuthUser<ThrowOnError extends boolean = true>(
     options: Options<DeleteNeonAuthUserData, ThrowOnError>,
   ) {
-    return (options.client ?? this.client).delete<
+    return (options.client ?? this._client).delete<
       DeleteNeonAuthUserResponses,
       DeleteNeonAuthUserErrors,
       ThrowOnError
-    >({ url: "/projects/{project_id}/auth/users/{auth_user_id}", ...options });
+    >({
+      url: "/projects/{project_id}/auth/users/{auth_user_id}",
+      ...options,
+    });
   }
 
   /**
    * Transfer Neon-managed auth project to your own account
-   *
    * Transfer ownership of your Neon-managed auth project to your own auth provider account.
    *
    */
   public transferNeonAuthProviderProject<ThrowOnError extends boolean = true>(
     options: Options<TransferNeonAuthProviderProjectData, ThrowOnError>,
   ) {
-    return (options.client ?? this.client).post<
+    return (options.client ?? this._client).post<
       TransferNeonAuthProviderProjectResponses,
       TransferNeonAuthProviderProjectErrors,
       ThrowOnError
@@ -1392,51 +1045,47 @@ export class NeonClient extends HeyApiClient {
 
   /**
    * Lists active integrations with auth providers
-   *
-   * DEPRECATED, use `/projects/{project_id}/branches/{branch_id}/auth` instead.
-   *
-   * @deprecated
    */
   public listNeonAuthIntegrations<ThrowOnError extends boolean = true>(
     options: Options<ListNeonAuthIntegrationsData, ThrowOnError>,
   ) {
-    return (options.client ?? this.client).get<
+    return (options.client ?? this._client).get<
       ListNeonAuthIntegrationsResponses,
       ListNeonAuthIntegrationsErrors,
       ThrowOnError
-    >({ url: "/projects/{project_id}/auth/integrations", ...options });
+    >({
+      url: "/projects/{project_id}/auth/integrations",
+      ...options,
+    });
   }
 
   /**
    * List OAuth providers
+   * Lists the OAuth providers for the specified project.
    *
-   * DEPRECATED, use `/projects/{project_id}/branches/{branch_id}/auth/oauth_providers` instead. Lists the OAuth providers for the specified project.
-   *
-   *
-   * @deprecated
    */
   public listNeonAuthOauthProviders<ThrowOnError extends boolean = true>(
     options: Options<ListNeonAuthOauthProvidersData, ThrowOnError>,
   ) {
-    return (options.client ?? this.client).get<
+    return (options.client ?? this._client).get<
       ListNeonAuthOauthProvidersResponses,
       ListNeonAuthOauthProvidersErrors,
       ThrowOnError
-    >({ url: "/projects/{project_id}/auth/oauth_providers", ...options });
+    >({
+      url: "/projects/{project_id}/auth/oauth_providers",
+      ...options,
+    });
   }
 
   /**
    * Add a OAuth provider
+   * Adds a OAuth provider to the specified project.
    *
-   * DEPRECATED, use `/projects/{project_id}/branches/{branch_id}/auth/oauth_providers` instead. Adds a OAuth provider to the specified project.
-   *
-   *
-   * @deprecated
    */
   public addNeonAuthOauthProvider<ThrowOnError extends boolean = true>(
     options: Options<AddNeonAuthOauthProviderData, ThrowOnError>,
   ) {
-    return (options.client ?? this.client).post<
+    return (options.client ?? this._client).post<
       AddNeonAuthOauthProviderResponses,
       AddNeonAuthOauthProviderErrors,
       ThrowOnError
@@ -1451,59 +1100,14 @@ export class NeonClient extends HeyApiClient {
   }
 
   /**
-   * List OAuth providers for neon auth for a branch
-   *
-   * Lists the OAuth providers for the specified project and branch.
-   *
-   */
-  public listBranchNeonAuthOauthProviders<ThrowOnError extends boolean = true>(
-    options: Options<ListBranchNeonAuthOauthProvidersData, ThrowOnError>,
-  ) {
-    return (options.client ?? this.client).get<
-      ListBranchNeonAuthOauthProvidersResponses,
-      ListBranchNeonAuthOauthProvidersErrors,
-      ThrowOnError
-    >({
-      url: "/projects/{project_id}/branches/{branch_id}/auth/oauth_providers",
-      ...options,
-    });
-  }
-
-  /**
-   * Add a OAuth provider
-   *
-   * Adds a OAuth provider to the specified project.
-   *
-   */
-  public addBranchNeonAuthOauthProvider<ThrowOnError extends boolean = true>(
-    options: Options<AddBranchNeonAuthOauthProviderData, ThrowOnError>,
-  ) {
-    return (options.client ?? this.client).post<
-      AddBranchNeonAuthOauthProviderResponses,
-      AddBranchNeonAuthOauthProviderErrors,
-      ThrowOnError
-    >({
-      url: "/projects/{project_id}/branches/{branch_id}/auth/oauth_providers",
-      ...options,
-      headers: {
-        "Content-Type": "application/json",
-        ...options.headers,
-      },
-    });
-  }
-
-  /**
    * Delete OAuth provider
+   * Deletes a OAuth provider from the specified project.
    *
-   * DEPRECATED, use `/projects/{project_id}/branches/{branch_id}/auth/oauth_providers/{oauth_provider_id}` instead. Deletes a OAuth provider from the specified project.
-   *
-   *
-   * @deprecated
    */
   public deleteNeonAuthOauthProvider<ThrowOnError extends boolean = true>(
     options: Options<DeleteNeonAuthOauthProviderData, ThrowOnError>,
   ) {
-    return (options.client ?? this.client).delete<
+    return (options.client ?? this._client).delete<
       DeleteNeonAuthOauthProviderResponses,
       DeleteNeonAuthOauthProviderErrors,
       ThrowOnError
@@ -1515,16 +1119,13 @@ export class NeonClient extends HeyApiClient {
 
   /**
    * Update OAuth provider
+   * Updates a OAuth provider for the specified project.
    *
-   * DEPRECATED, use `/projects/{project_id}/branches/{branch_id}/auth/oauth_providers/{oauth_provider_id}` instead. Updates a OAuth provider for the specified project.
-   *
-   *
-   * @deprecated
    */
   public updateNeonAuthOauthProvider<ThrowOnError extends boolean = true>(
     options: Options<UpdateNeonAuthOauthProviderData, ThrowOnError>,
   ) {
-    return (options.client ?? this.client).patch<
+    return (options.client ?? this._client).patch<
       UpdateNeonAuthOauthProviderResponses,
       UpdateNeonAuthOauthProviderErrors,
       ThrowOnError
@@ -1539,77 +1140,32 @@ export class NeonClient extends HeyApiClient {
   }
 
   /**
-   * Delete OAuth provider
-   *
-   * Deletes a OAuth provider from the specified project.
-   *
-   */
-  public deleteBranchNeonAuthOauthProvider<ThrowOnError extends boolean = true>(
-    options: Options<DeleteBranchNeonAuthOauthProviderData, ThrowOnError>,
-  ) {
-    return (options.client ?? this.client).delete<
-      DeleteBranchNeonAuthOauthProviderResponses,
-      DeleteBranchNeonAuthOauthProviderErrors,
-      ThrowOnError
-    >({
-      url: "/projects/{project_id}/branches/{branch_id}/auth/oauth_providers/{oauth_provider_id}",
-      ...options,
-    });
-  }
-
-  /**
-   * Update OAuth provider
-   *
-   * Updates a OAuth provider for the specified project.
-   *
-   */
-  public updateBranchNeonAuthOauthProvider<ThrowOnError extends boolean = true>(
-    options: Options<UpdateBranchNeonAuthOauthProviderData, ThrowOnError>,
-  ) {
-    return (options.client ?? this.client).patch<
-      UpdateBranchNeonAuthOauthProviderResponses,
-      UpdateBranchNeonAuthOauthProviderErrors,
-      ThrowOnError
-    >({
-      url: "/projects/{project_id}/branches/{branch_id}/auth/oauth_providers/{oauth_provider_id}",
-      ...options,
-      headers: {
-        "Content-Type": "application/json",
-        ...options.headers,
-      },
-    });
-  }
-
-  /**
    * Get email server configuration
+   * Gets the email server configuration for the specified project.
    *
-   * DEPRECATED, use `/projects/{project_id}/branches/{branch_id}/auth/email_provider` instead. Gets the email server configuration for the specified project.
-   *
-   *
-   * @deprecated
    */
   public getNeonAuthEmailServer<ThrowOnError extends boolean = true>(
     options: Options<GetNeonAuthEmailServerData, ThrowOnError>,
   ) {
-    return (options.client ?? this.client).get<
+    return (options.client ?? this._client).get<
       GetNeonAuthEmailServerResponses,
       GetNeonAuthEmailServerErrors,
       ThrowOnError
-    >({ url: "/projects/{project_id}/auth/email_server", ...options });
+    >({
+      url: "/projects/{project_id}/auth/email_server",
+      ...options,
+    });
   }
 
   /**
    * Update email server configuration
+   * Updates the email server configuration for the specified project.
    *
-   * DEPRECATED, use `/projects/{project_id}/branches/{branch_id}/auth/email_provider` instead. Updates the email server configuration for the specified project.
-   *
-   *
-   * @deprecated
    */
   public updateNeonAuthEmailServer<ThrowOnError extends boolean = true>(
     options: Options<UpdateNeonAuthEmailServerData, ThrowOnError>,
   ) {
-    return (options.client ?? this.client).patch<
+    return (options.client ?? this._client).patch<
       UpdateNeonAuthEmailServerResponses,
       UpdateNeonAuthEmailServerErrors,
       ThrowOnError
@@ -1624,123 +1180,12 @@ export class NeonClient extends HeyApiClient {
   }
 
   /**
-   * Send test email
-   *
-   * Sends a test email to the specified email address.
-   *
-   */
-  public sendNeonAuthTestEmail<ThrowOnError extends boolean = true>(
-    options: Options<SendNeonAuthTestEmailData, ThrowOnError>,
-  ) {
-    return (options.client ?? this.client).post<
-      SendNeonAuthTestEmailResponses,
-      SendNeonAuthTestEmailErrors,
-      ThrowOnError
-    >({
-      url: "/projects/{project_id}/branches/{branch_id}/auth/send_test_email",
-      ...options,
-      headers: {
-        "Content-Type": "application/json",
-        ...options.headers,
-      },
-    });
-  }
-
-  /**
-   * Get email and password configuration
-   *
-   * Gets the email and password authentication configuration for Neon Auth
-   *
-   */
-  public getNeonAuthEmailAndPasswordConfig<ThrowOnError extends boolean = true>(
-    options: Options<GetNeonAuthEmailAndPasswordConfigData, ThrowOnError>,
-  ) {
-    return (options.client ?? this.client).get<
-      GetNeonAuthEmailAndPasswordConfigResponses,
-      GetNeonAuthEmailAndPasswordConfigErrors,
-      ThrowOnError
-    >({
-      url: "/projects/{project_id}/branches/{branch_id}/auth/email_and_password",
-      ...options,
-    });
-  }
-
-  /**
-   * Update email and password configuration
-   *
-   * Updates the email and password authentication configuration for Neon Auth
-   *
-   */
-  public updateNeonAuthEmailAndPasswordConfig<
-    ThrowOnError extends boolean = true,
-  >(options: Options<UpdateNeonAuthEmailAndPasswordConfigData, ThrowOnError>) {
-    return (options.client ?? this.client).patch<
-      UpdateNeonAuthEmailAndPasswordConfigResponses,
-      UpdateNeonAuthEmailAndPasswordConfigErrors,
-      ThrowOnError
-    >({
-      url: "/projects/{project_id}/branches/{branch_id}/auth/email_and_password",
-      ...options,
-      headers: {
-        "Content-Type": "application/json",
-        ...options.headers,
-      },
-    });
-  }
-
-  /**
-   * Get email provider configuration
-   *
-   * Gets the email provider configuration for the specified branch.
-   *
-   */
-  public getNeonAuthEmailProvider<ThrowOnError extends boolean = true>(
-    options: Options<GetNeonAuthEmailProviderData, ThrowOnError>,
-  ) {
-    return (options.client ?? this.client).get<
-      GetNeonAuthEmailProviderResponses,
-      GetNeonAuthEmailProviderErrors,
-      ThrowOnError
-    >({
-      url: "/projects/{project_id}/branches/{branch_id}/auth/email_provider",
-      ...options,
-    });
-  }
-
-  /**
-   * Update email provider configuration
-   *
-   * Updates the email provider configuration for the specified branch.
-   *
-   */
-  public updateNeonAuthEmailProvider<ThrowOnError extends boolean = true>(
-    options: Options<UpdateNeonAuthEmailProviderData, ThrowOnError>,
-  ) {
-    return (options.client ?? this.client).patch<
-      UpdateNeonAuthEmailProviderResponses,
-      UpdateNeonAuthEmailProviderErrors,
-      ThrowOnError
-    >({
-      url: "/projects/{project_id}/branches/{branch_id}/auth/email_provider",
-      ...options,
-      headers: {
-        "Content-Type": "application/json",
-        ...options.headers,
-      },
-    });
-  }
-
-  /**
    * Delete integration with auth provider
-   *
-   * DEPRECATED, use `/projects/{project_id}/branches/{branch_id}/auth` instead.
-   *
-   * @deprecated
    */
   public deleteNeonAuthIntegration<ThrowOnError extends boolean = true>(
     options: Options<DeleteNeonAuthIntegrationData, ThrowOnError>,
   ) {
-    return (options.client ?? this.client).delete<
+    return (options.client ?? this._client).delete<
       DeleteNeonAuthIntegrationResponses,
       DeleteNeonAuthIntegrationErrors,
       ThrowOnError
@@ -1756,7 +1201,6 @@ export class NeonClient extends HeyApiClient {
 
   /**
    * Retrieve connection URI
-   *
    * Retrieves a connection URI for the specified database.
    * You can obtain a `project_id` by listing the projects for your Neon account.
    * You can obtain the `database_name` by listing the databases for a branch.
@@ -1766,58 +1210,18 @@ export class NeonClient extends HeyApiClient {
   public getConnectionUri<ThrowOnError extends boolean = true>(
     options: Options<GetConnectionUriData, ThrowOnError>,
   ) {
-    return (options.client ?? this.client).get<
+    return (options.client ?? this._client).get<
       GetConnectionUriResponses,
       GetConnectionUriErrors,
       ThrowOnError
-    >({ url: "/projects/{project_id}/connection_uri", ...options });
-  }
-
-  /**
-   * Get allow localhost
-   *
-   * Get the allow localhost configuration for the specified branch.
-   *
-   */
-  public getNeonAuthAllowLocalhost<ThrowOnError extends boolean = true>(
-    options: Options<GetNeonAuthAllowLocalhostData, ThrowOnError>,
-  ) {
-    return (options.client ?? this.client).get<
-      GetNeonAuthAllowLocalhostResponses,
-      GetNeonAuthAllowLocalhostErrors,
-      ThrowOnError
     >({
-      url: "/projects/{project_id}/branches/{branch_id}/auth/allow_localhost",
+      url: "/projects/{project_id}/connection_uri",
       ...options,
-    });
-  }
-
-  /**
-   * Update allow localhost
-   *
-   * Updates the allow localhost configuration for the specified branch.
-   *
-   */
-  public updateNeonAuthAllowLocalhost<ThrowOnError extends boolean = true>(
-    options: Options<UpdateNeonAuthAllowLocalhostData, ThrowOnError>,
-  ) {
-    return (options.client ?? this.client).patch<
-      UpdateNeonAuthAllowLocalhostResponses,
-      UpdateNeonAuthAllowLocalhostErrors,
-      ThrowOnError
-    >({
-      url: "/projects/{project_id}/branches/{branch_id}/auth/allow_localhost",
-      ...options,
-      headers: {
-        "Content-Type": "application/json",
-        ...options.headers,
-      },
     });
   }
 
   /**
    * List branches
-   *
    * Retrieves a list of branches for the specified project.
    * You can obtain a `project_id` by listing the projects for your Neon account.
    *
@@ -1831,16 +1235,18 @@ export class NeonClient extends HeyApiClient {
   public listProjectBranches<ThrowOnError extends boolean = true>(
     options: Options<ListProjectBranchesData, ThrowOnError>,
   ) {
-    return (options.client ?? this.client).get<
+    return (options.client ?? this._client).get<
       ListProjectBranchesResponses,
       ListProjectBranchesErrors,
       ThrowOnError
-    >({ url: "/projects/{project_id}/branches", ...options });
+    >({
+      url: "/projects/{project_id}/branches",
+      ...options,
+    });
   }
 
   /**
    * Create branch
-   *
    * Creates a branch in the specified project.
    * You can obtain a `project_id` by listing the projects for your Neon account.
    * This method does not require a request body, but you can specify one to create a compute endpoint for the branch or to select a non-default parent branch.
@@ -1853,7 +1259,7 @@ export class NeonClient extends HeyApiClient {
   public createProjectBranch<ThrowOnError extends boolean = true>(
     options: Options<CreateProjectBranchData, ThrowOnError>,
   ) {
-    return (options.client ?? this.client).post<
+    return (options.client ?? this._client).post<
       CreateProjectBranchResponses,
       CreateProjectBranchErrors,
       ThrowOnError
@@ -1868,38 +1274,7 @@ export class NeonClient extends HeyApiClient {
   }
 
   /**
-   * Create anonymized branch
-   *
-   * Creates a new branch with anonymized data using PostgreSQL Anonymizer for static masking.
-   * This allows developers to work with masked production data.
-   * Optionally, provide `masking_rules` to set initial masking rules for the branch
-   * and `start_anonymization` to automatically start anonymization after creation. This
-   * combines functionality of updating masking rules and starting anonymization into the
-   * branch creation request.
-   *
-   * **Note**: This endpoint is currently in Beta.
-   *
-   */
-  public createProjectBranchAnonymized<ThrowOnError extends boolean = true>(
-    options: Options<CreateProjectBranchAnonymizedData, ThrowOnError>,
-  ) {
-    return (options.client ?? this.client).post<
-      CreateProjectBranchAnonymizedResponses,
-      CreateProjectBranchAnonymizedErrors,
-      ThrowOnError
-    >({
-      url: "/projects/{project_id}/branch_anonymized",
-      ...options,
-      headers: {
-        "Content-Type": "application/json",
-        ...options.headers,
-      },
-    });
-  }
-
-  /**
    * Retrieve number of branches
-   *
    * Retrieves the total number of branches in the specified project.
    * You can obtain a `project_id` by listing the projects for your Neon account.
    *
@@ -1907,16 +1282,18 @@ export class NeonClient extends HeyApiClient {
   public countProjectBranches<ThrowOnError extends boolean = true>(
     options: Options<CountProjectBranchesData, ThrowOnError>,
   ) {
-    return (options.client ?? this.client).get<
+    return (options.client ?? this._client).get<
       CountProjectBranchesResponses,
       CountProjectBranchesErrors,
       ThrowOnError
-    >({ url: "/projects/{project_id}/branches/count", ...options });
+    >({
+      url: "/projects/{project_id}/branches/count",
+      ...options,
+    });
   }
 
   /**
    * Delete branch
-   *
    * Deletes the specified branch from a project, and places
    * all compute endpoints into an idle state, breaking existing client connections.
    * You can obtain a `project_id` by listing the projects for your Neon account.
@@ -1933,16 +1310,18 @@ export class NeonClient extends HeyApiClient {
   public deleteProjectBranch<ThrowOnError extends boolean = true>(
     options: Options<DeleteProjectBranchData, ThrowOnError>,
   ) {
-    return (options.client ?? this.client).delete<
+    return (options.client ?? this._client).delete<
       DeleteProjectBranchResponses,
       DeleteProjectBranchErrors,
       ThrowOnError
-    >({ url: "/projects/{project_id}/branches/{branch_id}", ...options });
+    >({
+      url: "/projects/{project_id}/branches/{branch_id}",
+      ...options,
+    });
   }
 
   /**
    * Retrieve branch details
-   *
    * Retrieves information about the specified branch.
    * You can obtain a `project_id` by listing the projects for your Neon account.
    * You can obtain a `branch_id` by listing the project's branches.
@@ -1957,16 +1336,18 @@ export class NeonClient extends HeyApiClient {
   public getProjectBranch<ThrowOnError extends boolean = true>(
     options: Options<GetProjectBranchData, ThrowOnError>,
   ) {
-    return (options.client ?? this.client).get<
+    return (options.client ?? this._client).get<
       GetProjectBranchResponses,
       GetProjectBranchErrors,
       ThrowOnError
-    >({ url: "/projects/{project_id}/branches/{branch_id}", ...options });
+    >({
+      url: "/projects/{project_id}/branches/{branch_id}",
+      ...options,
+    });
   }
 
   /**
    * Update branch
-   *
    * Updates the specified branch.
    * You can obtain a `project_id` by listing the projects for your Neon account.
    * You can obtain the `branch_id` by listing the project's branches.
@@ -1976,7 +1357,7 @@ export class NeonClient extends HeyApiClient {
   public updateProjectBranch<ThrowOnError extends boolean = true>(
     options: Options<UpdateProjectBranchData, ThrowOnError>,
   ) {
-    return (options.client ?? this.client).patch<
+    return (options.client ?? this._client).patch<
       UpdateProjectBranchResponses,
       UpdateProjectBranchErrors,
       ThrowOnError
@@ -1992,13 +1373,12 @@ export class NeonClient extends HeyApiClient {
 
   /**
    * Restore branch
-   *
    * Restores a branch to an earlier state in its own or another branch's history
    */
   public restoreProjectBranch<ThrowOnError extends boolean = true>(
     options: Options<RestoreProjectBranchData, ThrowOnError>,
   ) {
-    return (options.client ?? this.client).post<
+    return (options.client ?? this._client).post<
       RestoreProjectBranchResponses,
       RestoreProjectBranchErrors,
       ThrowOnError
@@ -2014,13 +1394,12 @@ export class NeonClient extends HeyApiClient {
 
   /**
    * Retrieve database schema
-   *
    * Retrieves the schema from the specified database. The `lsn` and `timestamp` values cannot be specified at the same time. If both are omitted, the database schema is retrieved from database's head.
    */
   public getProjectBranchSchema<ThrowOnError extends boolean = true>(
     options: Options<GetProjectBranchSchemaData, ThrowOnError>,
   ) {
-    return (options.client ?? this.client).get<
+    return (options.client ?? this._client).get<
       GetProjectBranchSchemaResponses,
       GetProjectBranchSchemaErrors,
       ThrowOnError
@@ -2032,13 +1411,12 @@ export class NeonClient extends HeyApiClient {
 
   /**
    * Compare database schema
-   *
    * Compares the schema from the specified database with another branch's schema.
    */
   public getProjectBranchSchemaComparison<ThrowOnError extends boolean = true>(
     options: Options<GetProjectBranchSchemaComparisonData, ThrowOnError>,
   ) {
-    return (options.client ?? this.client).get<
+    return (options.client ?? this._client).get<
       GetProjectBranchSchemaComparisonResponses,
       GetProjectBranchSchemaComparisonErrors,
       ThrowOnError
@@ -2049,110 +1427,7 @@ export class NeonClient extends HeyApiClient {
   }
 
   /**
-   * Get masking rules
-   *
-   * Retrieves the masking rules for the specified anonymized branch.
-   * Masking rules define how sensitive data should be anonymized using PostgreSQL Anonymizer.
-   * You can obtain a `project_id` by listing the projects for your Neon account.
-   * You can obtain the `branch_id` by listing the project's branches.
-   *
-   * **Note**: This endpoint is currently in Beta.
-   *
-   */
-  public getMaskingRules<ThrowOnError extends boolean = true>(
-    options: Options<GetMaskingRulesData, ThrowOnError>,
-  ) {
-    return (options.client ?? this.client).get<
-      GetMaskingRulesResponses,
-      GetMaskingRulesErrors,
-      ThrowOnError
-    >({
-      url: "/projects/{project_id}/branches/{branch_id}/masking_rules",
-      ...options,
-    });
-  }
-
-  /**
-   * Update masking rules
-   *
-   * Updates the masking rules for the specified anonymized branch.
-   * Masking rules define how sensitive data should be anonymized using PostgreSQL Anonymizer.
-   * You can obtain a `project_id` by listing the projects for your Neon account.
-   * You can obtain the `branch_id` by listing the project's branches.
-   *
-   * **Note**: This endpoint is currently in Beta.
-   *
-   */
-  public updateMaskingRules<ThrowOnError extends boolean = true>(
-    options: Options<UpdateMaskingRulesData, ThrowOnError>,
-  ) {
-    return (options.client ?? this.client).patch<
-      UpdateMaskingRulesResponses,
-      UpdateMaskingRulesErrors,
-      ThrowOnError
-    >({
-      url: "/projects/{project_id}/branches/{branch_id}/masking_rules",
-      ...options,
-      headers: {
-        "Content-Type": "application/json",
-        ...options.headers,
-      },
-    });
-  }
-
-  /**
-   * Get anonymized branch status
-   *
-   * Retrieves the current status of an anonymized branch, including its state and progress information.
-   * This endpoint allows you to monitor the anonymization process from initialization through completion.
-   * You can obtain a `project_id` by listing the projects for your Neon account.
-   * You can obtain the `branch_id` by listing the project's branches.
-   * Only anonymized branches will have status information available.
-   *
-   * **Note**: This endpoint is currently in Beta.
-   *
-   */
-  public getAnonymizedBranchStatus<ThrowOnError extends boolean = true>(
-    options: Options<GetAnonymizedBranchStatusData, ThrowOnError>,
-  ) {
-    return (options.client ?? this.client).get<
-      GetAnonymizedBranchStatusResponses,
-      GetAnonymizedBranchStatusErrors,
-      ThrowOnError
-    >({
-      url: "/projects/{project_id}/branches/{branch_id}/anonymized_status",
-      ...options,
-    });
-  }
-
-  /**
-   * Start anonymization
-   *
-   * Starts the anonymization process for an anonymized branch that is in the initialized, error, or anonymized state.
-   * This will apply all defined masking rules to anonymize sensitive data in the branch databases.
-   * You can obtain a `project_id` by listing the projects for your Neon account.
-   * You can obtain the `branch_id` by listing the project's branches.
-   * The branch must be an anonymized branch to start anonymization.
-   *
-   * **Note**: This endpoint is currently in Beta.
-   *
-   */
-  public startAnonymization<ThrowOnError extends boolean = true>(
-    options: Options<StartAnonymizationData, ThrowOnError>,
-  ) {
-    return (options.client ?? this.client).post<
-      StartAnonymizationResponses,
-      StartAnonymizationErrors,
-      ThrowOnError
-    >({
-      url: "/projects/{project_id}/branches/{branch_id}/anonymize",
-      ...options,
-    });
-  }
-
-  /**
    * Set branch as default
-   *
    * Sets the specified branch as the project's default branch.
    * The default designation is automatically removed from the previous default branch.
    * You can obtain a `project_id` by listing the projects for your Neon account.
@@ -2163,7 +1438,7 @@ export class NeonClient extends HeyApiClient {
   public setDefaultProjectBranch<ThrowOnError extends boolean = true>(
     options: Options<SetDefaultProjectBranchData, ThrowOnError>,
   ) {
-    return (options.client ?? this.client).post<
+    return (options.client ?? this._client).post<
       SetDefaultProjectBranchResponses,
       SetDefaultProjectBranchErrors,
       ThrowOnError
@@ -2175,7 +1450,6 @@ export class NeonClient extends HeyApiClient {
 
   /**
    * Finalize restore
-   *
    * Finalize the restore operation for a branch created from a snapshot.
    * This operation updates the branch so it functions as the original branch it replaced.
    * This includes:
@@ -2191,7 +1465,7 @@ export class NeonClient extends HeyApiClient {
   public finalizeRestoreBranch<ThrowOnError extends boolean = true>(
     options: Options<FinalizeRestoreBranchData, ThrowOnError>,
   ) {
-    return (options.client ?? this.client).post<
+    return (options.client ?? this._client).post<
       FinalizeRestoreBranchResponses,
       FinalizeRestoreBranchErrors,
       ThrowOnError
@@ -2207,7 +1481,6 @@ export class NeonClient extends HeyApiClient {
 
   /**
    * List branch endpoints
-   *
    * Retrieves a list of compute endpoints for the specified branch.
    * Neon permits only one read-write compute endpoint per branch.
    * A branch can have multiple read-only compute endpoints.
@@ -2218,7 +1491,7 @@ export class NeonClient extends HeyApiClient {
   public listProjectBranchEndpoints<ThrowOnError extends boolean = true>(
     options: Options<ListProjectBranchEndpointsData, ThrowOnError>,
   ) {
-    return (options.client ?? this.client).get<
+    return (options.client ?? this._client).get<
       ListProjectBranchEndpointsResponses,
       ListProjectBranchEndpointsErrors,
       ThrowOnError
@@ -2230,7 +1503,6 @@ export class NeonClient extends HeyApiClient {
 
   /**
    * List databases
-   *
    * Retrieves a list of databases for the specified branch.
    * A branch can have multiple databases.
    * You can obtain a `project_id` by listing the projects for your Neon account.
@@ -2241,7 +1513,7 @@ export class NeonClient extends HeyApiClient {
   public listProjectBranchDatabases<ThrowOnError extends boolean = true>(
     options: Options<ListProjectBranchDatabasesData, ThrowOnError>,
   ) {
-    return (options.client ?? this.client).get<
+    return (options.client ?? this._client).get<
       ListProjectBranchDatabasesResponses,
       ListProjectBranchDatabasesErrors,
       ThrowOnError
@@ -2253,7 +1525,6 @@ export class NeonClient extends HeyApiClient {
 
   /**
    * Create database
-   *
    * Creates a database in the specified branch.
    * A branch can have multiple databases.
    * You can obtain a `project_id` by listing the projects for your Neon account.
@@ -2264,7 +1535,7 @@ export class NeonClient extends HeyApiClient {
   public createProjectBranchDatabase<ThrowOnError extends boolean = true>(
     options: Options<CreateProjectBranchDatabaseData, ThrowOnError>,
   ) {
-    return (options.client ?? this.client).post<
+    return (options.client ?? this._client).post<
       CreateProjectBranchDatabaseResponses,
       CreateProjectBranchDatabaseErrors,
       ThrowOnError
@@ -2280,7 +1551,6 @@ export class NeonClient extends HeyApiClient {
 
   /**
    * Delete database
-   *
    * Deletes the specified database from the branch.
    * You can obtain a `project_id` by listing the projects for your Neon account.
    * You can obtain the `branch_id` and `database_name` by listing the branch's databases.
@@ -2290,7 +1560,7 @@ export class NeonClient extends HeyApiClient {
   public deleteProjectBranchDatabase<ThrowOnError extends boolean = true>(
     options: Options<DeleteProjectBranchDatabaseData, ThrowOnError>,
   ) {
-    return (options.client ?? this.client).delete<
+    return (options.client ?? this._client).delete<
       DeleteProjectBranchDatabaseResponses,
       DeleteProjectBranchDatabaseErrors,
       ThrowOnError
@@ -2302,7 +1572,6 @@ export class NeonClient extends HeyApiClient {
 
   /**
    * Retrieve database details
-   *
    * Retrieves information about the specified database.
    * You can obtain a `project_id` by listing the projects for your Neon account.
    * You can obtain the `branch_id` and `database_name` by listing the branch's databases.
@@ -2312,7 +1581,7 @@ export class NeonClient extends HeyApiClient {
   public getProjectBranchDatabase<ThrowOnError extends boolean = true>(
     options: Options<GetProjectBranchDatabaseData, ThrowOnError>,
   ) {
-    return (options.client ?? this.client).get<
+    return (options.client ?? this._client).get<
       GetProjectBranchDatabaseResponses,
       GetProjectBranchDatabaseErrors,
       ThrowOnError
@@ -2324,7 +1593,6 @@ export class NeonClient extends HeyApiClient {
 
   /**
    * Update database
-   *
    * Updates the specified database in the branch.
    * You can obtain a `project_id` by listing the projects for your Neon account.
    * You can obtain the `branch_id` and `database_name` by listing the branch's databases.
@@ -2334,7 +1602,7 @@ export class NeonClient extends HeyApiClient {
   public updateProjectBranchDatabase<ThrowOnError extends boolean = true>(
     options: Options<UpdateProjectBranchDatabaseData, ThrowOnError>,
   ) {
-    return (options.client ?? this.client).patch<
+    return (options.client ?? this._client).patch<
       UpdateProjectBranchDatabaseResponses,
       UpdateProjectBranchDatabaseErrors,
       ThrowOnError
@@ -2350,7 +1618,6 @@ export class NeonClient extends HeyApiClient {
 
   /**
    * List roles
-   *
    * Retrieves a list of Postgres roles from the specified branch.
    * You can obtain a `project_id` by listing the projects for your Neon account.
    * You can obtain the `branch_id` by listing the project's branches.
@@ -2360,16 +1627,18 @@ export class NeonClient extends HeyApiClient {
   public listProjectBranchRoles<ThrowOnError extends boolean = true>(
     options: Options<ListProjectBranchRolesData, ThrowOnError>,
   ) {
-    return (options.client ?? this.client).get<
+    return (options.client ?? this._client).get<
       ListProjectBranchRolesResponses,
       ListProjectBranchRolesErrors,
       ThrowOnError
-    >({ url: "/projects/{project_id}/branches/{branch_id}/roles", ...options });
+    >({
+      url: "/projects/{project_id}/branches/{branch_id}/roles",
+      ...options,
+    });
   }
 
   /**
    * Create role
-   *
    * Creates a Postgres role in the specified branch.
    * You can obtain a `project_id` by listing the projects for your Neon account.
    * You can obtain the `branch_id` by listing the project's branches.
@@ -2382,7 +1651,7 @@ export class NeonClient extends HeyApiClient {
   public createProjectBranchRole<ThrowOnError extends boolean = true>(
     options: Options<CreateProjectBranchRoleData, ThrowOnError>,
   ) {
-    return (options.client ?? this.client).post<
+    return (options.client ?? this._client).post<
       CreateProjectBranchRoleResponses,
       CreateProjectBranchRoleErrors,
       ThrowOnError
@@ -2398,7 +1667,6 @@ export class NeonClient extends HeyApiClient {
 
   /**
    * Delete role
-   *
    * Deletes the specified Postgres role from the branch.
    * You can obtain a `project_id` by listing the projects for your Neon account.
    * You can obtain the `branch_id` by listing the project's branches.
@@ -2409,7 +1677,7 @@ export class NeonClient extends HeyApiClient {
   public deleteProjectBranchRole<ThrowOnError extends boolean = true>(
     options: Options<DeleteProjectBranchRoleData, ThrowOnError>,
   ) {
-    return (options.client ?? this.client).delete<
+    return (options.client ?? this._client).delete<
       DeleteProjectBranchRoleResponses,
       DeleteProjectBranchRoleErrors,
       ThrowOnError
@@ -2421,7 +1689,6 @@ export class NeonClient extends HeyApiClient {
 
   /**
    * Retrieve role details
-   *
    * Retrieves details about the specified role.
    * You can obtain a `project_id` by listing the projects for your Neon account.
    * You can obtain the `branch_id` by listing the project's branches.
@@ -2433,7 +1700,7 @@ export class NeonClient extends HeyApiClient {
   public getProjectBranchRole<ThrowOnError extends boolean = true>(
     options: Options<GetProjectBranchRoleData, ThrowOnError>,
   ) {
-    return (options.client ?? this.client).get<
+    return (options.client ?? this._client).get<
       GetProjectBranchRoleResponses,
       GetProjectBranchRoleErrors,
       ThrowOnError
@@ -2445,7 +1712,6 @@ export class NeonClient extends HeyApiClient {
 
   /**
    * Retrieve role password
-   *
    * Retrieves the password for the specified Postgres role, if possible.
    * You can obtain a `project_id` by listing the projects for your Neon account.
    * You can obtain the `branch_id` by listing the project's branches.
@@ -2456,7 +1722,7 @@ export class NeonClient extends HeyApiClient {
   public getProjectBranchRolePassword<ThrowOnError extends boolean = true>(
     options: Options<GetProjectBranchRolePasswordData, ThrowOnError>,
   ) {
-    return (options.client ?? this.client).get<
+    return (options.client ?? this._client).get<
       GetProjectBranchRolePasswordResponses,
       GetProjectBranchRolePasswordErrors,
       ThrowOnError
@@ -2468,7 +1734,6 @@ export class NeonClient extends HeyApiClient {
 
   /**
    * Reset role password
-   *
    * Resets the password for the specified Postgres role.
    * Returns a new password and operations. The new password is ready to use when the last operation finishes.
    * The old password remains valid until last operation finishes.
@@ -2484,7 +1749,7 @@ export class NeonClient extends HeyApiClient {
   public resetProjectBranchRolePassword<ThrowOnError extends boolean = true>(
     options: Options<ResetProjectBranchRolePasswordData, ThrowOnError>,
   ) {
-    return (options.client ?? this.client).post<
+    return (options.client ?? this._client).post<
       ResetProjectBranchRolePasswordResponses,
       ResetProjectBranchRolePasswordErrors,
       ThrowOnError
@@ -2496,30 +1761,31 @@ export class NeonClient extends HeyApiClient {
 
   /**
    * List VPC endpoint restrictions
-   *
    * Lists VPC endpoint restrictions for the specified Neon project.
    *
    */
   public listProjectVpcEndpoints<ThrowOnError extends boolean = true>(
     options: Options<ListProjectVpcEndpointsData, ThrowOnError>,
   ) {
-    return (options.client ?? this.client).get<
+    return (options.client ?? this._client).get<
       ListProjectVpcEndpointsResponses,
       ListProjectVpcEndpointsErrors,
       ThrowOnError
-    >({ url: "/projects/{project_id}/vpc_endpoints", ...options });
+    >({
+      url: "/projects/{project_id}/vpc_endpoints",
+      ...options,
+    });
   }
 
   /**
    * Delete VPC endpoint restriction
-   *
    * Removes the specified VPC endpoint restriction from a Neon project.
    *
    */
   public deleteProjectVpcEndpoint<ThrowOnError extends boolean = true>(
     options: Options<DeleteProjectVpcEndpointData, ThrowOnError>,
   ) {
-    return (options.client ?? this.client).delete<
+    return (options.client ?? this._client).delete<
       DeleteProjectVpcEndpointResponses,
       DeleteProjectVpcEndpointErrors,
       ThrowOnError
@@ -2531,7 +1797,6 @@ export class NeonClient extends HeyApiClient {
 
   /**
    * Set VPC endpoint restriction
-   *
    * Sets or updates a VPC endpoint restriction for a Neon project.
    * When a VPC endpoint restriction is set, the project only accepts connections
    * from the specified VPC.
@@ -2542,7 +1807,7 @@ export class NeonClient extends HeyApiClient {
   public assignProjectVpcEndpoint<ThrowOnError extends boolean = true>(
     options: Options<AssignProjectVpcEndpointData, ThrowOnError>,
   ) {
-    return (options.client ?? this.client).post<
+    return (options.client ?? this._client).post<
       AssignProjectVpcEndpointResponses,
       AssignProjectVpcEndpointErrors,
       ThrowOnError
@@ -2558,7 +1823,6 @@ export class NeonClient extends HeyApiClient {
 
   /**
    * List compute endpoints
-   *
    * Retrieves a list of compute endpoints for the specified project.
    * A compute endpoint is a Neon compute instance.
    * You can obtain a `project_id` by listing the projects for your Neon account.
@@ -2568,16 +1832,18 @@ export class NeonClient extends HeyApiClient {
   public listProjectEndpoints<ThrowOnError extends boolean = true>(
     options: Options<ListProjectEndpointsData, ThrowOnError>,
   ) {
-    return (options.client ?? this.client).get<
+    return (options.client ?? this._client).get<
       ListProjectEndpointsResponses,
       ListProjectEndpointsErrors,
       ThrowOnError
-    >({ url: "/projects/{project_id}/endpoints", ...options });
+    >({
+      url: "/projects/{project_id}/endpoints",
+      ...options,
+    });
   }
 
   /**
    * Create compute endpoint
-   *
    * Creates a compute endpoint for the specified branch.
    * An endpoint is a Neon compute instance.
    * There is a maximum of one read-write compute endpoint per branch.
@@ -2594,7 +1860,7 @@ export class NeonClient extends HeyApiClient {
   public createProjectEndpoint<ThrowOnError extends boolean = true>(
     options: Options<CreateProjectEndpointData, ThrowOnError>,
   ) {
-    return (options.client ?? this.client).post<
+    return (options.client ?? this._client).post<
       CreateProjectEndpointResponses,
       CreateProjectEndpointErrors,
       ThrowOnError
@@ -2610,7 +1876,6 @@ export class NeonClient extends HeyApiClient {
 
   /**
    * Delete compute endpoint
-   *
    * Delete the specified compute endpoint.
    * A compute endpoint is a Neon compute instance.
    * Deleting a compute endpoint drops existing network connections to the compute endpoint.
@@ -2625,16 +1890,18 @@ export class NeonClient extends HeyApiClient {
   public deleteProjectEndpoint<ThrowOnError extends boolean = true>(
     options: Options<DeleteProjectEndpointData, ThrowOnError>,
   ) {
-    return (options.client ?? this.client).delete<
+    return (options.client ?? this._client).delete<
       DeleteProjectEndpointResponses,
       DeleteProjectEndpointErrors,
       ThrowOnError
-    >({ url: "/projects/{project_id}/endpoints/{endpoint_id}", ...options });
+    >({
+      url: "/projects/{project_id}/endpoints/{endpoint_id}",
+      ...options,
+    });
   }
 
   /**
    * Retrieve compute endpoint details
-   *
    * Retrieves information about the specified compute endpoint.
    * A compute endpoint is a Neon compute instance.
    * You can obtain a `project_id` by listing the projects for your Neon account.
@@ -2646,16 +1913,18 @@ export class NeonClient extends HeyApiClient {
   public getProjectEndpoint<ThrowOnError extends boolean = true>(
     options: Options<GetProjectEndpointData, ThrowOnError>,
   ) {
-    return (options.client ?? this.client).get<
+    return (options.client ?? this._client).get<
       GetProjectEndpointResponses,
       GetProjectEndpointErrors,
       ThrowOnError
-    >({ url: "/projects/{project_id}/endpoints/{endpoint_id}", ...options });
+    >({
+      url: "/projects/{project_id}/endpoints/{endpoint_id}",
+      ...options,
+    });
   }
 
   /**
    * Update compute endpoint
-   *
    * Updates the specified compute endpoint.
    *
    * You can obtain a `project_id` by listing the projects for your Neon account.
@@ -2672,7 +1941,7 @@ export class NeonClient extends HeyApiClient {
   public updateProjectEndpoint<ThrowOnError extends boolean = true>(
     options: Options<UpdateProjectEndpointData, ThrowOnError>,
   ) {
-    return (options.client ?? this.client).patch<
+    return (options.client ?? this._client).patch<
       UpdateProjectEndpointResponses,
       UpdateProjectEndpointErrors,
       ThrowOnError
@@ -2688,7 +1957,6 @@ export class NeonClient extends HeyApiClient {
 
   /**
    * Start compute endpoint
-   *
    * Starts a compute endpoint. The compute endpoint is ready to use
    * after the last operation in chain finishes successfully.
    *
@@ -2701,7 +1969,7 @@ export class NeonClient extends HeyApiClient {
   public startProjectEndpoint<ThrowOnError extends boolean = true>(
     options: Options<StartProjectEndpointData, ThrowOnError>,
   ) {
-    return (options.client ?? this.client).post<
+    return (options.client ?? this._client).post<
       StartProjectEndpointResponses,
       StartProjectEndpointErrors,
       ThrowOnError
@@ -2713,7 +1981,6 @@ export class NeonClient extends HeyApiClient {
 
   /**
    * Suspend compute endpoint
-   *
    * Suspend the specified compute endpoint
    * You can obtain a `project_id` by listing the projects for your Neon account.
    * You can obtain an `endpoint_id` by listing your project's compute endpoints.
@@ -2724,7 +1991,7 @@ export class NeonClient extends HeyApiClient {
   public suspendProjectEndpoint<ThrowOnError extends boolean = true>(
     options: Options<SuspendProjectEndpointData, ThrowOnError>,
   ) {
-    return (options.client ?? this.client).post<
+    return (options.client ?? this._client).post<
       SuspendProjectEndpointResponses,
       SuspendProjectEndpointErrors,
       ThrowOnError
@@ -2736,7 +2003,6 @@ export class NeonClient extends HeyApiClient {
 
   /**
    * Restart compute endpoint
-   *
    * Restart the specified compute endpoint: suspend immediately followed by start operations.
    * You can obtain a `project_id` by listing the projects for your Neon account.
    * You can obtain an `endpoint_id` by listing your project's compute endpoints.
@@ -2747,7 +2013,7 @@ export class NeonClient extends HeyApiClient {
   public restartProjectEndpoint<ThrowOnError extends boolean = true>(
     options: Options<RestartProjectEndpointData, ThrowOnError>,
   ) {
-    return (options.client ?? this.client).post<
+    return (options.client ?? this._client).post<
       RestartProjectEndpointResponses,
       RestartProjectEndpointErrors,
       ThrowOnError
@@ -2759,24 +2025,24 @@ export class NeonClient extends HeyApiClient {
 
   /**
    * Retrieve account consumption metrics
-   *
-   * Retrieves consumption metrics for Scale and Enterprise plan accounts, and for legacy Scale, Business, and Enterprise plan accounts.
-   * Consumption history begins at the time the account was upgraded to a supported plan.
+   * Retrieves consumption metrics for Scale, Business, and Enterprise plan accounts. History begins at the time of upgrade.
    *
    */
   public getConsumptionHistoryPerAccount<ThrowOnError extends boolean = true>(
     options: Options<GetConsumptionHistoryPerAccountData, ThrowOnError>,
   ) {
-    return (options.client ?? this.client).get<
+    return (options.client ?? this._client).get<
       GetConsumptionHistoryPerAccountResponses,
       GetConsumptionHistoryPerAccountErrors,
       ThrowOnError
-    >({ url: "/consumption_history/account", ...options });
+    >({
+      url: "/consumption_history/account",
+      ...options,
+    });
   }
 
   /**
    * Retrieve project consumption metrics
-   *
    * Retrieves consumption metrics for Scale, Business, and Enterprise plan projects. History begins at the time of upgrade.
    * Issuing a call to this API does not wake a project's compute endpoint.
    *
@@ -2784,32 +2050,36 @@ export class NeonClient extends HeyApiClient {
   public getConsumptionHistoryPerProject<ThrowOnError extends boolean = true>(
     options: Options<GetConsumptionHistoryPerProjectData, ThrowOnError>,
   ) {
-    return (options.client ?? this.client).get<
+    return (options.client ?? this._client).get<
       GetConsumptionHistoryPerProjectResponses,
       GetConsumptionHistoryPerProjectErrors,
       ThrowOnError
-    >({ url: "/consumption_history/projects", ...options });
+    >({
+      url: "/consumption_history/projects",
+      ...options,
+    });
   }
 
   /**
    * Retrieve organization details
-   *
    * Retrieves information about the specified organization.
    *
    */
   public getOrganization<ThrowOnError extends boolean = true>(
     options: Options<GetOrganizationData, ThrowOnError>,
   ) {
-    return (options.client ?? this.client).get<
+    return (options.client ?? this._client).get<
       GetOrganizationResponses,
       GetOrganizationErrors,
       ThrowOnError
-    >({ url: "/organizations/{org_id}", ...options });
+    >({
+      url: "/organizations/{org_id}",
+      ...options,
+    });
   }
 
   /**
    * List organization API keys
-   *
    * Retrieves the API keys for the specified organization.
    * The response does not include API key tokens. A token is only provided when creating an API key.
    * API keys can also be managed in the Neon Console.
@@ -2819,16 +2089,18 @@ export class NeonClient extends HeyApiClient {
   public listOrgApiKeys<ThrowOnError extends boolean = true>(
     options: Options<ListOrgApiKeysData, ThrowOnError>,
   ) {
-    return (options.client ?? this.client).get<
+    return (options.client ?? this._client).get<
       ListOrgApiKeysResponses,
       ListOrgApiKeysErrors,
       ThrowOnError
-    >({ url: "/organizations/{org_id}/api_keys", ...options });
+    >({
+      url: "/organizations/{org_id}/api_keys",
+      ...options,
+    });
   }
 
   /**
    * Create organization API key
-   *
    * Creates an API key for the specified organization.
    * The `key_name` is a user-specified name for the key.
    * This method returns an `id` and `key`. The `key` is a randomly generated, 64-bit token required to access the Neon API.
@@ -2839,7 +2111,7 @@ export class NeonClient extends HeyApiClient {
   public createOrgApiKey<ThrowOnError extends boolean = true>(
     options: Options<CreateOrgApiKeyData, ThrowOnError>,
   ) {
-    return (options.client ?? this.client).post<
+    return (options.client ?? this._client).post<
       CreateOrgApiKeyResponses,
       CreateOrgApiKeyErrors,
       ThrowOnError
@@ -2855,7 +2127,6 @@ export class NeonClient extends HeyApiClient {
 
   /**
    * Revoke organization API key
-   *
    * Revokes the specified organization API key.
    * An API key that is no longer needed can be revoked.
    * This action cannot be reversed.
@@ -2867,32 +2138,36 @@ export class NeonClient extends HeyApiClient {
   public revokeOrgApiKey<ThrowOnError extends boolean = true>(
     options: Options<RevokeOrgApiKeyData, ThrowOnError>,
   ) {
-    return (options.client ?? this.client).delete<
+    return (options.client ?? this._client).delete<
       RevokeOrgApiKeyResponses,
       RevokeOrgApiKeyErrors,
       ThrowOnError
-    >({ url: "/organizations/{org_id}/api_keys/{key_id}", ...options });
+    >({
+      url: "/organizations/{org_id}/api_keys/{key_id}",
+      ...options,
+    });
   }
 
   /**
    * Retrieve organization members details
-   *
    * Retrieves information about the specified organization members.
    *
    */
   public getOrganizationMembers<ThrowOnError extends boolean = true>(
     options: Options<GetOrganizationMembersData, ThrowOnError>,
   ) {
-    return (options.client ?? this.client).get<
+    return (options.client ?? this._client).get<
       GetOrganizationMembersResponses,
       GetOrganizationMembersErrors,
       ThrowOnError
-    >({ url: "/organizations/{org_id}/members", ...options });
+    >({
+      url: "/organizations/{org_id}/members",
+      ...options,
+    });
   }
 
   /**
    * Remove member from the organization
-   *
    * Remove member from the organization.
    * Only an admin of the organization can perform this action.
    * If another admin is being removed, it will not be allows in case it is the only admin left in the organization.
@@ -2901,39 +2176,43 @@ export class NeonClient extends HeyApiClient {
   public removeOrganizationMember<ThrowOnError extends boolean = true>(
     options: Options<RemoveOrganizationMemberData, ThrowOnError>,
   ) {
-    return (options.client ?? this.client).delete<
+    return (options.client ?? this._client).delete<
       RemoveOrganizationMemberResponses,
       RemoveOrganizationMemberErrors,
       ThrowOnError
-    >({ url: "/organizations/{org_id}/members/{member_id}", ...options });
+    >({
+      url: "/organizations/{org_id}/members/{member_id}",
+      ...options,
+    });
   }
 
   /**
    * Retrieve organization member details
-   *
    * Retrieves information about the specified organization member.
    *
    */
   public getOrganizationMember<ThrowOnError extends boolean = true>(
     options: Options<GetOrganizationMemberData, ThrowOnError>,
   ) {
-    return (options.client ?? this.client).get<
+    return (options.client ?? this._client).get<
       GetOrganizationMemberResponses,
       GetOrganizationMemberErrors,
       ThrowOnError
-    >({ url: "/organizations/{org_id}/members/{member_id}", ...options });
+    >({
+      url: "/organizations/{org_id}/members/{member_id}",
+      ...options,
+    });
   }
 
   /**
    * Update role for organization member
-   *
    * Only an admin can perform this action.
    *
    */
   public updateOrganizationMember<ThrowOnError extends boolean = true>(
     options: Options<UpdateOrganizationMemberData, ThrowOnError>,
   ) {
-    return (options.client ?? this.client).patch<
+    return (options.client ?? this._client).patch<
       UpdateOrganizationMemberResponses,
       UpdateOrganizationMemberErrors,
       ThrowOnError
@@ -2949,23 +2228,24 @@ export class NeonClient extends HeyApiClient {
 
   /**
    * Retrieve organization invitation details
-   *
    * Retrieves information about extended invitations for the specified organization
    *
    */
   public getOrganizationInvitations<ThrowOnError extends boolean = true>(
     options: Options<GetOrganizationInvitationsData, ThrowOnError>,
   ) {
-    return (options.client ?? this.client).get<
+    return (options.client ?? this._client).get<
       GetOrganizationInvitationsResponses,
       GetOrganizationInvitationsErrors,
       ThrowOnError
-    >({ url: "/organizations/{org_id}/invitations", ...options });
+    >({
+      url: "/organizations/{org_id}/invitations",
+      ...options,
+    });
   }
 
   /**
    * Create organization invitations
-   *
    * Creates invitations for a specific organization.
    * If the invited user has an existing account, they automatically join as a member.
    * If they don't yet have an account, they are invited to create one, after which they become a member.
@@ -2975,7 +2255,7 @@ export class NeonClient extends HeyApiClient {
   public createOrganizationInvitations<ThrowOnError extends boolean = true>(
     options: Options<CreateOrganizationInvitationsData, ThrowOnError>,
   ) {
-    return (options.client ?? this.client).post<
+    return (options.client ?? this._client).post<
       CreateOrganizationInvitationsResponses,
       CreateOrganizationInvitationsErrors,
       ThrowOnError
@@ -2991,14 +2271,13 @@ export class NeonClient extends HeyApiClient {
 
   /**
    * Transfer projects between organizations
-   *
    * Transfers selected projects, identified by their IDs, from your organization to another specified organization.
    *
    */
   public transferProjectsFromOrgToOrg<ThrowOnError extends boolean = true>(
     options: Options<TransferProjectsFromOrgToOrgData, ThrowOnError>,
   ) {
-    return (options.client ?? this.client).post<
+    return (options.client ?? this._client).post<
       TransferProjectsFromOrgToOrgResponses,
       TransferProjectsFromOrgToOrgErrors,
       ThrowOnError
@@ -3014,7 +2293,6 @@ export class NeonClient extends HeyApiClient {
 
   /**
    * List VPC endpoints across all regions
-   *
    * Retrieves the list of VPC endpoints for the specified Neon organization across all regions.
    *
    */
@@ -3023,23 +2301,25 @@ export class NeonClient extends HeyApiClient {
   >(
     options: Options<ListOrganizationVpcEndpointsAllRegionsData, ThrowOnError>,
   ) {
-    return (options.client ?? this.client).get<
+    return (options.client ?? this._client).get<
       ListOrganizationVpcEndpointsAllRegionsResponses,
       ListOrganizationVpcEndpointsAllRegionsErrors,
       ThrowOnError
-    >({ url: "/organizations/{org_id}/vpc/vpc_endpoints", ...options });
+    >({
+      url: "/organizations/{org_id}/vpc/vpc_endpoints",
+      ...options,
+    });
   }
 
   /**
    * List VPC endpoints
-   *
    * Retrieves the list of VPC endpoints for the specified Neon organization.
    *
    */
   public listOrganizationVpcEndpoints<ThrowOnError extends boolean = true>(
     options: Options<ListOrganizationVpcEndpointsData, ThrowOnError>,
   ) {
-    return (options.client ?? this.client).get<
+    return (options.client ?? this._client).get<
       ListOrganizationVpcEndpointsResponses,
       ListOrganizationVpcEndpointsErrors,
       ThrowOnError
@@ -3051,7 +2331,6 @@ export class NeonClient extends HeyApiClient {
 
   /**
    * Delete VPC endpoint
-   *
    * Deletes the VPC endpoint from the specified Neon organization.
    * If you delete a VPC endpoint from a Neon organization, that VPC endpoint cannot
    * be added back to the Neon organization.
@@ -3060,7 +2339,7 @@ export class NeonClient extends HeyApiClient {
   public deleteOrganizationVpcEndpoint<ThrowOnError extends boolean = true>(
     options: Options<DeleteOrganizationVpcEndpointData, ThrowOnError>,
   ) {
-    return (options.client ?? this.client).delete<
+    return (options.client ?? this._client).delete<
       DeleteOrganizationVpcEndpointResponses,
       DeleteOrganizationVpcEndpointErrors,
       ThrowOnError
@@ -3072,14 +2351,13 @@ export class NeonClient extends HeyApiClient {
 
   /**
    * Retrieve VPC endpoint details
-   *
    * Retrieves the current state and configuration details of a specified VPC endpoint.
    *
    */
   public getOrganizationVpcEndpointDetails<ThrowOnError extends boolean = true>(
     options: Options<GetOrganizationVpcEndpointDetailsData, ThrowOnError>,
   ) {
-    return (options.client ?? this.client).get<
+    return (options.client ?? this._client).get<
       GetOrganizationVpcEndpointDetailsResponses,
       GetOrganizationVpcEndpointDetailsErrors,
       ThrowOnError
@@ -3091,14 +2369,13 @@ export class NeonClient extends HeyApiClient {
 
   /**
    * Assign or update VPC endpoint
-   *
    * Assigns a VPC endpoint to a Neon organization or updates its existing assignment.
    *
    */
   public assignOrganizationVpcEndpoint<ThrowOnError extends boolean = true>(
     options: Options<AssignOrganizationVpcEndpointData, ThrowOnError>,
   ) {
-    return (options.client ?? this.client).post<
+    return (options.client ?? this._client).post<
       AssignOrganizationVpcEndpointResponses,
       AssignOrganizationVpcEndpointErrors,
       ThrowOnError
@@ -3114,62 +2391,67 @@ export class NeonClient extends HeyApiClient {
 
   /**
    * List supported regions
-   *
    * Lists supported Neon regions
    *
    */
   public getActiveRegions<ThrowOnError extends boolean = true>(
     options?: Options<GetActiveRegionsData, ThrowOnError>,
   ) {
-    return (options?.client ?? this.client).get<
+    return (options?.client ?? this._client).get<
       GetActiveRegionsResponses,
       GetActiveRegionsErrors,
       ThrowOnError
-    >({ url: "/regions", ...options });
+    >({
+      url: "/regions",
+      ...options,
+    });
   }
 
   /**
    * Retrieve current user details
-   *
    * Retrieves information about the current Neon user account.
    *
    */
   public getCurrentUserInfo<ThrowOnError extends boolean = true>(
     options?: Options<GetCurrentUserInfoData, ThrowOnError>,
   ) {
-    return (options?.client ?? this.client).get<
+    return (options?.client ?? this._client).get<
       GetCurrentUserInfoResponses,
       GetCurrentUserInfoErrors,
       ThrowOnError
-    >({ url: "/users/me", ...options });
+    >({
+      url: "/users/me",
+      ...options,
+    });
   }
 
   /**
    * Retrieve current user organizations list
-   *
    * Retrieves information about the current Neon user's organizations
    *
    */
   public getCurrentUserOrganizations<ThrowOnError extends boolean = true>(
     options?: Options<GetCurrentUserOrganizationsData, ThrowOnError>,
   ) {
-    return (options?.client ?? this.client).get<
+    return (options?.client ?? this._client).get<
       GetCurrentUserOrganizationsResponses,
       GetCurrentUserOrganizationsErrors,
       ThrowOnError
-    >({ url: "/users/me/organizations", ...options });
+    >({
+      url: "/users/me/organizations",
+      ...options,
+    });
   }
 
   /**
    * Transfer projects from personal account to organization
-   *
    * Transfers selected projects, identified by their IDs, from your personal account to a specified organization.
    *
    */
   public transferProjectsFromUserToOrg<ThrowOnError extends boolean = true>(
     options: Options<TransferProjectsFromUserToOrgData, ThrowOnError>,
   ) {
-    return (options.client ?? this.client).post<
+    return (options.client ?? this._client).post<
       TransferProjectsFromUserToOrgResponses,
       TransferProjectsFromUserToOrgErrors,
       ThrowOnError
@@ -3185,23 +2467,24 @@ export class NeonClient extends HeyApiClient {
 
   /**
    * Get request authentication details
-   *
    * Returns auth information about the passed credentials. It can refer to an API key, Bearer token or OAuth session.
    *
    */
   public getAuthDetails<ThrowOnError extends boolean = true>(
     options?: Options<GetAuthDetailsData, ThrowOnError>,
   ) {
-    return (options?.client ?? this.client).get<
+    return (options?.client ?? this._client).get<
       GetAuthDetailsResponses,
       GetAuthDetailsErrors,
       ThrowOnError
-    >({ url: "/auth", ...options });
+    >({
+      url: "/auth",
+      ...options,
+    });
   }
 
   /**
    * Create snapshot
-   *
    * Create a snapshot from the specified branch using the provided parameters.
    * This endpoint may initiate an asynchronous operation.
    *
@@ -3211,7 +2494,7 @@ export class NeonClient extends HeyApiClient {
   public createSnapshot<ThrowOnError extends boolean = true>(
     options: Options<CreateSnapshotData, ThrowOnError>,
   ) {
-    return (options.client ?? this.client).post<
+    return (options.client ?? this._client).post<
       CreateSnapshotResponses,
       CreateSnapshotErrors,
       ThrowOnError
@@ -3223,7 +2506,6 @@ export class NeonClient extends HeyApiClient {
 
   /**
    * List project snapshots
-   *
    * List the snapshots for the specified project.
    *
    * **Note**: This endpoint is currently in Beta.
@@ -3232,16 +2514,18 @@ export class NeonClient extends HeyApiClient {
   public listSnapshots<ThrowOnError extends boolean = true>(
     options: Options<ListSnapshotsData, ThrowOnError>,
   ) {
-    return (options.client ?? this.client).get<
+    return (options.client ?? this._client).get<
       ListSnapshotsResponses,
       ListSnapshotsErrors,
       ThrowOnError
-    >({ url: "/projects/{project_id}/snapshots", ...options });
+    >({
+      url: "/projects/{project_id}/snapshots",
+      ...options,
+    });
   }
 
   /**
    * Delete snapshot
-   *
    * Delete the specified snapshot.
    *
    * **Note**: This endpoint is currently in Beta.
@@ -3250,16 +2534,18 @@ export class NeonClient extends HeyApiClient {
   public deleteSnapshot<ThrowOnError extends boolean = true>(
     options: Options<DeleteSnapshotData, ThrowOnError>,
   ) {
-    return (options.client ?? this.client).delete<
+    return (options.client ?? this._client).delete<
       DeleteSnapshotResponses,
       DeleteSnapshotErrors,
       ThrowOnError
-    >({ url: "/projects/{project_id}/snapshots/{snapshot_id}", ...options });
+    >({
+      url: "/projects/{project_id}/snapshots/{snapshot_id}",
+      ...options,
+    });
   }
 
   /**
    * Update snapshot
-   *
    * Update the specified snapshot.
    *
    * **Note**: This endpoint is currently in Beta.
@@ -3268,7 +2554,7 @@ export class NeonClient extends HeyApiClient {
   public updateSnapshot<ThrowOnError extends boolean = true>(
     options: Options<UpdateSnapshotData, ThrowOnError>,
   ) {
-    return (options.client ?? this.client).patch<
+    return (options.client ?? this._client).patch<
       UpdateSnapshotResponses,
       UpdateSnapshotErrors,
       ThrowOnError
@@ -3284,7 +2570,6 @@ export class NeonClient extends HeyApiClient {
 
   /**
    * Restore snapshot
-   *
    * Restore the specified snapshot to a new branch and optionally finalize the restore operation.
    *
    * **Note**: This endpoint is currently in Beta.
@@ -3293,58 +2578,12 @@ export class NeonClient extends HeyApiClient {
   public restoreSnapshot<ThrowOnError extends boolean = true>(
     options: Options<RestoreSnapshotData, ThrowOnError>,
   ) {
-    return (options.client ?? this.client).post<
+    return (options.client ?? this._client).post<
       RestoreSnapshotResponses,
       RestoreSnapshotErrors,
       ThrowOnError
     >({
       url: "/projects/{project_id}/snapshots/{snapshot_id}/restore",
-      ...options,
-      headers: {
-        "Content-Type": "application/json",
-        ...options.headers,
-      },
-    });
-  }
-
-  /**
-   * View backup schedule
-   *
-   * View the backup schedule for the specified branch.
-   *
-   * **Note**: This endpoint is currently in Beta.
-   *
-   */
-  public getSnapshotSchedule<ThrowOnError extends boolean = true>(
-    options: Options<GetSnapshotScheduleData, ThrowOnError>,
-  ) {
-    return (options.client ?? this.client).get<
-      GetSnapshotScheduleResponses,
-      GetSnapshotScheduleErrors,
-      ThrowOnError
-    >({
-      url: "/projects/{project_id}/branches/{branch_id}/backup_schedule",
-      ...options,
-    });
-  }
-
-  /**
-   * Update backup schedule
-   *
-   * Update the backup schedule for the specified branch.
-   *
-   * **Note** : This endpoint is currently in Beta.
-   *
-   */
-  public setSnapshotSchedule<ThrowOnError extends boolean = true>(
-    options: Options<SetSnapshotScheduleData, ThrowOnError>,
-  ) {
-    return (options.client ?? this.client).put<
-      SetSnapshotScheduleResponses,
-      SetSnapshotScheduleErrors,
-      ThrowOnError
-    >({
-      url: "/projects/{project_id}/branches/{branch_id}/backup_schedule",
       ...options,
       headers: {
         "Content-Type": "application/json",

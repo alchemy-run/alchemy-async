@@ -158,13 +158,13 @@ export type PaginatedBackup = {
        */
       schedule_time: string;
       /**
-       * Day of the week that the backup is scheduled. 0 is Sunday, 6 is Saturday
+       * Day of the week that the backup is scheduled
        */
-      schedule_day: number;
+      schedule_day: 0 | 1 | 2 | 3 | 4 | 5 | 6;
       /**
-       * Week of the month that the backup is scheduled. 0 is the first week, 3 is the fourth week
+       * Week of the month that the backup is scheduled
        */
-      schedule_week: number;
+      schedule_week: 0 | 1 | 2 | 3;
       /**
        * When the backup policy was created
        */
@@ -364,13 +364,13 @@ export type Backup = {
      */
     schedule_time: string;
     /**
-     * Day of the week that the backup is scheduled. 0 is Sunday, 6 is Saturday
+     * Day of the week that the backup is scheduled
      */
-    schedule_day: number;
+    schedule_day: 0 | 1 | 2 | 3 | 4 | 5 | 6;
     /**
-     * Week of the month that the backup is scheduled. 0 is the first week, 3 is the fourth week
+     * Week of the month that the backup is scheduled
      */
-    schedule_week: number;
+    schedule_week: 0 | 1 | 2 | 3;
     /**
      * When the backup policy was created
      */
@@ -440,155 +440,6 @@ export type Backup = {
      */
     deleted_at: string;
   };
-};
-
-export type PaginatedPostgresBouncerResizeRequest = {
-  /**
-   * The current page number
-   */
-  current_page: number;
-  /**
-   * The next page number
-   */
-  next_page: number;
-  /**
-   * The next page of results
-   */
-  next_page_url: string;
-  /**
-   * The previous page number
-   */
-  prev_page: number;
-  /**
-   * The previous page of results
-   */
-  prev_page_url: string;
-  data: Array<{
-    /**
-     * The ID of the bouncer resize
-     */
-    id: string;
-    /**
-     * The state of the bouncer resize
-     */
-    state: "pending" | "resizing" | "canceled" | "completed";
-    /**
-     * The number of replicas per cell for the bouncer after the resize
-     */
-    replicas_per_cell: number;
-    /**
-     * The bouncer parameters
-     */
-    parameters: {
-      [key: string]: unknown;
-    };
-    /**
-     * The number of replicas per cell for the bouncer before the resize
-     */
-    previous_replicas_per_cell: number;
-    /**
-     * The previous bouncer parameters
-     */
-    previous_parameters: {
-      [key: string]: unknown;
-    };
-    /**
-     * The time the bouncer resize started
-     */
-    started_at: string;
-    /**
-     * The time the bouncer resize completed
-     */
-    completed_at: string;
-    /**
-     * The time the bouncer resize was created
-     */
-    created_at: string;
-    /**
-     * The time the bouncer resize was last updated
-     */
-    updated_at: string;
-    actor: {
-      /**
-       * The ID of the actor
-       */
-      id: string;
-      /**
-       * The name of the actor
-       */
-      display_name: string;
-      /**
-       * The URL of the actor's avatar
-       */
-      avatar_url: string;
-    };
-    bouncer: {
-      /**
-       * The ID for the resource
-       */
-      id: string;
-      /**
-       * The name for the resource
-       */
-      name: string;
-      /**
-       * When the resource was created
-       */
-      created_at: string;
-      /**
-       * When the resource was last updated
-       */
-      updated_at: string;
-      /**
-       * When the resource was deleted, if deleted
-       */
-      deleted_at: string;
-    };
-    sku: {
-      /**
-       * The name of the Postgres bouncer SKU
-       */
-      name: string;
-      /**
-       * The display name
-       */
-      display_name: string;
-      /**
-       * The CPU allocation
-       */
-      cpu: string;
-      /**
-       * The amount of memory in bytes
-       */
-      ram: number;
-      /**
-       * The sort order of the Postgres bouncer SKU
-       */
-      sort_order: number;
-    };
-    previous_sku: {
-      /**
-       * The name of the Postgres bouncer SKU
-       */
-      name: string;
-      /**
-       * The display name
-       */
-      display_name: string;
-      /**
-       * The CPU allocation
-       */
-      cpu: string;
-      /**
-       * The amount of memory in bytes
-       */
-      ram: number;
-      /**
-       * The sort order of the Postgres bouncer SKU
-       */
-      sort_order: number;
-    };
-  }>;
 };
 
 export type PaginatedPostgresClusterResizeRequest = {
@@ -970,10 +821,6 @@ export type PaginatedDatabaseBranch = {
      */
     state: "pending" | "sleep_in_progress" | "sleeping" | "awakening" | "ready";
     /**
-     * True if the branch allows passwords to connect directly to a vtgate, bypassing load balancers
-     */
-    direct_vtgate: boolean;
-    /**
      * The size of the vtgate cluster for the branch
      */
     vtgate_size: string;
@@ -1163,10 +1010,6 @@ export type DatabaseBranch = {
    * The current state of the branch
    */
   state: "pending" | "sleep_in_progress" | "sleeping" | "awakening" | "ready";
-  /**
-   * True if the branch allows passwords to connect directly to a vtgate, bypassing load balancers
-   */
-  direct_vtgate: boolean;
   /**
    * The size of the vtgate cluster for the branch
    */
@@ -1466,12 +1309,12 @@ export type PostgresClusterExtension = {
      * The type of the parameter
      */
     parameter_type:
-      | "array"
       | "boolean"
       | "bytes"
       | "float"
       | "integer"
       | "internal"
+      | "milliseconds"
       | "seconds"
       | "select"
       | "string"
@@ -1574,12 +1417,12 @@ export type PostgresClusterParameter = {
    * The type of the parameter
    */
   parameter_type:
-    | "array"
     | "boolean"
     | "bytes"
     | "float"
     | "integer"
     | "internal"
+    | "milliseconds"
     | "seconds"
     | "select"
     | "string"
@@ -1907,14 +1750,6 @@ export type PaginatedDatabaseBranchPassword = {
      */
     expired: boolean;
     /**
-     * True if the credentials connect directly to a vtgate, bypassing load balancers
-     */
-    direct_vtgate: boolean;
-    /**
-     * The list of hosts in each availability zone providing direct access to a vtgate
-     */
-    direct_vtgate_addresses: Array<string>;
-    /**
      * Time to live (in seconds) for the password. The password will be invalid when TTL has passed
      */
     ttl_seconds: number;
@@ -2057,14 +1892,6 @@ export type DatabaseBranchPassword = {
    */
   expired: boolean;
   /**
-   * True if the credentials connect directly to a vtgate, bypassing load balancers
-   */
-  direct_vtgate: boolean;
-  /**
-   * The list of hosts in each availability zone providing direct access to a vtgate
-   */
-  direct_vtgate_addresses: Array<string>;
-  /**
    * Time to live (in seconds) for the password. The password will be invalid when TTL has passed
    */
   ttl_seconds: number;
@@ -2165,118 +1992,6 @@ export type DatabaseBranchPassword = {
      * True if private connectivity is enabled
      */
     private_edge_connectivity: boolean;
-  };
-};
-
-export type PaginatedPostgresClusterCidr = {
-  /**
-   * The current page number
-   */
-  current_page: number;
-  /**
-   * The next page number
-   */
-  next_page: number;
-  /**
-   * The next page of results
-   */
-  next_page_url: string;
-  /**
-   * The previous page number
-   */
-  prev_page: number;
-  /**
-   * The previous page of results
-   */
-  prev_page_url: string;
-  data: Array<{
-    /**
-     * The ID of the IP allowlist entry
-     */
-    id: string;
-    /**
-     * The schema name to restrict access to (optional)
-     */
-    schema: string;
-    /**
-     * The role to restrict access to (optional)
-     */
-    role: string;
-    /**
-     * List of CIDR ranges
-     */
-    cidrs: Array<string>;
-    /**
-     * When the entry was created
-     */
-    created_at: string;
-    /**
-     * When the entry was updated
-     */
-    updated_at: string;
-    /**
-     * When the entry was deleted
-     */
-    deleted_at: string;
-    actor: {
-      /**
-       * The ID of the actor
-       */
-      id: string;
-      /**
-       * The name of the actor
-       */
-      display_name: string;
-      /**
-       * The URL of the actor's avatar
-       */
-      avatar_url: string;
-    };
-  }>;
-};
-
-export type PostgresClusterCidr = {
-  /**
-   * The ID of the IP allowlist entry
-   */
-  id: string;
-  /**
-   * The schema name to restrict access to (optional)
-   */
-  schema: string;
-  /**
-   * The role to restrict access to (optional)
-   */
-  role: string;
-  /**
-   * List of CIDR ranges
-   */
-  cidrs: Array<string>;
-  /**
-   * When the entry was created
-   */
-  created_at: string;
-  /**
-   * When the entry was updated
-   */
-  updated_at: string;
-  /**
-   * When the entry was deleted
-   */
-  deleted_at: string;
-  actor: {
-    /**
-     * The ID of the actor
-     */
-    id: string;
-    /**
-     * The name of the actor
-     */
-    display_name: string;
-    /**
-     * The URL of the actor's avatar
-     */
-    avatar_url: string;
   };
 };
 
@@ -3086,11 +2801,11 @@ export type PaginatedServiceToken = {
      */
     display_name: string;
     /**
-     * The plaintext token. Available only after create.
+     * The plain text token. Available only after create.
      */
     token: string;
     /**
-     * The plaintext refresh token. Available only after create.
+     * The plain text refresh token. Available only after create.
      */
     plain_text_refresh_token: string;
     /**
@@ -3304,11 +3019,11 @@ export type ServiceToken = {
    */
   display_name: string;
   /**
-   * The plaintext token. Available only after create.
+   * The plain text token. Available only after create.
    */
   token: string;
   /**
-   * The plaintext refresh token. Available only after create.
+   * The plain text refresh token. Available only after create.
    */
   plain_text_refresh_token: string;
   /**
@@ -3620,97 +3335,6 @@ export type PaginatedOrganizationMembership = {
   }>;
 };
 
-export type OrganizationMembership = {
-  /**
-   * The ID of the membership
-   */
-  id: string;
-  user: {
-    /**
-     * The ID of the user
-     */
-    id: string;
-    /**
-     * The display name of the user
-     */
-    display_name: string;
-    /**
-     * The name of the user
-     */
-    name: string;
-    /**
-     * The email of the user
-     */
-    email: string;
-    /**
-     * The URL source of the user's avatar
-     */
-    avatar_url: string;
-    /**
-     * When the user was created
-     */
-    created_at: string;
-    /**
-     * When the user was last updated
-     */
-    updated_at: string;
-    /**
-     * Whether or not the user has configured two factor authentication
-     */
-    two_factor_auth_configured: boolean;
-    default_organization: {
-      /**
-       * The ID for the resource
-       */
-      id: string;
-      /**
-       * The name for the resource
-       */
-      name: string;
-      /**
-       * When the resource was created
-       */
-      created_at: string;
-      /**
-       * When the resource was last updated
-       */
-      updated_at: string;
-      /**
-       * When the resource was deleted, if deleted
-       */
-      deleted_at: string;
-    };
-    /**
-     * Whether or not the user is managed by SSO
-     */
-    sso: boolean;
-    /**
-     * Whether or not the user is managed by an authentication provider
-     */
-    managed: boolean;
-    /**
-     * Whether or not the user is managed by a SSO directory
-     */
-    directory_managed: boolean;
-    /**
-     * Whether or not the user is verified by email
-     */
-    email_verified: boolean;
-  };
-  /**
-   * The role of the user in the organization
-   */
-  role: "member" | "admin";
-  /**
-   * When the membership was created
-   */
-  created_at: string;
-  /**
-   * When the membership was last updated
-   */
-  updated_at: string;
-};
-
 export type PaginatedOrganization = {
   /**
    * The current page number
@@ -3903,73 +3527,6 @@ export type Organization = {
   payment_info_required: boolean;
 };
 
-export type ClusterSizeSkuSerializer = {
-  /**
-   * The name of the cluster SKU
-   */
-  name: string;
-  /**
-   * The display name
-   */
-  display_name: string;
-  /**
-   * The number of CPUs
-   */
-  cpu: string;
-  /**
-   * The amount of storage in bytes
-   */
-  storage: number;
-  /**
-   * The amount of memory in bytes
-   */
-  ram: number;
-  /**
-   * Whether or not the cluster SKU is Metal
-   */
-  metal: boolean;
-  /**
-   * Whether or not the cluster SKU is enabled for the organization
-   */
-  enabled: boolean;
-  /**
-   * The provider of the cluster SKU (nil, AWS or GCP)
-   */
-  provider: string;
-  /**
-   * The default vtgate size for the cluster SKU
-   */
-  default_vtgate: string;
-  /**
-   * The default vtgate rate for the cluster SKU
-   */
-  default_vtgate_rate: number;
-  /**
-   * The replica rate for the cluster SKU
-   */
-  replica_rate?: number;
-  /**
-   * The rate for the cluster SKU
-   */
-  rate?: number;
-  /**
-   * The sort order of the cluster SKU
-   */
-  sort_order: number;
-  /**
-   * The architecture of the cluster SKU (null, x86_64 or arm64)
-   */
-  architecture: string;
-  /**
-   * Whether or not the cluster SKU is a development SKU
-   */
-  development: boolean;
-  /**
-   * Whether or not the cluster SKU is a production SKU
-   */
-  production: boolean;
-};
-
 export type PaginatedAuditLogEvent = {
   /**
    * Whether there is a next page of results
@@ -4061,529 +3618,6 @@ export type PaginatedAuditLogEvent = {
   }>;
 };
 
-export type PostgresBouncerResizeRequest = {
-  /**
-   * The ID of the bouncer resize
-   */
-  id: string;
-  /**
-   * The state of the bouncer resize
-   */
-  state: "pending" | "resizing" | "canceled" | "completed";
-  /**
-   * The number of replicas per cell for the bouncer after the resize
-   */
-  replicas_per_cell: number;
-  /**
-   * The bouncer parameters
-   */
-  parameters: {
-    [key: string]: unknown;
-  };
-  /**
-   * The number of replicas per cell for the bouncer before the resize
-   */
-  previous_replicas_per_cell: number;
-  /**
-   * The previous bouncer parameters
-   */
-  previous_parameters: {
-    [key: string]: unknown;
-  };
-  /**
-   * The time the bouncer resize started
-   */
-  started_at: string;
-  /**
-   * The time the bouncer resize completed
-   */
-  completed_at: string;
-  /**
-   * The time the bouncer resize was created
-   */
-  created_at: string;
-  /**
-   * The time the bouncer resize was last updated
-   */
-  updated_at: string;
-  actor: {
-    /**
-     * The ID of the actor
-     */
-    id: string;
-    /**
-     * The name of the actor
-     */
-    display_name: string;
-    /**
-     * The URL of the actor's avatar
-     */
-    avatar_url: string;
-  };
-  bouncer: {
-    /**
-     * The ID for the resource
-     */
-    id: string;
-    /**
-     * The name for the resource
-     */
-    name: string;
-    /**
-     * When the resource was created
-     */
-    created_at: string;
-    /**
-     * When the resource was last updated
-     */
-    updated_at: string;
-    /**
-     * When the resource was deleted, if deleted
-     */
-    deleted_at: string;
-  };
-  sku: {
-    /**
-     * The name of the Postgres bouncer SKU
-     */
-    name: string;
-    /**
-     * The display name
-     */
-    display_name: string;
-    /**
-     * The CPU allocation
-     */
-    cpu: string;
-    /**
-     * The amount of memory in bytes
-     */
-    ram: number;
-    /**
-     * The sort order of the Postgres bouncer SKU
-     */
-    sort_order: number;
-  };
-  previous_sku: {
-    /**
-     * The name of the Postgres bouncer SKU
-     */
-    name: string;
-    /**
-     * The display name
-     */
-    display_name: string;
-    /**
-     * The CPU allocation
-     */
-    cpu: string;
-    /**
-     * The amount of memory in bytes
-     */
-    ram: number;
-    /**
-     * The sort order of the Postgres bouncer SKU
-     */
-    sort_order: number;
-  };
-};
-
-export type PaginatedPostgresBouncer = {
-  /**
-   * The current page number
-   */
-  current_page: number;
-  /**
-   * The next page number
-   */
-  next_page: number;
-  /**
-   * The next page of results
-   */
-  next_page_url: string;
-  /**
-   * The previous page number
-   */
-  prev_page: number;
-  /**
-   * The previous page of results
-   */
-  prev_page_url: string;
-  data: Array<{
-    /**
-     * The ID of the bouncer
-     */
-    id: string;
-    /**
-     * The name of the bouncer
-     */
-    name: string;
-    sku: {
-      /**
-       * The name of the Postgres bouncer SKU
-       */
-      name: string;
-      /**
-       * The display name
-       */
-      display_name: string;
-      /**
-       * The CPU allocation
-       */
-      cpu: string;
-      /**
-       * The amount of memory in bytes
-       */
-      ram: number;
-      /**
-       * The sort order of the Postgres bouncer SKU
-       */
-      sort_order: number;
-    };
-    /**
-     * The instance type the bouncer targets
-     */
-    target: "primary" | "replica" | "replica_az_affinity";
-    /**
-     * The count of replicas in each cell
-     */
-    replicas_per_cell: number;
-    /**
-     * When the bouncer was created
-     */
-    created_at: string;
-    /**
-     * When the bouncer was updated
-     */
-    updated_at: string;
-    /**
-     * When the bouncer was deleted
-     */
-    deleted_at: string;
-    actor: {
-      /**
-       * The ID of the actor
-       */
-      id: string;
-      /**
-       * The name of the actor
-       */
-      display_name: string;
-      /**
-       * The URL of the actor's avatar
-       */
-      avatar_url: string;
-    };
-    branch: {
-      /**
-       * The ID for the resource
-       */
-      id: string;
-      /**
-       * The name for the resource
-       */
-      name: string;
-      /**
-       * When the resource was created
-       */
-      created_at: string;
-      /**
-       * When the resource was last updated
-       */
-      updated_at: string;
-      /**
-       * When the resource was deleted, if deleted
-       */
-      deleted_at: string;
-    };
-    parameters: Array<{
-      /**
-       * The ID of the parameter
-       */
-      id: string;
-      /**
-       * The namespace of the parameter
-       */
-      namespace: "pgbouncer";
-      /**
-       * The name of the parameter
-       */
-      name: string;
-      /**
-       * The display name of the parameter
-       */
-      display_name: string;
-      /**
-       * The category of the parameter
-       */
-      category: string;
-      /**
-       * The description of the parameter
-       */
-      description: string;
-      /**
-       * The type of the parameter
-       */
-      parameter_type:
-        | "array"
-        | "boolean"
-        | "bytes"
-        | "float"
-        | "integer"
-        | "internal"
-        | "seconds"
-        | "select"
-        | "string"
-        | "time";
-      /**
-       * The default value of the parameter
-       */
-      default_value: string;
-      /**
-       * The configured value of the parameter
-       */
-      value: string;
-      /**
-       * Whether the parameter is required
-       */
-      required: boolean;
-      /**
-       * When the parameter was created
-       */
-      created_at: string;
-      /**
-       * When the parameter was last updated
-       */
-      updated_at: string;
-      /**
-       * True if processes require a server restart on change
-       */
-      restart: boolean;
-      /**
-       * The maximum value of the parameter
-       */
-      max: number;
-      /**
-       * The minimum value of the parameter
-       */
-      min: number;
-      /**
-       * The step change of the parameter
-       */
-      step: number;
-      /**
-       * The URL of the parameter
-       */
-      url: string;
-      /**
-       * Valid options for the parameter value
-       */
-      options: Array<string>;
-      actor: {
-        /**
-         * The ID of the actor
-         */
-        id: string;
-        /**
-         * The name of the actor
-         */
-        display_name: string;
-        /**
-         * The URL of the actor's avatar
-         */
-        avatar_url: string;
-      };
-    }>;
-  }>;
-};
-
-export type PostgresBouncer = {
-  /**
-   * The ID of the bouncer
-   */
-  id: string;
-  /**
-   * The name of the bouncer
-   */
-  name: string;
-  sku: {
-    /**
-     * The name of the Postgres bouncer SKU
-     */
-    name: string;
-    /**
-     * The display name
-     */
-    display_name: string;
-    /**
-     * The CPU allocation
-     */
-    cpu: string;
-    /**
-     * The amount of memory in bytes
-     */
-    ram: number;
-    /**
-     * The sort order of the Postgres bouncer SKU
-     */
-    sort_order: number;
-  };
-  /**
-   * The instance type the bouncer targets
-   */
-  target: "primary" | "replica" | "replica_az_affinity";
-  /**
-   * The count of replicas in each cell
-   */
-  replicas_per_cell: number;
-  /**
-   * When the bouncer was created
-   */
-  created_at: string;
-  /**
-   * When the bouncer was updated
-   */
-  updated_at: string;
-  /**
-   * When the bouncer was deleted
-   */
-  deleted_at: string;
-  actor: {
-    /**
-     * The ID of the actor
-     */
-    id: string;
-    /**
-     * The name of the actor
-     */
-    display_name: string;
-    /**
-     * The URL of the actor's avatar
-     */
-    avatar_url: string;
-  };
-  branch: {
-    /**
-     * The ID for the resource
-     */
-    id: string;
-    /**
-     * The name for the resource
-     */
-    name: string;
-    /**
-     * When the resource was created
-     */
-    created_at: string;
-    /**
-     * When the resource was last updated
-     */
-    updated_at: string;
-    /**
-     * When the resource was deleted, if deleted
-     */
-    deleted_at: string;
-  };
-  parameters: Array<{
-    /**
-     * The ID of the parameter
-     */
-    id: string;
-    /**
-     * The namespace of the parameter
-     */
-    namespace: "pgbouncer";
-    /**
-     * The name of the parameter
-     */
-    name: string;
-    /**
-     * The display name of the parameter
-     */
-    display_name: string;
-    /**
-     * The category of the parameter
-     */
-    category: string;
-    /**
-     * The description of the parameter
-     */
-    description: string;
-    /**
-     * The type of the parameter
-     */
-    parameter_type:
-      | "array"
-      | "boolean"
-      | "bytes"
-      | "float"
-      | "integer"
-      | "internal"
-      | "seconds"
-      | "select"
-      | "string"
-      | "time";
-    /**
-     * The default value of the parameter
-     */
-    default_value: string;
-    /**
-     * The configured value of the parameter
-     */
-    value: string;
-    /**
-     * Whether the parameter is required
-     */
-    required: boolean;
-    /**
-     * When the parameter was created
-     */
-    created_at: string;
-    /**
-     * When the parameter was last updated
-     */
-    updated_at: string;
-    /**
-     * True if processes require a server restart on change
-     */
-    restart: boolean;
-    /**
-     * The maximum value of the parameter
-     */
-    max: number;
-    /**
-     * The minimum value of the parameter
-     */
-    min: number;
-    /**
-     * The step change of the parameter
-     */
-    step: number;
-    /**
-     * The URL of the parameter
-     */
-    url: string;
-    /**
-     * Valid options for the parameter value
-     */
-    options: Array<string>;
-    actor: {
-      /**
-       * The ID of the actor
-       */
-      id: string;
-      /**
-       * The name of the actor
-       */
-      display_name: string;
-      /**
-       * The URL of the actor's avatar
-       */
-      avatar_url: string;
-    };
-  }>;
-};
-
 export type PaginatedPostgresRole = {
   /**
    * The current page number
@@ -4659,10 +3693,6 @@ export type PaginatedPostgresRole = {
      */
     dropped_at: string;
     /**
-     * When the role was disabled
-     */
-    disabled_at: string;
-    /**
      * Error message available when dropping the role fails
      */
     drop_failed: string;
@@ -4682,7 +3712,6 @@ export type PaginatedPostgresRole = {
      * Database roles these credentials inherit
      */
     inherited_roles: Array<
-      | "pscale_managed"
       | "pg_checkpoint"
       | "pg_create_subscription"
       | "pg_maintain"
@@ -4789,10 +3818,6 @@ export type PostgresRole = {
    */
   dropped_at: string;
   /**
-   * When the role was disabled
-   */
-  disabled_at: string;
-  /**
    * Error message available when dropping the role fails
    */
   drop_failed: string;
@@ -4812,7 +3837,6 @@ export type PostgresRole = {
    * Database roles these credentials inherit
    */
   inherited_roles: Array<
-    | "pscale_managed"
     | "pg_checkpoint"
     | "pg_create_subscription"
     | "pg_maintain"
@@ -5220,17 +4244,9 @@ export type PaginatedWorkflow = {
      */
     on_ddl: "IGNORE" | "STOP" | "EXEC" | "EXEC_IGNORE";
     /**
-     * The errors that occurred during the workflow
-     */
-    workflow_errors: string;
-    /**
      * Whether or not the workflow may be retried
      */
     may_retry: boolean;
-    /**
-     * Whether or not the workflow may be restarted
-     */
-    may_restart: boolean;
     /**
      * Whether or not the verified data is stale
      */
@@ -5579,17 +4595,9 @@ export type Workflow = {
    */
   on_ddl: "IGNORE" | "STOP" | "EXEC" | "EXEC_IGNORE";
   /**
-   * The errors that occurred during the workflow
-   */
-  workflow_errors: string;
-  /**
    * Whether or not the workflow may be retried
    */
   may_retry: boolean;
-  /**
-   * Whether or not the workflow may be restarted
-   */
-  may_restart: boolean;
   /**
    * Whether or not the verified data is stale
    */
@@ -7951,7 +6959,6 @@ export type PaginatedDatabaseWebhook = {
     events: Array<
       | "branch.ready"
       | "branch.anomaly"
-      | "branch.primary_promoted"
       | "branch.schema_recommendation"
       | "branch.sleeping"
       | "branch.start_maintenance"
@@ -8014,7 +7021,6 @@ export type DatabaseWebhook = {
   events: Array<
     | "branch.ready"
     | "branch.anomaly"
-    | "branch.primary_promoted"
     | "branch.schema_recommendation"
     | "branch.sleeping"
     | "branch.start_maintenance"
@@ -8164,306 +7170,6 @@ export type Invoice = {
   billing_period_end: string;
 };
 
-export type PaginatedOrganizationTeam = {
-  /**
-   * The current page number
-   */
-  current_page: number;
-  /**
-   * The next page number
-   */
-  next_page: number;
-  /**
-   * The next page of results
-   */
-  next_page_url: string;
-  /**
-   * The previous page number
-   */
-  prev_page: number;
-  /**
-   * The previous page of results
-   */
-  prev_page_url: string;
-  data: Array<{
-    /**
-     * The ID of the team
-     */
-    id: string;
-    /**
-     * The display name of the team
-     */
-    display_name: string;
-    creator: {
-      /**
-       * The ID of the actor
-       */
-      id: string;
-      /**
-       * The name of the actor
-       */
-      display_name: string;
-      /**
-       * The URL of the actor's avatar
-       */
-      avatar_url: string;
-    };
-    members: Array<{
-      /**
-       * The ID of the user
-       */
-      id: string;
-      /**
-       * The display name of the user
-       */
-      display_name: string;
-      /**
-       * The name of the user
-       */
-      name: string;
-      /**
-       * The email of the user
-       */
-      email: string;
-      /**
-       * The URL source of the user's avatar
-       */
-      avatar_url: string;
-      /**
-       * When the user was created
-       */
-      created_at: string;
-      /**
-       * When the user was last updated
-       */
-      updated_at: string;
-      /**
-       * Whether or not the user has configured two factor authentication
-       */
-      two_factor_auth_configured: boolean;
-      default_organization: {
-        /**
-         * The ID for the resource
-         */
-        id: string;
-        /**
-         * The name for the resource
-         */
-        name: string;
-        /**
-         * When the resource was created
-         */
-        created_at: string;
-        /**
-         * When the resource was last updated
-         */
-        updated_at: string;
-        /**
-         * When the resource was deleted, if deleted
-         */
-        deleted_at: string;
-      };
-      /**
-       * Whether or not the user is managed by SSO
-       */
-      sso: boolean;
-      /**
-       * Whether or not the user is managed by an authentication provider
-       */
-      managed: boolean;
-      /**
-       * Whether or not the user is managed by a SSO directory
-       */
-      directory_managed: boolean;
-      /**
-       * Whether or not the user is verified by email
-       */
-      email_verified: boolean;
-    }>;
-    databases: Array<{
-      /**
-       * The ID of the database
-       */
-      id: string;
-      /**
-       * The name of the database
-       */
-      name: string;
-      /**
-       * The URL to the database API endpoint
-       */
-      url: string;
-      /**
-       * The URL to retrieve this database's branches via the API
-       */
-      branches_url: string;
-    }>;
-    /**
-     * The name of the team
-     */
-    name: string;
-    /**
-     * The slug of the team
-     */
-    slug: string;
-    /**
-     * When the team was created
-     */
-    created_at: string;
-    /**
-     * When the team was last updated
-     */
-    updated_at: string;
-    /**
-     * The description of the team
-     */
-    description: string;
-    /**
-     * Whether the team is managed through SSO/directory services
-     */
-    managed: boolean;
-  }>;
-};
-
-export type OrganizationTeam = {
-  /**
-   * The ID of the team
-   */
-  id: string;
-  /**
-   * The display name of the team
-   */
-  display_name: string;
-  creator: {
-    /**
-     * The ID of the actor
-     */
-    id: string;
-    /**
-     * The name of the actor
-     */
-    display_name: string;
-    /**
-     * The URL of the actor's avatar
-     */
-    avatar_url: string;
-  };
-  members: Array<{
-    /**
-     * The ID of the user
-     */
-    id: string;
-    /**
-     * The display name of the user
-     */
-    display_name: string;
-    /**
-     * The name of the user
-     */
-    name: string;
-    /**
-     * The email of the user
-     */
-    email: string;
-    /**
-     * The URL source of the user's avatar
-     */
-    avatar_url: string;
-    /**
-     * When the user was created
-     */
-    created_at: string;
-    /**
-     * When the user was last updated
-     */
-    updated_at: string;
-    /**
-     * Whether or not the user has configured two factor authentication
-     */
-    two_factor_auth_configured: boolean;
-    default_organization: {
-      /**
-       * The ID for the resource
-       */
-      id: string;
-      /**
-       * The name for the resource
-       */
-      name: string;
-      /**
-       * When the resource was created
-       */
-      created_at: string;
-      /**
-       * When the resource was last updated
-       */
-      updated_at: string;
-      /**
-       * When the resource was deleted, if deleted
-       */
-      deleted_at: string;
-    };
-    /**
-     * Whether or not the user is managed by SSO
-     */
-    sso: boolean;
-    /**
-     * Whether or not the user is managed by an authentication provider
-     */
-    managed: boolean;
-    /**
-     * Whether or not the user is managed by a SSO directory
-     */
-    directory_managed: boolean;
-    /**
-     * Whether or not the user is verified by email
-     */
-    email_verified: boolean;
-  }>;
-  databases: Array<{
-    /**
-     * The ID of the database
-     */
-    id: string;
-    /**
-     * The name of the database
-     */
-    name: string;
-    /**
-     * The URL to the database API endpoint
-     */
-    url: string;
-    /**
-     * The URL to retrieve this database's branches via the API
-     */
-    branches_url: string;
-  }>;
-  /**
-   * The name of the team
-   */
-  name: string;
-  /**
-   * The slug of the team
-   */
-  slug: string;
-  /**
-   * When the team was created
-   */
-  created_at: string;
-  /**
-   * When the team was last updated
-   */
-  updated_at: string;
-  /**
-   * The description of the team
-   */
-  description: string;
-  /**
-   * Whether the team is managed through SSO/directory services
-   */
-  managed: boolean;
-};
-
 export type KeyspaceResizeRequest = {
   id: string;
   type: "KeyspaceResizeRequest";
@@ -8575,10 +7281,10 @@ export type GetOrganizationData = {
     /**
      * The name of the organization
      */
-    organization: string;
+    name: string;
   };
   query?: never;
-  url: "/organizations/{organization}";
+  url: "/organizations/{name}";
 };
 
 export type GetOrganizationErrors = {
@@ -8632,10 +7338,10 @@ export type UpdateOrganizationData = {
     /**
      * The name of the organization
      */
-    organization: string;
+    name: string;
   };
   query?: never;
-  url: "/organizations/{organization}";
+  url: "/organizations/{name}";
 };
 
 export type UpdateOrganizationErrors = {
@@ -8676,10 +7382,10 @@ export type ListAuditLogsData = {
     /**
      * The name of the organization
      */
-    organization: string;
+    name: string;
   };
   query?: never;
-  url: "/organizations/{organization}/audit-log";
+  url: "/organizations/{name}/audit-log";
 };
 
 export type ListAuditLogsErrors = {
@@ -8713,32 +7419,28 @@ export type ListAuditLogsResponses = {
 export type ListAuditLogsResponse =
   ListAuditLogsResponses[keyof ListAuditLogsResponses];
 
-export type ListClusterSizeSkusData = {
+export type ListRegionsForOrganizationData = {
   body?: never;
   path: {
     /**
      * The name of the organization
      */
-    organization: string;
+    name: string;
   };
   query?: {
     /**
-     * The database engine to filter by. Defaults to 'mysql'.
+     * If provided, specifies the page offset of returned results
      */
-    engine?: "mysql" | "postgresql";
+    page?: number;
     /**
-     * Whether to include pricing rates in the response. Defaults to false.
+     * If provided, specifies the number of returned results
      */
-    rates?: boolean;
-    /**
-     * The region slug to get rates for. If not specified, uses the organization's default region.
-     */
-    region?: string;
+    per_page?: number;
   };
-  url: "/organizations/{organization}/cluster-size-skus";
+  url: "/organizations/{name}/regions";
 };
 
-export type ListClusterSizeSkusErrors = {
+export type ListRegionsForOrganizationErrors = {
   /**
    * Unauthorized
    */
@@ -8757,18 +7459,18 @@ export type ListClusterSizeSkusErrors = {
   500: GeneralError;
 };
 
-export type ListClusterSizeSkusError =
-  ListClusterSizeSkusErrors[keyof ListClusterSizeSkusErrors];
+export type ListRegionsForOrganizationError =
+  ListRegionsForOrganizationErrors[keyof ListRegionsForOrganizationErrors];
 
-export type ListClusterSizeSkusResponses = {
+export type ListRegionsForOrganizationResponses = {
   /**
-   * Returns available cluster sizes with optional pricing rates
+   * Returns the organization's regions
    */
-  200: Array<ClusterSizeSkuSerializer>;
+  200: PaginatedPlanetscaleRegion;
 };
 
-export type ListClusterSizeSkusResponse =
-  ListClusterSizeSkusResponses[keyof ListClusterSizeSkusResponses];
+export type ListRegionsForOrganizationResponse =
+  ListRegionsForOrganizationResponses[keyof ListRegionsForOrganizationResponses];
 
 export type ListDatabasesData = {
   body?: never;
@@ -8837,21 +7539,13 @@ export type CreateDatabaseData = {
      */
     region?: string;
     /**
-     * The database cluster size name (e.g., 'PS_10', 'PS_80'). Use the 'List available cluster sizes' endpoint to get available options for your organization. /v1/organizations/:organization/cluster-size-skus
+     * The database cluster size. Options: PS_10, PS_20, PS_40, PS_80, PS_160, PS_320, PS_400, PS_640, PS_700, PS_900, PS_1280, PS_1400, PS_1800, PS_2100, PS_2560, PS_2700, PS_2800.
      */
     cluster_size: string;
-    /**
-     * The number of replicas for the database. 0 for non-HA, 2+ for HA.
-     */
-    replicas?: number;
     /**
      * The kind of database to create.
      */
     kind?: "mysql" | "postgresql";
-    /**
-     * For PostgreSQL databases, the PostgreSQL major version to use for the database. Defaults to the latest available major version.
-     */
-    major_version?: string;
   };
   path: {
     /**
@@ -8894,191 +7588,6 @@ export type CreateDatabaseResponses = {
 
 export type CreateDatabaseResponse =
   CreateDatabaseResponses[keyof CreateDatabaseResponses];
-
-export type DeleteDatabaseData = {
-  body?: never;
-  path: {
-    /**
-     * The name of the organization the database belongs to
-     */
-    organization: string;
-    /**
-     * The name of the database
-     */
-    database: string;
-  };
-  query?: never;
-  url: "/organizations/{organization}/databases/{database}";
-};
-
-export type DeleteDatabaseErrors = {
-  /**
-   * Unauthorized
-   */
-  401: GeneralError;
-  /**
-   * Forbidden
-   */
-  403: GeneralError;
-  /**
-   * Not Found
-   */
-  404: GeneralError;
-  /**
-   * Internal Server Error
-   */
-  500: GeneralError;
-};
-
-export type DeleteDatabaseError =
-  DeleteDatabaseErrors[keyof DeleteDatabaseErrors];
-
-export type DeleteDatabaseResponses = {
-  /**
-   * Deletes a database
-   */
-  204: unknown;
-};
-
-export type GetDatabaseData = {
-  body?: never;
-  path: {
-    /**
-     * The name of the organization the database belongs to
-     */
-    organization: string;
-    /**
-     * The name of the database
-     */
-    database: string;
-  };
-  query?: never;
-  url: "/organizations/{organization}/databases/{database}";
-};
-
-export type GetDatabaseErrors = {
-  /**
-   * Unauthorized
-   */
-  401: GeneralError;
-  /**
-   * Forbidden
-   */
-  403: GeneralError;
-  /**
-   * Not Found
-   */
-  404: GeneralError;
-  /**
-   * Internal Server Error
-   */
-  500: GeneralError;
-};
-
-export type GetDatabaseError = GetDatabaseErrors[keyof GetDatabaseErrors];
-
-export type GetDatabaseResponses = {
-  /**
-   * Returns a database
-   */
-  200: Database;
-};
-
-export type GetDatabaseResponse =
-  GetDatabaseResponses[keyof GetDatabaseResponses];
-
-export type UpdateDatabaseSettingsData = {
-  body?: {
-    /**
-     * The name to update the database to
-     */
-    new_name?: string;
-    /**
-     * Whether or not to copy migration data to new branches and in deploy requests. (Vitess only)
-     */
-    automatic_migrations?: boolean;
-    /**
-     * A migration framework to use on the database. (Vitess only)
-     */
-    migration_framework?: string;
-    /**
-     * Name of table to use as migration table for the database. (Vitess only)
-     */
-    migration_table_name?: string;
-    /**
-     * Whether or not deploy requests must be approved by a database administrator other than the request creator
-     */
-    require_approval_for_deploy?: boolean;
-    /**
-     * Whether or not to limit branch creation to the same region as the one selected during database creation.
-     */
-    restrict_branch_region?: boolean;
-    /**
-     * Whether or not data branching is allowed on the database. (Vitess only)
-     */
-    allow_data_branching?: boolean;
-    /**
-     * Whether or not foreign key constraints are allowed on the database. (Vitess only)
-     */
-    allow_foreign_key_constraints?: boolean;
-    /**
-     * Whether or not full queries should be collected from the database
-     */
-    insights_raw_queries?: boolean;
-    /**
-     * Whether or not the web console can be used on the production branch of the database
-     */
-    production_branch_web_console?: boolean;
-    /**
-     * The default branch of the database
-     */
-    default_branch?: string;
-  };
-  path: {
-    /**
-     * The name of the organization the database belongs to
-     */
-    organization: string;
-    /**
-     * The name of the database
-     */
-    database: string;
-  };
-  query?: never;
-  url: "/organizations/{organization}/databases/{database}";
-};
-
-export type UpdateDatabaseSettingsErrors = {
-  /**
-   * Unauthorized
-   */
-  401: GeneralError;
-  /**
-   * Forbidden
-   */
-  403: GeneralError;
-  /**
-   * Not Found
-   */
-  404: GeneralError;
-  /**
-   * Internal Server Error
-   */
-  500: GeneralError;
-};
-
-export type UpdateDatabaseSettingsError =
-  UpdateDatabaseSettingsErrors[keyof UpdateDatabaseSettingsErrors];
-
-export type UpdateDatabaseSettingsResponses = {
-  /**
-   * Returns the updated database
-   */
-  200: Database;
-};
-
-export type UpdateDatabaseSettingsResponse =
-  UpdateDatabaseSettingsResponses[keyof UpdateDatabaseSettingsResponses];
 
 export type ListBranchesData = {
   body?: never;
@@ -9155,7 +7664,7 @@ export type ListBranchesResponse =
 export type CreateBranchData = {
   body?: {
     /**
-     * The name of the branch to create
+     * The name of the branch
      */
     name: string;
     /**
@@ -9182,10 +7691,6 @@ export type CreateBranchData = {
      * The database cluster size is required if a backup_id is provided. Options: PS_10, PS_20, PS_40, ..., PS_2800
      */
     cluster_size?: string;
-    /**
-     * For PostgreSQL databases, the PostgreSQL major version to use for the branch. Defaults to the major version of the parent branch if it exists or the database's default branch major version. Ignored for branches restored from backups.
-     */
-    major_version?: string;
   };
   path: {
     /**
@@ -9231,104 +7736,6 @@ export type CreateBranchResponses = {
 
 export type CreateBranchResponse =
   CreateBranchResponses[keyof CreateBranchResponses];
-
-export type DeleteBranchData = {
-  body?: never;
-  path: {
-    /**
-     * The name of the organization the branch belongs to
-     */
-    organization: string;
-    /**
-     * The name of the database the branch belongs to
-     */
-    database: string;
-    /**
-     * The name of the branch
-     */
-    branch: string;
-  };
-  query?: never;
-  url: "/organizations/{organization}/databases/{database}/branches/{branch}";
-};
-
-export type DeleteBranchErrors = {
-  /**
-   * Unauthorized
-   */
-  401: GeneralError;
-  /**
-   * Forbidden
-   */
-  403: GeneralError;
-  /**
-   * Not Found
-   */
-  404: GeneralError;
-  /**
-   * Internal Server Error
-   */
-  500: GeneralError;
-};
-
-export type DeleteBranchError = DeleteBranchErrors[keyof DeleteBranchErrors];
-
-export type DeleteBranchResponses = {
-  /**
-   * Delete a branch
-   */
-  204: unknown;
-};
-
-export type GetBranchData = {
-  body?: never;
-  path: {
-    /**
-     * The name of the organization the branch belongs to
-     */
-    organization: string;
-    /**
-     * The name of the database the branch belongs to
-     */
-    database: string;
-    /**
-     * The name of the branch
-     */
-    branch: string;
-  };
-  query?: never;
-  url: "/organizations/{organization}/databases/{database}/branches/{branch}";
-};
-
-export type GetBranchErrors = {
-  /**
-   * Unauthorized
-   */
-  401: GeneralError;
-  /**
-   * Forbidden
-   */
-  403: GeneralError;
-  /**
-   * Not Found
-   */
-  404: GeneralError;
-  /**
-   * Internal Server Error
-   */
-  500: GeneralError;
-};
-
-export type GetBranchError = GetBranchErrors[keyof GetBranchErrors];
-
-export type GetBranchResponses = {
-  /**
-   * Returns information about a branch
-   */
-  200: DatabaseBranch;
-};
-
-export type GetBranchResponse = GetBranchResponses[keyof GetBranchResponses];
 
 export type ListBackupsData = {
   body?: never;
@@ -9435,7 +7842,7 @@ export type CreateBackupData = {
      */
     retention_unit?: "hour" | "day" | "week" | "month" | "year";
     /**
-     * Value between `1` and `1000` for the retention period of the backup (i.e retention_value `6` and retention_unit `hour` means 6 hours)
+     * Value between `1`` and `1000`` for the retention period of the backup (i.e retention_value `6`` and retention_unit `hour` means 6 hours)
      */
     retention_value?: number;
     /**
@@ -9658,490 +8065,6 @@ export type UpdateBackupResponses = {
 export type UpdateBackupResponse =
   UpdateBackupResponses[keyof UpdateBackupResponses];
 
-export type ListBranchBouncerResizeRequestsData = {
-  body?: never;
-  path: {
-    /**
-     * The name of the organization that owns this resource
-     */
-    organization: string;
-    /**
-     * The name of the database that owns this resource
-     */
-    database: string;
-    /**
-     * The name of the branch that owns this resource
-     */
-    branch: string;
-  };
-  query?: {
-    /**
-     * If provided, specifies the page offset of returned results
-     */
-    page?: number;
-    /**
-     * If provided, specifies the number of returned results
-     */
-    per_page?: number;
-  };
-  url: "/organizations/{organization}/databases/{database}/branches/{branch}/bouncer-resizes";
-};
-
-export type ListBranchBouncerResizeRequestsErrors = {
-  /**
-   * Unauthorized
-   */
-  401: GeneralError;
-  /**
-   * Forbidden
-   */
-  403: GeneralError;
-  /**
-   * Not Found
-   */
-  404: GeneralError;
-  /**
-   * Internal Server Error
-   */
-  500: GeneralError;
-};
-
-export type ListBranchBouncerResizeRequestsError =
-  ListBranchBouncerResizeRequestsErrors[keyof ListBranchBouncerResizeRequestsErrors];
-
-export type ListBranchBouncerResizeRequestsResponses = {
-  /**
-   * Returns bouncer resize requests
-   */
-  200: PaginatedPostgresBouncerResizeRequest;
-};
-
-export type ListBranchBouncerResizeRequestsResponse =
-  ListBranchBouncerResizeRequestsResponses[keyof ListBranchBouncerResizeRequestsResponses];
-
-export type ListBouncersData = {
-  body?: never;
-  path: {
-    /**
-     * The name of the organization that owns this resource
-     */
-    organization: string;
-    /**
-     * The name of the database that owns this resource
-     */
-    database: string;
-    /**
-     * The name of the branch that owns this resource
-     */
-    branch: string;
-  };
-  query?: {
-    /**
-     * If provided, specifies the page offset of returned results
-     */
-    page?: number;
-    /**
-     * If provided, specifies the number of returned results
-     */
-    per_page?: number;
-  };
-  url: "/organizations/{organization}/databases/{database}/branches/{branch}/bouncers";
-};
-
-export type ListBouncersErrors = {
-  /**
-   * Unauthorized
-   */
-  401: GeneralError;
-  /**
-   * Forbidden
-   */
-  403: GeneralError;
-  /**
-   * Not Found
-   */
-  404: GeneralError;
-  /**
-   * Internal Server Error
-   */
-  500: GeneralError;
-};
-
-export type ListBouncersError = ListBouncersErrors[keyof ListBouncersErrors];
-
-export type ListBouncersResponses = {
-  /**
-   * Returns bouncers
-   */
-  200: PaginatedPostgresBouncer;
-};
-
-export type ListBouncersResponse =
-  ListBouncersResponses[keyof ListBouncersResponses];
-
-export type CreateBouncerData = {
-  body?: {
-    /**
-     * The bouncer name
-     */
-    name?: string;
-    /**
-     * The type of server the bouncer targets
-     */
-    target?: string;
-    /**
-     * The size SKU for the bouncer
-     */
-    bouncer_size?: string;
-    /**
-     * The number of replica servers per cell
-     */
-    replicas_per_cell?: number;
-  };
-  path: {
-    /**
-     * The name of the organization that owns this resource
-     */
-    organization: string;
-    /**
-     * The name of the database that owns this resource
-     */
-    database: string;
-    /**
-     * The name of the branch that owns this resource
-     */
-    branch: string;
-  };
-  query?: never;
-  url: "/organizations/{organization}/databases/{database}/branches/{branch}/bouncers";
-};
-
-export type CreateBouncerErrors = {
-  /**
-   * Unauthorized
-   */
-  401: GeneralError;
-  /**
-   * Forbidden
-   */
-  403: GeneralError;
-  /**
-   * Not Found
-   */
-  404: GeneralError;
-  /**
-   * Internal Server Error
-   */
-  500: GeneralError;
-};
-
-export type CreateBouncerError = CreateBouncerErrors[keyof CreateBouncerErrors];
-
-export type CreateBouncerResponses = {
-  /**
-   * Returns the new bouncer
-   */
-  200: PostgresBouncer;
-};
-
-export type CreateBouncerResponse =
-  CreateBouncerResponses[keyof CreateBouncerResponses];
-
-export type DeleteBouncerData = {
-  body?: never;
-  path: {
-    /**
-     * The name of the organization that owns this resource
-     */
-    organization: string;
-    /**
-     * The name of the database that owns this resource
-     */
-    database: string;
-    /**
-     * The name of the branch that owns this resource
-     */
-    branch: string;
-    /**
-     * The name of the bouncer
-     */
-    bouncer: string;
-  };
-  query?: never;
-  url: "/organizations/{organization}/databases/{database}/branches/{branch}/bouncers/{bouncer}";
-};
-
-export type DeleteBouncerErrors = {
-  /**
-   * Unauthorized
-   */
-  401: GeneralError;
-  /**
-   * Forbidden
-   */
-  403: GeneralError;
-  /**
-   * Not Found
-   */
-  404: GeneralError;
-  /**
-   * Internal Server Error
-   */
-  500: GeneralError;
-};
-
-export type DeleteBouncerError = DeleteBouncerErrors[keyof DeleteBouncerErrors];
-
-export type DeleteBouncerResponses = {
-  /**
-   * Deletes the bouncer
-   */
-  204: unknown;
-};
-
-export type GetBouncerData = {
-  body?: never;
-  path: {
-    /**
-     * The name of the organization that owns this resource
-     */
-    organization: string;
-    /**
-     * The name of the database that owns this resource
-     */
-    database: string;
-    /**
-     * The name of the branch that owns this resource
-     */
-    branch: string;
-    /**
-     * The name of the bouncer
-     */
-    bouncer: string;
-  };
-  query?: never;
-  url: "/organizations/{organization}/databases/{database}/branches/{branch}/bouncers/{bouncer}";
-};
-
-export type GetBouncerErrors = {
-  /**
-   * Unauthorized
-   */
-  401: GeneralError;
-  /**
-   * Forbidden
-   */
-  403: GeneralError;
-  /**
-   * Not Found
-   */
-  404: GeneralError;
-  /**
-   * Internal Server Error
-   */
-  500: GeneralError;
-};
-
-export type GetBouncerError = GetBouncerErrors[keyof GetBouncerErrors];
-
-export type GetBouncerResponses = {
-  /**
-   * Returns a bouncer
-   */
-  200: PostgresBouncer;
-};
-
-export type GetBouncerResponse = GetBouncerResponses[keyof GetBouncerResponses];
-
-export type CancelBouncerResizeRequestData = {
-  body?: never;
-  path: {
-    /**
-     * The name of the organization that owns this resource
-     */
-    organization: string;
-    /**
-     * The name of the database that owns this resource
-     */
-    database: string;
-    /**
-     * The name of the branch that owns this resource
-     */
-    branch: string;
-    /**
-     * The name of the bouncer
-     */
-    bouncer: string;
-  };
-  query?: never;
-  url: "/organizations/{organization}/databases/{database}/branches/{branch}/bouncers/{bouncer}/resizes";
-};
-
-export type CancelBouncerResizeRequestErrors = {
-  /**
-   * Unauthorized
-   */
-  401: GeneralError;
-  /**
-   * Forbidden
-   */
-  403: GeneralError;
-  /**
-   * Not Found
-   */
-  404: GeneralError;
-  /**
-   * Internal Server Error
-   */
-  500: GeneralError;
-};
-
-export type CancelBouncerResizeRequestError =
-  CancelBouncerResizeRequestErrors[keyof CancelBouncerResizeRequestErrors];
-
-export type CancelBouncerResizeRequestResponses = {
-  /**
-   * Cancels a resize request
-   */
-  204: unknown;
-};
-
-export type ListBouncerResizeRequestsData = {
-  body?: never;
-  path: {
-    /**
-     * The name of the organization that owns this resource
-     */
-    organization: string;
-    /**
-     * The name of the database that owns this resource
-     */
-    database: string;
-    /**
-     * The name of the branch that owns this resource
-     */
-    branch: string;
-    /**
-     * The name of the bouncer
-     */
-    bouncer: string;
-  };
-  query?: {
-    /**
-     * If provided, specifies the page offset of returned results
-     */
-    page?: number;
-    /**
-     * If provided, specifies the number of returned results
-     */
-    per_page?: number;
-  };
-  url: "/organizations/{organization}/databases/{database}/branches/{branch}/bouncers/{bouncer}/resizes";
-};
-
-export type ListBouncerResizeRequestsErrors = {
-  /**
-   * Unauthorized
-   */
-  401: GeneralError;
-  /**
-   * Forbidden
-   */
-  403: GeneralError;
-  /**
-   * Not Found
-   */
-  404: GeneralError;
-  /**
-   * Internal Server Error
-   */
-  500: GeneralError;
-};
-
-export type ListBouncerResizeRequestsError =
-  ListBouncerResizeRequestsErrors[keyof ListBouncerResizeRequestsErrors];
-
-export type ListBouncerResizeRequestsResponses = {
-  /**
-   * Returns bouncer resize requests
-   */
-  200: PaginatedPostgresBouncerResizeRequest;
-};
-
-export type ListBouncerResizeRequestsResponse =
-  ListBouncerResizeRequestsResponses[keyof ListBouncerResizeRequestsResponses];
-
-export type UpdateBouncerResizeRequestData = {
-  body?: {
-    /**
-     * The bouncer size SKU name (e.g., 'PGB_5', 'PGB_10', 'PGB_20', 'PGB_40', 'PGB_80', 'PGB_160'). Defaults to 'PGB_5'.
-     */
-    bouncer_size?: string;
-    /**
-     * The number of PgBouncers per availability zone. Defaults to 1.
-     */
-    replicas_per_cell?: number;
-    /**
-     * Bouncer configuration parameters nested by namespace (e.g., {"pgbouncer": {"default_pool_size": "100"}}). Use the 'List cluster parameters' endpoint to retrieve available parameters. Only parameters with namespace 'pgbouncer' can be updated.
-     */
-    parameters?: {
-      [key: string]: unknown;
-    };
-  };
-  path: {
-    /**
-     * The name of the organization that owns this resource
-     */
-    organization: string;
-    /**
-     * The name of the database that owns this resource
-     */
-    database: string;
-    /**
-     * The name of the branch that owns this resource
-     */
-    branch: string;
-    /**
-     * The name of the bouncer
-     */
-    bouncer: string;
-  };
-  query?: never;
-  url: "/organizations/{organization}/databases/{database}/branches/{branch}/bouncers/{bouncer}/resizes";
-};
-
-export type UpdateBouncerResizeRequestErrors = {
-  /**
-   * Unauthorized
-   */
-  401: GeneralError;
-  /**
-   * Forbidden
-   */
-  403: GeneralError;
-  /**
-   * Not Found
-   */
-  404: GeneralError;
-  /**
-   * Internal Server Error
-   */
-  500: GeneralError;
-};
-
-export type UpdateBouncerResizeRequestError =
-  UpdateBouncerResizeRequestErrors[keyof UpdateBouncerResizeRequestErrors];
-
-export type UpdateBouncerResizeRequestResponses = {
-  /**
-   * Returns bouncer resize request
-   */
-  200: PostgresBouncerResizeRequest;
-};
-
-export type UpdateBouncerResizeRequestResponse =
-  UpdateBouncerResizeRequestResponses[keyof UpdateBouncerResizeRequestResponses];
-
 export type ListBranchChangeRequestsData = {
   body?: never;
   path: {
@@ -10256,167 +8179,6 @@ export type UpdateBranchChangeRequestResponses = {
 
 export type UpdateBranchChangeRequestResponse =
   UpdateBranchChangeRequestResponses[keyof UpdateBranchChangeRequestResponses];
-
-export type GetBranchChangeRequestData = {
-  body?: never;
-  path: {
-    /**
-     * The name of the organization that owns this resource
-     */
-    organization: string;
-    /**
-     * The name of the database that owns this resource
-     */
-    database: string;
-    /**
-     * The name of the branch that owns this resource
-     */
-    branch: string;
-    /**
-     * The ID of the change request
-     */
-    id: string;
-  };
-  query?: never;
-  url: "/organizations/{organization}/databases/{database}/branches/{branch}/changes/{id}";
-};
-
-export type GetBranchChangeRequestErrors = {
-  /**
-   * Unauthorized
-   */
-  401: GeneralError;
-  /**
-   * Forbidden
-   */
-  403: GeneralError;
-  /**
-   * Not Found
-   */
-  404: GeneralError;
-  /**
-   * Internal Server Error
-   */
-  500: GeneralError;
-};
-
-export type GetBranchChangeRequestError =
-  GetBranchChangeRequestErrors[keyof GetBranchChangeRequestErrors];
-
-export type GetBranchChangeRequestResponses = {
-  /**
-   * Returns a branch change request
-   */
-  200: PostgresClusterResizeRequest;
-};
-
-export type GetBranchChangeRequestResponse =
-  GetBranchChangeRequestResponses[keyof GetBranchChangeRequestResponses];
-
-export type UpdateBranchClusterConfigData = {
-  body?: {
-    /**
-     * The new size of the database cluster: PS_10, PS_20,…
-     */
-    cluster_size: string;
-  };
-  path: {
-    /**
-     * The name of the organization the branch belongs to
-     */
-    organization: string;
-    /**
-     * The name of the database the branch belongs to
-     */
-    database: string;
-    /**
-     * The name of the branch to configure
-     */
-    branch: string;
-  };
-  query?: never;
-  url: "/organizations/{organization}/databases/{database}/branches/{branch}/cluster";
-};
-
-export type UpdateBranchClusterConfigErrors = {
-  /**
-   * Unauthorized
-   */
-  401: GeneralError;
-  /**
-   * Forbidden
-   */
-  403: GeneralError;
-  /**
-   * Not Found
-   */
-  404: GeneralError;
-  /**
-   * Internal Server Error
-   */
-  500: GeneralError;
-};
-
-export type UpdateBranchClusterConfigError =
-  UpdateBranchClusterConfigErrors[keyof UpdateBranchClusterConfigErrors];
-
-export type UpdateBranchClusterConfigResponses = {
-  /**
-   * Returns an empty response body
-   */
-  204: unknown;
-};
-
-export type DemoteBranchData = {
-  body?: never;
-  path: {
-    /**
-     * The name of the organization the branch belongs to
-     */
-    organization: string;
-    /**
-     * The name of the database the branch belongs to
-     */
-    database: string;
-    /**
-     * The name of the branch
-     */
-    branch: string;
-  };
-  query?: never;
-  url: "/organizations/{organization}/databases/{database}/branches/{branch}/demote";
-};
-
-export type DemoteBranchErrors = {
-  /**
-   * Unauthorized
-   */
-  401: GeneralError;
-  /**
-   * Forbidden
-   */
-  403: GeneralError;
-  /**
-   * Not Found
-   */
-  404: GeneralError;
-  /**
-   * Internal Server Error
-   */
-  500: GeneralError;
-};
-
-export type DemoteBranchError = DemoteBranchErrors[keyof DemoteBranchErrors];
-
-export type DemoteBranchResponses = {
-  /**
-   * Returns a development branch
-   */
-  200: DatabaseBranch;
-};
-
-export type DemoteBranchResponse =
-  DemoteBranchResponses[keyof DemoteBranchResponses];
 
 export type ListExtensionsData = {
   body?: never;
@@ -10536,18 +8298,6 @@ export type CreateKeyspaceData = {
      * The name of the keyspace
      */
     name: string;
-    /**
-     * The database cluster size name (e.g., 'PS_10', 'PS_80'). Use the 'List available cluster sizes' endpoint to get available options for your organization. /v1/organizations/:organization/cluster-size-skus
-     */
-    cluster_size: string;
-    /**
-     * The number of additional replicas beyond the included default
-     */
-    extra_replicas?: number;
-    /**
-     * The number of shards. Default: 1
-     */
-    shards?: number;
   };
   path: {
     /**
@@ -10598,253 +8348,6 @@ export type CreateKeyspaceResponses = {
 
 export type CreateKeyspaceResponse =
   CreateKeyspaceResponses[keyof CreateKeyspaceResponses];
-
-export type DeleteKeyspaceData = {
-  body?: never;
-  path: {
-    /**
-     * The name of the organization the branch belongs to
-     */
-    organization: string;
-    /**
-     * The name of the database the branch belongs to
-     */
-    database: string;
-    /**
-     * The name of the branch
-     */
-    branch: string;
-    /**
-     * The name of the keyspace
-     */
-    keyspace: string;
-  };
-  query?: never;
-  url: "/organizations/{organization}/databases/{database}/branches/{branch}/keyspaces/{keyspace}";
-};
-
-export type DeleteKeyspaceErrors = {
-  /**
-   * Unauthorized
-   */
-  401: GeneralError;
-  /**
-   * Forbidden
-   */
-  403: GeneralError;
-  /**
-   * Not Found
-   */
-  404: GeneralError;
-  /**
-   * Internal Server Error
-   */
-  500: GeneralError;
-};
-
-export type DeleteKeyspaceError =
-  DeleteKeyspaceErrors[keyof DeleteKeyspaceErrors];
-
-export type DeleteKeyspaceResponses = {
-  /**
-   * Delete a keyspace
-   */
-  204: unknown;
-};
-
-export type GetKeyspaceData = {
-  body?: never;
-  path: {
-    /**
-     * The name of the organization the branch belongs to
-     */
-    organization: string;
-    /**
-     * The name of the database the branch belongs to
-     */
-    database: string;
-    /**
-     * The name of the branch
-     */
-    branch: string;
-    /**
-     * The name of the keyspace
-     */
-    keyspace: string;
-  };
-  query?: never;
-  url: "/organizations/{organization}/databases/{database}/branches/{branch}/keyspaces/{keyspace}";
-};
-
-export type GetKeyspaceErrors = {
-  /**
-   * Unauthorized
-   */
-  401: GeneralError;
-  /**
-   * Forbidden
-   */
-  403: GeneralError;
-  /**
-   * Not Found
-   */
-  404: GeneralError;
-  /**
-   * Internal Server Error
-   */
-  500: GeneralError;
-};
-
-export type GetKeyspaceError = GetKeyspaceErrors[keyof GetKeyspaceErrors];
-
-export type GetKeyspaceResponses = {
-  /**
-   * Returns information about a keyspace
-   */
-  200: DatabaseBranchKeyspace;
-};
-
-export type GetKeyspaceResponse =
-  GetKeyspaceResponses[keyof GetKeyspaceResponses];
-
-export type UpdateKeyspaceData = {
-  body?: never;
-  path: {
-    /**
-     * The name of the organization the branch belongs to
-     */
-    organization: string;
-    /**
-     * The name of the database the branch belongs to
-     */
-    database: string;
-    /**
-     * The name of the branch
-     */
-    branch: string;
-    /**
-     * The name of the keyspace
-     */
-    keyspace: string;
-  };
-  query?: never;
-  url: "/organizations/{organization}/databases/{database}/branches/{branch}/keyspaces/{keyspace}";
-};
-
-export type UpdateKeyspaceErrors = {
-  /**
-   * Unauthorized
-   */
-  401: GeneralError;
-  /**
-   * Forbidden
-   */
-  403: GeneralError;
-  /**
-   * Not Found
-   */
-  404: GeneralError;
-  /**
-   * Internal Server Error
-   */
-  500: GeneralError;
-};
-
-export type UpdateKeyspaceError =
-  UpdateKeyspaceErrors[keyof UpdateKeyspaceErrors];
-
-export type UpdateKeyspaceResponses = {
-  /**
-   * Returns the keyspace
-   */
-  200: DatabaseBranchKeyspace;
-};
-
-export type UpdateKeyspaceResponse =
-  UpdateKeyspaceResponses[keyof UpdateKeyspaceResponses];
-
-export type GetKeyspaceRolloutStatusData = {
-  body?: never;
-  path: {
-    /**
-     * The name of the organization the branch belongs to
-     */
-    organization: string;
-    /**
-     * The name of the database the branch belongs to
-     */
-    database: string;
-    /**
-     * The name of the branch
-     */
-    branch: string;
-    /**
-     * The name of the keyspace
-     */
-    keyspace: string;
-  };
-  query?: never;
-  url: "/organizations/{organization}/databases/{database}/branches/{branch}/keyspaces/{keyspace}/rollout-status";
-};
-
-export type GetKeyspaceRolloutStatusErrors = {
-  /**
-   * Unauthorized
-   */
-  401: GeneralError;
-  /**
-   * Forbidden
-   */
-  403: GeneralError;
-  /**
-   * Not Found
-   */
-  404: GeneralError;
-  /**
-   * Internal Server Error
-   */
-  500: GeneralError;
-};
-
-export type GetKeyspaceRolloutStatusError =
-  GetKeyspaceRolloutStatusErrors[keyof GetKeyspaceRolloutStatusErrors];
-
-export type GetKeyspaceRolloutStatusResponses = {
-  /**
-   * Returns information about a keyspace's rollout
-   */
-  200: {
-    /**
-     * The name of the keyspace
-     */
-    name: string;
-    /**
-     * The current state of the rollout at the keyspace level
-     */
-    state: string;
-    shards: Array<{
-      /**
-       * The name of the shard
-       */
-      name: string;
-      /**
-       * The time at which the rollout started
-       */
-      last_rollout_started_at: string;
-      /**
-       * The time at which the rollout completed
-       */
-      last_rollout_finished_at: string;
-      /**
-       * The current state of the rollout at the shard level
-       */
-      state: string;
-    }>;
-  };
-};
-
-export type GetKeyspaceRolloutStatusResponse =
-  GetKeyspaceRolloutStatusResponses[keyof GetKeyspaceRolloutStatusResponses];
 
 export type GetKeyspaceVschemaData = {
   body?: never;
@@ -10976,6 +8479,253 @@ export type UpdateKeyspaceVschemaResponses = {
 
 export type UpdateKeyspaceVschemaResponse =
   UpdateKeyspaceVschemaResponses[keyof UpdateKeyspaceVschemaResponses];
+
+export type DeleteKeyspaceData = {
+  body?: never;
+  path: {
+    /**
+     * The name of the organization the branch belongs to
+     */
+    organization: string;
+    /**
+     * The name of the database the branch belongs to
+     */
+    database: string;
+    /**
+     * The name of the branch
+     */
+    branch: string;
+    /**
+     * The name of the keyspace
+     */
+    name: string;
+  };
+  query?: never;
+  url: "/organizations/{organization}/databases/{database}/branches/{branch}/keyspaces/{name}";
+};
+
+export type DeleteKeyspaceErrors = {
+  /**
+   * Unauthorized
+   */
+  401: GeneralError;
+  /**
+   * Forbidden
+   */
+  403: GeneralError;
+  /**
+   * Not Found
+   */
+  404: GeneralError;
+  /**
+   * Internal Server Error
+   */
+  500: GeneralError;
+};
+
+export type DeleteKeyspaceError =
+  DeleteKeyspaceErrors[keyof DeleteKeyspaceErrors];
+
+export type DeleteKeyspaceResponses = {
+  /**
+   * Delete a keyspace
+   */
+  204: unknown;
+};
+
+export type GetKeyspaceData = {
+  body?: never;
+  path: {
+    /**
+     * The name of the organization the branch belongs to
+     */
+    organization: string;
+    /**
+     * The name of the database the branch belongs to
+     */
+    database: string;
+    /**
+     * The name of the branch
+     */
+    branch: string;
+    /**
+     * The name of the keyspace
+     */
+    name: string;
+  };
+  query?: never;
+  url: "/organizations/{organization}/databases/{database}/branches/{branch}/keyspaces/{name}";
+};
+
+export type GetKeyspaceErrors = {
+  /**
+   * Unauthorized
+   */
+  401: GeneralError;
+  /**
+   * Forbidden
+   */
+  403: GeneralError;
+  /**
+   * Not Found
+   */
+  404: GeneralError;
+  /**
+   * Internal Server Error
+   */
+  500: GeneralError;
+};
+
+export type GetKeyspaceError = GetKeyspaceErrors[keyof GetKeyspaceErrors];
+
+export type GetKeyspaceResponses = {
+  /**
+   * Returns information about a keyspace
+   */
+  200: DatabaseBranchKeyspace;
+};
+
+export type GetKeyspaceResponse =
+  GetKeyspaceResponses[keyof GetKeyspaceResponses];
+
+export type UpdateKeyspaceData = {
+  body?: never;
+  path: {
+    /**
+     * The name of the organization the branch belongs to
+     */
+    organization: string;
+    /**
+     * The name of the database the branch belongs to
+     */
+    database: string;
+    /**
+     * The name of the branch
+     */
+    branch: string;
+    /**
+     * The name of the keyspace
+     */
+    name: string;
+  };
+  query?: never;
+  url: "/organizations/{organization}/databases/{database}/branches/{branch}/keyspaces/{name}";
+};
+
+export type UpdateKeyspaceErrors = {
+  /**
+   * Unauthorized
+   */
+  401: GeneralError;
+  /**
+   * Forbidden
+   */
+  403: GeneralError;
+  /**
+   * Not Found
+   */
+  404: GeneralError;
+  /**
+   * Internal Server Error
+   */
+  500: GeneralError;
+};
+
+export type UpdateKeyspaceError =
+  UpdateKeyspaceErrors[keyof UpdateKeyspaceErrors];
+
+export type UpdateKeyspaceResponses = {
+  /**
+   * Returns the keyspace
+   */
+  200: DatabaseBranchKeyspace;
+};
+
+export type UpdateKeyspaceResponse =
+  UpdateKeyspaceResponses[keyof UpdateKeyspaceResponses];
+
+export type GetKeyspaceRolloutStatusData = {
+  body?: never;
+  path: {
+    /**
+     * The name of the organization the branch belongs to
+     */
+    organization: string;
+    /**
+     * The name of the database the branch belongs to
+     */
+    database: string;
+    /**
+     * The name of the branch
+     */
+    branch: string;
+    /**
+     * The name of the keyspace
+     */
+    name: string;
+  };
+  query?: never;
+  url: "/organizations/{organization}/databases/{database}/branches/{branch}/keyspaces/{name}/rollout-status";
+};
+
+export type GetKeyspaceRolloutStatusErrors = {
+  /**
+   * Unauthorized
+   */
+  401: GeneralError;
+  /**
+   * Forbidden
+   */
+  403: GeneralError;
+  /**
+   * Not Found
+   */
+  404: GeneralError;
+  /**
+   * Internal Server Error
+   */
+  500: GeneralError;
+};
+
+export type GetKeyspaceRolloutStatusError =
+  GetKeyspaceRolloutStatusErrors[keyof GetKeyspaceRolloutStatusErrors];
+
+export type GetKeyspaceRolloutStatusResponses = {
+  /**
+   * Returns information about a keyspace's rollout
+   */
+  200: {
+    /**
+     * The name of the keyspace
+     */
+    name: string;
+    /**
+     * The current state of the rollout at the keyspace level
+     */
+    state: string;
+    shards: Array<{
+      /**
+       * The name of the shard
+       */
+      name: string;
+      /**
+       * The time at which the rollout started
+       */
+      last_rollout_started_at: string;
+      /**
+       * The time at which the rollout completed
+       */
+      last_rollout_finished_at: string;
+      /**
+       * The current state of the rollout at the shard level
+       */
+      state: string;
+    }>;
+  };
+};
+
+export type GetKeyspaceRolloutStatusResponse =
+  GetKeyspaceRolloutStatusResponses[keyof GetKeyspaceRolloutStatusResponses];
 
 export type ListParametersData = {
   body?: never;
@@ -11115,10 +8865,6 @@ export type CreatePasswordData = {
      * List of IP addresses or CIDR ranges that can use this password
      */
     cidrs?: Array<string>;
-    /**
-     * Whether the password connects directly to a VTGate
-     */
-    direct_vtgate?: boolean;
   };
   path: {
     /**
@@ -11401,57 +9147,6 @@ export type RenewPasswordResponses = {
 
 export type RenewPasswordResponse =
   RenewPasswordResponses[keyof RenewPasswordResponses];
-
-export type PromoteBranchData = {
-  body?: never;
-  path: {
-    /**
-     * The name of the organization the branch belongs to
-     */
-    organization: string;
-    /**
-     * The name of the database the branch belongs to
-     */
-    database: string;
-    /**
-     * The name of the branch
-     */
-    branch: string;
-  };
-  query?: never;
-  url: "/organizations/{organization}/databases/{database}/branches/{branch}/promote";
-};
-
-export type PromoteBranchErrors = {
-  /**
-   * Unauthorized
-   */
-  401: GeneralError;
-  /**
-   * Forbidden
-   */
-  403: GeneralError;
-  /**
-   * Not Found
-   */
-  404: GeneralError;
-  /**
-   * Internal Server Error
-   */
-  500: GeneralError;
-};
-
-export type PromoteBranchError = PromoteBranchErrors[keyof PromoteBranchErrors];
-
-export type PromoteBranchResponses = {
-  /**
-   * Returns a production branch
-   */
-  200: DatabaseBranch;
-};
-
-export type PromoteBranchResponse =
-  PromoteBranchResponses[keyof PromoteBranchResponses];
 
 export type ListGeneratedQueryPatternsReportsData = {
   body?: never;
@@ -11823,10 +9518,6 @@ export type ListRolesResponse = ListRolesResponses[keyof ListRolesResponses];
 export type CreateRoleData = {
   body?: {
     /**
-     * The name of the role
-     */
-    name?: string;
-    /**
      * Time to live in seconds
      */
     ttl?: number;
@@ -11834,7 +9525,6 @@ export type CreateRoleData = {
      * Roles to inherit from
      */
     inherited_roles?: Array<
-      | "pscale_managed"
       | "pg_checkpoint"
       | "pg_create_subscription"
       | "pg_maintain"
@@ -11896,110 +9586,6 @@ export type CreateRoleResponses = {
 };
 
 export type CreateRoleResponse = CreateRoleResponses[keyof CreateRoleResponses];
-
-export type GetDefaultRoleData = {
-  body?: never;
-  path: {
-    /**
-     * The name of the organization that owns this resource
-     */
-    organization: string;
-    /**
-     * The name of the database that owns this resource
-     */
-    database: string;
-    /**
-     * The name of the branch that owns this resource
-     */
-    branch: string;
-  };
-  query?: never;
-  url: "/organizations/{organization}/databases/{database}/branches/{branch}/roles/default";
-};
-
-export type GetDefaultRoleErrors = {
-  /**
-   * Unauthorized
-   */
-  401: GeneralError;
-  /**
-   * Forbidden
-   */
-  403: GeneralError;
-  /**
-   * Not Found
-   */
-  404: GeneralError;
-  /**
-   * Internal Server Error
-   */
-  500: GeneralError;
-};
-
-export type GetDefaultRoleError =
-  GetDefaultRoleErrors[keyof GetDefaultRoleErrors];
-
-export type GetDefaultRoleResponses = {
-  /**
-   * Returns the default postgres role
-   */
-  200: PostgresRole;
-};
-
-export type GetDefaultRoleResponse =
-  GetDefaultRoleResponses[keyof GetDefaultRoleResponses];
-
-export type ResetDefaultRoleData = {
-  body?: never;
-  path: {
-    /**
-     * The name of the organization that owns this resource
-     */
-    organization: string;
-    /**
-     * The name of the database that owns this resource
-     */
-    database: string;
-    /**
-     * The name of the branch that owns this resource
-     */
-    branch: string;
-  };
-  query?: never;
-  url: "/organizations/{organization}/databases/{database}/branches/{branch}/roles/reset-default";
-};
-
-export type ResetDefaultRoleErrors = {
-  /**
-   * Unauthorized
-   */
-  401: GeneralError;
-  /**
-   * Forbidden
-   */
-  403: GeneralError;
-  /**
-   * Not Found
-   */
-  404: GeneralError;
-  /**
-   * Internal Server Error
-   */
-  500: GeneralError;
-};
-
-export type ResetDefaultRoleError =
-  ResetDefaultRoleErrors[keyof ResetDefaultRoleErrors];
-
-export type ResetDefaultRoleResponses = {
-  /**
-   * Returns the new credentials
-   */
-  200: PostgresRole;
-};
-
-export type ResetDefaultRoleResponse =
-  ResetDefaultRoleResponses[keyof ResetDefaultRoleResponses];
 
 export type DeleteRoleData = {
   body?: {
@@ -12171,64 +9757,6 @@ export type UpdateRoleResponses = {
 
 export type UpdateRoleResponse = UpdateRoleResponses[keyof UpdateRoleResponses];
 
-export type ReassignRoleObjectsData = {
-  body?: {
-    /**
-     * The role to reassign ownership to
-     */
-    successor: string;
-  };
-  path: {
-    /**
-     * The name of the organization that owns this resource
-     */
-    organization: string;
-    /**
-     * The name of the database that owns this resource
-     */
-    database: string;
-    /**
-     * The name of the branch that owns this resource
-     */
-    branch: string;
-    /**
-     * The ID of the role
-     */
-    id: string;
-  };
-  query?: never;
-  url: "/organizations/{organization}/databases/{database}/branches/{branch}/roles/{id}/reassign";
-};
-
-export type ReassignRoleObjectsErrors = {
-  /**
-   * Unauthorized
-   */
-  401: GeneralError;
-  /**
-   * Forbidden
-   */
-  403: GeneralError;
-  /**
-   * Not Found
-   */
-  404: GeneralError;
-  /**
-   * Internal Server Error
-   */
-  500: GeneralError;
-};
-
-export type ReassignRoleObjectsError =
-  ReassignRoleObjectsErrors[keyof ReassignRoleObjectsErrors];
-
-export type ReassignRoleObjectsResponses = {
-  /**
-   * Objects reassigned successfully
-   */
-  204: unknown;
-};
-
 export type RenewRoleData = {
   body?: never;
   path: {
@@ -12283,31 +9811,27 @@ export type RenewRoleResponses = {
 
 export type RenewRoleResponse = RenewRoleResponses[keyof RenewRoleResponses];
 
-export type ResetRoleData = {
+export type DeleteBranchData = {
   body?: never;
   path: {
     /**
-     * The name of the organization that owns this resource
+     * The name of the organization the branch belongs to
      */
     organization: string;
     /**
-     * The name of the database that owns this resource
+     * The name of the database the branch belongs to
      */
     database: string;
     /**
-     * The name of the branch that owns this resource
+     * The name of the branch
      */
-    branch: string;
-    /**
-     * The ID of the role
-     */
-    id: string;
+    name: string;
   };
   query?: never;
-  url: "/organizations/{organization}/databases/{database}/branches/{branch}/roles/{id}/reset";
+  url: "/organizations/{organization}/databases/{database}/branches/{name}";
 };
 
-export type ResetRoleErrors = {
+export type DeleteBranchErrors = {
   /**
    * Unauthorized
    */
@@ -12326,16 +9850,220 @@ export type ResetRoleErrors = {
   500: GeneralError;
 };
 
-export type ResetRoleError = ResetRoleErrors[keyof ResetRoleErrors];
+export type DeleteBranchError = DeleteBranchErrors[keyof DeleteBranchErrors];
 
-export type ResetRoleResponses = {
+export type DeleteBranchResponses = {
   /**
-   * Returns the role with new password
+   * Delete a branch
    */
-  200: PostgresRole;
+  204: unknown;
 };
 
-export type ResetRoleResponse = ResetRoleResponses[keyof ResetRoleResponses];
+export type GetBranchData = {
+  body?: never;
+  path: {
+    /**
+     * The name of the organization the branch belongs to
+     */
+    organization: string;
+    /**
+     * The name of the database the branch belongs to
+     */
+    database: string;
+    /**
+     * The name of the branch
+     */
+    name: string;
+  };
+  query?: never;
+  url: "/organizations/{organization}/databases/{database}/branches/{name}";
+};
+
+export type GetBranchErrors = {
+  /**
+   * Unauthorized
+   */
+  401: GeneralError;
+  /**
+   * Forbidden
+   */
+  403: GeneralError;
+  /**
+   * Not Found
+   */
+  404: GeneralError;
+  /**
+   * Internal Server Error
+   */
+  500: GeneralError;
+};
+
+export type GetBranchError = GetBranchErrors[keyof GetBranchErrors];
+
+export type GetBranchResponses = {
+  /**
+   * Returns information about a branch
+   */
+  200: DatabaseBranch;
+};
+
+export type GetBranchResponse = GetBranchResponses[keyof GetBranchResponses];
+
+export type UpdateBranchClusterConfigData = {
+  body?: {
+    /**
+     * The new size of the database cluster: PS_10, PS_20,…
+     */
+    cluster_size: string;
+  };
+  path: {
+    /**
+     * The name of the organization the branch belongs to
+     */
+    organization: string;
+    /**
+     * The name of the database the branch belongs to
+     */
+    database: string;
+    /**
+     * The name of the branch to configure
+     */
+    name: string;
+  };
+  query?: never;
+  url: "/organizations/{organization}/databases/{database}/branches/{name}/cluster";
+};
+
+export type UpdateBranchClusterConfigErrors = {
+  /**
+   * Unauthorized
+   */
+  401: GeneralError;
+  /**
+   * Forbidden
+   */
+  403: GeneralError;
+  /**
+   * Not Found
+   */
+  404: GeneralError;
+  /**
+   * Internal Server Error
+   */
+  500: GeneralError;
+};
+
+export type UpdateBranchClusterConfigError =
+  UpdateBranchClusterConfigErrors[keyof UpdateBranchClusterConfigErrors];
+
+export type UpdateBranchClusterConfigResponses = {
+  /**
+   * Returns an empty response body
+   */
+  204: unknown;
+};
+
+export type DemoteBranchData = {
+  body?: never;
+  path: {
+    /**
+     * The name of the organization the branch belongs to
+     */
+    organization: string;
+    /**
+     * The name of the database the branch belongs to
+     */
+    database: string;
+    /**
+     * The name of the branch
+     */
+    name: string;
+  };
+  query?: never;
+  url: "/organizations/{organization}/databases/{database}/branches/{name}/demote";
+};
+
+export type DemoteBranchErrors = {
+  /**
+   * Unauthorized
+   */
+  401: GeneralError;
+  /**
+   * Forbidden
+   */
+  403: GeneralError;
+  /**
+   * Not Found
+   */
+  404: GeneralError;
+  /**
+   * Internal Server Error
+   */
+  500: GeneralError;
+};
+
+export type DemoteBranchError = DemoteBranchErrors[keyof DemoteBranchErrors];
+
+export type DemoteBranchResponses = {
+  /**
+   * Returns a development branch
+   */
+  200: DatabaseBranch;
+};
+
+export type DemoteBranchResponse =
+  DemoteBranchResponses[keyof DemoteBranchResponses];
+
+export type PromoteBranchData = {
+  body?: never;
+  path: {
+    /**
+     * The name of the organization the branch belongs to
+     */
+    organization: string;
+    /**
+     * The name of the database the branch belongs to
+     */
+    database: string;
+    /**
+     * The name of the branch
+     */
+    name: string;
+  };
+  query?: never;
+  url: "/organizations/{organization}/databases/{database}/branches/{name}/promote";
+};
+
+export type PromoteBranchErrors = {
+  /**
+   * Unauthorized
+   */
+  401: GeneralError;
+  /**
+   * Forbidden
+   */
+  403: GeneralError;
+  /**
+   * Not Found
+   */
+  404: GeneralError;
+  /**
+   * Internal Server Error
+   */
+  500: GeneralError;
+};
+
+export type PromoteBranchError = PromoteBranchErrors[keyof PromoteBranchErrors];
+
+export type PromoteBranchResponses = {
+  /**
+   * Returns a production branch
+   */
+  200: DatabaseBranch;
+};
+
+export type PromoteBranchResponse =
+  PromoteBranchResponses[keyof PromoteBranchResponses];
 
 export type DisableSafeMigrationsData = {
   body?: never;
@@ -12351,10 +10079,10 @@ export type DisableSafeMigrationsData = {
     /**
      * The name of the branch
      */
-    branch: string;
+    name: string;
   };
   query?: never;
-  url: "/organizations/{organization}/databases/{database}/branches/{branch}/safe-migrations";
+  url: "/organizations/{organization}/databases/{database}/branches/{name}/safe-migrations";
 };
 
 export type DisableSafeMigrationsErrors = {
@@ -12403,10 +10131,10 @@ export type EnableSafeMigrationsData = {
     /**
      * The name of the branch
      */
-    branch: string;
+    name: string;
   };
   query?: never;
-  url: "/organizations/{organization}/databases/{database}/branches/{branch}/safe-migrations";
+  url: "/organizations/{organization}/databases/{database}/branches/{name}/safe-migrations";
 };
 
 export type EnableSafeMigrationsErrors = {
@@ -12455,7 +10183,7 @@ export type GetBranchSchemaData = {
     /**
      * The name of the branch
      */
-    branch: string;
+    name: string;
   };
   query?: {
     /**
@@ -12467,7 +10195,7 @@ export type GetBranchSchemaData = {
      */
     namespace?: string;
   };
-  url: "/organizations/{organization}/databases/{database}/branches/{branch}/schema";
+  url: "/organizations/{organization}/databases/{database}/branches/{name}/schema";
 };
 
 export type GetBranchSchemaErrors = {
@@ -12531,7 +10259,7 @@ export type LintBranchSchemaData = {
     /**
      * The name of the branch
      */
-    branch: string;
+    name: string;
   };
   query?: {
     /**
@@ -12543,7 +10271,7 @@ export type LintBranchSchemaData = {
      */
     per_page?: number;
   };
-  url: "/organizations/{organization}/databases/{database}/branches/{branch}/schema/lint";
+  url: "/organizations/{organization}/databases/{database}/branches/{name}/schema/lint";
 };
 
 export type LintBranchSchemaErrors = {
@@ -12577,310 +10305,6 @@ export type LintBranchSchemaResponses = {
 
 export type LintBranchSchemaResponse =
   LintBranchSchemaResponses[keyof LintBranchSchemaResponses];
-
-export type ListDatabasePostgresCidrsData = {
-  body?: never;
-  path: {
-    /**
-     * The name of the organization the database belongs to
-     */
-    organization: string;
-    /**
-     * The name of the database
-     */
-    database: string;
-  };
-  query?: {
-    /**
-     * If provided, specifies the page offset of returned results
-     */
-    page?: number;
-    /**
-     * If provided, specifies the number of returned results
-     */
-    per_page?: number;
-  };
-  url: "/organizations/{organization}/databases/{database}/cidrs";
-};
-
-export type ListDatabasePostgresCidrsErrors = {
-  /**
-   * Unauthorized
-   */
-  401: GeneralError;
-  /**
-   * Forbidden
-   */
-  403: GeneralError;
-  /**
-   * Not Found
-   */
-  404: GeneralError;
-  /**
-   * Unprocessable Entity - Invalid parameters or validation errors
-   */
-  422: GeneralError;
-  /**
-   * Internal Server Error
-   */
-  500: GeneralError;
-};
-
-export type ListDatabasePostgresCidrsError =
-  ListDatabasePostgresCidrsErrors[keyof ListDatabasePostgresCidrsErrors];
-
-export type ListDatabasePostgresCidrsResponses = {
-  /**
-   * Returns IP restriction entries for the database
-   */
-  200: PaginatedPostgresClusterCidr;
-};
-
-export type ListDatabasePostgresCidrsResponse =
-  ListDatabasePostgresCidrsResponses[keyof ListDatabasePostgresCidrsResponses];
-
-export type CreateDatabasePostgresCidrData = {
-  body?: {
-    /**
-     * The PostgreSQL schema to restrict access to. Leave empty or omit to allow access to all schemas.
-     */
-    schema?: string;
-    /**
-     * The PostgreSQL role to restrict access to. Leave empty or omit to allow access for all roles.
-     */
-    role?: string;
-    /**
-     * List of IPv4 CIDR ranges (e.g., ['192.168.1.0/24', '192.168.1.1/32']). Must contain at least one valid IPv4 address or range.
-     */
-    cidrs: Array<string>;
-  };
-  path: {
-    /**
-     * The name of the organization the database belongs to
-     */
-    organization: string;
-    /**
-     * The name of the database
-     */
-    database: string;
-  };
-  query?: never;
-  url: "/organizations/{organization}/databases/{database}/cidrs";
-};
-
-export type CreateDatabasePostgresCidrErrors = {
-  /**
-   * Unauthorized
-   */
-  401: GeneralError;
-  /**
-   * Forbidden
-   */
-  403: GeneralError;
-  /**
-   * Not Found
-   */
-  404: GeneralError;
-  /**
-   * Unprocessable Entity - Invalid parameters or validation errors
-   */
-  422: GeneralError;
-  /**
-   * Internal Server Error
-   */
-  500: GeneralError;
-};
-
-export type CreateDatabasePostgresCidrError =
-  CreateDatabasePostgresCidrErrors[keyof CreateDatabasePostgresCidrErrors];
-
-export type CreateDatabasePostgresCidrResponses = {
-  /**
-   * Returns the created IP restriction entry
-   */
-  201: PostgresClusterCidr;
-};
-
-export type CreateDatabasePostgresCidrResponse =
-  CreateDatabasePostgresCidrResponses[keyof CreateDatabasePostgresCidrResponses];
-
-export type DeleteDatabasePostgresCidrData = {
-  body?: never;
-  path: {
-    /**
-     * The name of the organization the database belongs to
-     */
-    organization: string;
-    /**
-     * The name of the database
-     */
-    database: string;
-    /**
-     * The ID of the IP restriction entry
-     */
-    id: string;
-  };
-  query?: never;
-  url: "/organizations/{organization}/databases/{database}/cidrs/{id}";
-};
-
-export type DeleteDatabasePostgresCidrErrors = {
-  /**
-   * Unauthorized
-   */
-  401: GeneralError;
-  /**
-   * Forbidden
-   */
-  403: GeneralError;
-  /**
-   * Not Found
-   */
-  404: GeneralError;
-  /**
-   * Unprocessable Entity - Invalid parameters or validation errors
-   */
-  422: GeneralError;
-  /**
-   * Internal Server Error
-   */
-  500: GeneralError;
-};
-
-export type DeleteDatabasePostgresCidrError =
-  DeleteDatabasePostgresCidrErrors[keyof DeleteDatabasePostgresCidrErrors];
-
-export type DeleteDatabasePostgresCidrResponses = {
-  /**
-   * IP restriction entry deleted successfully. Note: This will also remove the restriction from all database branches.
-   */
-  204: unknown;
-};
-
-export type GetDatabasePostgresCidrData = {
-  body?: never;
-  path: {
-    /**
-     * The name of the organization the database belongs to
-     */
-    organization: string;
-    /**
-     * The name of the database
-     */
-    database: string;
-    /**
-     * The ID of the IP restriction entry
-     */
-    id: string;
-  };
-  query?: never;
-  url: "/organizations/{organization}/databases/{database}/cidrs/{id}";
-};
-
-export type GetDatabasePostgresCidrErrors = {
-  /**
-   * Unauthorized
-   */
-  401: GeneralError;
-  /**
-   * Forbidden
-   */
-  403: GeneralError;
-  /**
-   * Not Found
-   */
-  404: GeneralError;
-  /**
-   * Unprocessable Entity - Invalid parameters or validation errors
-   */
-  422: GeneralError;
-  /**
-   * Internal Server Error
-   */
-  500: GeneralError;
-};
-
-export type GetDatabasePostgresCidrError =
-  GetDatabasePostgresCidrErrors[keyof GetDatabasePostgresCidrErrors];
-
-export type GetDatabasePostgresCidrResponses = {
-  /**
-   * Returns an IP restriction entry
-   */
-  200: PostgresClusterCidr;
-};
-
-export type GetDatabasePostgresCidrResponse =
-  GetDatabasePostgresCidrResponses[keyof GetDatabasePostgresCidrResponses];
-
-export type UpdateDatabasePostgresCidrData = {
-  body?: {
-    /**
-     * The PostgreSQL schema to restrict access to. Leave empty to allow access to all schemas.
-     */
-    schema?: string;
-    /**
-     * The PostgreSQL role to restrict access to. Leave empty to allow access for all roles.
-     */
-    role?: string;
-    /**
-     * List of IPv4 CIDR ranges (e.g., ['192.168.1.0/24', '192.168.1.1/32']). Only provided fields will be updated.
-     */
-    cidrs?: Array<string>;
-  };
-  path: {
-    /**
-     * The name of the organization the database belongs to
-     */
-    organization: string;
-    /**
-     * The name of the database
-     */
-    database: string;
-    /**
-     * The ID of the IP restriction entry
-     */
-    id: string;
-  };
-  query?: never;
-  url: "/organizations/{organization}/databases/{database}/cidrs/{id}";
-};
-
-export type UpdateDatabasePostgresCidrErrors = {
-  /**
-   * Unauthorized
-   */
-  401: GeneralError;
-  /**
-   * Forbidden
-   */
-  403: GeneralError;
-  /**
-   * Not Found
-   */
-  404: GeneralError;
-  /**
-   * Unprocessable Entity - Invalid parameters or validation errors
-   */
-  422: GeneralError;
-  /**
-   * Internal Server Error
-   */
-  500: GeneralError;
-};
-
-export type UpdateDatabasePostgresCidrError =
-  UpdateDatabasePostgresCidrErrors[keyof UpdateDatabasePostgresCidrErrors];
-
-export type UpdateDatabasePostgresCidrResponses = {
-  /**
-   * Returns the updated IP restriction entry
-   */
-  200: PostgresClusterCidr;
-};
-
-export type UpdateDatabasePostgresCidrResponse =
-  UpdateDatabasePostgresCidrResponses[keyof UpdateDatabasePostgresCidrResponses];
 
 export type GetDeployQueueData = {
   body?: never;
@@ -13090,7 +10514,7 @@ export type GetDeployRequestData = {
     /**
      * The number of the deploy request
      */
-    number: number;
+    number: string;
   };
   query?: never;
   url: "/organizations/{organization}/databases/{database}/deploy-requests/{number}";
@@ -13147,7 +10571,7 @@ export type CloseDeployRequestData = {
     /**
      * The number of the deploy request
      */
-    number: number;
+    number: string;
   };
   query?: never;
   url: "/organizations/{organization}/databases/{database}/deploy-requests/{number}";
@@ -13199,7 +10623,7 @@ export type CompleteGatedDeployRequestData = {
     /**
      * The number of the deploy request
      */
-    number: number;
+    number: string;
   };
   query?: never;
   url: "/organizations/{organization}/databases/{database}/deploy-requests/{number}/apply-deploy";
@@ -13256,7 +10680,7 @@ export type UpdateAutoApplyData = {
     /**
      * The number of the deploy request
      */
-    number: number;
+    number: string;
   };
   query?: never;
   url: "/organizations/{organization}/databases/{database}/deploy-requests/{number}/auto-apply";
@@ -13294,63 +10718,6 @@ export type UpdateAutoApplyResponses = {
 export type UpdateAutoApplyResponse =
   UpdateAutoApplyResponses[keyof UpdateAutoApplyResponses];
 
-export type UpdateAutoDeleteBranchData = {
-  body?: {
-    /**
-     * Whether or not to enable auto-delete branch for the deploy request
-     */
-    enable?: boolean;
-  };
-  path: {
-    /**
-     * The name of the deploy request's organization
-     */
-    organization: string;
-    /**
-     * The name of the deploy request's database
-     */
-    database: string;
-    /**
-     * The number of the deploy request
-     */
-    number: number;
-  };
-  query?: never;
-  url: "/organizations/{organization}/databases/{database}/deploy-requests/{number}/auto-delete-branch";
-};
-
-export type UpdateAutoDeleteBranchErrors = {
-  /**
-   * Unauthorized
-   */
-  401: GeneralError;
-  /**
-   * Forbidden
-   */
-  403: GeneralError;
-  /**
-   * Not Found
-   */
-  404: GeneralError;
-  /**
-   * Internal Server Error
-   */
-  500: GeneralError;
-};
-
-export type UpdateAutoDeleteBranchError =
-  UpdateAutoDeleteBranchErrors[keyof UpdateAutoDeleteBranchErrors];
-
-export type UpdateAutoDeleteBranchResponses = {
-  /**
-   * Returns the deploy request whose auto-delete branch setting was updated
-   */
-  200: DatabaseDeployRequest;
-};
-
-export type UpdateAutoDeleteBranchResponse =
-  UpdateAutoDeleteBranchResponses[keyof UpdateAutoDeleteBranchResponses];
-
 export type CancelDeployRequestData = {
   body?: never;
   path: {
@@ -13365,7 +10732,7 @@ export type CancelDeployRequestData = {
     /**
      * The number of the deploy request
      */
-    number: number;
+    number: string;
   };
   query?: never;
   url: "/organizations/{organization}/databases/{database}/deploy-requests/{number}/cancel";
@@ -13417,7 +10784,7 @@ export type CompleteErroredDeployData = {
     /**
      * The number of the deploy request
      */
-    number: number;
+    number: string;
   };
   query?: never;
   url: "/organizations/{organization}/databases/{database}/deploy-requests/{number}/complete-deploy";
@@ -13474,7 +10841,7 @@ export type QueueDeployRequestData = {
     /**
      * The number of the deploy request
      */
-    number: number;
+    number: string;
   };
   query?: never;
   url: "/organizations/{organization}/databases/{database}/deploy-requests/{number}/deploy";
@@ -13526,7 +10893,7 @@ export type GetDeploymentData = {
     /**
      * The number of the deploy request
      */
-    number: number;
+    number: string;
   };
   query?: never;
   url: "/organizations/{organization}/databases/{database}/deploy-requests/{number}/deployment";
@@ -13569,7 +10936,7 @@ export type ListDeployOperationsData = {
     /**
      * The number of the deploy request
      */
-    number: number;
+    number: string;
     /**
      * The name of the deploy request's organization
      */
@@ -13638,7 +11005,7 @@ export type CompleteRevertData = {
     /**
      * The number of the deploy request
      */
-    number: number;
+    number: string;
   };
   query?: never;
   url: "/organizations/{organization}/databases/{database}/deploy-requests/{number}/revert";
@@ -13690,7 +11057,7 @@ export type ListDeployRequestReviewsData = {
     /**
      * The number of the deploy request
      */
-    number: number;
+    number: string;
   };
   query?: never;
   url: "/organizations/{organization}/databases/{database}/deploy-requests/{number}/reviews";
@@ -13751,7 +11118,7 @@ export type ReviewDeployRequestData = {
     /**
      * The number of the deploy request
      */
-    number: number;
+    number: string;
   };
   query?: never;
   url: "/organizations/{organization}/databases/{database}/deploy-requests/{number}/reviews";
@@ -13803,7 +11170,7 @@ export type SkipRevertPeriodData = {
     /**
      * The number of the deploy request
      */
-    number: number;
+    number: string;
   };
   query?: never;
   url: "/organizations/{organization}/databases/{database}/deploy-requests/{number}/skip-revert";
@@ -13855,7 +11222,7 @@ export type GetDeployRequestThrottlerData = {
     /**
      * The number of the deploy request
      */
-    number: number;
+    number: string;
   };
   query?: never;
   url: "/organizations/{organization}/databases/{database}/deploy-requests/{number}/throttler";
@@ -13916,7 +11283,7 @@ export type UpdateDeployRequestThrottlerData = {
     /**
      * The number of the deploy request
      */
-    number: number;
+    number: string;
   };
   query?: never;
   url: "/organizations/{organization}/databases/{database}/deploy-requests/{number}/throttler";
@@ -13953,120 +11320,6 @@ export type UpdateDeployRequestThrottlerResponses = {
 
 export type UpdateDeployRequestThrottlerResponse =
   UpdateDeployRequestThrottlerResponses[keyof UpdateDeployRequestThrottlerResponses];
-
-export type ListReadOnlyRegionsData = {
-  body?: never;
-  path: {
-    /**
-     * The name of the organization the database belongs to
-     */
-    organization: string;
-    /**
-     * The name of the database
-     */
-    database: string;
-  };
-  query?: {
-    /**
-     * If provided, specifies the page offset of returned results
-     */
-    page?: number;
-    /**
-     * If provided, specifies the number of returned results
-     */
-    per_page?: number;
-  };
-  url: "/organizations/{organization}/databases/{database}/read-only-regions";
-};
-
-export type ListReadOnlyRegionsErrors = {
-  /**
-   * Unauthorized
-   */
-  401: GeneralError;
-  /**
-   * Forbidden
-   */
-  403: GeneralError;
-  /**
-   * Not Found
-   */
-  404: GeneralError;
-  /**
-   * Internal Server Error
-   */
-  500: GeneralError;
-};
-
-export type ListReadOnlyRegionsError =
-  ListReadOnlyRegionsErrors[keyof ListReadOnlyRegionsErrors];
-
-export type ListReadOnlyRegionsResponses = {
-  /**
-   * List of the database's read-only regions
-   */
-  200: PaginatedDatabaseBranchReadOnlyRegion;
-};
-
-export type ListReadOnlyRegionsResponse =
-  ListReadOnlyRegionsResponses[keyof ListReadOnlyRegionsResponses];
-
-export type ListDatabaseRegionsData = {
-  body?: never;
-  path: {
-    /**
-     * The name of the organization the database belongs to
-     */
-    organization: string;
-    /**
-     * The name of the database
-     */
-    database: string;
-  };
-  query?: {
-    /**
-     * If provided, specifies the page offset of returned results
-     */
-    page?: number;
-    /**
-     * If provided, specifies the number of returned results
-     */
-    per_page?: number;
-  };
-  url: "/organizations/{organization}/databases/{database}/regions";
-};
-
-export type ListDatabaseRegionsErrors = {
-  /**
-   * Unauthorized
-   */
-  401: GeneralError;
-  /**
-   * Forbidden
-   */
-  403: GeneralError;
-  /**
-   * Not Found
-   */
-  404: GeneralError;
-  /**
-   * Internal Server Error
-   */
-  500: GeneralError;
-};
-
-export type ListDatabaseRegionsError =
-  ListDatabaseRegionsErrors[keyof ListDatabaseRegionsErrors];
-
-export type ListDatabaseRegionsResponses = {
-  /**
-   * Returns the available regions for a database
-   */
-  200: PaginatedPlanetscaleRegion;
-};
-
-export type ListDatabaseRegionsResponse =
-  ListDatabaseRegionsResponses[keyof ListDatabaseRegionsResponses];
 
 export type GetDatabaseThrottlerData = {
   body?: never;
@@ -14650,7 +11903,7 @@ export type WorkflowCancelData = {
     /**
      * The sequence number of the workflow
      */
-    number: number;
+    number: string;
   };
   query?: never;
   url: "/organizations/{organization}/databases/{database}/workflows/{number}";
@@ -14702,7 +11955,7 @@ export type GetWorkflowData = {
     /**
      * The sequence number of the workflow
      */
-    number: number;
+    number: string;
   };
   query?: never;
   url: "/organizations/{organization}/databases/{database}/workflows/{number}";
@@ -14753,7 +12006,7 @@ export type WorkflowCompleteData = {
     /**
      * The sequence number of the workflow
      */
-    number: number;
+    number: string;
   };
   query?: never;
   url: "/organizations/{organization}/databases/{database}/workflows/{number}/complete";
@@ -14805,7 +12058,7 @@ export type WorkflowCutoverData = {
     /**
      * The sequence number of the workflow
      */
-    number: number;
+    number: string;
   };
   query?: never;
   url: "/organizations/{organization}/databases/{database}/workflows/{number}/cutover";
@@ -14857,7 +12110,7 @@ export type WorkflowRetryData = {
     /**
      * The sequence number of the workflow
      */
-    number: number;
+    number: string;
   };
   query?: never;
   url: "/organizations/{organization}/databases/{database}/workflows/{number}/retry";
@@ -14908,7 +12161,7 @@ export type WorkflowReverseCutoverData = {
     /**
      * The sequence number of the workflow
      */
-    number: number;
+    number: string;
   };
   query?: never;
   url: "/organizations/{organization}/databases/{database}/workflows/{number}/reverse-cutover";
@@ -14960,7 +12213,7 @@ export type WorkflowReverseTrafficData = {
     /**
      * The sequence number of the workflow
      */
-    number: number;
+    number: string;
   };
   query?: never;
   url: "/organizations/{organization}/databases/{database}/workflows/{number}/reverse-traffic";
@@ -15012,7 +12265,7 @@ export type WorkflowSwitchPrimariesData = {
     /**
      * The sequence number of the workflow
      */
-    number: number;
+    number: string;
   };
   query?: never;
   url: "/organizations/{organization}/databases/{database}/workflows/{number}/switch-primaries";
@@ -15064,7 +12317,7 @@ export type WorkflowSwitchReplicasData = {
     /**
      * The sequence number of the workflow
      */
-    number: number;
+    number: string;
   };
   query?: never;
   url: "/organizations/{organization}/databases/{database}/workflows/{number}/switch-replicas";
@@ -15116,7 +12369,7 @@ export type VerifyWorkflowData = {
     /**
      * The sequence number of the workflow
      */
-    number: number;
+    number: string;
   };
   query?: never;
   url: "/organizations/{organization}/databases/{database}/workflows/{number}/verify-data";
@@ -15153,6 +12406,305 @@ export type VerifyWorkflowResponses = {
 
 export type VerifyWorkflowResponse =
   VerifyWorkflowResponses[keyof VerifyWorkflowResponses];
+
+export type DeleteDatabaseData = {
+  body?: never;
+  path: {
+    /**
+     * The name of the organization the database belongs to
+     */
+    organization: string;
+    /**
+     * The name of the database
+     */
+    name: string;
+  };
+  query?: never;
+  url: "/organizations/{organization}/databases/{name}";
+};
+
+export type DeleteDatabaseErrors = {
+  /**
+   * Unauthorized
+   */
+  401: GeneralError;
+  /**
+   * Forbidden
+   */
+  403: GeneralError;
+  /**
+   * Not Found
+   */
+  404: GeneralError;
+  /**
+   * Internal Server Error
+   */
+  500: GeneralError;
+};
+
+export type DeleteDatabaseError =
+  DeleteDatabaseErrors[keyof DeleteDatabaseErrors];
+
+export type DeleteDatabaseResponses = {
+  /**
+   * Deletes a database
+   */
+  204: unknown;
+};
+
+export type GetDatabaseData = {
+  body?: never;
+  path: {
+    /**
+     * The name of the organization the database belongs to
+     */
+    organization: string;
+    /**
+     * The name of the database
+     */
+    name: string;
+  };
+  query?: never;
+  url: "/organizations/{organization}/databases/{name}";
+};
+
+export type GetDatabaseErrors = {
+  /**
+   * Unauthorized
+   */
+  401: GeneralError;
+  /**
+   * Forbidden
+   */
+  403: GeneralError;
+  /**
+   * Not Found
+   */
+  404: GeneralError;
+  /**
+   * Internal Server Error
+   */
+  500: GeneralError;
+};
+
+export type GetDatabaseError = GetDatabaseErrors[keyof GetDatabaseErrors];
+
+export type GetDatabaseResponses = {
+  /**
+   * Returns a database
+   */
+  200: Database;
+};
+
+export type GetDatabaseResponse =
+  GetDatabaseResponses[keyof GetDatabaseResponses];
+
+export type UpdateDatabaseSettingsData = {
+  body?: {
+    /**
+     * The name to update the database to
+     */
+    new_name?: string;
+    /**
+     * Whether or not to copy migration data to new branches and in deploy requests.
+     */
+    automatic_migrations?: boolean;
+    /**
+     * A migration framework to use on the database
+     */
+    migration_framework?: string;
+    /**
+     * Name of table to use as migration table for the database
+     */
+    migration_table_name?: string;
+    /**
+     * Whether or not deploy requests must be approved by a database administrator other than the request creator
+     */
+    require_approval_for_deploy?: boolean;
+    /**
+     * Whether or not to limit branch creation to the same region as the one selected during database creation.
+     */
+    restrict_branch_region?: boolean;
+    /**
+     * Whether or not data branching is allowed on the database
+     */
+    allow_data_branching?: boolean;
+    /**
+     * Whether or not foreign key constraints are allowed on the database
+     */
+    allow_foreign_key_constraints?: boolean;
+    /**
+     * Whether or not full queries should be collected from the database
+     */
+    insights_raw_queries?: boolean;
+    /**
+     * Whether or not the web console can be used on the production branch of the database
+     */
+    production_branch_web_console?: boolean;
+    /**
+     * The default branch of the database
+     */
+    default_branch?: string;
+  };
+  path: {
+    /**
+     * The name of the organization the database belongs to
+     */
+    organization: string;
+    /**
+     * The name of the database
+     */
+    name: string;
+  };
+  query?: never;
+  url: "/organizations/{organization}/databases/{name}";
+};
+
+export type UpdateDatabaseSettingsErrors = {
+  /**
+   * Unauthorized
+   */
+  401: GeneralError;
+  /**
+   * Forbidden
+   */
+  403: GeneralError;
+  /**
+   * Not Found
+   */
+  404: GeneralError;
+  /**
+   * Internal Server Error
+   */
+  500: GeneralError;
+};
+
+export type UpdateDatabaseSettingsError =
+  UpdateDatabaseSettingsErrors[keyof UpdateDatabaseSettingsErrors];
+
+export type UpdateDatabaseSettingsResponses = {
+  /**
+   * Returns the updated database
+   */
+  200: Database;
+};
+
+export type UpdateDatabaseSettingsResponse =
+  UpdateDatabaseSettingsResponses[keyof UpdateDatabaseSettingsResponses];
+
+export type ListReadOnlyRegionsData = {
+  body?: never;
+  path: {
+    /**
+     * The name of the organization the database belongs to
+     */
+    organization: string;
+    /**
+     * The name of the database
+     */
+    name: string;
+  };
+  query?: {
+    /**
+     * If provided, specifies the page offset of returned results
+     */
+    page?: number;
+    /**
+     * If provided, specifies the number of returned results
+     */
+    per_page?: number;
+  };
+  url: "/organizations/{organization}/databases/{name}/read-only-regions";
+};
+
+export type ListReadOnlyRegionsErrors = {
+  /**
+   * Unauthorized
+   */
+  401: GeneralError;
+  /**
+   * Forbidden
+   */
+  403: GeneralError;
+  /**
+   * Not Found
+   */
+  404: GeneralError;
+  /**
+   * Internal Server Error
+   */
+  500: GeneralError;
+};
+
+export type ListReadOnlyRegionsError =
+  ListReadOnlyRegionsErrors[keyof ListReadOnlyRegionsErrors];
+
+export type ListReadOnlyRegionsResponses = {
+  /**
+   * List of the database's read-only regions
+   */
+  200: PaginatedDatabaseBranchReadOnlyRegion;
+};
+
+export type ListReadOnlyRegionsResponse =
+  ListReadOnlyRegionsResponses[keyof ListReadOnlyRegionsResponses];
+
+export type ListDatabaseRegionsData = {
+  body?: never;
+  path: {
+    /**
+     * The name of the organization the database belongs to
+     */
+    organization: string;
+    /**
+     * The name of the database
+     */
+    name: string;
+  };
+  query?: {
+    /**
+     * If provided, specifies the page offset of returned results
+     */
+    page?: number;
+    /**
+     * If provided, specifies the number of returned results
+     */
+    per_page?: number;
+  };
+  url: "/organizations/{organization}/databases/{name}/regions";
+};
+
+export type ListDatabaseRegionsErrors = {
+  /**
+   * Unauthorized
+   */
+  401: GeneralError;
+  /**
+   * Forbidden
+   */
+  403: GeneralError;
+  /**
+   * Not Found
+   */
+  404: GeneralError;
+  /**
+   * Internal Server Error
+   */
+  500: GeneralError;
+};
+
+export type ListDatabaseRegionsError =
+  ListDatabaseRegionsErrors[keyof ListDatabaseRegionsErrors];
+
+export type ListDatabaseRegionsResponses = {
+  /**
+   * Returns the available regions for a database
+   */
+  200: PaginatedPlanetscaleRegion;
+};
+
+export type ListDatabaseRegionsResponse =
+  ListDatabaseRegionsResponses[keyof ListDatabaseRegionsResponses];
 
 export type ListInvoicesData = {
   body?: never;
@@ -15319,10 +12871,6 @@ export type ListOrganizationMembersData = {
   };
   query?: {
     /**
-     * Search term to filter members by name or email
-     */
-    q?: string;
-    /**
      * If provided, specifies the page offset of returned results
      */
     page?: number;
@@ -15365,161 +12913,6 @@ export type ListOrganizationMembersResponses = {
 
 export type ListOrganizationMembersResponse =
   ListOrganizationMembersResponses[keyof ListOrganizationMembersResponses];
-
-export type RemoveOrganizationMemberData = {
-  body?: {
-    /**
-     * Whether to delete all passwords associated with the member. Only available when removing other members (not yourself).
-     */
-    delete_passwords?: boolean;
-    /**
-     * Whether to delete all service tokens associated with the member. Only available when removing other members (not yourself).
-     */
-    delete_service_tokens?: boolean;
-  };
-  path: {
-    /**
-     * The name of the organization
-     */
-    organization: string;
-    /**
-     * The ID of the user
-     */
-    id: string;
-  };
-  query?: never;
-  url: "/organizations/{organization}/members/{id}";
-};
-
-export type RemoveOrganizationMemberErrors = {
-  /**
-   * Unauthorized
-   */
-  401: GeneralError;
-  /**
-   * Forbidden
-   */
-  403: GeneralError;
-  /**
-   * Not Found
-   */
-  404: GeneralError;
-  /**
-   * Internal Server Error
-   */
-  500: GeneralError;
-};
-
-export type RemoveOrganizationMemberError =
-  RemoveOrganizationMemberErrors[keyof RemoveOrganizationMemberErrors];
-
-export type RemoveOrganizationMemberResponses = {
-  /**
-   * Member removed successfully. Note: Cannot remove the last admin or leave your only organization.
-   */
-  204: unknown;
-};
-
-export type GetOrganizationMembershipData = {
-  body?: never;
-  path: {
-    /**
-     * The name of the organization
-     */
-    organization: string;
-    /**
-     * The ID of the user
-     */
-    id: string;
-  };
-  query?: never;
-  url: "/organizations/{organization}/members/{id}";
-};
-
-export type GetOrganizationMembershipErrors = {
-  /**
-   * Unauthorized
-   */
-  401: GeneralError;
-  /**
-   * Forbidden
-   */
-  403: GeneralError;
-  /**
-   * Not Found
-   */
-  404: GeneralError;
-  /**
-   * Internal Server Error
-   */
-  500: GeneralError;
-};
-
-export type GetOrganizationMembershipError =
-  GetOrganizationMembershipErrors[keyof GetOrganizationMembershipErrors];
-
-export type GetOrganizationMembershipResponses = {
-  /**
-   * Returns the membership of the user in the organization
-   */
-  200: OrganizationMembership;
-};
-
-export type GetOrganizationMembershipResponse =
-  GetOrganizationMembershipResponses[keyof GetOrganizationMembershipResponses];
-
-export type UpdateOrganizationMembershipData = {
-  body?: {
-    /**
-     * The role to assign to the member (e.g., 'admin', 'member'). Note: Cannot update your own role. Roles managed by IdP cannot be updated via API.
-     */
-    role: string;
-  };
-  path: {
-    /**
-     * The name of the organization
-     */
-    organization: string;
-    /**
-     * The ID of the user
-     */
-    id: string;
-  };
-  query?: never;
-  url: "/organizations/{organization}/members/{id}";
-};
-
-export type UpdateOrganizationMembershipErrors = {
-  /**
-   * Unauthorized
-   */
-  401: GeneralError;
-  /**
-   * Forbidden
-   */
-  403: GeneralError;
-  /**
-   * Not Found
-   */
-  404: GeneralError;
-  /**
-   * Internal Server Error
-   */
-  500: GeneralError;
-};
-
-export type UpdateOrganizationMembershipError =
-  UpdateOrganizationMembershipErrors[keyof UpdateOrganizationMembershipErrors];
-
-export type UpdateOrganizationMembershipResponses = {
-  /**
-   * Returns the updated membership
-   */
-  200: OrganizationMembership;
-};
-
-export type UpdateOrganizationMembershipResponse =
-  UpdateOrganizationMembershipResponses[keyof UpdateOrganizationMembershipResponses];
 
 export type ListOauthApplicationsData = {
   body?: never;
@@ -15851,546 +13244,6 @@ export type CreateOauthTokenResponses = {
 
 export type CreateOauthTokenResponse =
   CreateOauthTokenResponses[keyof CreateOauthTokenResponses];
-
-export type ListRegionsForOrganizationData = {
-  body?: never;
-  path: {
-    /**
-     * The name of the organization
-     */
-    organization: string;
-  };
-  query?: {
-    /**
-     * If provided, specifies the page offset of returned results
-     */
-    page?: number;
-    /**
-     * If provided, specifies the number of returned results
-     */
-    per_page?: number;
-  };
-  url: "/organizations/{organization}/regions";
-};
-
-export type ListRegionsForOrganizationErrors = {
-  /**
-   * Unauthorized
-   */
-  401: GeneralError;
-  /**
-   * Forbidden
-   */
-  403: GeneralError;
-  /**
-   * Not Found
-   */
-  404: GeneralError;
-  /**
-   * Internal Server Error
-   */
-  500: GeneralError;
-};
-
-export type ListRegionsForOrganizationError =
-  ListRegionsForOrganizationErrors[keyof ListRegionsForOrganizationErrors];
-
-export type ListRegionsForOrganizationResponses = {
-  /**
-   * Returns the organization's regions
-   */
-  200: PaginatedPlanetscaleRegion;
-};
-
-export type ListRegionsForOrganizationResponse =
-  ListRegionsForOrganizationResponses[keyof ListRegionsForOrganizationResponses];
-
-export type ListServiceTokensData = {
-  body?: never;
-  path: {
-    /**
-     * The name of the organization
-     */
-    organization: string;
-  };
-  query?: {
-    /**
-     * If provided, specifies the page offset of returned results
-     */
-    page?: number;
-    /**
-     * If provided, specifies the number of returned results
-     */
-    per_page?: number;
-  };
-  url: "/organizations/{organization}/service-tokens";
-};
-
-export type ListServiceTokensErrors = {
-  /**
-   * Unauthorized
-   */
-  401: GeneralError;
-  /**
-   * Forbidden
-   */
-  403: GeneralError;
-  /**
-   * Not Found
-   */
-  404: GeneralError;
-  /**
-   * Internal Server Error
-   */
-  500: GeneralError;
-};
-
-export type ListServiceTokensError =
-  ListServiceTokensErrors[keyof ListServiceTokensErrors];
-
-export type ListServiceTokensResponses = {
-  /**
-   * Returns the organization's service tokens
-   */
-  200: PaginatedServiceToken;
-};
-
-export type ListServiceTokensResponse =
-  ListServiceTokensResponses[keyof ListServiceTokensResponses];
-
-export type CreateServiceTokenData = {
-  body?: {
-    /**
-     * The name of the service token
-     */
-    name?: string;
-  };
-  path: {
-    /**
-     * The name of the organization
-     */
-    organization: string;
-  };
-  query?: never;
-  url: "/organizations/{organization}/service-tokens";
-};
-
-export type CreateServiceTokenErrors = {
-  /**
-   * Unauthorized
-   */
-  401: GeneralError;
-  /**
-   * Forbidden
-   */
-  403: GeneralError;
-  /**
-   * Not Found
-   */
-  404: GeneralError;
-  /**
-   * Internal Server Error
-   */
-  500: GeneralError;
-};
-
-export type CreateServiceTokenError =
-  CreateServiceTokenErrors[keyof CreateServiceTokenErrors];
-
-export type CreateServiceTokenResponses = {
-  /**
-   * Returns the created service token with the plaintext token
-   */
-  200: ServiceToken;
-};
-
-export type CreateServiceTokenResponse =
-  CreateServiceTokenResponses[keyof CreateServiceTokenResponses];
-
-export type DeleteServiceTokenData = {
-  body?: never;
-  path: {
-    /**
-     * The name of the organization
-     */
-    organization: string;
-    /**
-     * The ID of the service token
-     */
-    id: string;
-  };
-  query?: never;
-  url: "/organizations/{organization}/service-tokens/{id}";
-};
-
-export type DeleteServiceTokenErrors = {
-  /**
-   * Unauthorized
-   */
-  401: GeneralError;
-  /**
-   * Forbidden
-   */
-  403: GeneralError;
-  /**
-   * Not Found
-   */
-  404: GeneralError;
-  /**
-   * Internal Server Error
-   */
-  500: GeneralError;
-};
-
-export type DeleteServiceTokenError =
-  DeleteServiceTokenErrors[keyof DeleteServiceTokenErrors];
-
-export type DeleteServiceTokenResponses = {
-  /**
-   * Service token deleted successfully
-   */
-  204: unknown;
-};
-
-export type GetServiceTokenData = {
-  body?: never;
-  path: {
-    /**
-     * The name of the organization
-     */
-    organization: string;
-    /**
-     * The ID of the service token
-     */
-    id: string;
-  };
-  query?: never;
-  url: "/organizations/{organization}/service-tokens/{id}";
-};
-
-export type GetServiceTokenErrors = {
-  /**
-   * Unauthorized
-   */
-  401: GeneralError;
-  /**
-   * Forbidden
-   */
-  403: GeneralError;
-  /**
-   * Not Found
-   */
-  404: GeneralError;
-  /**
-   * Internal Server Error
-   */
-  500: GeneralError;
-};
-
-export type GetServiceTokenError =
-  GetServiceTokenErrors[keyof GetServiceTokenErrors];
-
-export type GetServiceTokenResponses = {
-  /**
-   * Returns the service token
-   */
-  200: ServiceToken;
-};
-
-export type GetServiceTokenResponse =
-  GetServiceTokenResponses[keyof GetServiceTokenResponses];
-
-export type ListOrganizationTeamsData = {
-  body?: never;
-  path: {
-    /**
-     * The name of the organization
-     */
-    organization: string;
-  };
-  query?: {
-    /**
-     * Search term to filter teams by name
-     */
-    q?: string;
-  };
-  url: "/organizations/{organization}/teams";
-};
-
-export type ListOrganizationTeamsErrors = {
-  /**
-   * Bad Request - Invalid operation or parameters
-   */
-  400: GeneralError;
-  /**
-   * Unauthorized
-   */
-  401: GeneralError;
-  /**
-   * Forbidden
-   */
-  403: GeneralError;
-  /**
-   * Not Found
-   */
-  404: GeneralError;
-  /**
-   * Unprocessable Entity - Validation errors or SSO-managed teams
-   */
-  422: GeneralError;
-  /**
-   * Internal Server Error
-   */
-  500: GeneralError;
-};
-
-export type ListOrganizationTeamsError =
-  ListOrganizationTeamsErrors[keyof ListOrganizationTeamsErrors];
-
-export type ListOrganizationTeamsResponses = {
-  /**
-   * Returns teams in the organization
-   */
-  200: PaginatedOrganizationTeam;
-};
-
-export type ListOrganizationTeamsResponse =
-  ListOrganizationTeamsResponses[keyof ListOrganizationTeamsResponses];
-
-export type CreateOrganizationTeamData = {
-  body?: {
-    /**
-     * The name of the team
-     */
-    name: string;
-    /**
-     * A description of the team's purpose
-     */
-    description?: string;
-  };
-  path: {
-    /**
-     * The name of the organization
-     */
-    organization: string;
-  };
-  query?: never;
-  url: "/organizations/{organization}/teams";
-};
-
-export type CreateOrganizationTeamErrors = {
-  /**
-   * Bad Request - Invalid operation or parameters
-   */
-  400: GeneralError;
-  /**
-   * Unauthorized
-   */
-  401: GeneralError;
-  /**
-   * Forbidden
-   */
-  403: GeneralError;
-  /**
-   * Not Found
-   */
-  404: GeneralError;
-  /**
-   * Unprocessable Entity - Validation errors or SSO-managed teams
-   */
-  422: GeneralError;
-  /**
-   * Internal Server Error
-   */
-  500: GeneralError;
-};
-
-export type CreateOrganizationTeamError =
-  CreateOrganizationTeamErrors[keyof CreateOrganizationTeamErrors];
-
-export type CreateOrganizationTeamResponses = {
-  /**
-   * Returns the created team
-   */
-  200: OrganizationTeam;
-};
-
-export type CreateOrganizationTeamResponse =
-  CreateOrganizationTeamResponses[keyof CreateOrganizationTeamResponses];
-
-export type DeleteOrganizationTeamData = {
-  body?: never;
-  path: {
-    /**
-     * The name of the organization
-     */
-    organization: string;
-    /**
-     * The slug of the team
-     */
-    team: string;
-  };
-  query?: never;
-  url: "/organizations/{organization}/teams/{team}";
-};
-
-export type DeleteOrganizationTeamErrors = {
-  /**
-   * Bad Request - Invalid operation or parameters
-   */
-  400: GeneralError;
-  /**
-   * Unauthorized
-   */
-  401: GeneralError;
-  /**
-   * Forbidden
-   */
-  403: GeneralError;
-  /**
-   * Not Found
-   */
-  404: GeneralError;
-  /**
-   * Unprocessable Entity - Validation errors or SSO-managed teams
-   */
-  422: GeneralError;
-  /**
-   * Internal Server Error
-   */
-  500: GeneralError;
-};
-
-export type DeleteOrganizationTeamError =
-  DeleteOrganizationTeamErrors[keyof DeleteOrganizationTeamErrors];
-
-export type DeleteOrganizationTeamResponses = {
-  /**
-   * Team deleted successfully. Note: SSO-managed teams cannot be deleted.
-   */
-  204: unknown;
-};
-
-export type GetOrganizationTeamData = {
-  body?: never;
-  path: {
-    /**
-     * The name of the organization
-     */
-    organization: string;
-    /**
-     * The slug of the team
-     */
-    team: string;
-  };
-  query?: never;
-  url: "/organizations/{organization}/teams/{team}";
-};
-
-export type GetOrganizationTeamErrors = {
-  /**
-   * Bad Request - Invalid operation or parameters
-   */
-  400: GeneralError;
-  /**
-   * Unauthorized
-   */
-  401: GeneralError;
-  /**
-   * Forbidden
-   */
-  403: GeneralError;
-  /**
-   * Not Found
-   */
-  404: GeneralError;
-  /**
-   * Unprocessable Entity - Validation errors or SSO-managed teams
-   */
-  422: GeneralError;
-  /**
-   * Internal Server Error
-   */
-  500: GeneralError;
-};
-
-export type GetOrganizationTeamError =
-  GetOrganizationTeamErrors[keyof GetOrganizationTeamErrors];
-
-export type GetOrganizationTeamResponses = {
-  /**
-   * Returns the team details including members and databases
-   */
-  200: OrganizationTeam;
-};
-
-export type GetOrganizationTeamResponse =
-  GetOrganizationTeamResponses[keyof GetOrganizationTeamResponses];
-
-export type UpdateOrganizationTeamData = {
-  body?: {
-    /**
-     * The new name for the team
-     */
-    name?: string;
-    /**
-     * The new description for the team
-     */
-    description?: string;
-  };
-  path: {
-    /**
-     * The name of the organization
-     */
-    organization: string;
-    /**
-     * The slug of the team
-     */
-    team: string;
-  };
-  query?: never;
-  url: "/organizations/{organization}/teams/{team}";
-};
-
-export type UpdateOrganizationTeamErrors = {
-  /**
-   * Bad Request - Invalid operation or parameters
-   */
-  400: GeneralError;
-  /**
-   * Unauthorized
-   */
-  401: GeneralError;
-  /**
-   * Forbidden
-   */
-  403: GeneralError;
-  /**
-   * Not Found
-   */
-  404: GeneralError;
-  /**
-   * Unprocessable Entity - Validation errors or SSO-managed teams
-   */
-  422: GeneralError;
-  /**
-   * Internal Server Error
-   */
-  500: GeneralError;
-};
-
-export type UpdateOrganizationTeamError =
-  UpdateOrganizationTeamErrors[keyof UpdateOrganizationTeamErrors];
-
-export type UpdateOrganizationTeamResponses = {
-  /**
-   * Returns the updated team. Note: SSO-managed teams cannot be updated.
-   */
-  200: OrganizationTeam;
-};
-
-export type UpdateOrganizationTeamResponse =
-  UpdateOrganizationTeamResponses[keyof UpdateOrganizationTeamResponses];
 
 export type ListPublicRegionsData = {
   body?: never;

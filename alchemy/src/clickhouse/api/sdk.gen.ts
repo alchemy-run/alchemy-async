@@ -28,9 +28,6 @@ import type {
   CreateReversePrivateEndpointData,
   CreateReversePrivateEndpointErrors,
   CreateReversePrivateEndpointResponses,
-  CreateServiceBackupBucketData,
-  CreateServiceBackupBucketErrors,
-  CreateServiceBackupBucketResponses,
   DeleteClickPipeData,
   DeleteClickPipeErrors,
   DeleteClickPipeResponses,
@@ -43,9 +40,6 @@ import type {
   DeleteReversePrivateEndpointData,
   DeleteReversePrivateEndpointErrors,
   DeleteReversePrivateEndpointResponses,
-  DeleteServiceBackupBucketData,
-  DeleteServiceBackupBucketErrors,
-  DeleteServiceBackupBucketResponses,
   DeleteServiceData,
   DeleteServiceErrors,
   DeleteServiceQueryEndpointForInstanceData,
@@ -91,9 +85,6 @@ import type {
   GetReversePrivateEndpointData,
   GetReversePrivateEndpointErrors,
   GetReversePrivateEndpointResponses,
-  GetServiceBackupBucketData,
-  GetServiceBackupBucketErrors,
-  GetServiceBackupBucketResponses,
   GetServiceBackupConfigurationData,
   GetServiceBackupConfigurationErrors,
   GetServiceBackupConfigurationResponses,
@@ -145,9 +136,6 @@ import type {
   ScalingClickPipeData,
   ScalingClickPipeErrors,
   ScalingClickPipeResponses,
-  UpdateByocInfrastructureData,
-  UpdateByocInfrastructureErrors,
-  UpdateByocInfrastructureResponses,
   UpdateCdcClickPipesScalingData,
   UpdateCdcClickPipesScalingErrors,
   UpdateCdcClickPipesScalingResponses,
@@ -175,9 +163,6 @@ import type {
   UpdateServiceAutoScalingSettingsData,
   UpdateServiceAutoScalingSettingsErrors,
   UpdateServiceAutoScalingSettingsResponses,
-  UpdateServiceBackupBucketData,
-  UpdateServiceBackupBucketErrors,
-  UpdateServiceBackupBucketResponses,
   UpdateServiceBackupConfigurationData,
   UpdateServiceBackupConfigurationErrors,
   UpdateServiceBackupConfigurationResponses,
@@ -212,81 +197,59 @@ export type Options<
   meta?: Record<string, unknown>;
 };
 
-class HeyApiClient {
-  protected client: Client;
+class _HeyApiClient {
+  protected _client: Client = client;
 
   constructor(args?: { client?: Client }) {
-    this.client = args?.client ?? client;
-  }
-}
-
-class HeyApiRegistry<T> {
-  private readonly defaultKey = "default";
-
-  private readonly instances: Map<string, T> = new Map();
-
-  get(key?: string): T {
-    const instance = this.instances.get(key ?? this.defaultKey);
-    if (!instance) {
-      throw new Error(
-        `No SDK client found. Create one with "new ClickhouseClient()" to fix this error.`,
-      );
+    if (args?.client) {
+      this._client = args.client;
     }
-    return instance;
-  }
-
-  set(value: T, key?: string): void {
-    this.instances.set(key ?? this.defaultKey, value);
   }
 }
 
-export class ClickhouseClient extends HeyApiClient {
-  public static readonly __registry = new HeyApiRegistry<ClickhouseClient>();
-
-  constructor(args?: { client?: Client; key?: string }) {
-    super(args);
-    ClickhouseClient.__registry.set(this, args?.key);
-  }
-
+export class ClickhouseClient extends _HeyApiClient {
   /**
    * Get list of available organizations
-   *
    * Returns a list with a single organization associated with the API key in the request.
    */
   public listAvailableOrganizations<ThrowOnError extends boolean = true>(
     options?: Options<ListAvailableOrganizationsData, ThrowOnError>,
   ) {
-    return (options?.client ?? this.client).get<
+    return (options?.client ?? this._client).get<
       ListAvailableOrganizationsResponses,
       ListAvailableOrganizationsErrors,
       ThrowOnError
-    >({ url: "/v1/organizations", ...options });
+    >({
+      url: "/v1/organizations",
+      ...options,
+    });
   }
 
   /**
    * Get organization details
-   *
    * Returns details of a single organization. In order to get the details, the auth key must belong to the organization.
    */
   public getOrganizationDetails<ThrowOnError extends boolean = true>(
     options: Options<GetOrganizationDetailsData, ThrowOnError>,
   ) {
-    return (options.client ?? this.client).get<
+    return (options.client ?? this._client).get<
       GetOrganizationDetailsResponses,
       GetOrganizationDetailsErrors,
       ThrowOnError
-    >({ url: "/v1/organizations/{organizationId}", ...options });
+    >({
+      url: "/v1/organizations/{organizationId}",
+      ...options,
+    });
   }
 
   /**
    * Update organization details
-   *
    * Updates organization fields. Requires ADMIN auth key role.
    */
   public updateOrganizationDetails<ThrowOnError extends boolean = true>(
     options: Options<UpdateOrganizationDetailsData, ThrowOnError>,
   ) {
-    return (options.client ?? this.client).patch<
+    return (options.client ?? this._client).patch<
       UpdateOrganizationDetailsResponses,
       UpdateOrganizationDetailsErrors,
       ThrowOnError
@@ -302,43 +265,46 @@ export class ClickhouseClient extends HeyApiClient {
 
   /**
    * Get organization metrics
-   *
    * Returns prometheus metrics for all services in an organization.
    */
   public getOrganizationMetrics<ThrowOnError extends boolean = true>(
     options: Options<GetOrganizationMetricsData, ThrowOnError>,
   ) {
-    return (options.client ?? this.client).get<
+    return (options.client ?? this._client).get<
       GetOrganizationMetricsResponses,
       GetOrganizationMetricsErrors,
       ThrowOnError
-    >({ url: "/v1/organizations/{organizationId}/prometheus", ...options });
+    >({
+      url: "/v1/organizations/{organizationId}/prometheus",
+      ...options,
+    });
   }
 
   /**
    * List of organization services
-   *
    * Returns a list of all services in the organization.
    */
   public listOrganizationServices<ThrowOnError extends boolean = true>(
     options: Options<ListOrganizationServicesData, ThrowOnError>,
   ) {
-    return (options.client ?? this.client).get<
+    return (options.client ?? this._client).get<
       ListOrganizationServicesResponses,
       ListOrganizationServicesErrors,
       ThrowOnError
-    >({ url: "/v1/organizations/{organizationId}/services", ...options });
+    >({
+      url: "/v1/organizations/{organizationId}/services",
+      ...options,
+    });
   }
 
   /**
    * Create new service
-   *
    * Creates a new service in the organization, and returns the current service state and a password to access the service. The service is started asynchronously.
    */
   public createNewService<ThrowOnError extends boolean = true>(
     options: Options<CreateNewServiceData, ThrowOnError>,
   ) {
-    return (options.client ?? this.client).post<
+    return (options.client ?? this._client).post<
       CreateNewServiceResponses,
       CreateNewServiceErrors,
       ThrowOnError
@@ -354,13 +320,12 @@ export class ClickhouseClient extends HeyApiClient {
 
   /**
    * Delete service
-   *
    * Deletes the service. The service must be in stopped state and is deleted asynchronously after this method call.
    */
   public deleteService<ThrowOnError extends boolean = true>(
     options: Options<DeleteServiceData, ThrowOnError>,
   ) {
-    return (options.client ?? this.client).delete<
+    return (options.client ?? this._client).delete<
       DeleteServiceResponses,
       DeleteServiceErrors,
       ThrowOnError
@@ -372,13 +337,12 @@ export class ClickhouseClient extends HeyApiClient {
 
   /**
    * Get service details
-   *
    * Returns a service that belongs to the organization
    */
   public getServiceDetails<ThrowOnError extends boolean = true>(
     options: Options<GetServiceDetailsData, ThrowOnError>,
   ) {
-    return (options.client ?? this.client).get<
+    return (options.client ?? this._client).get<
       GetServiceDetailsResponses,
       GetServiceDetailsErrors,
       ThrowOnError
@@ -390,13 +354,12 @@ export class ClickhouseClient extends HeyApiClient {
 
   /**
    * Update service basic details
-   *
    * Updates basic service details like service name or IP access list.
    */
   public updateServiceBasicDetails<ThrowOnError extends boolean = true>(
     options: Options<UpdateServiceBasicDetailsData, ThrowOnError>,
   ) {
-    return (options.client ?? this.client).patch<
+    return (options.client ?? this._client).patch<
       UpdateServiceBasicDetailsResponses,
       UpdateServiceBasicDetailsErrors,
       ThrowOnError
@@ -412,13 +375,12 @@ export class ClickhouseClient extends HeyApiClient {
 
   /**
    * Get private endpoint configuration
-   *
    * Information required to set up a private endpoint
    */
   public getPrivateEndpointConfiguration<ThrowOnError extends boolean = true>(
     options: Options<GetPrivateEndpointConfigurationData, ThrowOnError>,
   ) {
-    return (options.client ?? this.client).get<
+    return (options.client ?? this._client).get<
       GetPrivateEndpointConfigurationResponses,
       GetPrivateEndpointConfigurationErrors,
       ThrowOnError
@@ -430,13 +392,12 @@ export class ClickhouseClient extends HeyApiClient {
 
   /**
    * Delete the service query endpoint for a given instance
-   *
-   * Removes the service query endpoint.
+   * This is an experimental feature. Please contact support to enable it.
    */
   public deleteServiceQueryEndpointForInstance<
     ThrowOnError extends boolean = true,
   >(options: Options<DeleteServiceQueryEndpointForInstanceData, ThrowOnError>) {
-    return (options.client ?? this.client).delete<
+    return (options.client ?? this._client).delete<
       DeleteServiceQueryEndpointForInstanceResponses,
       DeleteServiceQueryEndpointForInstanceErrors,
       ThrowOnError
@@ -448,13 +409,12 @@ export class ClickhouseClient extends HeyApiClient {
 
   /**
    * Get the service query endpoint for a given instance
-   *
-   * Get the configuration for the service query endpoint that allows executing queries via API.
+   * This is an experimental feature. Please contact support to enable it.
    */
   public getServiceQueryEndpointForInstance<
     ThrowOnError extends boolean = true,
   >(options: Options<GetServiceQueryEndpointForInstanceData, ThrowOnError>) {
-    return (options.client ?? this.client).get<
+    return (options.client ?? this._client).get<
       GetServiceQueryEndpointForInstanceResponses,
       GetServiceQueryEndpointForInstanceErrors,
       ThrowOnError
@@ -466,13 +426,12 @@ export class ClickhouseClient extends HeyApiClient {
 
   /**
    * Upsert the service query endpoint for a given instance
-   *
-   * Create the service query endpoint that allows executing queries via API.
+   * This is an experimental feature. Please contact support to enable it.
    */
   public upsertServiceQueryEndpointForInstance<
     ThrowOnError extends boolean = true,
   >(options: Options<UpsertServiceQueryEndpointForInstanceData, ThrowOnError>) {
-    return (options.client ?? this.client).post<
+    return (options.client ?? this._client).post<
       UpsertServiceQueryEndpointForInstanceResponses,
       UpsertServiceQueryEndpointForInstanceErrors,
       ThrowOnError
@@ -488,13 +447,12 @@ export class ClickhouseClient extends HeyApiClient {
 
   /**
    * Update service state
-   *
    * Starts or stop service
    */
   public updateServiceState<ThrowOnError extends boolean = true>(
     options: Options<UpdateServiceStateData, ThrowOnError>,
   ) {
-    return (options.client ?? this.client).patch<
+    return (options.client ?? this._client).patch<
       UpdateServiceStateResponses,
       UpdateServiceStateErrors,
       ThrowOnError
@@ -510,15 +468,13 @@ export class ClickhouseClient extends HeyApiClient {
 
   /**
    * Update service auto scaling settings
-   *
    * Updates minimum and maximum total memory limits and idle mode scaling behavior for the service. The memory settings are available only for "production" services and must be a multiple of 12 starting from 24GB. Please contact support to enable adjustment of numReplicas.
-   *
    * @deprecated
    */
   public updateServiceAutoScalingSettings<ThrowOnError extends boolean = true>(
     options: Options<UpdateServiceAutoScalingSettingsData, ThrowOnError>,
   ) {
-    return (options.client ?? this.client).patch<
+    return (options.client ?? this._client).patch<
       UpdateServiceAutoScalingSettingsResponses,
       UpdateServiceAutoScalingSettingsErrors,
       ThrowOnError
@@ -534,13 +490,12 @@ export class ClickhouseClient extends HeyApiClient {
 
   /**
    * Update service auto scaling settings
-   *
    * Updates minimum and maximum memory limits per replica and idle mode scaling behavior for the service. The memory settings are available only for "production" services and must be a multiple of 4 starting from 8GB. Please contact support to enable adjustment of numReplicas.
    */
   public updateServiceAutoScalingSettings2<ThrowOnError extends boolean = true>(
     options: Options<UpdateServiceAutoScalingSettings2Data, ThrowOnError>,
   ) {
-    return (options.client ?? this.client).patch<
+    return (options.client ?? this._client).patch<
       UpdateServiceAutoScalingSettings2Responses,
       UpdateServiceAutoScalingSettings2Errors,
       ThrowOnError
@@ -556,13 +511,12 @@ export class ClickhouseClient extends HeyApiClient {
 
   /**
    * Update service password
-   *
    * Sets a new password for the service
    */
   public updateServicePassword<ThrowOnError extends boolean = true>(
     options: Options<UpdateServicePasswordData, ThrowOnError>,
   ) {
-    return (options.client ?? this.client).patch<
+    return (options.client ?? this._client).patch<
       UpdateServicePasswordResponses,
       UpdateServicePasswordErrors,
       ThrowOnError
@@ -578,13 +532,12 @@ export class ClickhouseClient extends HeyApiClient {
 
   /**
    * Create a private endpoint
-   *
    * Create a new private endpoint. The private endpoint will be associated with this service and organization
    */
   public createPrivateEndpoint<ThrowOnError extends boolean = true>(
     options: Options<CreatePrivateEndpointData, ThrowOnError>,
   ) {
-    return (options.client ?? this.client).post<
+    return (options.client ?? this._client).post<
       CreatePrivateEndpointResponses,
       CreatePrivateEndpointErrors,
       ThrowOnError
@@ -600,13 +553,12 @@ export class ClickhouseClient extends HeyApiClient {
 
   /**
    * Get service metrics
-   *
    * Returns prometheus metrics for a service.
    */
   public getServiceMetrics<ThrowOnError extends boolean = true>(
     options: Options<GetServiceMetricsData, ThrowOnError>,
   ) {
-    return (options.client ?? this.client).get<
+    return (options.client ?? this._client).get<
       GetServiceMetricsResponses,
       GetServiceMetricsErrors,
       ThrowOnError
@@ -618,13 +570,12 @@ export class ClickhouseClient extends HeyApiClient {
 
   /**
    * List of service backups
-   *
    * Returns a list of all backups for the service. The most recent backups comes first in the list.
    */
   public listServiceBackups<ThrowOnError extends boolean = true>(
     options: Options<ListServiceBackupsData, ThrowOnError>,
   ) {
-    return (options.client ?? this.client).get<
+    return (options.client ?? this._client).get<
       ListServiceBackupsResponses,
       ListServiceBackupsErrors,
       ThrowOnError
@@ -636,13 +587,12 @@ export class ClickhouseClient extends HeyApiClient {
 
   /**
    * Get backup details
-   *
    * Returns a single backup info.
    */
   public getBackupDetails<ThrowOnError extends boolean = true>(
     options: Options<GetBackupDetailsData, ThrowOnError>,
   ) {
-    return (options.client ?? this.client).get<
+    return (options.client ?? this._client).get<
       GetBackupDetailsResponses,
       GetBackupDetailsErrors,
       ThrowOnError
@@ -654,13 +604,12 @@ export class ClickhouseClient extends HeyApiClient {
 
   /**
    * Get service backup configuration
-   *
    * Returns the service backup configuration.
    */
   public getServiceBackupConfiguration<ThrowOnError extends boolean = true>(
     options: Options<GetServiceBackupConfigurationData, ThrowOnError>,
   ) {
-    return (options.client ?? this.client).get<
+    return (options.client ?? this._client).get<
       GetServiceBackupConfigurationResponses,
       GetServiceBackupConfigurationErrors,
       ThrowOnError
@@ -672,13 +621,12 @@ export class ClickhouseClient extends HeyApiClient {
 
   /**
    * Update service backup configuration
-   *
    * Updates service backup configuration. Requires ADMIN auth key role. Setting the properties with null value, will reset the properties to theirs default values.
    */
   public updateServiceBackupConfiguration<ThrowOnError extends boolean = true>(
     options: Options<UpdateServiceBackupConfigurationData, ThrowOnError>,
   ) {
-    return (options.client ?? this.client).patch<
+    return (options.client ?? this._client).patch<
       UpdateServiceBackupConfigurationResponses,
       UpdateServiceBackupConfigurationErrors,
       ThrowOnError
@@ -693,109 +641,30 @@ export class ClickhouseClient extends HeyApiClient {
   }
 
   /**
-   * Delete service backup bucket
-   *
-   * **This endpoint is in beta.** API contract is stable, and no breaking changes are expected in the future. <br /><br /> Delete service backup bucket. Requires ADMIN auth key role.
-   */
-  public deleteServiceBackupBucket<ThrowOnError extends boolean = true>(
-    options: Options<DeleteServiceBackupBucketData, ThrowOnError>,
-  ) {
-    return (options.client ?? this.client).delete<
-      DeleteServiceBackupBucketResponses,
-      DeleteServiceBackupBucketErrors,
-      ThrowOnError
-    >({
-      url: "/v1/organizations/{organizationId}/services/{serviceId}/backupBucket",
-      ...options,
-    });
-  }
-
-  /**
-   * Get service backup bucket
-   *
-   * **This endpoint is in beta.** API contract is stable, and no breaking changes are expected in the future. <br /><br /> Returns the service backup bucket.
-   */
-  public getServiceBackupBucket<ThrowOnError extends boolean = true>(
-    options: Options<GetServiceBackupBucketData, ThrowOnError>,
-  ) {
-    return (options.client ?? this.client).get<
-      GetServiceBackupBucketResponses,
-      GetServiceBackupBucketErrors,
-      ThrowOnError
-    >({
-      url: "/v1/organizations/{organizationId}/services/{serviceId}/backupBucket",
-      ...options,
-    });
-  }
-
-  /**
-   * Update service backup bucket
-   *
-   * **This endpoint is in beta.** API contract is stable, and no breaking changes are expected in the future. <br /><br /> Update service backup bucket. Requires ADMIN auth key role. The secrets of the specified bucket provider are always required
-   */
-  public updateServiceBackupBucket<ThrowOnError extends boolean = true>(
-    options: Options<UpdateServiceBackupBucketData, ThrowOnError>,
-  ) {
-    return (options.client ?? this.client).patch<
-      UpdateServiceBackupBucketResponses,
-      UpdateServiceBackupBucketErrors,
-      ThrowOnError
-    >({
-      url: "/v1/organizations/{organizationId}/services/{serviceId}/backupBucket",
-      ...options,
-      headers: {
-        "Content-Type": "application/json",
-        ...options.headers,
-      },
-    });
-  }
-
-  /**
-   * Create service backup bucket
-   *
-   * **This endpoint is in beta.** API contract is stable, and no breaking changes are expected in the future. <br /><br /> Create service backup bucket. Requires ADMIN auth key role.
-   */
-  public createServiceBackupBucket<ThrowOnError extends boolean = true>(
-    options: Options<CreateServiceBackupBucketData, ThrowOnError>,
-  ) {
-    return (options.client ?? this.client).post<
-      CreateServiceBackupBucketResponses,
-      CreateServiceBackupBucketErrors,
-      ThrowOnError
-    >({
-      url: "/v1/organizations/{organizationId}/services/{serviceId}/backupBucket",
-      ...options,
-      headers: {
-        "Content-Type": "application/json",
-        ...options.headers,
-      },
-    });
-  }
-
-  /**
    * Get list of all keys
-   *
    * Returns a list of all keys in the organization.
    */
   public listAllKeys<ThrowOnError extends boolean = true>(
     options: Options<ListAllKeysData, ThrowOnError>,
   ) {
-    return (options.client ?? this.client).get<
+    return (options.client ?? this._client).get<
       ListAllKeysResponses,
       ListAllKeysErrors,
       ThrowOnError
-    >({ url: "/v1/organizations/{organizationId}/keys", ...options });
+    >({
+      url: "/v1/organizations/{organizationId}/keys",
+      ...options,
+    });
   }
 
   /**
    * Create key
-   *
    * Creates new API key.
    */
   public createKey<ThrowOnError extends boolean = true>(
     options: Options<CreateKeyData, ThrowOnError>,
   ) {
-    return (options.client ?? this.client).post<
+    return (options.client ?? this._client).post<
       CreateKeyResponses,
       CreateKeyErrors,
       ThrowOnError
@@ -811,43 +680,46 @@ export class ClickhouseClient extends HeyApiClient {
 
   /**
    * Delete key
-   *
    * Deletes API key. Only a key not used to authenticate the active request can be deleted.
    */
   public deleteKey<ThrowOnError extends boolean = true>(
     options: Options<DeleteKeyData, ThrowOnError>,
   ) {
-    return (options.client ?? this.client).delete<
+    return (options.client ?? this._client).delete<
       DeleteKeyResponses,
       DeleteKeyErrors,
       ThrowOnError
-    >({ url: "/v1/organizations/{organizationId}/keys/{keyId}", ...options });
+    >({
+      url: "/v1/organizations/{organizationId}/keys/{keyId}",
+      ...options,
+    });
   }
 
   /**
    * Get key details
-   *
    * Returns a single key details.
    */
   public getKeyDetails<ThrowOnError extends boolean = true>(
     options: Options<GetKeyDetailsData, ThrowOnError>,
   ) {
-    return (options.client ?? this.client).get<
+    return (options.client ?? this._client).get<
       GetKeyDetailsResponses,
       GetKeyDetailsErrors,
       ThrowOnError
-    >({ url: "/v1/organizations/{organizationId}/keys/{keyId}", ...options });
+    >({
+      url: "/v1/organizations/{organizationId}/keys/{keyId}",
+      ...options,
+    });
   }
 
   /**
    * Update key
-   *
    * Updates API key properties.
    */
   public updateKey<ThrowOnError extends boolean = true>(
     options: Options<UpdateKeyData, ThrowOnError>,
   ) {
-    return (options.client ?? this.client).patch<
+    return (options.client ?? this._client).patch<
       UpdateKeyResponses,
       UpdateKeyErrors,
       ThrowOnError
@@ -863,28 +735,29 @@ export class ClickhouseClient extends HeyApiClient {
 
   /**
    * List organization members
-   *
    * Returns a list of all members in the organization.
    */
   public listOrganizationMembers<ThrowOnError extends boolean = true>(
     options: Options<ListOrganizationMembersData, ThrowOnError>,
   ) {
-    return (options.client ?? this.client).get<
+    return (options.client ?? this._client).get<
       ListOrganizationMembersResponses,
       ListOrganizationMembersErrors,
       ThrowOnError
-    >({ url: "/v1/organizations/{organizationId}/members", ...options });
+    >({
+      url: "/v1/organizations/{organizationId}/members",
+      ...options,
+    });
   }
 
   /**
    * Remove an organization member
-   *
    * Removes a user from the organization
    */
   public removeOrganizationMember<ThrowOnError extends boolean = true>(
     options: Options<RemoveOrganizationMemberData, ThrowOnError>,
   ) {
-    return (options.client ?? this.client).delete<
+    return (options.client ?? this._client).delete<
       RemoveOrganizationMemberResponses,
       RemoveOrganizationMemberErrors,
       ThrowOnError
@@ -896,13 +769,12 @@ export class ClickhouseClient extends HeyApiClient {
 
   /**
    * Get member details
-   *
    * Returns a single organization member details.
    */
   public getMemberDetails<ThrowOnError extends boolean = true>(
     options: Options<GetMemberDetailsData, ThrowOnError>,
   ) {
-    return (options.client ?? this.client).get<
+    return (options.client ?? this._client).get<
       GetMemberDetailsResponses,
       GetMemberDetailsErrors,
       ThrowOnError
@@ -914,13 +786,12 @@ export class ClickhouseClient extends HeyApiClient {
 
   /**
    * Update organization member
-   *
    * Updates organization member role.
    */
   public updateOrganizationMember<ThrowOnError extends boolean = true>(
     options: Options<UpdateOrganizationMemberData, ThrowOnError>,
   ) {
-    return (options.client ?? this.client).patch<
+    return (options.client ?? this._client).patch<
       UpdateOrganizationMemberResponses,
       UpdateOrganizationMemberErrors,
       ThrowOnError
@@ -936,28 +807,29 @@ export class ClickhouseClient extends HeyApiClient {
 
   /**
    * List all invitations
-   *
    * Returns list of all organization invitations.
    */
   public listAllInvitations<ThrowOnError extends boolean = true>(
     options: Options<ListAllInvitationsData, ThrowOnError>,
   ) {
-    return (options.client ?? this.client).get<
+    return (options.client ?? this._client).get<
       ListAllInvitationsResponses,
       ListAllInvitationsErrors,
       ThrowOnError
-    >({ url: "/v1/organizations/{organizationId}/invitations", ...options });
+    >({
+      url: "/v1/organizations/{organizationId}/invitations",
+      ...options,
+    });
   }
 
   /**
    * Create an invitation
-   *
    * Creates organization invitation.
    */
   public createInvitation<ThrowOnError extends boolean = true>(
     options: Options<CreateInvitationData, ThrowOnError>,
   ) {
-    return (options.client ?? this.client).post<
+    return (options.client ?? this._client).post<
       CreateInvitationResponses,
       CreateInvitationErrors,
       ThrowOnError
@@ -973,13 +845,12 @@ export class ClickhouseClient extends HeyApiClient {
 
   /**
    * Delete organization invitation
-   *
    * Deletes a single organization invitation.
    */
   public deleteOrganizationInvitation<ThrowOnError extends boolean = true>(
     options: Options<DeleteOrganizationInvitationData, ThrowOnError>,
   ) {
-    return (options.client ?? this.client).delete<
+    return (options.client ?? this._client).delete<
       DeleteOrganizationInvitationResponses,
       DeleteOrganizationInvitationErrors,
       ThrowOnError
@@ -991,13 +862,12 @@ export class ClickhouseClient extends HeyApiClient {
 
   /**
    * Get invitation details
-   *
    * Returns details for a single organization invitation.
    */
   public getInvitationDetails<ThrowOnError extends boolean = true>(
     options: Options<GetInvitationDetailsData, ThrowOnError>,
   ) {
-    return (options.client ?? this.client).get<
+    return (options.client ?? this._client).get<
       GetInvitationDetailsResponses,
       GetInvitationDetailsErrors,
       ThrowOnError
@@ -1009,28 +879,29 @@ export class ClickhouseClient extends HeyApiClient {
 
   /**
    * List of organization activities
-   *
    * Returns a list of all organization activities.
    */
   public listOrganizationActivities<ThrowOnError extends boolean = true>(
     options: Options<ListOrganizationActivitiesData, ThrowOnError>,
   ) {
-    return (options.client ?? this.client).get<
+    return (options.client ?? this._client).get<
       ListOrganizationActivitiesResponses,
       ListOrganizationActivitiesErrors,
       ThrowOnError
-    >({ url: "/v1/organizations/{organizationId}/activities", ...options });
+    >({
+      url: "/v1/organizations/{organizationId}/activities",
+      ...options,
+    });
   }
 
   /**
    * Organization activity
-   *
    * Returns a single organization activity by ID.
    */
   public organizationActivity<ThrowOnError extends boolean = true>(
     options: Options<OrganizationActivityData, ThrowOnError>,
   ) {
-    return (options.client ?? this.client).get<
+    return (options.client ?? this._client).get<
       OrganizationActivityResponses,
       OrganizationActivityErrors,
       ThrowOnError
@@ -1042,28 +913,29 @@ export class ClickhouseClient extends HeyApiClient {
 
   /**
    * Get organization usage costs
-   *
    * Returns a grand total and a list of daily, per-entity organization usage cost records for the organization in the queried time period (maximum 31 days). All days in both the request and the response are evaluated based on the UTC timezone.
    */
   public getOrganizationUsageCosts<ThrowOnError extends boolean = true>(
     options: Options<GetOrganizationUsageCostsData, ThrowOnError>,
   ) {
-    return (options.client ?? this.client).get<
+    return (options.client ?? this._client).get<
       GetOrganizationUsageCostsResponses,
       GetOrganizationUsageCostsErrors,
       ThrowOnError
-    >({ url: "/v1/organizations/{organizationId}/usageCost", ...options });
+    >({
+      url: "/v1/organizations/{organizationId}/usageCost",
+      ...options,
+    });
   }
 
   /**
    * List ClickPipes
-   *
    * **This endpoint is in beta.** API contract is stable, and no breaking changes are expected in the future. <br /><br /> Returns a list of ClickPipes.
    */
   public listClickPipes<ThrowOnError extends boolean = true>(
     options: Options<ListClickPipesData, ThrowOnError>,
   ) {
-    return (options.client ?? this.client).get<
+    return (options.client ?? this._client).get<
       ListClickPipesResponses,
       ListClickPipesErrors,
       ThrowOnError
@@ -1075,13 +947,12 @@ export class ClickhouseClient extends HeyApiClient {
 
   /**
    * Create ClickPipe
-   *
    * **This endpoint is in beta.** API contract is stable, and no breaking changes are expected in the future. <br /><br /> Create a new ClickPipe.
    */
   public createClickPipe<ThrowOnError extends boolean = true>(
     options: Options<CreateClickPipeData, ThrowOnError>,
   ) {
-    return (options.client ?? this.client).post<
+    return (options.client ?? this._client).post<
       CreateClickPipeResponses,
       CreateClickPipeErrors,
       ThrowOnError
@@ -1097,13 +968,12 @@ export class ClickhouseClient extends HeyApiClient {
 
   /**
    * Delete ClickPipe
-   *
    * **This endpoint is in beta.** API contract is stable, and no breaking changes are expected in the future. <br /><br /> Delete the specified ClickPipe.
    */
   public deleteClickPipe<ThrowOnError extends boolean = true>(
     options: Options<DeleteClickPipeData, ThrowOnError>,
   ) {
-    return (options.client ?? this.client).delete<
+    return (options.client ?? this._client).delete<
       DeleteClickPipeResponses,
       DeleteClickPipeErrors,
       ThrowOnError
@@ -1115,13 +985,12 @@ export class ClickhouseClient extends HeyApiClient {
 
   /**
    * Get ClickPipe
-   *
    * **This endpoint is in beta.** API contract is stable, and no breaking changes are expected in the future. <br /><br /> Returns the specified ClickPipe.
    */
   public getClickPipe<ThrowOnError extends boolean = true>(
     options: Options<GetClickPipeData, ThrowOnError>,
   ) {
-    return (options.client ?? this.client).get<
+    return (options.client ?? this._client).get<
       GetClickPipeResponses,
       GetClickPipeErrors,
       ThrowOnError
@@ -1133,13 +1002,12 @@ export class ClickhouseClient extends HeyApiClient {
 
   /**
    * Update ClickPipe
-   *
    * **This endpoint is in beta.** API contract is stable, and no breaking changes are expected in the future. <br /><br /> Update the specified ClickPipe.
    */
   public updateClickPipe<ThrowOnError extends boolean = true>(
     options: Options<UpdateClickPipeData, ThrowOnError>,
   ) {
-    return (options.client ?? this.client).patch<
+    return (options.client ?? this._client).patch<
       UpdateClickPipeResponses,
       UpdateClickPipeErrors,
       ThrowOnError
@@ -1155,13 +1023,12 @@ export class ClickhouseClient extends HeyApiClient {
 
   /**
    * Get ClickPipe settings
-   *
    * **This endpoint is in beta.** API contract is stable, and no breaking changes are expected in the future. <br /><br /> Returns the advanced settings for the specified ClickPipe.
    */
   public getClickPipeSettings<ThrowOnError extends boolean = true>(
     options: Options<GetClickPipeSettingsData, ThrowOnError>,
   ) {
-    return (options.client ?? this.client).get<
+    return (options.client ?? this._client).get<
       GetClickPipeSettingsResponses,
       GetClickPipeSettingsErrors,
       ThrowOnError
@@ -1173,13 +1040,12 @@ export class ClickhouseClient extends HeyApiClient {
 
   /**
    * Update ClickPipe settings
-   *
    * **This endpoint is in beta.** API contract is stable, and no breaking changes are expected in the future. <br /><br /> Update the advanced settings for the specified ClickPipe. Send key-value pairs where values can be strings, numbers, or booleans.
    */
   public updateClickPipeSettings<ThrowOnError extends boolean = true>(
     options: Options<UpdateClickPipeSettingsData, ThrowOnError>,
   ) {
-    return (options.client ?? this.client).put<
+    return (options.client ?? this._client).put<
       UpdateClickPipeSettingsResponses,
       UpdateClickPipeSettingsErrors,
       ThrowOnError
@@ -1195,13 +1061,12 @@ export class ClickhouseClient extends HeyApiClient {
 
   /**
    * Scaling ClickPipe
-   *
    * **This endpoint is in beta.** API contract is stable, and no breaking changes are expected in the future. <br /><br /> Change scaling settings for the specified ClickPipe.
    */
   public scalingClickPipe<ThrowOnError extends boolean = true>(
     options: Options<ScalingClickPipeData, ThrowOnError>,
   ) {
-    return (options.client ?? this.client).patch<
+    return (options.client ?? this._client).patch<
       ScalingClickPipeResponses,
       ScalingClickPipeErrors,
       ThrowOnError
@@ -1217,13 +1082,12 @@ export class ClickhouseClient extends HeyApiClient {
 
   /**
    * Update ClickPipe state
-   *
    * **This endpoint is in beta.** API contract is stable, and no breaking changes are expected in the future. <br /><br /> Start, stop or resync ClickPipe. Stopping a ClickPipe will stop the ingestion process from any state. Starting is allowed for ClickPipes in the "Stopped" state or with a "Failed" state. Resyncing is only for Postgres pipes and can be done from any state.
    */
   public updateClickPipeState<ThrowOnError extends boolean = true>(
     options: Options<UpdateClickPipeStateData, ThrowOnError>,
   ) {
-    return (options.client ?? this.client).patch<
+    return (options.client ?? this._client).patch<
       UpdateClickPipeStateResponses,
       UpdateClickPipeStateErrors,
       ThrowOnError
@@ -1239,7 +1103,6 @@ export class ClickhouseClient extends HeyApiClient {
 
   /**
    * Get CDC ClickPipes scaling
-   *
    * **This endpoint is in beta.** API contract is stable, and no breaking changes are expected in the future. <br /><br /> Get scaling settings for DB ClickPipes.
    *
    * The infrastructure is shared between all DB ClickPipes in the service, both for initial load and CDC. For billing purposes, 2 CPU cores and 8 GB of RAM [correspond](https://clickhouse.com/docs/cloud/manage/billing/overview#clickpipes-for-postgres-cdc) to one compute unit.
@@ -1249,7 +1112,7 @@ export class ClickhouseClient extends HeyApiClient {
   public getCdcClickPipesScaling<ThrowOnError extends boolean = true>(
     options: Options<GetCdcClickPipesScalingData, ThrowOnError>,
   ) {
-    return (options.client ?? this.client).get<
+    return (options.client ?? this._client).get<
       GetCdcClickPipesScalingResponses,
       GetCdcClickPipesScalingErrors,
       ThrowOnError
@@ -1261,7 +1124,6 @@ export class ClickhouseClient extends HeyApiClient {
 
   /**
    * Update CDC ClickPipes scaling
-   *
    * **This endpoint is in beta.** API contract is stable, and no breaking changes are expected in the future. <br /><br /> Update scaling settings for DB ClickPipes.
    *
    * The infrastructure is shared between all DB ClickPipes in the service, both for initial load and CDC. Scaling settings may take a few minutes to fully propagate.
@@ -1273,7 +1135,7 @@ export class ClickhouseClient extends HeyApiClient {
   public updateCdcClickPipesScaling<ThrowOnError extends boolean = true>(
     options: Options<UpdateCdcClickPipesScalingData, ThrowOnError>,
   ) {
-    return (options.client ?? this.client).patch<
+    return (options.client ?? this._client).patch<
       UpdateCdcClickPipesScalingResponses,
       UpdateCdcClickPipesScalingErrors,
       ThrowOnError
@@ -1289,9 +1151,7 @@ export class ClickhouseClient extends HeyApiClient {
 
   /**
    * Get private endpoint configuration for region within cloud provider for an organization
-   *
    * Deprecated. Please follow [documentation](https://clickhouse.com/docs/manage/security/aws-privatelink#add-endpoint-id-to-services-allow-list) for the updated process.
-   *
    * @deprecated
    */
   public getPrivateEndpointConfigurationForRegionWithinCloudProviderForOrganization<
@@ -1302,7 +1162,7 @@ export class ClickhouseClient extends HeyApiClient {
       ThrowOnError
     >,
   ) {
-    return (options.client ?? this.client).get<
+    return (options.client ?? this._client).get<
       GetPrivateEndpointConfigurationForRegionWithinCloudProviderForOrganizationResponses,
       GetPrivateEndpointConfigurationForRegionWithinCloudProviderForOrganizationErrors,
       ThrowOnError
@@ -1314,13 +1174,12 @@ export class ClickhouseClient extends HeyApiClient {
 
   /**
    * Create BYOC Infrastructure
-   *
    * Create a new BYOC Infrastructure in the organization. Returns the configuration of the newly created infrastructure
    */
   public createByocInfrastructure<ThrowOnError extends boolean = true>(
     options: Options<CreateByocInfrastructureData, ThrowOnError>,
   ) {
-    return (options.client ?? this.client).post<
+    return (options.client ?? this._client).post<
       CreateByocInfrastructureResponses,
       CreateByocInfrastructureErrors,
       ThrowOnError
@@ -1336,13 +1195,12 @@ export class ClickhouseClient extends HeyApiClient {
 
   /**
    * Remove a BYOC infrastructure
-   *
    * Removes a BYOC Infrastructure from the organization
    */
   public removeByocInfrastructure<ThrowOnError extends boolean = true>(
     options: Options<RemoveByocInfrastructureData, ThrowOnError>,
   ) {
-    return (options.client ?? this.client).delete<
+    return (options.client ?? this._client).delete<
       RemoveByocInfrastructureResponses,
       RemoveByocInfrastructureErrors,
       ThrowOnError
@@ -1353,36 +1211,13 @@ export class ClickhouseClient extends HeyApiClient {
   }
 
   /**
-   * Update BYOC Infrastructure
-   *
-   * Update configuration of the BYOC infrastructure. Returns the modified infrastructure
-   */
-  public updateByocInfrastructure<ThrowOnError extends boolean = true>(
-    options: Options<UpdateByocInfrastructureData, ThrowOnError>,
-  ) {
-    return (options.client ?? this.client).patch<
-      UpdateByocInfrastructureResponses,
-      UpdateByocInfrastructureErrors,
-      ThrowOnError
-    >({
-      url: "/v1/organizations/{organizationId}/byocInfrastructure/{byocInfrastructureId}",
-      ...options,
-      headers: {
-        "Content-Type": "application/json",
-        ...options.headers,
-      },
-    });
-  }
-
-  /**
    * List reverse private endpoints
-   *
    * **This endpoint is in beta.** API contract is stable, and no breaking changes are expected in the future. <br /><br /> Returns a list of reverse private endpoints for the specified service.
    */
   public listReversePrivateEndpoints<ThrowOnError extends boolean = true>(
     options: Options<ListReversePrivateEndpointsData, ThrowOnError>,
   ) {
-    return (options.client ?? this.client).get<
+    return (options.client ?? this._client).get<
       ListReversePrivateEndpointsResponses,
       ListReversePrivateEndpointsErrors,
       ThrowOnError
@@ -1394,13 +1229,12 @@ export class ClickhouseClient extends HeyApiClient {
 
   /**
    * Create reverse private endpoint
-   *
    * **This endpoint is in beta.** API contract is stable, and no breaking changes are expected in the future. <br /><br /> Create a new reverse private endpoint.
    */
   public createReversePrivateEndpoint<ThrowOnError extends boolean = true>(
     options: Options<CreateReversePrivateEndpointData, ThrowOnError>,
   ) {
-    return (options.client ?? this.client).post<
+    return (options.client ?? this._client).post<
       CreateReversePrivateEndpointResponses,
       CreateReversePrivateEndpointErrors,
       ThrowOnError
@@ -1416,13 +1250,12 @@ export class ClickhouseClient extends HeyApiClient {
 
   /**
    * Delete reverse private endpoint
-   *
    * **This endpoint is in beta.** API contract is stable, and no breaking changes are expected in the future. <br /><br /> Delete the reverse private endpoint with the specified ID.
    */
   public deleteReversePrivateEndpoint<ThrowOnError extends boolean = true>(
     options: Options<DeleteReversePrivateEndpointData, ThrowOnError>,
   ) {
-    return (options.client ?? this.client).delete<
+    return (options.client ?? this._client).delete<
       DeleteReversePrivateEndpointResponses,
       DeleteReversePrivateEndpointErrors,
       ThrowOnError
@@ -1434,13 +1267,12 @@ export class ClickhouseClient extends HeyApiClient {
 
   /**
    * Get reverse private endpoint
-   *
    * **This endpoint is in beta.** API contract is stable, and no breaking changes are expected in the future. <br /><br /> Returns the reverse private endpoint with the specified ID.
    */
   public getReversePrivateEndpoint<ThrowOnError extends boolean = true>(
     options: Options<GetReversePrivateEndpointData, ThrowOnError>,
   ) {
-    return (options.client ?? this.client).get<
+    return (options.client ?? this._client).get<
       GetReversePrivateEndpointResponses,
       GetReversePrivateEndpointErrors,
       ThrowOnError

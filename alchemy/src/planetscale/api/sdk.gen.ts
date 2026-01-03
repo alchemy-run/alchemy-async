@@ -7,9 +7,6 @@ import type {
 } from "../../util/api/client/index.ts";
 import { client } from "./client.gen.ts";
 import type {
-  CancelBouncerResizeRequestData,
-  CancelBouncerResizeRequestErrors,
-  CancelBouncerResizeRequestResponses,
   CancelBranchChangeRequestData,
   CancelBranchChangeRequestErrors,
   CancelBranchChangeRequestResponses,
@@ -31,17 +28,11 @@ import type {
   CreateBackupData,
   CreateBackupErrors,
   CreateBackupResponses,
-  CreateBouncerData,
-  CreateBouncerErrors,
-  CreateBouncerResponses,
   CreateBranchData,
   CreateBranchErrors,
   CreateBranchResponses,
   CreateDatabaseData,
   CreateDatabaseErrors,
-  CreateDatabasePostgresCidrData,
-  CreateDatabasePostgresCidrErrors,
-  CreateDatabasePostgresCidrResponses,
   CreateDatabaseResponses,
   CreateDeployRequestData,
   CreateDeployRequestErrors,
@@ -52,9 +43,6 @@ import type {
   CreateOauthTokenData,
   CreateOauthTokenErrors,
   CreateOauthTokenResponses,
-  CreateOrganizationTeamData,
-  CreateOrganizationTeamErrors,
-  CreateOrganizationTeamResponses,
   CreatePasswordData,
   CreatePasswordErrors,
   CreatePasswordResponses,
@@ -64,9 +52,6 @@ import type {
   CreateRoleData,
   CreateRoleErrors,
   CreateRoleResponses,
-  CreateServiceTokenData,
-  CreateServiceTokenErrors,
-  CreateServiceTokenResponses,
   CreateWebhookData,
   CreateWebhookErrors,
   CreateWebhookResponses,
@@ -76,17 +61,11 @@ import type {
   DeleteBackupData,
   DeleteBackupErrors,
   DeleteBackupResponses,
-  DeleteBouncerData,
-  DeleteBouncerErrors,
-  DeleteBouncerResponses,
   DeleteBranchData,
   DeleteBranchErrors,
   DeleteBranchResponses,
   DeleteDatabaseData,
   DeleteDatabaseErrors,
-  DeleteDatabasePostgresCidrData,
-  DeleteDatabasePostgresCidrErrors,
-  DeleteDatabasePostgresCidrResponses,
   DeleteDatabaseResponses,
   DeleteKeyspaceData,
   DeleteKeyspaceErrors,
@@ -94,9 +73,6 @@ import type {
   DeleteOauthTokenData,
   DeleteOauthTokenErrors,
   DeleteOauthTokenResponses,
-  DeleteOrganizationTeamData,
-  DeleteOrganizationTeamErrors,
-  DeleteOrganizationTeamResponses,
   DeletePasswordData,
   DeletePasswordErrors,
   DeletePasswordResponses,
@@ -106,9 +82,6 @@ import type {
   DeleteRoleData,
   DeleteRoleErrors,
   DeleteRoleResponses,
-  DeleteServiceTokenData,
-  DeleteServiceTokenErrors,
-  DeleteServiceTokenResponses,
   DeleteWebhookData,
   DeleteWebhookErrors,
   DeleteWebhookResponses,
@@ -124,12 +97,6 @@ import type {
   GetBackupData,
   GetBackupErrors,
   GetBackupResponses,
-  GetBouncerData,
-  GetBouncerErrors,
-  GetBouncerResponses,
-  GetBranchChangeRequestData,
-  GetBranchChangeRequestErrors,
-  GetBranchChangeRequestResponses,
   GetBranchData,
   GetBranchErrors,
   GetBranchResponses,
@@ -141,16 +108,10 @@ import type {
   GetCurrentUserResponses,
   GetDatabaseData,
   GetDatabaseErrors,
-  GetDatabasePostgresCidrData,
-  GetDatabasePostgresCidrErrors,
-  GetDatabasePostgresCidrResponses,
   GetDatabaseResponses,
   GetDatabaseThrottlerData,
   GetDatabaseThrottlerErrors,
   GetDatabaseThrottlerResponses,
-  GetDefaultRoleData,
-  GetDefaultRoleErrors,
-  GetDefaultRoleResponses,
   GetDeploymentData,
   GetDeploymentErrors,
   GetDeploymentResponses,
@@ -186,13 +147,7 @@ import type {
   GetOauthTokenResponses,
   GetOrganizationData,
   GetOrganizationErrors,
-  GetOrganizationMembershipData,
-  GetOrganizationMembershipErrors,
-  GetOrganizationMembershipResponses,
   GetOrganizationResponses,
-  GetOrganizationTeamData,
-  GetOrganizationTeamErrors,
-  GetOrganizationTeamResponses,
   GetPasswordData,
   GetPasswordErrors,
   GetPasswordResponses,
@@ -204,9 +159,6 @@ import type {
   GetRoleData,
   GetRoleErrors,
   GetRoleResponses,
-  GetServiceTokenData,
-  GetServiceTokenErrors,
-  GetServiceTokenResponses,
   GetWebhookData,
   GetWebhookErrors,
   GetWebhookResponses,
@@ -222,27 +174,12 @@ import type {
   ListBackupsData,
   ListBackupsErrors,
   ListBackupsResponses,
-  ListBouncerResizeRequestsData,
-  ListBouncerResizeRequestsErrors,
-  ListBouncerResizeRequestsResponses,
-  ListBouncersData,
-  ListBouncersErrors,
-  ListBouncersResponses,
-  ListBranchBouncerResizeRequestsData,
-  ListBranchBouncerResizeRequestsErrors,
-  ListBranchBouncerResizeRequestsResponses,
   ListBranchChangeRequestsData,
   ListBranchChangeRequestsErrors,
   ListBranchChangeRequestsResponses,
   ListBranchesData,
   ListBranchesErrors,
   ListBranchesResponses,
-  ListClusterSizeSkusData,
-  ListClusterSizeSkusErrors,
-  ListClusterSizeSkusResponses,
-  ListDatabasePostgresCidrsData,
-  ListDatabasePostgresCidrsErrors,
-  ListDatabasePostgresCidrsResponses,
   ListDatabaseRegionsData,
   ListDatabaseRegionsErrors,
   ListDatabaseRegionsResponses,
@@ -285,9 +222,6 @@ import type {
   ListOrganizationsData,
   ListOrganizationsErrors,
   ListOrganizationsResponses,
-  ListOrganizationTeamsData,
-  ListOrganizationTeamsErrors,
-  ListOrganizationTeamsResponses,
   ListParametersData,
   ListParametersErrors,
   ListParametersResponses,
@@ -306,9 +240,6 @@ import type {
   ListRolesData,
   ListRolesErrors,
   ListRolesResponses,
-  ListServiceTokensData,
-  ListServiceTokensErrors,
-  ListServiceTokensResponses,
   ListWebhooksData,
   ListWebhooksErrors,
   ListWebhooksResponses,
@@ -321,24 +252,12 @@ import type {
   QueueDeployRequestData,
   QueueDeployRequestErrors,
   QueueDeployRequestResponses,
-  ReassignRoleObjectsData,
-  ReassignRoleObjectsErrors,
-  ReassignRoleObjectsResponses,
-  RemoveOrganizationMemberData,
-  RemoveOrganizationMemberErrors,
-  RemoveOrganizationMemberResponses,
   RenewPasswordData,
   RenewPasswordErrors,
   RenewPasswordResponses,
   RenewRoleData,
   RenewRoleErrors,
   RenewRoleResponses,
-  ResetDefaultRoleData,
-  ResetDefaultRoleErrors,
-  ResetDefaultRoleResponses,
-  ResetRoleData,
-  ResetRoleErrors,
-  ResetRoleResponses,
   ReviewDeployRequestData,
   ReviewDeployRequestErrors,
   ReviewDeployRequestResponses,
@@ -351,24 +270,15 @@ import type {
   UpdateAutoApplyData,
   UpdateAutoApplyErrors,
   UpdateAutoApplyResponses,
-  UpdateAutoDeleteBranchData,
-  UpdateAutoDeleteBranchErrors,
-  UpdateAutoDeleteBranchResponses,
   UpdateBackupData,
   UpdateBackupErrors,
   UpdateBackupResponses,
-  UpdateBouncerResizeRequestData,
-  UpdateBouncerResizeRequestErrors,
-  UpdateBouncerResizeRequestResponses,
   UpdateBranchChangeRequestData,
   UpdateBranchChangeRequestErrors,
   UpdateBranchChangeRequestResponses,
   UpdateBranchClusterConfigData,
   UpdateBranchClusterConfigErrors,
   UpdateBranchClusterConfigResponses,
-  UpdateDatabasePostgresCidrData,
-  UpdateDatabasePostgresCidrErrors,
-  UpdateDatabasePostgresCidrResponses,
   UpdateDatabaseSettingsData,
   UpdateDatabaseSettingsErrors,
   UpdateDatabaseSettingsResponses,
@@ -386,13 +296,7 @@ import type {
   UpdateKeyspaceVschemaResponses,
   UpdateOrganizationData,
   UpdateOrganizationErrors,
-  UpdateOrganizationMembershipData,
-  UpdateOrganizationMembershipErrors,
-  UpdateOrganizationMembershipResponses,
   UpdateOrganizationResponses,
-  UpdateOrganizationTeamData,
-  UpdateOrganizationTeamErrors,
-  UpdateOrganizationTeamResponses,
   UpdatePasswordData,
   UpdatePasswordErrors,
   UpdatePasswordResponses,
@@ -448,45 +352,19 @@ export type Options<
   meta?: Record<string, unknown>;
 };
 
-class HeyApiClient {
-  protected client: Client;
+class _HeyApiClient {
+  protected _client: Client = client;
 
   constructor(args?: { client?: Client }) {
-    this.client = args?.client ?? client;
-  }
-}
-
-class HeyApiRegistry<T> {
-  private readonly defaultKey = "default";
-
-  private readonly instances: Map<string, T> = new Map();
-
-  get(key?: string): T {
-    const instance = this.instances.get(key ?? this.defaultKey);
-    if (!instance) {
-      throw new Error(
-        `No SDK client found. Create one with "new PlanetScaleClient()" to fix this error.`,
-      );
+    if (args?.client) {
+      this._client = args.client;
     }
-    return instance;
-  }
-
-  set(value: T, key?: string): void {
-    this.instances.set(key ?? this.defaultKey, value);
   }
 }
 
-export class PlanetScaleClient extends HeyApiClient {
-  public static readonly __registry = new HeyApiRegistry<PlanetScaleClient>();
-
-  constructor(args?: { client?: Client; key?: string }) {
-    super(args);
-    PlanetScaleClient.__registry.set(this, args?.key);
-  }
-
+export class PlanetScaleClient extends _HeyApiClient {
   /**
    * List organizations
-   *
    * When using a service token, returns the list of organizations the service token has access to. When using an OAuth token, returns the list of organizations the user has access to.
    * ### Authorization
    * A   OAuth token must have at least one of the following   scopes in order to use this API endpoint:
@@ -500,16 +378,18 @@ export class PlanetScaleClient extends HeyApiClient {
   public listOrganizations<ThrowOnError extends boolean = true>(
     options?: Options<ListOrganizationsData, ThrowOnError>,
   ) {
-    return (options?.client ?? this.client).get<
+    return (options?.client ?? this._client).get<
       ListOrganizationsResponses,
       ListOrganizationsErrors,
       ThrowOnError
-    >({ url: "/organizations", ...options });
+    >({
+      url: "/organizations",
+      ...options,
+    });
   }
 
   /**
    * Get an organization
-   *
    *
    * ### Authorization
    * A service token or OAuth token must have at least one of the following access or scopes in order to use this API endpoint:
@@ -527,16 +407,18 @@ export class PlanetScaleClient extends HeyApiClient {
   public getOrganization<ThrowOnError extends boolean = true>(
     options: Options<GetOrganizationData, ThrowOnError>,
   ) {
-    return (options.client ?? this.client).get<
+    return (options.client ?? this._client).get<
       GetOrganizationResponses,
       GetOrganizationErrors,
       ThrowOnError
-    >({ url: "/organizations/{organization}", ...options });
+    >({
+      url: "/organizations/{name}",
+      ...options,
+    });
   }
 
   /**
    * Update an organization
-   *
    *
    * ### Authorization
    * A   OAuth token must have at least one of the following   scopes in order to use this API endpoint:
@@ -550,12 +432,12 @@ export class PlanetScaleClient extends HeyApiClient {
   public updateOrganization<ThrowOnError extends boolean = true>(
     options: Options<UpdateOrganizationData, ThrowOnError>,
   ) {
-    return (options.client ?? this.client).patch<
+    return (options.client ?? this._client).patch<
       UpdateOrganizationResponses,
       UpdateOrganizationErrors,
       ThrowOnError
     >({
-      url: "/organizations/{organization}",
+      url: "/organizations/{name}",
       ...options,
       headers: {
         "Content-Type": "application/json",
@@ -566,7 +448,6 @@ export class PlanetScaleClient extends HeyApiClient {
 
   /**
    * List audit logs
-   *
    *
    * ### Authorization
    * A service token   must have at least one of the following access   in order to use this API endpoint:
@@ -579,17 +460,19 @@ export class PlanetScaleClient extends HeyApiClient {
   public listAuditLogs<ThrowOnError extends boolean = true>(
     options: Options<ListAuditLogsData, ThrowOnError>,
   ) {
-    return (options.client ?? this.client).get<
+    return (options.client ?? this._client).get<
       ListAuditLogsResponses,
       ListAuditLogsErrors,
       ThrowOnError
-    >({ url: "/organizations/{organization}/audit-log", ...options });
+    >({
+      url: "/organizations/{name}/audit-log",
+      ...options,
+    });
   }
 
   /**
-   * List available cluster sizes
+   * List regions for an organization
    *
-   * List available cluster sizes for an organization
    * ### Authorization
    * A service token or OAuth token must have at least one of the following access or scopes in order to use this API endpoint:
    *
@@ -603,19 +486,21 @@ export class PlanetScaleClient extends HeyApiClient {
    * | User | `read_organizations` |
    * | Organization | `read_organization` |
    */
-  public listClusterSizeSkus<ThrowOnError extends boolean = true>(
-    options: Options<ListClusterSizeSkusData, ThrowOnError>,
+  public listRegionsForOrganization<ThrowOnError extends boolean = true>(
+    options: Options<ListRegionsForOrganizationData, ThrowOnError>,
   ) {
-    return (options.client ?? this.client).get<
-      ListClusterSizeSkusResponses,
-      ListClusterSizeSkusErrors,
+    return (options.client ?? this._client).get<
+      ListRegionsForOrganizationResponses,
+      ListRegionsForOrganizationErrors,
       ThrowOnError
-    >({ url: "/organizations/{organization}/cluster-size-skus", ...options });
+    >({
+      url: "/organizations/{name}/regions",
+      ...options,
+    });
   }
 
   /**
    * List databases
-   *
    *
    * ### Authorization
    * A service token or OAuth token must have at least one of the following access or scopes in order to use this API endpoint:
@@ -632,16 +517,18 @@ export class PlanetScaleClient extends HeyApiClient {
   public listDatabases<ThrowOnError extends boolean = true>(
     options: Options<ListDatabasesData, ThrowOnError>,
   ) {
-    return (options.client ?? this.client).get<
+    return (options.client ?? this._client).get<
       ListDatabasesResponses,
       ListDatabasesErrors,
       ThrowOnError
-    >({ url: "/organizations/{organization}/databases", ...options });
+    >({
+      url: "/organizations/{organization}/databases",
+      ...options,
+    });
   }
 
   /**
    * Create a database
-   *
    *
    * ### Authorization
    * A service token or OAuth token must have at least one of the following access or scopes in order to use this API endpoint:
@@ -658,7 +545,7 @@ export class PlanetScaleClient extends HeyApiClient {
   public createDatabase<ThrowOnError extends boolean = true>(
     options: Options<CreateDatabaseData, ThrowOnError>,
   ) {
-    return (options.client ?? this.client).post<
+    return (options.client ?? this._client).post<
       CreateDatabaseResponses,
       CreateDatabaseErrors,
       ThrowOnError
@@ -673,102 +560,7 @@ export class PlanetScaleClient extends HeyApiClient {
   }
 
   /**
-   * Delete a database
-   *
-   *
-   * ### Authorization
-   * A service token or OAuth token must have at least one of the following access or scopes in order to use this API endpoint:
-   *
-   * **Service Token Accesses**
-   * `delete_database`
-   *
-   * **OAuth Scopes**
-   *
-   * | Resource | Scopes |
-   * | :------- | :---------- |
-   * | Organization | `delete_databases` |
-   * | Database | `delete_database` |
-   */
-  public deleteDatabase<ThrowOnError extends boolean = true>(
-    options: Options<DeleteDatabaseData, ThrowOnError>,
-  ) {
-    return (options.client ?? this.client).delete<
-      DeleteDatabaseResponses,
-      DeleteDatabaseErrors,
-      ThrowOnError
-    >({
-      url: "/organizations/{organization}/databases/{database}",
-      ...options,
-    });
-  }
-
-  /**
-   * Get a database
-   *
-   *
-   * ### Authorization
-   * A service token or OAuth token must have at least one of the following access or scopes in order to use this API endpoint:
-   *
-   * **Service Token Accesses**
-   * `read_database`, `delete_database`, `write_database`, `read_branch`, `delete_branch`, `create_branch`, `delete_production_branch`, `connect_branch`, `connect_production_branch`, `delete_branch_password`, `delete_production_branch_password`, `read_deploy_request`, `create_deploy_request`, `approve_deploy_request`, `read_schema_recommendations`, `close_schema_recommendations`, `read_comment`, `create_comment`, `restore_backup`, `restore_production_branch_backup`, `read_backups`, `write_backups`, `delete_backups`, `delete_production_branch_backups`, `write_branch_vschema`, `write_production_branch_vschema`
-   *
-   * **OAuth Scopes**
-   *
-   * | Resource | Scopes |
-   * | :------- | :---------- |
-   * | Organization | `read_databases` |
-   * | Database | `read_database` |
-   */
-  public getDatabase<ThrowOnError extends boolean = true>(
-    options: Options<GetDatabaseData, ThrowOnError>,
-  ) {
-    return (options.client ?? this.client).get<
-      GetDatabaseResponses,
-      GetDatabaseErrors,
-      ThrowOnError
-    >({
-      url: "/organizations/{organization}/databases/{database}",
-      ...options,
-    });
-  }
-
-  /**
-   * Update database settings
-   *
-   *
-   * ### Authorization
-   * A service token or OAuth token must have at least one of the following access or scopes in order to use this API endpoint:
-   *
-   * **Service Token Accesses**
-   * `write_database`
-   *
-   * **OAuth Scopes**
-   *
-   * | Resource | Scopes |
-   * | :------- | :---------- |
-   * | Organization | `write_databases` |
-   * | Database | `write_database` |
-   */
-  public updateDatabaseSettings<ThrowOnError extends boolean = true>(
-    options: Options<UpdateDatabaseSettingsData, ThrowOnError>,
-  ) {
-    return (options.client ?? this.client).patch<
-      UpdateDatabaseSettingsResponses,
-      UpdateDatabaseSettingsErrors,
-      ThrowOnError
-    >({
-      url: "/organizations/{organization}/databases/{database}",
-      ...options,
-      headers: {
-        "Content-Type": "application/json",
-        ...options.headers,
-      },
-    });
-  }
-
-  /**
    * List branches
-   *
    *
    * ### Authorization
    * A service token or OAuth token must have at least one of the following access or scopes in order to use this API endpoint:
@@ -787,7 +579,7 @@ export class PlanetScaleClient extends HeyApiClient {
   public listBranches<ThrowOnError extends boolean = true>(
     options: Options<ListBranchesData, ThrowOnError>,
   ) {
-    return (options.client ?? this.client).get<
+    return (options.client ?? this._client).get<
       ListBranchesResponses,
       ListBranchesErrors,
       ThrowOnError
@@ -799,7 +591,6 @@ export class PlanetScaleClient extends HeyApiClient {
 
   /**
    * Create a branch
-   *
    *
    * ### Authorization
    * A service token or OAuth token must have at least one of the following access or scopes in order to use this API endpoint:
@@ -818,7 +609,7 @@ export class PlanetScaleClient extends HeyApiClient {
   public createBranch<ThrowOnError extends boolean = true>(
     options: Options<CreateBranchData, ThrowOnError>,
   ) {
-    return (options.client ?? this.client).post<
+    return (options.client ?? this._client).post<
       CreateBranchResponses,
       CreateBranchErrors,
       ThrowOnError
@@ -833,70 +624,7 @@ export class PlanetScaleClient extends HeyApiClient {
   }
 
   /**
-   * Delete a branch
-   *
-   *
-   * ### Authorization
-   * A service token or OAuth token must have at least one of the following access or scopes in order to use this API endpoint:
-   *
-   * **Service Token Accesses**
-   * `delete_branch`
-   *
-   * **OAuth Scopes**
-   *
-   * | Resource | Scopes |
-   * | :------- | :---------- |
-   * | Organization | `delete_branches`, `delete_production_branches` |
-   * | Database | `delete_branches`, `delete_production_branches` |
-   * | Branch | `delete_branch` |
-   */
-  public deleteBranch<ThrowOnError extends boolean = true>(
-    options: Options<DeleteBranchData, ThrowOnError>,
-  ) {
-    return (options.client ?? this.client).delete<
-      DeleteBranchResponses,
-      DeleteBranchErrors,
-      ThrowOnError
-    >({
-      url: "/organizations/{organization}/databases/{database}/branches/{branch}",
-      ...options,
-    });
-  }
-
-  /**
-   * Get a branch
-   *
-   *
-   * ### Authorization
-   * A service token or OAuth token must have at least one of the following access or scopes in order to use this API endpoint:
-   *
-   * **Service Token Accesses**
-   * `read_branch`, `delete_branch`, `create_branch`, `connect_production_branch`, `connect_branch`
-   *
-   * **OAuth Scopes**
-   *
-   * | Resource | Scopes |
-   * | :------- | :---------- |
-   * | Organization | `read_branches` |
-   * | Database | `read_branches` |
-   * | Branch | `read_branch` |
-   */
-  public getBranch<ThrowOnError extends boolean = true>(
-    options: Options<GetBranchData, ThrowOnError>,
-  ) {
-    return (options.client ?? this.client).get<
-      GetBranchResponses,
-      GetBranchErrors,
-      ThrowOnError
-    >({
-      url: "/organizations/{organization}/databases/{database}/branches/{branch}",
-      ...options,
-    });
-  }
-
-  /**
    * List backups
-   *
    *
    * ### Authorization
    * A service token or OAuth token must have at least one of the following access or scopes in order to use this API endpoint:
@@ -915,7 +643,7 @@ export class PlanetScaleClient extends HeyApiClient {
   public listBackups<ThrowOnError extends boolean = true>(
     options: Options<ListBackupsData, ThrowOnError>,
   ) {
-    return (options.client ?? this.client).get<
+    return (options.client ?? this._client).get<
       ListBackupsResponses,
       ListBackupsErrors,
       ThrowOnError
@@ -927,7 +655,6 @@ export class PlanetScaleClient extends HeyApiClient {
 
   /**
    * Create a backup
-   *
    *
    * ### Authorization
    * A service token or OAuth token must have at least one of the following access or scopes in order to use this API endpoint:
@@ -946,7 +673,7 @@ export class PlanetScaleClient extends HeyApiClient {
   public createBackup<ThrowOnError extends boolean = true>(
     options: Options<CreateBackupData, ThrowOnError>,
   ) {
-    return (options.client ?? this.client).post<
+    return (options.client ?? this._client).post<
       CreateBackupResponses,
       CreateBackupErrors,
       ThrowOnError
@@ -962,7 +689,6 @@ export class PlanetScaleClient extends HeyApiClient {
 
   /**
    * Delete a backup
-   *
    *
    * ### Authorization
    * A service token or OAuth token must have at least one of the following access or scopes in order to use this API endpoint:
@@ -981,7 +707,7 @@ export class PlanetScaleClient extends HeyApiClient {
   public deleteBackup<ThrowOnError extends boolean = true>(
     options: Options<DeleteBackupData, ThrowOnError>,
   ) {
-    return (options.client ?? this.client).delete<
+    return (options.client ?? this._client).delete<
       DeleteBackupResponses,
       DeleteBackupErrors,
       ThrowOnError
@@ -993,7 +719,6 @@ export class PlanetScaleClient extends HeyApiClient {
 
   /**
    * Get a backup
-   *
    *
    * ### Authorization
    * A service token or OAuth token must have at least one of the following access or scopes in order to use this API endpoint:
@@ -1012,7 +737,7 @@ export class PlanetScaleClient extends HeyApiClient {
   public getBackup<ThrowOnError extends boolean = true>(
     options: Options<GetBackupData, ThrowOnError>,
   ) {
-    return (options.client ?? this.client).get<
+    return (options.client ?? this._client).get<
       GetBackupResponses,
       GetBackupErrors,
       ThrowOnError
@@ -1024,7 +749,6 @@ export class PlanetScaleClient extends HeyApiClient {
 
   /**
    * Update a backup
-   *
    *
    * ### Authorization
    * A service token or OAuth token must have at least one of the following access or scopes in order to use this API endpoint:
@@ -1043,7 +767,7 @@ export class PlanetScaleClient extends HeyApiClient {
   public updateBackup<ThrowOnError extends boolean = true>(
     options: Options<UpdateBackupData, ThrowOnError>,
   ) {
-    return (options.client ?? this.client).patch<
+    return (options.client ?? this._client).patch<
       UpdateBackupResponses,
       UpdateBackupErrors,
       ThrowOnError
@@ -1058,260 +782,7 @@ export class PlanetScaleClient extends HeyApiClient {
   }
 
   /**
-   * Get bouncer resize requests
-   *
-   *
-   * ### Authorization
-   * A service token or OAuth token must have at least one of the following access or scopes in order to use this API endpoint:
-   *
-   * **Service Token Accesses**
-   * `read_branch`, `delete_branch`, `create_branch`, `connect_production_branch`, `connect_branch`
-   *
-   * **OAuth Scopes**
-   *
-   * | Resource | Scopes |
-   * | :------- | :---------- |
-   * | Organization | `read_branches` |
-   * | Database | `read_branches` |
-   * | Branch | `read_branch` |
-   */
-  public listBranchBouncerResizeRequests<ThrowOnError extends boolean = true>(
-    options: Options<ListBranchBouncerResizeRequestsData, ThrowOnError>,
-  ) {
-    return (options.client ?? this.client).get<
-      ListBranchBouncerResizeRequestsResponses,
-      ListBranchBouncerResizeRequestsErrors,
-      ThrowOnError
-    >({
-      url: "/organizations/{organization}/databases/{database}/branches/{branch}/bouncer-resizes",
-      ...options,
-    });
-  }
-
-  /**
-   * List bouncers
-   *
-   *
-   * ### Authorization
-   * A service token or OAuth token must have at least one of the following access or scopes in order to use this API endpoint:
-   *
-   * **Service Token Accesses**
-   * `read_branch`, `delete_branch`, `create_branch`, `connect_production_branch`, `connect_branch`
-   *
-   * **OAuth Scopes**
-   *
-   * | Resource | Scopes |
-   * | :------- | :---------- |
-   * | Organization | `read_branches` |
-   * | Database | `read_branches` |
-   * | Branch | `read_branch` |
-   */
-  public listBouncers<ThrowOnError extends boolean = true>(
-    options: Options<ListBouncersData, ThrowOnError>,
-  ) {
-    return (options.client ?? this.client).get<
-      ListBouncersResponses,
-      ListBouncersErrors,
-      ThrowOnError
-    >({
-      url: "/organizations/{organization}/databases/{database}/branches/{branch}/bouncers",
-      ...options,
-    });
-  }
-
-  /**
-   * Create a bouncer
-   *
-   *
-   * ### Authorization
-   * A service token or OAuth token must have at least one of the following access or scopes in order to use this API endpoint:
-   *
-   * **Service Token Accesses**
-   * `write_database`
-   *
-   * **OAuth Scopes**
-   *
-   * | Resource | Scopes |
-   * | :------- | :---------- |
-   * | Organization | `write_databases` |
-   * | Database | `write_database` |
-   */
-  public createBouncer<ThrowOnError extends boolean = true>(
-    options: Options<CreateBouncerData, ThrowOnError>,
-  ) {
-    return (options.client ?? this.client).post<
-      CreateBouncerResponses,
-      CreateBouncerErrors,
-      ThrowOnError
-    >({
-      url: "/organizations/{organization}/databases/{database}/branches/{branch}/bouncers",
-      ...options,
-      headers: {
-        "Content-Type": "application/json",
-        ...options.headers,
-      },
-    });
-  }
-
-  /**
-   * Delete a bouncer
-   *
-   *
-   * ### Authorization
-   * A service token or OAuth token must have at least one of the following access or scopes in order to use this API endpoint:
-   *
-   * **Service Token Accesses**
-   * `write_database`
-   *
-   * **OAuth Scopes**
-   *
-   * | Resource | Scopes |
-   * | :------- | :---------- |
-   * | Organization | `write_databases` |
-   * | Database | `write_database` |
-   */
-  public deleteBouncer<ThrowOnError extends boolean = true>(
-    options: Options<DeleteBouncerData, ThrowOnError>,
-  ) {
-    return (options.client ?? this.client).delete<
-      DeleteBouncerResponses,
-      DeleteBouncerErrors,
-      ThrowOnError
-    >({
-      url: "/organizations/{organization}/databases/{database}/branches/{branch}/bouncers/{bouncer}",
-      ...options,
-    });
-  }
-
-  /**
-   * Get a bouncer
-   *
-   *
-   * ### Authorization
-   * A service token or OAuth token must have at least one of the following access or scopes in order to use this API endpoint:
-   *
-   * **Service Token Accesses**
-   * `read_branch`, `delete_branch`, `create_branch`, `connect_production_branch`, `connect_branch`
-   *
-   * **OAuth Scopes**
-   *
-   * | Resource | Scopes |
-   * | :------- | :---------- |
-   * | Organization | `read_branches` |
-   * | Database | `read_branches` |
-   * | Branch | `read_branch` |
-   */
-  public getBouncer<ThrowOnError extends boolean = true>(
-    options: Options<GetBouncerData, ThrowOnError>,
-  ) {
-    return (options.client ?? this.client).get<
-      GetBouncerResponses,
-      GetBouncerErrors,
-      ThrowOnError
-    >({
-      url: "/organizations/{organization}/databases/{database}/branches/{branch}/bouncers/{bouncer}",
-      ...options,
-    });
-  }
-
-  /**
-   * Cancel a resize request
-   *
-   *
-   * ### Authorization
-   * A service token or OAuth token must have at least one of the following access or scopes in order to use this API endpoint:
-   *
-   * **Service Token Accesses**
-   * `write_database`
-   *
-   * **OAuth Scopes**
-   *
-   * | Resource | Scopes |
-   * | :------- | :---------- |
-   * | Organization | `write_databases` |
-   * | Database | `write_database` |
-   */
-  public cancelBouncerResizeRequest<ThrowOnError extends boolean = true>(
-    options: Options<CancelBouncerResizeRequestData, ThrowOnError>,
-  ) {
-    return (options.client ?? this.client).delete<
-      CancelBouncerResizeRequestResponses,
-      CancelBouncerResizeRequestErrors,
-      ThrowOnError
-    >({
-      url: "/organizations/{organization}/databases/{database}/branches/{branch}/bouncers/{bouncer}/resizes",
-      ...options,
-    });
-  }
-
-  /**
-   * Get bouncer resize requests
-   *
-   *
-   * ### Authorization
-   * A service token or OAuth token must have at least one of the following access or scopes in order to use this API endpoint:
-   *
-   * **Service Token Accesses**
-   * `read_branch`, `delete_branch`, `create_branch`, `connect_production_branch`, `connect_branch`
-   *
-   * **OAuth Scopes**
-   *
-   * | Resource | Scopes |
-   * | :------- | :---------- |
-   * | Organization | `read_branches` |
-   * | Database | `read_branches` |
-   * | Branch | `read_branch` |
-   */
-  public listBouncerResizeRequests<ThrowOnError extends boolean = true>(
-    options: Options<ListBouncerResizeRequestsData, ThrowOnError>,
-  ) {
-    return (options.client ?? this.client).get<
-      ListBouncerResizeRequestsResponses,
-      ListBouncerResizeRequestsErrors,
-      ThrowOnError
-    >({
-      url: "/organizations/{organization}/databases/{database}/branches/{branch}/bouncers/{bouncer}/resizes",
-      ...options,
-    });
-  }
-
-  /**
-   * Upsert a bouncer resize request
-   *
-   *
-   * ### Authorization
-   * A service token or OAuth token must have at least one of the following access or scopes in order to use this API endpoint:
-   *
-   * **Service Token Accesses**
-   * `write_database`
-   *
-   * **OAuth Scopes**
-   *
-   * | Resource | Scopes |
-   * | :------- | :---------- |
-   * | Organization | `write_databases` |
-   * | Database | `write_database` |
-   */
-  public updateBouncerResizeRequest<ThrowOnError extends boolean = true>(
-    options: Options<UpdateBouncerResizeRequestData, ThrowOnError>,
-  ) {
-    return (options.client ?? this.client).patch<
-      UpdateBouncerResizeRequestResponses,
-      UpdateBouncerResizeRequestErrors,
-      ThrowOnError
-    >({
-      url: "/organizations/{organization}/databases/{database}/branches/{branch}/bouncers/{bouncer}/resizes",
-      ...options,
-      headers: {
-        "Content-Type": "application/json",
-        ...options.headers,
-      },
-    });
-  }
-
-  /**
    * Get branch change requests
-   *
    *
    * ### Authorization
    * A service token or OAuth token must have at least one of the following access or scopes in order to use this API endpoint:
@@ -1330,7 +801,7 @@ export class PlanetScaleClient extends HeyApiClient {
   public listBranchChangeRequests<ThrowOnError extends boolean = true>(
     options: Options<ListBranchChangeRequestsData, ThrowOnError>,
   ) {
-    return (options.client ?? this.client).get<
+    return (options.client ?? this._client).get<
       ListBranchChangeRequestsResponses,
       ListBranchChangeRequestsErrors,
       ThrowOnError
@@ -1342,7 +813,6 @@ export class PlanetScaleClient extends HeyApiClient {
 
   /**
    * Upsert a change request
-   *
    *
    * ### Authorization
    * A service token or OAuth token must have at least one of the following access or scopes in order to use this API endpoint:
@@ -1360,7 +830,7 @@ export class PlanetScaleClient extends HeyApiClient {
   public updateBranchChangeRequest<ThrowOnError extends boolean = true>(
     options: Options<UpdateBranchChangeRequestData, ThrowOnError>,
   ) {
-    return (options.client ?? this.client).patch<
+    return (options.client ?? this._client).patch<
       UpdateBranchChangeRequestResponses,
       UpdateBranchChangeRequestErrors,
       ThrowOnError
@@ -1375,98 +845,7 @@ export class PlanetScaleClient extends HeyApiClient {
   }
 
   /**
-   * Get a branch change request
-   *
-   *
-   * ### Authorization
-   * A service token or OAuth token must have at least one of the following access or scopes in order to use this API endpoint:
-   *
-   * **Service Token Accesses**
-   * `read_branch`, `delete_branch`, `create_branch`, `connect_production_branch`, `connect_branch`
-   *
-   * **OAuth Scopes**
-   *
-   * | Resource | Scopes |
-   * | :------- | :---------- |
-   * | Organization | `read_branches` |
-   * | Database | `read_branches` |
-   * | Branch | `read_branch` |
-   */
-  public getBranchChangeRequest<ThrowOnError extends boolean = true>(
-    options: Options<GetBranchChangeRequestData, ThrowOnError>,
-  ) {
-    return (options.client ?? this.client).get<
-      GetBranchChangeRequestResponses,
-      GetBranchChangeRequestErrors,
-      ThrowOnError
-    >({
-      url: "/organizations/{organization}/databases/{database}/branches/{branch}/changes/{id}",
-      ...options,
-    });
-  }
-
-  /**
-   * Change a branch cluster configuration
-   *
-   *
-   * ### Authorization
-   * A service token   must have at least one of the following access   in order to use this API endpoint:
-   *
-   * **Service Token Accesses**
-   * `write_database`
-   *
-   *
-   */
-  public updateBranchClusterConfig<ThrowOnError extends boolean = true>(
-    options: Options<UpdateBranchClusterConfigData, ThrowOnError>,
-  ) {
-    return (options.client ?? this.client).patch<
-      UpdateBranchClusterConfigResponses,
-      UpdateBranchClusterConfigErrors,
-      ThrowOnError
-    >({
-      url: "/organizations/{organization}/databases/{database}/branches/{branch}/cluster",
-      ...options,
-      headers: {
-        "Content-Type": "application/json",
-        ...options.headers,
-      },
-    });
-  }
-
-  /**
-   * Demote a branch
-   *
-   * Demotes a branch from production to development
-   * ### Authorization
-   * A service token or OAuth token must have at least one of the following access or scopes in order to use this API endpoint:
-   *
-   * **Service Token Accesses**
-   * `connect_production_branch`, `demote_branches`
-   *
-   * **OAuth Scopes**
-   *
-   * | Resource | Scopes |
-   * | :------- | :---------- |
-   * | Organization | `demote_branches` |
-   * | Database | `demote_branches` |
-   */
-  public demoteBranch<ThrowOnError extends boolean = true>(
-    options: Options<DemoteBranchData, ThrowOnError>,
-  ) {
-    return (options.client ?? this.client).post<
-      DemoteBranchResponses,
-      DemoteBranchErrors,
-      ThrowOnError
-    >({
-      url: "/organizations/{organization}/databases/{database}/branches/{branch}/demote",
-      ...options,
-    });
-  }
-
-  /**
    * List cluster extensions
-   *
    *
    * ### Authorization
    * A service token or OAuth token must have at least one of the following access or scopes in order to use this API endpoint:
@@ -1485,7 +864,7 @@ export class PlanetScaleClient extends HeyApiClient {
   public listExtensions<ThrowOnError extends boolean = true>(
     options: Options<ListExtensionsData, ThrowOnError>,
   ) {
-    return (options.client ?? this.client).get<
+    return (options.client ?? this._client).get<
       ListExtensionsResponses,
       ListExtensionsErrors,
       ThrowOnError
@@ -1499,18 +878,11 @@ export class PlanetScaleClient extends HeyApiClient {
    * Get keyspaces
    *
    *
-   * ### Authorization
-   * A service token   must have at least one of the following access   in order to use this API endpoint:
-   *
-   * **Service Token Accesses**
-   * `read_branch`
-   *
-   *
    */
   public listKeyspaces<ThrowOnError extends boolean = true>(
     options: Options<ListKeyspacesData, ThrowOnError>,
   ) {
-    return (options.client ?? this.client).get<
+    return (options.client ?? this._client).get<
       ListKeyspacesResponses,
       ListKeyspacesErrors,
       ThrowOnError
@@ -1524,18 +896,11 @@ export class PlanetScaleClient extends HeyApiClient {
    * Create a keyspace
    *
    *
-   * ### Authorization
-   * A service token   must have at least one of the following access   in order to use this API endpoint:
-   *
-   * **Service Token Accesses**
-   * `create_branch`
-   *
-   *
    */
   public createKeyspace<ThrowOnError extends boolean = true>(
     options: Options<CreateKeyspaceData, ThrowOnError>,
   ) {
-    return (options.client ?? this.client).post<
+    return (options.client ?? this._client).post<
       CreateKeyspaceResponses,
       CreateKeyspaceErrors,
       ThrowOnError
@@ -1550,108 +915,7 @@ export class PlanetScaleClient extends HeyApiClient {
   }
 
   /**
-   * Delete a keyspace
-   *
-   *
-   * ### Authorization
-   * A service token   must have at least one of the following access   in order to use this API endpoint:
-   *
-   * **Service Token Accesses**
-   * `delete_branch`, `delete_production_branch`
-   *
-   *
-   */
-  public deleteKeyspace<ThrowOnError extends boolean = true>(
-    options: Options<DeleteKeyspaceData, ThrowOnError>,
-  ) {
-    return (options.client ?? this.client).delete<
-      DeleteKeyspaceResponses,
-      DeleteKeyspaceErrors,
-      ThrowOnError
-    >({
-      url: "/organizations/{organization}/databases/{database}/branches/{branch}/keyspaces/{keyspace}",
-      ...options,
-    });
-  }
-
-  /**
-   * Get a keyspace
-   *
-   *
-   * ### Authorization
-   * A service token   must have at least one of the following access   in order to use this API endpoint:
-   *
-   * **Service Token Accesses**
-   * `read_branch`
-   *
-   *
-   */
-  public getKeyspace<ThrowOnError extends boolean = true>(
-    options: Options<GetKeyspaceData, ThrowOnError>,
-  ) {
-    return (options.client ?? this.client).get<
-      GetKeyspaceResponses,
-      GetKeyspaceErrors,
-      ThrowOnError
-    >({
-      url: "/organizations/{organization}/databases/{database}/branches/{branch}/keyspaces/{keyspace}",
-      ...options,
-    });
-  }
-
-  /**
-   * Configure keyspace settings
-   *
-   *
-   * ### Authorization
-   * A service token   must have at least one of the following access   in order to use this API endpoint:
-   *
-   * **Service Token Accesses**
-   * `create_branch`
-   *
-   *
-   */
-  public updateKeyspace<ThrowOnError extends boolean = true>(
-    options: Options<UpdateKeyspaceData, ThrowOnError>,
-  ) {
-    return (options.client ?? this.client).patch<
-      UpdateKeyspaceResponses,
-      UpdateKeyspaceErrors,
-      ThrowOnError
-    >({
-      url: "/organizations/{organization}/databases/{database}/branches/{branch}/keyspaces/{keyspace}",
-      ...options,
-    });
-  }
-
-  /**
-   * Get keyspace rollout status
-   *
-   *
-   * ### Authorization
-   * A service token   must have at least one of the following access   in order to use this API endpoint:
-   *
-   * **Service Token Accesses**
-   * `read_branch`
-   *
-   *
-   */
-  public getKeyspaceRolloutStatus<ThrowOnError extends boolean = true>(
-    options: Options<GetKeyspaceRolloutStatusData, ThrowOnError>,
-  ) {
-    return (options.client ?? this.client).get<
-      GetKeyspaceRolloutStatusResponses,
-      GetKeyspaceRolloutStatusErrors,
-      ThrowOnError
-    >({
-      url: "/organizations/{organization}/databases/{database}/branches/{branch}/keyspaces/{keyspace}/rollout-status",
-      ...options,
-    });
-  }
-
-  /**
    * Get the VSchema for the keyspace
-   *
    *
    * ### Authorization
    * A service token   must have at least one of the following access   in order to use this API endpoint:
@@ -1664,7 +928,7 @@ export class PlanetScaleClient extends HeyApiClient {
   public getKeyspaceVschema<ThrowOnError extends boolean = true>(
     options: Options<GetKeyspaceVschemaData, ThrowOnError>,
   ) {
-    return (options.client ?? this.client).get<
+    return (options.client ?? this._client).get<
       GetKeyspaceVschemaResponses,
       GetKeyspaceVschemaErrors,
       ThrowOnError
@@ -1677,7 +941,6 @@ export class PlanetScaleClient extends HeyApiClient {
   /**
    * Update the VSchema for the keyspace
    *
-   *
    * ### Authorization
    * A service token   must have at least one of the following access   in order to use this API endpoint:
    *
@@ -1689,7 +952,7 @@ export class PlanetScaleClient extends HeyApiClient {
   public updateKeyspaceVschema<ThrowOnError extends boolean = true>(
     options: Options<UpdateKeyspaceVschemaData, ThrowOnError>,
   ) {
-    return (options.client ?? this.client).patch<
+    return (options.client ?? this._client).patch<
       UpdateKeyspaceVschemaResponses,
       UpdateKeyspaceVschemaErrors,
       ThrowOnError
@@ -1704,9 +967,79 @@ export class PlanetScaleClient extends HeyApiClient {
   }
 
   /**
-   * List cluster parameters
+   * Delete a keyspace
    *
-   *         Returns the parameters for a branch. To update the parameters, use the "Upsert a change request" endpoint.
+   *
+   */
+  public deleteKeyspace<ThrowOnError extends boolean = true>(
+    options: Options<DeleteKeyspaceData, ThrowOnError>,
+  ) {
+    return (options.client ?? this._client).delete<
+      DeleteKeyspaceResponses,
+      DeleteKeyspaceErrors,
+      ThrowOnError
+    >({
+      url: "/organizations/{organization}/databases/{database}/branches/{branch}/keyspaces/{name}",
+      ...options,
+    });
+  }
+
+  /**
+   * Get a keyspace
+   *
+   *
+   */
+  public getKeyspace<ThrowOnError extends boolean = true>(
+    options: Options<GetKeyspaceData, ThrowOnError>,
+  ) {
+    return (options.client ?? this._client).get<
+      GetKeyspaceResponses,
+      GetKeyspaceErrors,
+      ThrowOnError
+    >({
+      url: "/organizations/{organization}/databases/{database}/branches/{branch}/keyspaces/{name}",
+      ...options,
+    });
+  }
+
+  /**
+   * Configure keyspace settings
+   *
+   *
+   */
+  public updateKeyspace<ThrowOnError extends boolean = true>(
+    options: Options<UpdateKeyspaceData, ThrowOnError>,
+  ) {
+    return (options.client ?? this._client).patch<
+      UpdateKeyspaceResponses,
+      UpdateKeyspaceErrors,
+      ThrowOnError
+    >({
+      url: "/organizations/{organization}/databases/{database}/branches/{branch}/keyspaces/{name}",
+      ...options,
+    });
+  }
+
+  /**
+   * Get keyspace rollout status
+   *
+   *
+   */
+  public getKeyspaceRolloutStatus<ThrowOnError extends boolean = true>(
+    options: Options<GetKeyspaceRolloutStatusData, ThrowOnError>,
+  ) {
+    return (options.client ?? this._client).get<
+      GetKeyspaceRolloutStatusResponses,
+      GetKeyspaceRolloutStatusErrors,
+      ThrowOnError
+    >({
+      url: "/organizations/{organization}/databases/{database}/branches/{branch}/keyspaces/{name}/rollout-status",
+      ...options,
+    });
+  }
+
+  /**
+   * List cluster parameters
    *
    * ### Authorization
    * A service token or OAuth token must have at least one of the following access or scopes in order to use this API endpoint:
@@ -1725,7 +1058,7 @@ export class PlanetScaleClient extends HeyApiClient {
   public listParameters<ThrowOnError extends boolean = true>(
     options: Options<ListParametersData, ThrowOnError>,
   ) {
-    return (options.client ?? this.client).get<
+    return (options.client ?? this._client).get<
       ListParametersResponses,
       ListParametersErrors,
       ThrowOnError
@@ -1737,7 +1070,6 @@ export class PlanetScaleClient extends HeyApiClient {
 
   /**
    * List passwords
-   *
    *
    * ### Authorization
    * A service token or OAuth token must have at least one of the following access or scopes in order to use this API endpoint:
@@ -1756,7 +1088,7 @@ export class PlanetScaleClient extends HeyApiClient {
   public listPasswords<ThrowOnError extends boolean = true>(
     options: Options<ListPasswordsData, ThrowOnError>,
   ) {
-    return (options.client ?? this.client).get<
+    return (options.client ?? this._client).get<
       ListPasswordsResponses,
       ListPasswordsErrors,
       ThrowOnError
@@ -1768,7 +1100,6 @@ export class PlanetScaleClient extends HeyApiClient {
 
   /**
    * Create a password
-   *
    *
    * ### Authorization
    * A service token or OAuth token must have at least one of the following access or scopes in order to use this API endpoint:
@@ -1787,7 +1118,7 @@ export class PlanetScaleClient extends HeyApiClient {
   public createPassword<ThrowOnError extends boolean = true>(
     options: Options<CreatePasswordData, ThrowOnError>,
   ) {
-    return (options.client ?? this.client).post<
+    return (options.client ?? this._client).post<
       CreatePasswordResponses,
       CreatePasswordErrors,
       ThrowOnError
@@ -1803,7 +1134,6 @@ export class PlanetScaleClient extends HeyApiClient {
 
   /**
    * Delete a password
-   *
    *
    * ### Authorization
    * A service token or OAuth token must have at least one of the following access or scopes in order to use this API endpoint:
@@ -1822,7 +1152,7 @@ export class PlanetScaleClient extends HeyApiClient {
   public deletePassword<ThrowOnError extends boolean = true>(
     options: Options<DeletePasswordData, ThrowOnError>,
   ) {
-    return (options.client ?? this.client).delete<
+    return (options.client ?? this._client).delete<
       DeletePasswordResponses,
       DeletePasswordErrors,
       ThrowOnError
@@ -1834,7 +1164,6 @@ export class PlanetScaleClient extends HeyApiClient {
 
   /**
    * Get a password
-   *
    *
    * ### Authorization
    * A service token or OAuth token must have at least one of the following access or scopes in order to use this API endpoint:
@@ -1853,7 +1182,7 @@ export class PlanetScaleClient extends HeyApiClient {
   public getPassword<ThrowOnError extends boolean = true>(
     options: Options<GetPasswordData, ThrowOnError>,
   ) {
-    return (options.client ?? this.client).get<
+    return (options.client ?? this._client).get<
       GetPasswordResponses,
       GetPasswordErrors,
       ThrowOnError
@@ -1865,7 +1194,6 @@ export class PlanetScaleClient extends HeyApiClient {
 
   /**
    * Update a password
-   *
    *
    * ### Authorization
    * A service token or OAuth token must have at least one of the following access or scopes in order to use this API endpoint:
@@ -1884,7 +1212,7 @@ export class PlanetScaleClient extends HeyApiClient {
   public updatePassword<ThrowOnError extends boolean = true>(
     options: Options<UpdatePasswordData, ThrowOnError>,
   ) {
-    return (options.client ?? this.client).patch<
+    return (options.client ?? this._client).patch<
       UpdatePasswordResponses,
       UpdatePasswordErrors,
       ThrowOnError
@@ -1900,7 +1228,6 @@ export class PlanetScaleClient extends HeyApiClient {
 
   /**
    * Renew a password
-   *
    *
    * ### Authorization
    * A service token or OAuth token must have at least one of the following access or scopes in order to use this API endpoint:
@@ -1919,7 +1246,7 @@ export class PlanetScaleClient extends HeyApiClient {
   public renewPassword<ThrowOnError extends boolean = true>(
     options: Options<RenewPasswordData, ThrowOnError>,
   ) {
-    return (options.client ?? this.client).post<
+    return (options.client ?? this._client).post<
       RenewPasswordResponses,
       RenewPasswordErrors,
       ThrowOnError
@@ -1930,38 +1257,7 @@ export class PlanetScaleClient extends HeyApiClient {
   }
 
   /**
-   * Promote a branch
-   *
-   * Promotes a branch from development to production
-   * ### Authorization
-   * A service token or OAuth token must have at least one of the following access or scopes in order to use this API endpoint:
-   *
-   * **Service Token Accesses**
-   * `connect_production_branch`, `promote_branches`
-   *
-   * **OAuth Scopes**
-   *
-   * | Resource | Scopes |
-   * | :------- | :---------- |
-   * | Organization | `promote_branches` |
-   * | Database | `promote_branches` |
-   */
-  public promoteBranch<ThrowOnError extends boolean = true>(
-    options: Options<PromoteBranchData, ThrowOnError>,
-  ) {
-    return (options.client ?? this.client).post<
-      PromoteBranchResponses,
-      PromoteBranchErrors,
-      ThrowOnError
-    >({
-      url: "/organizations/{organization}/databases/{database}/branches/{branch}/promote",
-      ...options,
-    });
-  }
-
-  /**
    * List generated query patterns reports
-   *
    *
    * ### Authorization
    * A service token or OAuth token must have at least one of the following access or scopes in order to use this API endpoint:
@@ -1980,7 +1276,7 @@ export class PlanetScaleClient extends HeyApiClient {
   public listGeneratedQueryPatternsReports<ThrowOnError extends boolean = true>(
     options: Options<ListGeneratedQueryPatternsReportsData, ThrowOnError>,
   ) {
-    return (options.client ?? this.client).get<
+    return (options.client ?? this._client).get<
       ListGeneratedQueryPatternsReportsResponses,
       ListGeneratedQueryPatternsReportsErrors,
       ThrowOnError
@@ -1992,7 +1288,6 @@ export class PlanetScaleClient extends HeyApiClient {
 
   /**
    * Create a new query patterns report
-   *
    *
    * ### Authorization
    * A service token or OAuth token must have at least one of the following access or scopes in order to use this API endpoint:
@@ -2011,7 +1306,7 @@ export class PlanetScaleClient extends HeyApiClient {
   public createQueryPatternsReport<ThrowOnError extends boolean = true>(
     options: Options<CreateQueryPatternsReportData, ThrowOnError>,
   ) {
-    return (options.client ?? this.client).post<
+    return (options.client ?? this._client).post<
       CreateQueryPatternsReportResponses,
       CreateQueryPatternsReportErrors,
       ThrowOnError
@@ -2023,7 +1318,6 @@ export class PlanetScaleClient extends HeyApiClient {
 
   /**
    * Delete a query patterns report
-   *
    *
    * ### Authorization
    * A service token or OAuth token must have at least one of the following access or scopes in order to use this API endpoint:
@@ -2042,7 +1336,7 @@ export class PlanetScaleClient extends HeyApiClient {
   public deleteQueryPatternsReport<ThrowOnError extends boolean = true>(
     options: Options<DeleteQueryPatternsReportData, ThrowOnError>,
   ) {
-    return (options.client ?? this.client).delete<
+    return (options.client ?? this._client).delete<
       DeleteQueryPatternsReportResponses,
       DeleteQueryPatternsReportErrors,
       ThrowOnError
@@ -2054,7 +1348,6 @@ export class PlanetScaleClient extends HeyApiClient {
 
   /**
    * Show the status of a query patterns report
-   *
    *
    * ### Authorization
    * A service token or OAuth token must have at least one of the following access or scopes in order to use this API endpoint:
@@ -2073,7 +1366,7 @@ export class PlanetScaleClient extends HeyApiClient {
   public getQueryPatternsReportStatus<ThrowOnError extends boolean = true>(
     options: Options<GetQueryPatternsReportStatusData, ThrowOnError>,
   ) {
-    return (options.client ?? this.client).get<
+    return (options.client ?? this._client).get<
       GetQueryPatternsReportStatusResponses,
       GetQueryPatternsReportStatusErrors,
       ThrowOnError
@@ -2085,7 +1378,6 @@ export class PlanetScaleClient extends HeyApiClient {
 
   /**
    * Download a finished query patterns report
-   *
    *
    * ### Authorization
    * A service token or OAuth token must have at least one of the following access or scopes in order to use this API endpoint:
@@ -2104,7 +1396,7 @@ export class PlanetScaleClient extends HeyApiClient {
   public getQueryPatternsReport<ThrowOnError extends boolean = true>(
     options: Options<GetQueryPatternsReportData, ThrowOnError>,
   ) {
-    return (options.client ?? this.client).get<
+    return (options.client ?? this._client).get<
       unknown,
       GetQueryPatternsReportErrors,
       ThrowOnError
@@ -2116,7 +1408,6 @@ export class PlanetScaleClient extends HeyApiClient {
 
   /**
    * Cancel a change request
-   *
    *
    * ### Authorization
    * A service token or OAuth token must have at least one of the following access or scopes in order to use this API endpoint:
@@ -2134,7 +1425,7 @@ export class PlanetScaleClient extends HeyApiClient {
   public cancelBranchChangeRequest<ThrowOnError extends boolean = true>(
     options: Options<CancelBranchChangeRequestData, ThrowOnError>,
   ) {
-    return (options.client ?? this.client).delete<
+    return (options.client ?? this._client).delete<
       CancelBranchChangeRequestResponses,
       CancelBranchChangeRequestErrors,
       ThrowOnError
@@ -2146,7 +1437,6 @@ export class PlanetScaleClient extends HeyApiClient {
 
   /**
    * List roles
-   *
    *
    * ### Authorization
    * A service token or OAuth token must have at least one of the following access or scopes in order to use this API endpoint:
@@ -2165,7 +1455,7 @@ export class PlanetScaleClient extends HeyApiClient {
   public listRoles<ThrowOnError extends boolean = true>(
     options: Options<ListRolesData, ThrowOnError>,
   ) {
-    return (options.client ?? this.client).get<
+    return (options.client ?? this._client).get<
       ListRolesResponses,
       ListRolesErrors,
       ThrowOnError
@@ -2177,7 +1467,6 @@ export class PlanetScaleClient extends HeyApiClient {
 
   /**
    * Create role credentials
-   *
    *
    * ### Authorization
    * A service token or OAuth token must have at least one of the following access or scopes in order to use this API endpoint:
@@ -2196,7 +1485,7 @@ export class PlanetScaleClient extends HeyApiClient {
   public createRole<ThrowOnError extends boolean = true>(
     options: Options<CreateRoleData, ThrowOnError>,
   ) {
-    return (options.client ?? this.client).post<
+    return (options.client ?? this._client).post<
       CreateRoleResponses,
       CreateRoleErrors,
       ThrowOnError
@@ -2211,70 +1500,7 @@ export class PlanetScaleClient extends HeyApiClient {
   }
 
   /**
-   * Get the default postgres role
-   *
-   *
-   * ### Authorization
-   * A service token or OAuth token must have at least one of the following access or scopes in order to use this API endpoint:
-   *
-   * **Service Token Accesses**
-   * `read_branch`, `delete_branch`, `create_branch`, `connect_production_branch`, `connect_branch`
-   *
-   * **OAuth Scopes**
-   *
-   * | Resource | Scopes |
-   * | :------- | :---------- |
-   * | Organization | `manage_passwords`, `manage_production_branch_passwords` |
-   * | Database | `manage_passwords`, `manage_production_branch_passwords` |
-   * | Branch | `manage_passwords` |
-   */
-  public getDefaultRole<ThrowOnError extends boolean = true>(
-    options: Options<GetDefaultRoleData, ThrowOnError>,
-  ) {
-    return (options.client ?? this.client).get<
-      GetDefaultRoleResponses,
-      GetDefaultRoleErrors,
-      ThrowOnError
-    >({
-      url: "/organizations/{organization}/databases/{database}/branches/{branch}/roles/default",
-      ...options,
-    });
-  }
-
-  /**
-   * Reset default credentials
-   *
-   *
-   * ### Authorization
-   * A service token or OAuth token must have at least one of the following access or scopes in order to use this API endpoint:
-   *
-   * **Service Token Accesses**
-   * `delete_production_branch_password`, `delete_branch_password`
-   *
-   * **OAuth Scopes**
-   *
-   * | Resource | Scopes |
-   * | :------- | :---------- |
-   * | Organization | `manage_passwords`, `manage_production_branch_passwords` |
-   * | Database | `manage_passwords`, `manage_production_branch_passwords` |
-   * | Branch | `manage_passwords` |
-   */
-  public resetDefaultRole<ThrowOnError extends boolean = true>(
-    options: Options<ResetDefaultRoleData, ThrowOnError>,
-  ) {
-    return (options.client ?? this.client).post<
-      ResetDefaultRoleResponses,
-      ResetDefaultRoleErrors,
-      ThrowOnError
-    >({
-      url: "/organizations/{organization}/databases/{database}/branches/{branch}/roles/reset-default",
-      ...options,
-    });
-  }
-
-  /**
    * Delete role credentials
-   *
    *
    * ### Authorization
    * A service token or OAuth token must have at least one of the following access or scopes in order to use this API endpoint:
@@ -2293,7 +1519,7 @@ export class PlanetScaleClient extends HeyApiClient {
   public deleteRole<ThrowOnError extends boolean = true>(
     options: Options<DeleteRoleData, ThrowOnError>,
   ) {
-    return (options.client ?? this.client).delete<
+    return (options.client ?? this._client).delete<
       DeleteRoleResponses,
       DeleteRoleErrors,
       ThrowOnError
@@ -2309,7 +1535,6 @@ export class PlanetScaleClient extends HeyApiClient {
 
   /**
    * Get a role
-   *
    *
    * ### Authorization
    * A service token or OAuth token must have at least one of the following access or scopes in order to use this API endpoint:
@@ -2328,7 +1553,7 @@ export class PlanetScaleClient extends HeyApiClient {
   public getRole<ThrowOnError extends boolean = true>(
     options: Options<GetRoleData, ThrowOnError>,
   ) {
-    return (options.client ?? this.client).get<
+    return (options.client ?? this._client).get<
       GetRoleResponses,
       GetRoleErrors,
       ThrowOnError
@@ -2340,7 +1565,6 @@ export class PlanetScaleClient extends HeyApiClient {
 
   /**
    * Update role name
-   *
    *
    * ### Authorization
    * A service token or OAuth token must have at least one of the following access or scopes in order to use this API endpoint:
@@ -2359,7 +1583,7 @@ export class PlanetScaleClient extends HeyApiClient {
   public updateRole<ThrowOnError extends boolean = true>(
     options: Options<UpdateRoleData, ThrowOnError>,
   ) {
-    return (options.client ?? this.client).patch<
+    return (options.client ?? this._client).patch<
       UpdateRoleResponses,
       UpdateRoleErrors,
       ThrowOnError
@@ -2374,43 +1598,7 @@ export class PlanetScaleClient extends HeyApiClient {
   }
 
   /**
-   * Reassign objects owned by one role to another role
-   *
-   *
-   * ### Authorization
-   * A service token or OAuth token must have at least one of the following access or scopes in order to use this API endpoint:
-   *
-   * **Service Token Accesses**
-   * `delete_production_branch_password`, `delete_branch_password`
-   *
-   * **OAuth Scopes**
-   *
-   * | Resource | Scopes |
-   * | :------- | :---------- |
-   * | Organization | `manage_passwords`, `manage_production_branch_passwords` |
-   * | Database | `manage_passwords`, `manage_production_branch_passwords` |
-   * | Branch | `manage_passwords` |
-   */
-  public reassignRoleObjects<ThrowOnError extends boolean = true>(
-    options: Options<ReassignRoleObjectsData, ThrowOnError>,
-  ) {
-    return (options.client ?? this.client).post<
-      ReassignRoleObjectsResponses,
-      ReassignRoleObjectsErrors,
-      ThrowOnError
-    >({
-      url: "/organizations/{organization}/databases/{database}/branches/{branch}/roles/{id}/reassign",
-      ...options,
-      headers: {
-        "Content-Type": "application/json",
-        ...options.headers,
-      },
-    });
-  }
-
-  /**
    * Renew role expiration
-   *
    *
    * ### Authorization
    * A service token or OAuth token must have at least one of the following access or scopes in order to use this API endpoint:
@@ -2429,7 +1617,7 @@ export class PlanetScaleClient extends HeyApiClient {
   public renewRole<ThrowOnError extends boolean = true>(
     options: Options<RenewRoleData, ThrowOnError>,
   ) {
-    return (options.client ?? this.client).post<
+    return (options.client ?? this._client).post<
       RenewRoleResponses,
       RenewRoleErrors,
       ThrowOnError
@@ -2440,32 +1628,147 @@ export class PlanetScaleClient extends HeyApiClient {
   }
 
   /**
-   * Reset a role's password
-   *
+   * Delete a branch
    *
    * ### Authorization
    * A service token or OAuth token must have at least one of the following access or scopes in order to use this API endpoint:
    *
    * **Service Token Accesses**
-   * `delete_production_branch_password`, `delete_branch_password`
+   * `delete_branch`
    *
    * **OAuth Scopes**
    *
    * | Resource | Scopes |
    * | :------- | :---------- |
-   * | Organization | `manage_passwords`, `manage_production_branch_passwords` |
-   * | Database | `manage_passwords`, `manage_production_branch_passwords` |
-   * | Branch | `manage_passwords` |
+   * | Organization | `delete_branches`, `delete_production_branches` |
+   * | Database | `delete_branches`, `delete_production_branches` |
+   * | Branch | `delete_branch` |
    */
-  public resetRole<ThrowOnError extends boolean = true>(
-    options: Options<ResetRoleData, ThrowOnError>,
+  public deleteBranch<ThrowOnError extends boolean = true>(
+    options: Options<DeleteBranchData, ThrowOnError>,
   ) {
-    return (options.client ?? this.client).post<
-      ResetRoleResponses,
-      ResetRoleErrors,
+    return (options.client ?? this._client).delete<
+      DeleteBranchResponses,
+      DeleteBranchErrors,
       ThrowOnError
     >({
-      url: "/organizations/{organization}/databases/{database}/branches/{branch}/roles/{id}/reset",
+      url: "/organizations/{organization}/databases/{database}/branches/{name}",
+      ...options,
+    });
+  }
+
+  /**
+   * Get a branch
+   *
+   * ### Authorization
+   * A service token or OAuth token must have at least one of the following access or scopes in order to use this API endpoint:
+   *
+   * **Service Token Accesses**
+   * `read_branch`, `delete_branch`, `create_branch`, `connect_production_branch`, `connect_branch`
+   *
+   * **OAuth Scopes**
+   *
+   * | Resource | Scopes |
+   * | :------- | :---------- |
+   * | Organization | `read_branches` |
+   * | Database | `read_branches` |
+   * | Branch | `read_branch` |
+   */
+  public getBranch<ThrowOnError extends boolean = true>(
+    options: Options<GetBranchData, ThrowOnError>,
+  ) {
+    return (options.client ?? this._client).get<
+      GetBranchResponses,
+      GetBranchErrors,
+      ThrowOnError
+    >({
+      url: "/organizations/{organization}/databases/{database}/branches/{name}",
+      ...options,
+    });
+  }
+
+  /**
+   * Change a branch cluster configuration
+   *
+   * ### Authorization
+   * A service token   must have at least one of the following access   in order to use this API endpoint:
+   *
+   * **Service Token Accesses**
+   * `write_database`
+   *
+   *
+   */
+  public updateBranchClusterConfig<ThrowOnError extends boolean = true>(
+    options: Options<UpdateBranchClusterConfigData, ThrowOnError>,
+  ) {
+    return (options.client ?? this._client).patch<
+      UpdateBranchClusterConfigResponses,
+      UpdateBranchClusterConfigErrors,
+      ThrowOnError
+    >({
+      url: "/organizations/{organization}/databases/{database}/branches/{name}/cluster",
+      ...options,
+      headers: {
+        "Content-Type": "application/json",
+        ...options.headers,
+      },
+    });
+  }
+
+  /**
+   * Demote a branch
+   * Demotes a branch from production to development
+   * ### Authorization
+   * A service token or OAuth token must have at least one of the following access or scopes in order to use this API endpoint:
+   *
+   * **Service Token Accesses**
+   * `connect_production_branch`, `demote_branches`
+   *
+   * **OAuth Scopes**
+   *
+   * | Resource | Scopes |
+   * | :------- | :---------- |
+   * | Organization | `demote_branches` |
+   * | Database | `demote_branches` |
+   */
+  public demoteBranch<ThrowOnError extends boolean = true>(
+    options: Options<DemoteBranchData, ThrowOnError>,
+  ) {
+    return (options.client ?? this._client).post<
+      DemoteBranchResponses,
+      DemoteBranchErrors,
+      ThrowOnError
+    >({
+      url: "/organizations/{organization}/databases/{database}/branches/{name}/demote",
+      ...options,
+    });
+  }
+
+  /**
+   * Promote a branch
+   * Promotes a branch from development to production
+   * ### Authorization
+   * A service token or OAuth token must have at least one of the following access or scopes in order to use this API endpoint:
+   *
+   * **Service Token Accesses**
+   * `connect_production_branch`, `promote_branches`
+   *
+   * **OAuth Scopes**
+   *
+   * | Resource | Scopes |
+   * | :------- | :---------- |
+   * | Organization | `promote_branches` |
+   * | Database | `promote_branches` |
+   */
+  public promoteBranch<ThrowOnError extends boolean = true>(
+    options: Options<PromoteBranchData, ThrowOnError>,
+  ) {
+    return (options.client ?? this._client).post<
+      PromoteBranchResponses,
+      PromoteBranchErrors,
+      ThrowOnError
+    >({
+      url: "/organizations/{organization}/databases/{database}/branches/{name}/promote",
       ...options,
     });
   }
@@ -2474,17 +1777,16 @@ export class PlanetScaleClient extends HeyApiClient {
    * Disable safe migrations for a branch
    *
    *
-   *
    */
   public disableSafeMigrations<ThrowOnError extends boolean = true>(
     options: Options<DisableSafeMigrationsData, ThrowOnError>,
   ) {
-    return (options.client ?? this.client).delete<
+    return (options.client ?? this._client).delete<
       DisableSafeMigrationsResponses,
       DisableSafeMigrationsErrors,
       ThrowOnError
     >({
-      url: "/organizations/{organization}/databases/{database}/branches/{branch}/safe-migrations",
+      url: "/organizations/{organization}/databases/{database}/branches/{name}/safe-migrations",
       ...options,
     });
   }
@@ -2493,24 +1795,22 @@ export class PlanetScaleClient extends HeyApiClient {
    * Enable safe migrations for a branch
    *
    *
-   *
    */
   public enableSafeMigrations<ThrowOnError extends boolean = true>(
     options: Options<EnableSafeMigrationsData, ThrowOnError>,
   ) {
-    return (options.client ?? this.client).post<
+    return (options.client ?? this._client).post<
       EnableSafeMigrationsResponses,
       EnableSafeMigrationsErrors,
       ThrowOnError
     >({
-      url: "/organizations/{organization}/databases/{database}/branches/{branch}/safe-migrations",
+      url: "/organizations/{organization}/databases/{database}/branches/{name}/safe-migrations",
       ...options,
     });
   }
 
   /**
    * Get a branch schema
-   *
    *
    * ### Authorization
    * A service token or OAuth token must have at least one of the following access or scopes in order to use this API endpoint:
@@ -2529,19 +1829,18 @@ export class PlanetScaleClient extends HeyApiClient {
   public getBranchSchema<ThrowOnError extends boolean = true>(
     options: Options<GetBranchSchemaData, ThrowOnError>,
   ) {
-    return (options.client ?? this.client).get<
+    return (options.client ?? this._client).get<
       GetBranchSchemaResponses,
       GetBranchSchemaErrors,
       ThrowOnError
     >({
-      url: "/organizations/{organization}/databases/{database}/branches/{branch}/schema",
+      url: "/organizations/{organization}/databases/{database}/branches/{name}/schema",
       ...options,
     });
   }
 
   /**
    * Lint a branch schema
-   *
    *
    * ### Authorization
    * A service token or OAuth token must have at least one of the following access or scopes in order to use this API endpoint:
@@ -2560,169 +1859,25 @@ export class PlanetScaleClient extends HeyApiClient {
   public lintBranchSchema<ThrowOnError extends boolean = true>(
     options: Options<LintBranchSchemaData, ThrowOnError>,
   ) {
-    return (options.client ?? this.client).get<
+    return (options.client ?? this._client).get<
       LintBranchSchemaResponses,
       LintBranchSchemaErrors,
       ThrowOnError
     >({
-      url: "/organizations/{organization}/databases/{database}/branches/{branch}/schema/lint",
+      url: "/organizations/{organization}/databases/{database}/branches/{name}/schema/lint",
       ...options,
-    });
-  }
-
-  /**
-   * List IP restriction entries
-   *
-   *
-   * ### Authorization
-   * A   OAuth token must have at least one of the following   scopes in order to use this API endpoint:
-   *
-   * **OAuth Scopes**
-   *
-   * | Resource | Scopes |
-   * | :------- | :---------- |
-   * | Organization | `read_databases` |
-   * | Database | `read_database` |
-   */
-  public listDatabasePostgresCidrs<ThrowOnError extends boolean = true>(
-    options: Options<ListDatabasePostgresCidrsData, ThrowOnError>,
-  ) {
-    return (options.client ?? this.client).get<
-      ListDatabasePostgresCidrsResponses,
-      ListDatabasePostgresCidrsErrors,
-      ThrowOnError
-    >({
-      url: "/organizations/{organization}/databases/{database}/cidrs",
-      ...options,
-    });
-  }
-
-  /**
-   * Create an IP restriction entry
-   *
-   *
-   * ### Authorization
-   * A   OAuth token must have at least one of the following   scopes in order to use this API endpoint:
-   *
-   * **OAuth Scopes**
-   *
-   * | Resource | Scopes |
-   * | :------- | :---------- |
-   * | Organization | `write_databases` |
-   * | Database | `write_database` |
-   */
-  public createDatabasePostgresCidr<ThrowOnError extends boolean = true>(
-    options: Options<CreateDatabasePostgresCidrData, ThrowOnError>,
-  ) {
-    return (options.client ?? this.client).post<
-      CreateDatabasePostgresCidrResponses,
-      CreateDatabasePostgresCidrErrors,
-      ThrowOnError
-    >({
-      url: "/organizations/{organization}/databases/{database}/cidrs",
-      ...options,
-      headers: {
-        "Content-Type": "application/json",
-        ...options.headers,
-      },
-    });
-  }
-
-  /**
-   * Delete an IP restriction entry
-   *
-   *
-   * ### Authorization
-   * A   OAuth token must have at least one of the following   scopes in order to use this API endpoint:
-   *
-   * **OAuth Scopes**
-   *
-   * | Resource | Scopes |
-   * | :------- | :---------- |
-   * | Organization | `write_databases` |
-   * | Database | `write_database` |
-   */
-  public deleteDatabasePostgresCidr<ThrowOnError extends boolean = true>(
-    options: Options<DeleteDatabasePostgresCidrData, ThrowOnError>,
-  ) {
-    return (options.client ?? this.client).delete<
-      DeleteDatabasePostgresCidrResponses,
-      DeleteDatabasePostgresCidrErrors,
-      ThrowOnError
-    >({
-      url: "/organizations/{organization}/databases/{database}/cidrs/{id}",
-      ...options,
-    });
-  }
-
-  /**
-   * Get an IP restriction entry
-   *
-   *
-   * ### Authorization
-   * A   OAuth token must have at least one of the following   scopes in order to use this API endpoint:
-   *
-   * **OAuth Scopes**
-   *
-   * | Resource | Scopes |
-   * | :------- | :---------- |
-   * | Organization | `read_databases` |
-   * | Database | `read_database` |
-   */
-  public getDatabasePostgresCidr<ThrowOnError extends boolean = true>(
-    options: Options<GetDatabasePostgresCidrData, ThrowOnError>,
-  ) {
-    return (options.client ?? this.client).get<
-      GetDatabasePostgresCidrResponses,
-      GetDatabasePostgresCidrErrors,
-      ThrowOnError
-    >({
-      url: "/organizations/{organization}/databases/{database}/cidrs/{id}",
-      ...options,
-    });
-  }
-
-  /**
-   * Update an IP restriction entry
-   *
-   *
-   * ### Authorization
-   * A   OAuth token must have at least one of the following   scopes in order to use this API endpoint:
-   *
-   * **OAuth Scopes**
-   *
-   * | Resource | Scopes |
-   * | :------- | :---------- |
-   * | Organization | `write_databases` |
-   * | Database | `write_database` |
-   */
-  public updateDatabasePostgresCidr<ThrowOnError extends boolean = true>(
-    options: Options<UpdateDatabasePostgresCidrData, ThrowOnError>,
-  ) {
-    return (options.client ?? this.client).put<
-      UpdateDatabasePostgresCidrResponses,
-      UpdateDatabasePostgresCidrErrors,
-      ThrowOnError
-    >({
-      url: "/organizations/{organization}/databases/{database}/cidrs/{id}",
-      ...options,
-      headers: {
-        "Content-Type": "application/json",
-        ...options.headers,
-      },
     });
   }
 
   /**
    * Get the deploy queue
-   *
    * The deploy queue returns the current list of deploy requests in the order they will be deployed.
    *
    */
   public getDeployQueue<ThrowOnError extends boolean = true>(
     options: Options<GetDeployQueueData, ThrowOnError>,
   ) {
-    return (options.client ?? this.client).get<
+    return (options.client ?? this._client).get<
       GetDeployQueueResponses,
       GetDeployQueueErrors,
       ThrowOnError
@@ -2734,7 +1889,6 @@ export class PlanetScaleClient extends HeyApiClient {
 
   /**
    * List deploy requests
-   *
    * List deploy requests for a database
    * ### Authorization
    * A service token or OAuth token must have at least one of the following access or scopes in order to use this API endpoint:
@@ -2752,7 +1906,7 @@ export class PlanetScaleClient extends HeyApiClient {
   public listDeployRequests<ThrowOnError extends boolean = true>(
     options: Options<ListDeployRequestsData, ThrowOnError>,
   ) {
-    return (options.client ?? this.client).get<
+    return (options.client ?? this._client).get<
       ListDeployRequestsResponses,
       ListDeployRequestsErrors,
       ThrowOnError
@@ -2764,7 +1918,6 @@ export class PlanetScaleClient extends HeyApiClient {
 
   /**
    * Create a deploy request
-   *
    *
    * ### Authorization
    * A service token or OAuth token must have at least one of the following access or scopes in order to use this API endpoint:
@@ -2782,7 +1935,7 @@ export class PlanetScaleClient extends HeyApiClient {
   public createDeployRequest<ThrowOnError extends boolean = true>(
     options: Options<CreateDeployRequestData, ThrowOnError>,
   ) {
-    return (options.client ?? this.client).post<
+    return (options.client ?? this._client).post<
       CreateDeployRequestResponses,
       CreateDeployRequestErrors,
       ThrowOnError
@@ -2798,7 +1951,6 @@ export class PlanetScaleClient extends HeyApiClient {
 
   /**
    * Get a deploy request
-   *
    *
    * ### Authorization
    * A service token or OAuth token must have at least one of the following access or scopes in order to use this API endpoint:
@@ -2816,7 +1968,7 @@ export class PlanetScaleClient extends HeyApiClient {
   public getDeployRequest<ThrowOnError extends boolean = true>(
     options: Options<GetDeployRequestData, ThrowOnError>,
   ) {
-    return (options.client ?? this.client).get<
+    return (options.client ?? this._client).get<
       GetDeployRequestResponses,
       GetDeployRequestErrors,
       ThrowOnError
@@ -2828,7 +1980,6 @@ export class PlanetScaleClient extends HeyApiClient {
 
   /**
    * Close a deploy request
-   *
    *
    * ### Authorization
    * A service token or OAuth token must have at least one of the following access or scopes in order to use this API endpoint:
@@ -2846,7 +1997,7 @@ export class PlanetScaleClient extends HeyApiClient {
   public closeDeployRequest<ThrowOnError extends boolean = true>(
     options: Options<CloseDeployRequestData, ThrowOnError>,
   ) {
-    return (options.client ?? this.client).patch<
+    return (options.client ?? this._client).patch<
       CloseDeployRequestResponses,
       CloseDeployRequestErrors,
       ThrowOnError
@@ -2862,7 +2013,6 @@ export class PlanetScaleClient extends HeyApiClient {
 
   /**
    * Complete a gated deploy request
-   *
    *
    * ### Authorization
    * A service token or OAuth token must have at least one of the following access or scopes in order to use this API endpoint:
@@ -2880,7 +2030,7 @@ export class PlanetScaleClient extends HeyApiClient {
   public completeGatedDeployRequest<ThrowOnError extends boolean = true>(
     options: Options<CompleteGatedDeployRequestData, ThrowOnError>,
   ) {
-    return (options.client ?? this.client).post<
+    return (options.client ?? this._client).post<
       CompleteGatedDeployRequestResponses,
       CompleteGatedDeployRequestErrors,
       ThrowOnError
@@ -2892,7 +2042,6 @@ export class PlanetScaleClient extends HeyApiClient {
 
   /**
    * Update auto-apply for deploy request
-   *
    * Enables or disabled the auto-apply setting for a deploy request
    * ### Authorization
    * A service token or OAuth token must have at least one of the following access or scopes in order to use this API endpoint:
@@ -2910,7 +2059,7 @@ export class PlanetScaleClient extends HeyApiClient {
   public updateAutoApply<ThrowOnError extends boolean = true>(
     options: Options<UpdateAutoApplyData, ThrowOnError>,
   ) {
-    return (options.client ?? this.client).put<
+    return (options.client ?? this._client).put<
       UpdateAutoApplyResponses,
       UpdateAutoApplyErrors,
       ThrowOnError
@@ -2925,42 +2074,7 @@ export class PlanetScaleClient extends HeyApiClient {
   }
 
   /**
-   * Update auto-delete branch for deploy request
-   *
-   * Enables or disabled the auto-delete branch setting for a deploy request
-   * ### Authorization
-   * A service token or OAuth token must have at least one of the following access or scopes in order to use this API endpoint:
-   *
-   * **Service Token Accesses**
-   * `read_deploy_request`, `create_deploy_request`
-   *
-   * **OAuth Scopes**
-   *
-   * | Resource | Scopes |
-   * | :------- | :---------- |
-   * | Organization | `deploy_deploy_requests` |
-   * | Database | `deploy_deploy_requests` |
-   */
-  public updateAutoDeleteBranch<ThrowOnError extends boolean = true>(
-    options: Options<UpdateAutoDeleteBranchData, ThrowOnError>,
-  ) {
-    return (options.client ?? this.client).put<
-      UpdateAutoDeleteBranchResponses,
-      UpdateAutoDeleteBranchErrors,
-      ThrowOnError
-    >({
-      url: "/organizations/{organization}/databases/{database}/deploy-requests/{number}/auto-delete-branch",
-      ...options,
-      headers: {
-        "Content-Type": "application/json",
-        ...options.headers,
-      },
-    });
-  }
-
-  /**
    * Cancel a queued deploy request
-   *
    *
    * ### Authorization
    * A service token or OAuth token must have at least one of the following access or scopes in order to use this API endpoint:
@@ -2978,7 +2092,7 @@ export class PlanetScaleClient extends HeyApiClient {
   public cancelDeployRequest<ThrowOnError extends boolean = true>(
     options: Options<CancelDeployRequestData, ThrowOnError>,
   ) {
-    return (options.client ?? this.client).post<
+    return (options.client ?? this._client).post<
       CancelDeployRequestResponses,
       CancelDeployRequestErrors,
       ThrowOnError
@@ -2990,7 +2104,6 @@ export class PlanetScaleClient extends HeyApiClient {
 
   /**
    * Complete an errored deploy
-   *
    *
    * ### Authorization
    * A service token or OAuth token must have at least one of the following access or scopes in order to use this API endpoint:
@@ -3008,7 +2121,7 @@ export class PlanetScaleClient extends HeyApiClient {
   public completeErroredDeploy<ThrowOnError extends boolean = true>(
     options: Options<CompleteErroredDeployData, ThrowOnError>,
   ) {
-    return (options.client ?? this.client).post<
+    return (options.client ?? this._client).post<
       CompleteErroredDeployResponses,
       CompleteErroredDeployErrors,
       ThrowOnError
@@ -3020,7 +2133,6 @@ export class PlanetScaleClient extends HeyApiClient {
 
   /**
    * Queue a deploy request
-   *
    *
    * ### Authorization
    * A service token or OAuth token must have at least one of the following access or scopes in order to use this API endpoint:
@@ -3038,7 +2150,7 @@ export class PlanetScaleClient extends HeyApiClient {
   public queueDeployRequest<ThrowOnError extends boolean = true>(
     options: Options<QueueDeployRequestData, ThrowOnError>,
   ) {
-    return (options.client ?? this.client).post<
+    return (options.client ?? this._client).post<
       QueueDeployRequestResponses,
       QueueDeployRequestErrors,
       ThrowOnError
@@ -3054,7 +2166,6 @@ export class PlanetScaleClient extends HeyApiClient {
 
   /**
    * Get a deployment
-   *
    * Get the deployment for a deploy request
    * ### Authorization
    * A service token or OAuth token must have at least one of the following access or scopes in order to use this API endpoint:
@@ -3072,7 +2183,7 @@ export class PlanetScaleClient extends HeyApiClient {
   public getDeployment<ThrowOnError extends boolean = true>(
     options: Options<GetDeploymentData, ThrowOnError>,
   ) {
-    return (options.client ?? this.client).get<
+    return (options.client ?? this._client).get<
       GetDeploymentResponses,
       GetDeploymentErrors,
       ThrowOnError
@@ -3084,7 +2195,6 @@ export class PlanetScaleClient extends HeyApiClient {
 
   /**
    * List deploy operations
-   *
    * List deploy operations for a deploy request
    * ### Authorization
    * A service token or OAuth token must have at least one of the following access or scopes in order to use this API endpoint:
@@ -3102,7 +2212,7 @@ export class PlanetScaleClient extends HeyApiClient {
   public listDeployOperations<ThrowOnError extends boolean = true>(
     options: Options<ListDeployOperationsData, ThrowOnError>,
   ) {
-    return (options.client ?? this.client).get<
+    return (options.client ?? this._client).get<
       ListDeployOperationsResponses,
       ListDeployOperationsErrors,
       ThrowOnError
@@ -3114,7 +2224,6 @@ export class PlanetScaleClient extends HeyApiClient {
 
   /**
    * Complete a revert
-   *
    *
    * ### Authorization
    * A service token or OAuth token must have at least one of the following access or scopes in order to use this API endpoint:
@@ -3132,7 +2241,7 @@ export class PlanetScaleClient extends HeyApiClient {
   public completeRevert<ThrowOnError extends boolean = true>(
     options: Options<CompleteRevertData, ThrowOnError>,
   ) {
-    return (options.client ?? this.client).post<
+    return (options.client ?? this._client).post<
       CompleteRevertResponses,
       CompleteRevertErrors,
       ThrowOnError
@@ -3144,7 +2253,6 @@ export class PlanetScaleClient extends HeyApiClient {
 
   /**
    * List deploy request reviews
-   *
    *
    * ### Authorization
    * A service token or OAuth token must have at least one of the following access or scopes in order to use this API endpoint:
@@ -3162,7 +2270,7 @@ export class PlanetScaleClient extends HeyApiClient {
   public listDeployRequestReviews<ThrowOnError extends boolean = true>(
     options: Options<ListDeployRequestReviewsData, ThrowOnError>,
   ) {
-    return (options.client ?? this.client).get<
+    return (options.client ?? this._client).get<
       ListDeployRequestReviewsResponses,
       ListDeployRequestReviewsErrors,
       ThrowOnError
@@ -3174,7 +2282,6 @@ export class PlanetScaleClient extends HeyApiClient {
 
   /**
    * Review a deploy request
-   *
    * Review a deploy request by either approving or commenting on the deploy request
    * ### Authorization
    * A service token or OAuth token must have at least one of the following access or scopes in order to use this API endpoint:
@@ -3192,7 +2299,7 @@ export class PlanetScaleClient extends HeyApiClient {
   public reviewDeployRequest<ThrowOnError extends boolean = true>(
     options: Options<ReviewDeployRequestData, ThrowOnError>,
   ) {
-    return (options.client ?? this.client).post<
+    return (options.client ?? this._client).post<
       ReviewDeployRequestResponses,
       ReviewDeployRequestErrors,
       ThrowOnError
@@ -3208,7 +2315,6 @@ export class PlanetScaleClient extends HeyApiClient {
 
   /**
    * Skip revert period
-   *
    * Skips the revert period for a deploy request
    * ### Authorization
    * A service token or OAuth token must have at least one of the following access or scopes in order to use this API endpoint:
@@ -3226,7 +2332,7 @@ export class PlanetScaleClient extends HeyApiClient {
   public skipRevertPeriod<ThrowOnError extends boolean = true>(
     options: Options<SkipRevertPeriodData, ThrowOnError>,
   ) {
-    return (options.client ?? this.client).post<
+    return (options.client ?? this._client).post<
       SkipRevertPeriodResponses,
       SkipRevertPeriodErrors,
       ThrowOnError
@@ -3238,7 +2344,6 @@ export class PlanetScaleClient extends HeyApiClient {
 
   /**
    * Get deploy request throttler configurations
-   *
    *
    * ### Authorization
    * A service token or OAuth token must have at least one of the following access or scopes in order to use this API endpoint:
@@ -3256,7 +2361,7 @@ export class PlanetScaleClient extends HeyApiClient {
   public getDeployRequestThrottler<ThrowOnError extends boolean = true>(
     options: Options<GetDeployRequestThrottlerData, ThrowOnError>,
   ) {
-    return (options.client ?? this.client).get<
+    return (options.client ?? this._client).get<
       GetDeployRequestThrottlerResponses,
       GetDeployRequestThrottlerErrors,
       ThrowOnError
@@ -3268,7 +2373,6 @@ export class PlanetScaleClient extends HeyApiClient {
 
   /**
    * Update deploy request throttler configurations
-   *
    *
    * ### Authorization
    * A service token or OAuth token must have at least one of the following access or scopes in order to use this API endpoint:
@@ -3286,7 +2390,7 @@ export class PlanetScaleClient extends HeyApiClient {
   public updateDeployRequestThrottler<ThrowOnError extends boolean = true>(
     options: Options<UpdateDeployRequestThrottlerData, ThrowOnError>,
   ) {
-    return (options.client ?? this.client).patch<
+    return (options.client ?? this._client).patch<
       UpdateDeployRequestThrottlerResponses,
       UpdateDeployRequestThrottlerErrors,
       ThrowOnError
@@ -3301,68 +2405,7 @@ export class PlanetScaleClient extends HeyApiClient {
   }
 
   /**
-   * List read-only regions
-   *
-   * List read-only regions for the database's default branch
-   * ### Authorization
-   * A service token or OAuth token must have at least one of the following access or scopes in order to use this API endpoint:
-   *
-   * **Service Token Accesses**
-   * `read_database`, `delete_database`, `write_database`, `read_branch`, `delete_branch`, `create_branch`, `delete_production_branch`, `connect_branch`, `connect_production_branch`, `delete_branch_password`, `delete_production_branch_password`, `read_deploy_request`, `create_deploy_request`, `approve_deploy_request`, `read_schema_recommendations`, `close_schema_recommendations`, `read_comment`, `create_comment`, `restore_backup`, `restore_production_branch_backup`, `read_backups`, `write_backups`, `delete_backups`, `delete_production_branch_backups`, `write_branch_vschema`, `write_production_branch_vschema`
-   *
-   * **OAuth Scopes**
-   *
-   * | Resource | Scopes |
-   * | :------- | :---------- |
-   * | Organization | `read_branches` |
-   * | Database | `read_branches` |
-   */
-  public listReadOnlyRegions<ThrowOnError extends boolean = true>(
-    options: Options<ListReadOnlyRegionsData, ThrowOnError>,
-  ) {
-    return (options.client ?? this.client).get<
-      ListReadOnlyRegionsResponses,
-      ListReadOnlyRegionsErrors,
-      ThrowOnError
-    >({
-      url: "/organizations/{organization}/databases/{database}/read-only-regions",
-      ...options,
-    });
-  }
-
-  /**
-   * List database regions
-   *
-   *
-   * ### Authorization
-   * A service token or OAuth token must have at least one of the following access or scopes in order to use this API endpoint:
-   *
-   * **Service Token Accesses**
-   * `read_database`, `delete_database`, `write_database`, `read_branch`, `delete_branch`, `create_branch`, `delete_production_branch`, `connect_branch`, `connect_production_branch`, `delete_branch_password`, `delete_production_branch_password`, `read_deploy_request`, `create_deploy_request`, `approve_deploy_request`, `read_schema_recommendations`, `close_schema_recommendations`, `read_comment`, `create_comment`, `restore_backup`, `restore_production_branch_backup`, `read_backups`, `write_backups`, `delete_backups`, `delete_production_branch_backups`, `write_branch_vschema`, `write_production_branch_vschema`
-   *
-   * **OAuth Scopes**
-   *
-   * | Resource | Scopes |
-   * | :------- | :---------- |
-   * | Organization | `read_databases` |
-   * | Database | `read_database` |
-   */
-  public listDatabaseRegions<ThrowOnError extends boolean = true>(
-    options: Options<ListDatabaseRegionsData, ThrowOnError>,
-  ) {
-    return (options.client ?? this.client).get<
-      ListDatabaseRegionsResponses,
-      ListDatabaseRegionsErrors,
-      ThrowOnError
-    >({
-      url: "/organizations/{organization}/databases/{database}/regions",
-      ...options,
-    });
-  }
-
-  /**
    * Get database throttler configurations
-   *
    *
    * ### Authorization
    * A service token or OAuth token must have at least one of the following access or scopes in order to use this API endpoint:
@@ -3380,7 +2423,7 @@ export class PlanetScaleClient extends HeyApiClient {
   public getDatabaseThrottler<ThrowOnError extends boolean = true>(
     options: Options<GetDatabaseThrottlerData, ThrowOnError>,
   ) {
-    return (options.client ?? this.client).get<
+    return (options.client ?? this._client).get<
       GetDatabaseThrottlerResponses,
       GetDatabaseThrottlerErrors,
       ThrowOnError
@@ -3392,7 +2435,6 @@ export class PlanetScaleClient extends HeyApiClient {
 
   /**
    * Update database throttler configurations
-   *
    *
    * ### Authorization
    * A service token or OAuth token must have at least one of the following access or scopes in order to use this API endpoint:
@@ -3410,7 +2452,7 @@ export class PlanetScaleClient extends HeyApiClient {
   public updateDatabaseThrottler<ThrowOnError extends boolean = true>(
     options: Options<UpdateDatabaseThrottlerData, ThrowOnError>,
   ) {
-    return (options.client ?? this.client).patch<
+    return (options.client ?? this._client).patch<
       UpdateDatabaseThrottlerResponses,
       UpdateDatabaseThrottlerErrors,
       ThrowOnError
@@ -3426,7 +2468,6 @@ export class PlanetScaleClient extends HeyApiClient {
 
   /**
    * List webhooks
-   *
    * List webhooks for a database
    * ### Authorization
    * A service token or OAuth token must have at least one of the following access or scopes in order to use this API endpoint:
@@ -3444,7 +2485,7 @@ export class PlanetScaleClient extends HeyApiClient {
   public listWebhooks<ThrowOnError extends boolean = true>(
     options: Options<ListWebhooksData, ThrowOnError>,
   ) {
-    return (options.client ?? this.client).get<
+    return (options.client ?? this._client).get<
       ListWebhooksResponses,
       ListWebhooksErrors,
       ThrowOnError
@@ -3456,7 +2497,6 @@ export class PlanetScaleClient extends HeyApiClient {
 
   /**
    * Create a webhook
-   *
    *
    * ### Authorization
    * A service token or OAuth token must have at least one of the following access or scopes in order to use this API endpoint:
@@ -3474,7 +2514,7 @@ export class PlanetScaleClient extends HeyApiClient {
   public createWebhook<ThrowOnError extends boolean = true>(
     options: Options<CreateWebhookData, ThrowOnError>,
   ) {
-    return (options.client ?? this.client).post<
+    return (options.client ?? this._client).post<
       CreateWebhookResponses,
       CreateWebhookErrors,
       ThrowOnError
@@ -3490,7 +2530,6 @@ export class PlanetScaleClient extends HeyApiClient {
 
   /**
    * Delete a webhook
-   *
    *
    * ### Authorization
    * A service token or OAuth token must have at least one of the following access or scopes in order to use this API endpoint:
@@ -3508,7 +2547,7 @@ export class PlanetScaleClient extends HeyApiClient {
   public deleteWebhook<ThrowOnError extends boolean = true>(
     options: Options<DeleteWebhookData, ThrowOnError>,
   ) {
-    return (options.client ?? this.client).delete<
+    return (options.client ?? this._client).delete<
       DeleteWebhookResponses,
       DeleteWebhookErrors,
       ThrowOnError
@@ -3520,7 +2559,6 @@ export class PlanetScaleClient extends HeyApiClient {
 
   /**
    * Get a webhook
-   *
    *
    * ### Authorization
    * A service token or OAuth token must have at least one of the following access or scopes in order to use this API endpoint:
@@ -3538,7 +2576,7 @@ export class PlanetScaleClient extends HeyApiClient {
   public getWebhook<ThrowOnError extends boolean = true>(
     options: Options<GetWebhookData, ThrowOnError>,
   ) {
-    return (options.client ?? this.client).get<
+    return (options.client ?? this._client).get<
       GetWebhookResponses,
       GetWebhookErrors,
       ThrowOnError
@@ -3550,7 +2588,6 @@ export class PlanetScaleClient extends HeyApiClient {
 
   /**
    * Update a webhook
-   *
    *
    * ### Authorization
    * A service token or OAuth token must have at least one of the following access or scopes in order to use this API endpoint:
@@ -3568,7 +2605,7 @@ export class PlanetScaleClient extends HeyApiClient {
   public updateWebhook<ThrowOnError extends boolean = true>(
     options: Options<UpdateWebhookData, ThrowOnError>,
   ) {
-    return (options.client ?? this.client).patch<
+    return (options.client ?? this._client).patch<
       UpdateWebhookResponses,
       UpdateWebhookErrors,
       ThrowOnError
@@ -3584,7 +2621,6 @@ export class PlanetScaleClient extends HeyApiClient {
 
   /**
    * Test a webhook
-   *
    * Sends a test event to the webhook
    * ### Authorization
    * A service token or OAuth token must have at least one of the following access or scopes in order to use this API endpoint:
@@ -3602,7 +2638,7 @@ export class PlanetScaleClient extends HeyApiClient {
   public testWebhook<ThrowOnError extends boolean = true>(
     options: Options<TestWebhookData, ThrowOnError>,
   ) {
-    return (options.client ?? this.client).post<
+    return (options.client ?? this._client).post<
       TestWebhookResponses,
       TestWebhookErrors,
       ThrowOnError
@@ -3616,12 +2652,11 @@ export class PlanetScaleClient extends HeyApiClient {
    * List workflows
    *
    *
-   *
    */
   public listWorkflows<ThrowOnError extends boolean = true>(
     options: Options<ListWorkflowsData, ThrowOnError>,
   ) {
-    return (options.client ?? this.client).get<
+    return (options.client ?? this._client).get<
       ListWorkflowsResponses,
       ListWorkflowsErrors,
       ThrowOnError
@@ -3635,12 +2670,11 @@ export class PlanetScaleClient extends HeyApiClient {
    * Create a workflow
    *
    *
-   *
    */
   public createWorkflow<ThrowOnError extends boolean = true>(
     options: Options<CreateWorkflowData, ThrowOnError>,
   ) {
-    return (options.client ?? this.client).post<
+    return (options.client ?? this._client).post<
       CreateWorkflowResponses,
       CreateWorkflowErrors,
       ThrowOnError
@@ -3658,12 +2692,11 @@ export class PlanetScaleClient extends HeyApiClient {
    * Cancel a workflow
    *
    *
-   *
    */
   public workflowCancel<ThrowOnError extends boolean = true>(
     options: Options<WorkflowCancelData, ThrowOnError>,
   ) {
-    return (options.client ?? this.client).delete<
+    return (options.client ?? this._client).delete<
       WorkflowCancelResponses,
       WorkflowCancelErrors,
       ThrowOnError
@@ -3677,12 +2710,11 @@ export class PlanetScaleClient extends HeyApiClient {
    * Get a workflow
    *
    *
-   *
    */
   public getWorkflow<ThrowOnError extends boolean = true>(
     options: Options<GetWorkflowData, ThrowOnError>,
   ) {
-    return (options.client ?? this.client).get<
+    return (options.client ?? this._client).get<
       GetWorkflowResponses,
       GetWorkflowErrors,
       ThrowOnError
@@ -3696,12 +2728,11 @@ export class PlanetScaleClient extends HeyApiClient {
    * Complete a workflow
    *
    *
-   *
    */
   public workflowComplete<ThrowOnError extends boolean = true>(
     options: Options<WorkflowCompleteData, ThrowOnError>,
   ) {
-    return (options.client ?? this.client).patch<
+    return (options.client ?? this._client).patch<
       WorkflowCompleteResponses,
       WorkflowCompleteErrors,
       ThrowOnError
@@ -3715,12 +2746,11 @@ export class PlanetScaleClient extends HeyApiClient {
    * Cutover traffic
    *
    *
-   *
    */
   public workflowCutover<ThrowOnError extends boolean = true>(
     options: Options<WorkflowCutoverData, ThrowOnError>,
   ) {
-    return (options.client ?? this.client).patch<
+    return (options.client ?? this._client).patch<
       WorkflowCutoverResponses,
       WorkflowCutoverErrors,
       ThrowOnError
@@ -3734,12 +2764,11 @@ export class PlanetScaleClient extends HeyApiClient {
    * Retry a failed workflow
    *
    *
-   *
    */
   public workflowRetry<ThrowOnError extends boolean = true>(
     options: Options<WorkflowRetryData, ThrowOnError>,
   ) {
-    return (options.client ?? this.client).patch<
+    return (options.client ?? this._client).patch<
       WorkflowRetryResponses,
       WorkflowRetryErrors,
       ThrowOnError
@@ -3753,12 +2782,11 @@ export class PlanetScaleClient extends HeyApiClient {
    * Reverse traffic cutover
    *
    *
-   *
    */
   public workflowReverseCutover<ThrowOnError extends boolean = true>(
     options: Options<WorkflowReverseCutoverData, ThrowOnError>,
   ) {
-    return (options.client ?? this.client).patch<
+    return (options.client ?? this._client).patch<
       WorkflowReverseCutoverResponses,
       WorkflowReverseCutoverErrors,
       ThrowOnError
@@ -3772,12 +2800,11 @@ export class PlanetScaleClient extends HeyApiClient {
    * Reverse traffic
    *
    *
-   *
    */
   public workflowReverseTraffic<ThrowOnError extends boolean = true>(
     options: Options<WorkflowReverseTrafficData, ThrowOnError>,
   ) {
-    return (options.client ?? this.client).patch<
+    return (options.client ?? this._client).patch<
       WorkflowReverseTrafficResponses,
       WorkflowReverseTrafficErrors,
       ThrowOnError
@@ -3791,12 +2818,11 @@ export class PlanetScaleClient extends HeyApiClient {
    * Switch primary traffic
    *
    *
-   *
    */
   public workflowSwitchPrimaries<ThrowOnError extends boolean = true>(
     options: Options<WorkflowSwitchPrimariesData, ThrowOnError>,
   ) {
-    return (options.client ?? this.client).patch<
+    return (options.client ?? this._client).patch<
       WorkflowSwitchPrimariesResponses,
       WorkflowSwitchPrimariesErrors,
       ThrowOnError
@@ -3810,12 +2836,11 @@ export class PlanetScaleClient extends HeyApiClient {
    * Switch replica traffic
    *
    *
-   *
    */
   public workflowSwitchReplicas<ThrowOnError extends boolean = true>(
     options: Options<WorkflowSwitchReplicasData, ThrowOnError>,
   ) {
-    return (options.client ?? this.client).patch<
+    return (options.client ?? this._client).patch<
       WorkflowSwitchReplicasResponses,
       WorkflowSwitchReplicasErrors,
       ThrowOnError
@@ -3829,12 +2854,11 @@ export class PlanetScaleClient extends HeyApiClient {
    * Verify workflow data
    *
    *
-   *
    */
   public verifyWorkflow<ThrowOnError extends boolean = true>(
     options: Options<VerifyWorkflowData, ThrowOnError>,
   ) {
-    return (options.client ?? this.client).patch<
+    return (options.client ?? this._client).patch<
       VerifyWorkflowResponses,
       VerifyWorkflowErrors,
       ThrowOnError
@@ -3845,8 +2869,156 @@ export class PlanetScaleClient extends HeyApiClient {
   }
 
   /**
-   * Get invoices
+   * Delete a database
    *
+   * ### Authorization
+   * A service token or OAuth token must have at least one of the following access or scopes in order to use this API endpoint:
+   *
+   * **Service Token Accesses**
+   * `delete_database`
+   *
+   * **OAuth Scopes**
+   *
+   * | Resource | Scopes |
+   * | :------- | :---------- |
+   * | Organization | `delete_databases` |
+   * | Database | `delete_database` |
+   */
+  public deleteDatabase<ThrowOnError extends boolean = true>(
+    options: Options<DeleteDatabaseData, ThrowOnError>,
+  ) {
+    return (options.client ?? this._client).delete<
+      DeleteDatabaseResponses,
+      DeleteDatabaseErrors,
+      ThrowOnError
+    >({
+      url: "/organizations/{organization}/databases/{name}",
+      ...options,
+    });
+  }
+
+  /**
+   * Get a database
+   *
+   * ### Authorization
+   * A service token or OAuth token must have at least one of the following access or scopes in order to use this API endpoint:
+   *
+   * **Service Token Accesses**
+   * `read_database`, `delete_database`, `write_database`, `read_branch`, `delete_branch`, `create_branch`, `delete_production_branch`, `connect_branch`, `connect_production_branch`, `delete_branch_password`, `delete_production_branch_password`, `read_deploy_request`, `create_deploy_request`, `approve_deploy_request`, `read_schema_recommendations`, `close_schema_recommendations`, `read_comment`, `create_comment`, `restore_backup`, `restore_production_branch_backup`, `read_backups`, `write_backups`, `delete_backups`, `delete_production_branch_backups`, `write_branch_vschema`, `write_production_branch_vschema`
+   *
+   * **OAuth Scopes**
+   *
+   * | Resource | Scopes |
+   * | :------- | :---------- |
+   * | Organization | `read_databases` |
+   * | Database | `read_database` |
+   */
+  public getDatabase<ThrowOnError extends boolean = true>(
+    options: Options<GetDatabaseData, ThrowOnError>,
+  ) {
+    return (options.client ?? this._client).get<
+      GetDatabaseResponses,
+      GetDatabaseErrors,
+      ThrowOnError
+    >({
+      url: "/organizations/{organization}/databases/{name}",
+      ...options,
+    });
+  }
+
+  /**
+   * Update database settings
+   *
+   * ### Authorization
+   * A service token or OAuth token must have at least one of the following access or scopes in order to use this API endpoint:
+   *
+   * **Service Token Accesses**
+   * `write_database`
+   *
+   * **OAuth Scopes**
+   *
+   * | Resource | Scopes |
+   * | :------- | :---------- |
+   * | Organization | `write_databases` |
+   * | Database | `write_database` |
+   */
+  public updateDatabaseSettings<ThrowOnError extends boolean = true>(
+    options: Options<UpdateDatabaseSettingsData, ThrowOnError>,
+  ) {
+    return (options.client ?? this._client).patch<
+      UpdateDatabaseSettingsResponses,
+      UpdateDatabaseSettingsErrors,
+      ThrowOnError
+    >({
+      url: "/organizations/{organization}/databases/{name}",
+      ...options,
+      headers: {
+        "Content-Type": "application/json",
+        ...options.headers,
+      },
+    });
+  }
+
+  /**
+   * List read-only regions
+   * List read-only regions for the database's default branch
+   * ### Authorization
+   * A service token or OAuth token must have at least one of the following access or scopes in order to use this API endpoint:
+   *
+   * **Service Token Accesses**
+   * `read_database`, `delete_database`, `write_database`, `read_branch`, `delete_branch`, `create_branch`, `delete_production_branch`, `connect_branch`, `connect_production_branch`, `delete_branch_password`, `delete_production_branch_password`, `read_deploy_request`, `create_deploy_request`, `approve_deploy_request`, `read_schema_recommendations`, `close_schema_recommendations`, `read_comment`, `create_comment`, `restore_backup`, `restore_production_branch_backup`, `read_backups`, `write_backups`, `delete_backups`, `delete_production_branch_backups`, `write_branch_vschema`, `write_production_branch_vschema`
+   *
+   * **OAuth Scopes**
+   *
+   * | Resource | Scopes |
+   * | :------- | :---------- |
+   * | Organization | `read_branches` |
+   * | Database | `read_branches` |
+   */
+  public listReadOnlyRegions<ThrowOnError extends boolean = true>(
+    options: Options<ListReadOnlyRegionsData, ThrowOnError>,
+  ) {
+    return (options.client ?? this._client).get<
+      ListReadOnlyRegionsResponses,
+      ListReadOnlyRegionsErrors,
+      ThrowOnError
+    >({
+      url: "/organizations/{organization}/databases/{name}/read-only-regions",
+      ...options,
+    });
+  }
+
+  /**
+   * List database regions
+   *
+   * ### Authorization
+   * A service token or OAuth token must have at least one of the following access or scopes in order to use this API endpoint:
+   *
+   * **Service Token Accesses**
+   * `read_database`, `delete_database`, `write_database`, `read_branch`, `delete_branch`, `create_branch`, `delete_production_branch`, `connect_branch`, `connect_production_branch`, `delete_branch_password`, `delete_production_branch_password`, `read_deploy_request`, `create_deploy_request`, `approve_deploy_request`, `read_schema_recommendations`, `close_schema_recommendations`, `read_comment`, `create_comment`, `restore_backup`, `restore_production_branch_backup`, `read_backups`, `write_backups`, `delete_backups`, `delete_production_branch_backups`, `write_branch_vschema`, `write_production_branch_vschema`
+   *
+   * **OAuth Scopes**
+   *
+   * | Resource | Scopes |
+   * | :------- | :---------- |
+   * | Organization | `read_databases` |
+   * | Database | `read_database` |
+   */
+  public listDatabaseRegions<ThrowOnError extends boolean = true>(
+    options: Options<ListDatabaseRegionsData, ThrowOnError>,
+  ) {
+    return (options.client ?? this._client).get<
+      ListDatabaseRegionsResponses,
+      ListDatabaseRegionsErrors,
+      ThrowOnError
+    >({
+      url: "/organizations/{organization}/databases/{name}/regions",
+      ...options,
+    });
+  }
+
+  /**
+   * Get invoices
    * Get the invoices for an organization
    * ### Authorization
    * A service token or OAuth token must have at least one of the following access or scopes in order to use this API endpoint:
@@ -3863,16 +3035,18 @@ export class PlanetScaleClient extends HeyApiClient {
   public listInvoices<ThrowOnError extends boolean = true>(
     options: Options<ListInvoicesData, ThrowOnError>,
   ) {
-    return (options.client ?? this.client).get<
+    return (options.client ?? this._client).get<
       ListInvoicesResponses,
       ListInvoicesErrors,
       ThrowOnError
-    >({ url: "/organizations/{organization}/invoices", ...options });
+    >({
+      url: "/organizations/{organization}/invoices",
+      ...options,
+    });
   }
 
   /**
    * Get an invoice
-   *
    *
    * ### Authorization
    * A service token or OAuth token must have at least one of the following access or scopes in order to use this API endpoint:
@@ -3889,16 +3063,18 @@ export class PlanetScaleClient extends HeyApiClient {
   public getInvoice<ThrowOnError extends boolean = true>(
     options: Options<GetInvoiceData, ThrowOnError>,
   ) {
-    return (options.client ?? this.client).get<
+    return (options.client ?? this._client).get<
       GetInvoiceResponses,
       GetInvoiceErrors,
       ThrowOnError
-    >({ url: "/organizations/{organization}/invoices/{id}", ...options });
+    >({
+      url: "/organizations/{organization}/invoices/{id}",
+      ...options,
+    });
   }
 
   /**
    * Get invoice line items
-   *
    * Get the line items for an invoice
    * ### Authorization
    * A service token or OAuth token must have at least one of the following access or scopes in order to use this API endpoint:
@@ -3915,7 +3091,7 @@ export class PlanetScaleClient extends HeyApiClient {
   public getInvoiceLineItems<ThrowOnError extends boolean = true>(
     options: Options<GetInvoiceLineItemsData, ThrowOnError>,
   ) {
-    return (options.client ?? this.client).get<
+    return (options.client ?? this._client).get<
       GetInvoiceLineItemsResponses,
       GetInvoiceLineItemsErrors,
       ThrowOnError
@@ -3928,124 +3104,29 @@ export class PlanetScaleClient extends HeyApiClient {
   /**
    * List organization members
    *
-   *
    * ### Authorization
-   * A service token or OAuth token must have at least one of the following access or scopes in order to use this API endpoint:
+   * A service token   must have at least one of the following access   in order to use this API endpoint:
    *
    * **Service Token Accesses**
    * `read_organization`
    *
-   * **OAuth Scopes**
    *
-   * | Resource | Scopes |
-   * | :------- | :---------- |
-   * | Organization | `read_organization` |
    */
   public listOrganizationMembers<ThrowOnError extends boolean = true>(
     options: Options<ListOrganizationMembersData, ThrowOnError>,
   ) {
-    return (options.client ?? this.client).get<
+    return (options.client ?? this._client).get<
       ListOrganizationMembersResponses,
       ListOrganizationMembersErrors,
       ThrowOnError
-    >({ url: "/organizations/{organization}/members", ...options });
-  }
-
-  /**
-   * Remove a member from an organization
-   *
-   *
-   * ### Authorization
-   * A service token or OAuth token must have at least one of the following access or scopes in order to use this API endpoint:
-   *
-   * **Service Token Accesses**
-   * `write_organization`
-   *
-   * **OAuth Scopes**
-   *
-   * | Resource | Scopes |
-   * | :------- | :---------- |
-   * | Organization | `write_organization` |
-   */
-  public removeOrganizationMember<ThrowOnError extends boolean = true>(
-    options: Options<RemoveOrganizationMemberData, ThrowOnError>,
-  ) {
-    return (options.client ?? this.client).delete<
-      RemoveOrganizationMemberResponses,
-      RemoveOrganizationMemberErrors,
-      ThrowOnError
     >({
-      url: "/organizations/{organization}/members/{id}",
+      url: "/organizations/{organization}/members",
       ...options,
-      headers: {
-        "Content-Type": "application/json",
-        ...options.headers,
-      },
-    });
-  }
-
-  /**
-   * Get an organization member
-   *
-   *
-   * ### Authorization
-   * A service token or OAuth token must have at least one of the following access or scopes in order to use this API endpoint:
-   *
-   * **Service Token Accesses**
-   * `read_organization`
-   *
-   * **OAuth Scopes**
-   *
-   * | Resource | Scopes |
-   * | :------- | :---------- |
-   * | Organization | `read_organization` |
-   */
-  public getOrganizationMembership<ThrowOnError extends boolean = true>(
-    options: Options<GetOrganizationMembershipData, ThrowOnError>,
-  ) {
-    return (options.client ?? this.client).get<
-      GetOrganizationMembershipResponses,
-      GetOrganizationMembershipErrors,
-      ThrowOnError
-    >({ url: "/organizations/{organization}/members/{id}", ...options });
-  }
-
-  /**
-   * Update organization member role
-   *
-   *
-   * ### Authorization
-   * A service token or OAuth token must have at least one of the following access or scopes in order to use this API endpoint:
-   *
-   * **Service Token Accesses**
-   * `write_organization`
-   *
-   * **OAuth Scopes**
-   *
-   * | Resource | Scopes |
-   * | :------- | :---------- |
-   * | Organization | `write_organization` |
-   */
-  public updateOrganizationMembership<ThrowOnError extends boolean = true>(
-    options: Options<UpdateOrganizationMembershipData, ThrowOnError>,
-  ) {
-    return (options.client ?? this.client).patch<
-      UpdateOrganizationMembershipResponses,
-      UpdateOrganizationMembershipErrors,
-      ThrowOnError
-    >({
-      url: "/organizations/{organization}/members/{id}",
-      ...options,
-      headers: {
-        "Content-Type": "application/json",
-        ...options.headers,
-      },
     });
   }
 
   /**
    * List OAuth applications
-   *
    *
    * ### Authorization
    * A service token   must have at least one of the following access   in order to use this API endpoint:
@@ -4058,16 +3139,18 @@ export class PlanetScaleClient extends HeyApiClient {
   public listOauthApplications<ThrowOnError extends boolean = true>(
     options: Options<ListOauthApplicationsData, ThrowOnError>,
   ) {
-    return (options.client ?? this.client).get<
+    return (options.client ?? this._client).get<
       ListOauthApplicationsResponses,
       ListOauthApplicationsErrors,
       ThrowOnError
-    >({ url: "/organizations/{organization}/oauth-applications", ...options });
+    >({
+      url: "/organizations/{organization}/oauth-applications",
+      ...options,
+    });
   }
 
   /**
    * Get an OAuth application
-   *
    *
    * ### Authorization
    * A service token   must have at least one of the following access   in order to use this API endpoint:
@@ -4080,7 +3163,7 @@ export class PlanetScaleClient extends HeyApiClient {
   public getOauthApplication<ThrowOnError extends boolean = true>(
     options: Options<GetOauthApplicationData, ThrowOnError>,
   ) {
-    return (options.client ?? this.client).get<
+    return (options.client ?? this._client).get<
       GetOauthApplicationResponses,
       GetOauthApplicationErrors,
       ThrowOnError
@@ -4092,7 +3175,6 @@ export class PlanetScaleClient extends HeyApiClient {
 
   /**
    * List OAuth tokens
-   *
    * List OAuth tokens created by an OAuth application
    * ### Authorization
    * A service token   must have at least one of the following access   in order to use this API endpoint:
@@ -4105,7 +3187,7 @@ export class PlanetScaleClient extends HeyApiClient {
   public listOauthTokens<ThrowOnError extends boolean = true>(
     options: Options<ListOauthTokensData, ThrowOnError>,
   ) {
-    return (options.client ?? this.client).get<
+    return (options.client ?? this._client).get<
       ListOauthTokensResponses,
       ListOauthTokensErrors,
       ThrowOnError
@@ -4118,7 +3200,6 @@ export class PlanetScaleClient extends HeyApiClient {
   /**
    * Delete an OAuth token
    *
-   *
    * ### Authorization
    * A service token   must have at least one of the following access   in order to use this API endpoint:
    *
@@ -4130,7 +3211,7 @@ export class PlanetScaleClient extends HeyApiClient {
   public deleteOauthToken<ThrowOnError extends boolean = true>(
     options: Options<DeleteOauthTokenData, ThrowOnError>,
   ) {
-    return (options.client ?? this.client).delete<
+    return (options.client ?? this._client).delete<
       DeleteOauthTokenResponses,
       DeleteOauthTokenErrors,
       ThrowOnError
@@ -4143,7 +3224,6 @@ export class PlanetScaleClient extends HeyApiClient {
   /**
    * Get an OAuth token
    *
-   *
    * ### Authorization
    * A service token   must have at least one of the following access   in order to use this API endpoint:
    *
@@ -4155,7 +3235,7 @@ export class PlanetScaleClient extends HeyApiClient {
   public getOauthToken<ThrowOnError extends boolean = true>(
     options: Options<GetOauthTokenData, ThrowOnError>,
   ) {
-    return (options.client ?? this.client).get<
+    return (options.client ?? this._client).get<
       GetOauthTokenResponses,
       GetOauthTokenErrors,
       ThrowOnError
@@ -4167,7 +3247,6 @@ export class PlanetScaleClient extends HeyApiClient {
 
   /**
    * Create or renew an OAuth token
-   *
    * Create an OAuth token from an authorization grant code, or refresh an OAuth token from a refresh token
    * ### Authorization
    * A service token   must have at least one of the following access   in order to use this API endpoint:
@@ -4180,7 +3259,7 @@ export class PlanetScaleClient extends HeyApiClient {
   public createOauthToken<ThrowOnError extends boolean = true>(
     options: Options<CreateOauthTokenData, ThrowOnError>,
   ) {
-    return (options.client ?? this.client).post<
+    return (options.client ?? this._client).post<
       CreateOauthTokenResponses,
       CreateOauthTokenErrors,
       ThrowOnError
@@ -4195,290 +3274,25 @@ export class PlanetScaleClient extends HeyApiClient {
   }
 
   /**
-   * List regions for an organization
-   *
-   *
-   * ### Authorization
-   * A service token or OAuth token must have at least one of the following access or scopes in order to use this API endpoint:
-   *
-   * **Service Token Accesses**
-   * `read_organization`
-   *
-   * **OAuth Scopes**
-   *
-   * | Resource | Scopes |
-   * | :------- | :---------- |
-   * | User | `read_organizations` |
-   * | Organization | `read_organization` |
-   */
-  public listRegionsForOrganization<ThrowOnError extends boolean = true>(
-    options: Options<ListRegionsForOrganizationData, ThrowOnError>,
-  ) {
-    return (options.client ?? this.client).get<
-      ListRegionsForOrganizationResponses,
-      ListRegionsForOrganizationErrors,
-      ThrowOnError
-    >({ url: "/organizations/{organization}/regions", ...options });
-  }
-
-  /**
-   * List service tokens
-   *
-   * List service tokens for an organization.
-   * ### Authorization
-   * A service token   must have at least one of the following access   in order to use this API endpoint:
-   *
-   * **Service Token Accesses**
-   * `read_service_tokens`
-   *
-   *
-   */
-  public listServiceTokens<ThrowOnError extends boolean = true>(
-    options: Options<ListServiceTokensData, ThrowOnError>,
-  ) {
-    return (options.client ?? this.client).get<
-      ListServiceTokensResponses,
-      ListServiceTokensErrors,
-      ThrowOnError
-    >({ url: "/organizations/{organization}/service-tokens", ...options });
-  }
-
-  /**
-   * Create a service token
-   *
-   * Create a new service token for the organization.
-   * ### Authorization
-   * A service token   must have at least one of the following access   in order to use this API endpoint:
-   *
-   * **Service Token Accesses**
-   * `write_service_tokens`
-   *
-   *
-   */
-  public createServiceToken<ThrowOnError extends boolean = true>(
-    options: Options<CreateServiceTokenData, ThrowOnError>,
-  ) {
-    return (options.client ?? this.client).post<
-      CreateServiceTokenResponses,
-      CreateServiceTokenErrors,
-      ThrowOnError
-    >({
-      url: "/organizations/{organization}/service-tokens",
-      ...options,
-      headers: {
-        "Content-Type": "application/json",
-        ...options.headers,
-      },
-    });
-  }
-
-  /**
-   * Delete a service token
-   *
-   * Delete a service token from the organization.
-   * ### Authorization
-   * A service token   must have at least one of the following access   in order to use this API endpoint:
-   *
-   * **Service Token Accesses**
-   * `delete_service_tokens`
-   *
-   *
-   */
-  public deleteServiceToken<ThrowOnError extends boolean = true>(
-    options: Options<DeleteServiceTokenData, ThrowOnError>,
-  ) {
-    return (options.client ?? this.client).delete<
-      DeleteServiceTokenResponses,
-      DeleteServiceTokenErrors,
-      ThrowOnError
-    >({ url: "/organizations/{organization}/service-tokens/{id}", ...options });
-  }
-
-  /**
-   * Get a service token
-   *
-   * Get information about a service token.
-   * ### Authorization
-   * A service token   must have at least one of the following access   in order to use this API endpoint:
-   *
-   * **Service Token Accesses**
-   * `read_service_tokens`
-   *
-   *
-   */
-  public getServiceToken<ThrowOnError extends boolean = true>(
-    options: Options<GetServiceTokenData, ThrowOnError>,
-  ) {
-    return (options.client ?? this.client).get<
-      GetServiceTokenResponses,
-      GetServiceTokenErrors,
-      ThrowOnError
-    >({ url: "/organizations/{organization}/service-tokens/{id}", ...options });
-  }
-
-  /**
-   * List teams in an organization
-   *
-   *
-   * ### Authorization
-   * A service token or OAuth token must have at least one of the following access or scopes in order to use this API endpoint:
-   *
-   * **Service Token Accesses**
-   * `read_organization`
-   *
-   * **OAuth Scopes**
-   *
-   * | Resource | Scopes |
-   * | :------- | :---------- |
-   * | Organization | `read_organization` |
-   */
-  public listOrganizationTeams<ThrowOnError extends boolean = true>(
-    options: Options<ListOrganizationTeamsData, ThrowOnError>,
-  ) {
-    return (options.client ?? this.client).get<
-      ListOrganizationTeamsResponses,
-      ListOrganizationTeamsErrors,
-      ThrowOnError
-    >({ url: "/organizations/{organization}/teams", ...options });
-  }
-
-  /**
-   * Create an organization team
-   *
-   *
-   * ### Authorization
-   * A service token or OAuth token must have at least one of the following access or scopes in order to use this API endpoint:
-   *
-   * **Service Token Accesses**
-   * `write_teams`
-   *
-   * **OAuth Scopes**
-   *
-   * | Resource | Scopes |
-   * | :------- | :---------- |
-   * | Organization | `write_organization` |
-   */
-  public createOrganizationTeam<ThrowOnError extends boolean = true>(
-    options: Options<CreateOrganizationTeamData, ThrowOnError>,
-  ) {
-    return (options.client ?? this.client).post<
-      CreateOrganizationTeamResponses,
-      CreateOrganizationTeamErrors,
-      ThrowOnError
-    >({
-      url: "/organizations/{organization}/teams",
-      ...options,
-      headers: {
-        "Content-Type": "application/json",
-        ...options.headers,
-      },
-    });
-  }
-
-  /**
-   * Delete an organization team
-   *
-   *
-   * ### Authorization
-   * A service token or OAuth token must have at least one of the following access or scopes in order to use this API endpoint:
-   *
-   * **Service Token Accesses**
-   * `write_teams`
-   *
-   * **OAuth Scopes**
-   *
-   * | Resource | Scopes |
-   * | :------- | :---------- |
-   * | Organization | `write_organization` |
-   */
-  public deleteOrganizationTeam<ThrowOnError extends boolean = true>(
-    options: Options<DeleteOrganizationTeamData, ThrowOnError>,
-  ) {
-    return (options.client ?? this.client).delete<
-      DeleteOrganizationTeamResponses,
-      DeleteOrganizationTeamErrors,
-      ThrowOnError
-    >({ url: "/organizations/{organization}/teams/{team}", ...options });
-  }
-
-  /**
-   * Get an organization team
-   *
-   *
-   * ### Authorization
-   * A service token or OAuth token must have at least one of the following access or scopes in order to use this API endpoint:
-   *
-   * **Service Token Accesses**
-   * `read_organization`
-   *
-   * **OAuth Scopes**
-   *
-   * | Resource | Scopes |
-   * | :------- | :---------- |
-   * | Organization | `read_organization` |
-   */
-  public getOrganizationTeam<ThrowOnError extends boolean = true>(
-    options: Options<GetOrganizationTeamData, ThrowOnError>,
-  ) {
-    return (options.client ?? this.client).get<
-      GetOrganizationTeamResponses,
-      GetOrganizationTeamErrors,
-      ThrowOnError
-    >({ url: "/organizations/{organization}/teams/{team}", ...options });
-  }
-
-  /**
-   * Update an organization team
-   *
-   *
-   * ### Authorization
-   * A service token or OAuth token must have at least one of the following access or scopes in order to use this API endpoint:
-   *
-   * **Service Token Accesses**
-   * `write_teams`
-   *
-   * **OAuth Scopes**
-   *
-   * | Resource | Scopes |
-   * | :------- | :---------- |
-   * | Organization | `write_organization` |
-   */
-  public updateOrganizationTeam<ThrowOnError extends boolean = true>(
-    options: Options<UpdateOrganizationTeamData, ThrowOnError>,
-  ) {
-    return (options.client ?? this.client).patch<
-      UpdateOrganizationTeamResponses,
-      UpdateOrganizationTeamErrors,
-      ThrowOnError
-    >({
-      url: "/organizations/{organization}/teams/{team}",
-      ...options,
-      headers: {
-        "Content-Type": "application/json",
-        ...options.headers,
-      },
-    });
-  }
-
-  /**
    * List public regions
-   *
    * Endpoint is available without authentication.
    *
    */
   public listPublicRegions<ThrowOnError extends boolean = true>(
     options?: Options<ListPublicRegionsData, ThrowOnError>,
   ) {
-    return (options?.client ?? this.client).get<
+    return (options?.client ?? this._client).get<
       ListPublicRegionsResponses,
       ListPublicRegionsErrors,
       ThrowOnError
-    >({ url: "/regions", ...options });
+    >({
+      url: "/regions",
+      ...options,
+    });
   }
 
   /**
    * Get current user
-   *
    * Get the user associated with this service token
    * ### Authorization
    * A   OAuth token must have at least one of the following   scopes in order to use this API endpoint:
@@ -4492,11 +3306,14 @@ export class PlanetScaleClient extends HeyApiClient {
   public getCurrentUser<ThrowOnError extends boolean = true>(
     options?: Options<GetCurrentUserData, ThrowOnError>,
   ) {
-    return (options?.client ?? this.client).get<
+    return (options?.client ?? this._client).get<
       GetCurrentUserResponses,
       GetCurrentUserErrors,
       ThrowOnError
-    >({ url: "/user", ...options });
+    >({
+      url: "/user",
+      ...options,
+    });
   }
 
   /**
@@ -4505,7 +3322,7 @@ export class PlanetScaleClient extends HeyApiClient {
   public listKeyspaceResizes<ThrowOnError extends boolean = true>(
     options: Options<ListKeyspaceResizesData, ThrowOnError>,
   ) {
-    return (options.client ?? this.client).get<
+    return (options.client ?? this._client).get<
       ListKeyspaceResizesResponses,
       ListKeyspaceResizesErrors,
       ThrowOnError
