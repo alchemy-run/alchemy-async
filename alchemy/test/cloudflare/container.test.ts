@@ -255,4 +255,55 @@ describe.sequential("Container Resource", () => {
       await destroy(scope);
     }
   });
+
+
+  test("rollout is passed through Worker to ContainerApplication", async (scope) => {
+    const containerName = `${BRANCH_PREFIX}-container-rollout-worker`;
+    const workerName = `${BRANCH_PREFIX}-worker-with-rollout`;
+
+    try {
+      const container = await Container(containerName, {
+        className: "MyContainer",
+        name: containerName,
+        tag: "latest",
+        build: {
+          context: path.join(import.meta.dirname, "container"),
+        },
+        adopt: true,
+        maxInstances: 2,
+        rollout: {
+          strategy: "rolling",
+          stepPercentage: 25,
+          targetConfiguration: {
+            image: "test-image:latest",
+            observability: {
+              logs: {
+                enabled: true,
+              },
+            },
+          },
+        },
+      });
+
+      // Create worker with the container binding
+      await Worker(workerName, {
+        name: workerName,
+        adopt: true,
+        entrypoint: path.join(import.meta.dirname, "container-handler.ts"),
+        compatibilityFlags: ["nodejs_compat"],
+        compatibilityDate: "2025-06-24",
+        format: "esm",
+        bindings: {
+          MY_CONTAINER: container,
+        },
+      });
+
+      // Verify the container application was created
+      const app = await getContainerApplicationByName(api, containerName);
+      expect(app).toBeDefined();
+      expect(app?.name).toBe(containerName);
+    } finally {
+      await destroy(scope);
+    }
+  });
 });

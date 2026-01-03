@@ -83,6 +83,12 @@ export interface ContainerProps
      */
     remote?: boolean;
   };
+
+  /**
+   * Configuration for progressive rollout when updating the container application.
+   * Defines how updates are deployed across instances.
+   */
+  rollout?: ContainerApplicationRollout;
 }
 
 /**
@@ -183,6 +189,12 @@ export type Container<T = any> = {
   };
 
   /**
+   * Configuration for progressive rollout when updating the container application.
+   * Defines how updates are deployed across instances.
+   */
+  rollout?: ContainerApplicationRollout;
+
+  /**
    * @internal
    * Phantom type parameter for additional type safety
    */
@@ -213,6 +225,7 @@ export async function Container<T>(
     sqlite: true,
     dev: props.dev,
     adopt: props.adopt,
+    rollout: props.rollout,
   };
 
   const isDev = scope.local && !props.dev?.remote;
