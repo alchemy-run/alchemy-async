@@ -256,7 +256,6 @@ describe.sequential("Container Resource", () => {
     }
   });
 
-
   test("rollout is passed through Worker to ContainerApplication", async (scope) => {
     const containerName = `${BRANCH_PREFIX}-container-rollout-worker`;
     const workerName = `${BRANCH_PREFIX}-worker-with-rollout`;
