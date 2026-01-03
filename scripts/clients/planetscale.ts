@@ -220,23 +220,22 @@ const spec = await fetch("https://api.planetscale.com/v1/openapi-spec")
 export default {
   input: spec as any,
   output: {
+    indexFile: false,
     path: "alchemy/src/planetscale/api",
   },
   plugins: [
     {
-      name: "@hey-api/typescript",
-      exportFromIndex: false,
-    },
-    {
-      name: "@hey-api/sdk",
-      instance: "PlanetScaleClient",
-      exportFromIndex: false,
-      auth: false,
-    },
-    {
       name: "@hey-api/client-fetch",
       throwOnError: true,
-      exportFromIndex: false,
+    },
+    "@hey-api/typescript",
+    {
+      name: "@hey-api/sdk",
+      auth: false,
+      operations: {
+        containerName: "PlanetScaleClient",
+        strategy: "single",
+      },
     },
   ],
   parser: {

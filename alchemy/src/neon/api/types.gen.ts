@@ -136,9 +136,14 @@ export type AddProjectJwksRequest = {
   jwt_audience?: string;
   /**
    * DEPRECATED. This field should only be used when using Neon RLS. The roles the JWKS should be mapped to. By default, the JWKS is mapped to the `authenticator`, `authenticated` and `anonymous` roles.
+   *
    * @deprecated
    */
   role_names?: Array<string>;
+  /**
+   * DEPRECATED. This field should only be used when using Neon RLS. If true, the role creation will be skipped.
+   */
+  skip_role_creation?: boolean;
 };
 
 export type Jwks = {
@@ -398,7 +403,8 @@ export type OperationAction =
   | "apply_schema_from_branch"
   | "timeline_mark_invisible"
   | "prewarm_replica"
-  | "promote_replica";
+  | "promote_replica"
+  | "set_storage_non_dirty";
 
 /**
  * The status of the operation
@@ -469,6 +475,7 @@ export type ProjectListItem = {
   /**
    * DEPRECATED. Use data from the getProject endpoint instead.
    *
+   *
    * @deprecated
    */
   cpu_used_sec: number;
@@ -500,6 +507,7 @@ export type ProjectListItem = {
   /**
    * DEPRECATED. Use `consumption_period_end` from the getProject endpoint instead.
    * A timestamp indicating when the project quota resets
+   *
    *
    * @deprecated
    */
@@ -533,6 +541,14 @@ export type ProjectListItem = {
    * A timestamp indicating when HIPAA was enabled for this project
    */
   hipaa_enabled_at?: string;
+  /**
+   * A timestamp indicating when the project was deleted
+   */
+  deleted_at?: string;
+  /**
+   * A timestamp indicating the project will be recoverable until this date and time.
+   */
+  recoverable_until?: string;
 };
 
 export type Project = {
@@ -572,6 +588,7 @@ export type Project = {
   active_time_seconds: number;
   /**
    * DEPRECATED, use compute_time instead.
+   *
    *
    * @deprecated
    */
@@ -662,6 +679,7 @@ export type Project = {
   /**
    * DEPRECATED. Use `consumption_period_end` from the getProject endpoint instead.
    * A timestamp indicating when the project quota resets.
+   *
    *
    * @deprecated
    */
@@ -823,6 +841,8 @@ export type ProjectSettingsData = {
 export type ProjectResponse = {
   project: Project;
 };
+
+export type ProjectRecoverResponse = ProjectResponse & BranchesResponse;
 
 export type ProjectsResponse = {
   projects: Array<ProjectListItem>;
@@ -1051,6 +1071,7 @@ export type Branch = {
    * DEPRECATED. Use `default` field.
    * Whether the branch is the project's primary branch
    *
+   *
    * @deprecated
    */
   primary?: boolean;
@@ -1070,6 +1091,7 @@ export type Branch = {
    * Examples:
    * 1. A branch that uses 1 CPU for 1 second is equal to `cpu_used_sec=1`.
    * 2. A branch that uses 2 CPUs simultaneously for 1 second is equal to `cpu_used_sec=2`.
+   *
    *
    * @deprecated
    */
@@ -1134,6 +1156,16 @@ export type Branch = {
    *
    */
   restored_from?: string;
+  /**
+   * ID of the target branch which was replaced when this branch was restored
+   *
+   */
+  restored_as?: string;
+  /**
+   * A list of actions that are currently restricted for this branch and the reason why.
+   *
+   */
+  restricted_actions?: Array<BranchRestrictedAction>;
 };
 
 /**
@@ -1154,6 +1186,51 @@ export type BranchState = string;
  */
 export type BranchRestoreStatus = string;
 
+/**
+ * An action that is currently restricted for the branch and the reason why.
+ *
+ */
+export type BranchRestrictedAction = {
+  /**
+   * The name of a restricted action. Possible values include `restore`, `delete-rw-endpoint`.
+   *
+   */
+  name: string;
+  /**
+   * A human-readable explanation of why the action is restricted.
+   *
+   */
+  reason: string;
+};
+
+export type BranchConsumption = {
+  /**
+   * Seconds. The number of CPU seconds used by the branch's compute endpoints, including compute endpoints that have been deleted.
+   *
+   */
+  compute_time_seconds: number;
+  /**
+   * Bytes. The number of bytes transferred to and from the branch.
+   *
+   */
+  data_transfer_bytes: number;
+  /**
+   * Bytes. The logical size of the branch.
+   *
+   */
+  logical_size_bytes: number;
+  /**
+   * Bytes. The number of bytes written to the branch since the parent branch.
+   *
+   */
+  written_size_since_parent_bytes: number;
+  /**
+   * Bytes. The number of bytes in the PITR history of the branch since the parent branch.
+   *
+   */
+  pitr_history_size_since_parent_bytes: number;
+};
+
 export type BranchCreateRequestEndpointOptions = {
   type: EndpointType;
   settings?: EndpointSettingsData;
@@ -1161,6 +1238,21 @@ export type BranchCreateRequestEndpointOptions = {
   autoscaling_limit_max_cu?: ComputeUnit;
   provisioner?: Provisioner;
   suspend_timeout_seconds?: SuspendTimeoutSeconds;
+};
+
+export type BranchAnonymizedCreateRequest = AnnotationCreateValueRequest & {
+  branch_create?: BranchCreateRequest;
+  /**
+   * List of masking rules to apply to the branch.
+   *
+   */
+  masking_rules?: Array<MaskingRule>;
+  /**
+   * If true, automatically start anonymization after the branch is created.
+   * Defaults to false.
+   *
+   */
+  start_anonymization?: boolean;
 };
 
 export type BranchCreateRequest = {
@@ -1259,6 +1351,10 @@ export type BranchResponse = {
   branch: Branch;
 };
 
+export type BranchConsumptionResponse = {
+  consumption: BranchConsumption;
+};
+
 export type BranchSchemaResponse = {
   sql?: string;
   json?: BranchSchemaJson;
@@ -1274,6 +1370,124 @@ export type BranchesResponse = {
 
 export type BranchesCountResponse = {
   count: number;
+};
+
+export type MaskingRule = {
+  /**
+   * The name of the database containing the table to be masked
+   *
+   */
+  database_name: string;
+  /**
+   * The name of the schema containing the table to be masked
+   *
+   */
+  schema_name: string;
+  /**
+   * The name of the table containing the column to be masked
+   *
+   */
+  table_name: string;
+  /**
+   * The name of the column to be masked
+   *
+   */
+  column_name: string;
+  /**
+   * The PostgreSQL Anonymizer masking function to apply.
+   * Can be a predefined function (e.g., 'anon.random_string(10)', 'anon.fake_email()')
+   * or a custom function definition (e.g., 'anon.hash(column_name)')
+   *
+   */
+  masking_function?: string;
+  /**
+   * A literal value to set on the column when masking.
+   *
+   */
+  masking_value?: string;
+};
+
+export type MaskingRulesResponse = {
+  /**
+   * List of masking rules for the branch
+   *
+   */
+  masking_rules: Array<MaskingRule>;
+};
+
+export type MaskingRulesUpdateRequest = {
+  /**
+   * List of masking rules to apply to the branch.
+   * This will replace all existing masking rules for the branch.
+   *
+   */
+  masking_rules: Array<MaskingRule>;
+};
+
+export type AnonymizedBranchStatusResponse = {
+  /**
+   * The ID of the project
+   *
+   */
+  project_id: string;
+  /**
+   * The ID of the anonymized branch
+   *
+   */
+  branch_id: string;
+  /**
+   * The current state of the anonymized branch. Possible values: created, initialized, initialization_error, anonymizing, anonymized, error
+   *
+   */
+  state: string;
+  /**
+   * A descriptive message about the current status or any errors
+   *
+   */
+  status_message?: string;
+  /**
+   * A timestamp indicating when the anonymized branch was created
+   *
+   */
+  created_at: string;
+  /**
+   * A timestamp indicating when the anonymized branch status was last updated
+   *
+   */
+  updated_at: string;
+  /**
+   * A timestamp indicating when the anonymized branch operation failed (if applicable)
+   *
+   */
+  failed_at?: string;
+  last_run?: AnonymizationRunMetadata;
+};
+
+/**
+ * Metadata about the most recent anonymization attempt for the branch.
+ */
+export type AnonymizationRunMetadata = {
+  /**
+   * Timestamp indicating when the latest anonymization attempt started.
+   *
+   */
+  started_at?: string;
+  /**
+   * Timestamp indicating when the latest anonymization attempt completed.
+   * Populated even if the attempt failed.
+   *
+   */
+  completed_at?: string;
+  /**
+   * UUID of the user who triggered the latest anonymization attempt.
+   *
+   */
+  triggered_by?: string;
+  /**
+   * Number of columns that had masking rules applied during the attempt.
+   *
+   */
+  masked_columns?: number;
 };
 
 export type ConnectionParameters = {
@@ -1523,6 +1737,7 @@ export type EndpointCreateRequest = {
     /**
      * Whether to enable connection pooling for the compute endpoint
      *
+     *
      * @deprecated
      */
     pooler_enabled?: boolean;
@@ -1556,6 +1771,7 @@ export type EndpointUpdateRequest = {
      * DEPRECATED: This field will be removed in a future release.
      * The destination branch ID. The destination branch must not have an existing read-write endpoint.
      *
+     *
      * @deprecated
      */
     branch_id?: string;
@@ -1565,6 +1781,7 @@ export type EndpointUpdateRequest = {
     settings?: EndpointSettingsData;
     /**
      * Whether to enable connection pooling for the compute endpoint
+     *
      *
      * @deprecated
      */
@@ -1721,6 +1938,11 @@ export type Role = {
    *
    */
   protected?: boolean;
+  /**
+   * Authentication method configured for this role. Valid options: `password`, `oauth`, `no_login`
+   *
+   */
+  authentication_method?: string;
   /**
    * A timestamp indicating when the role was created
    *
@@ -2190,6 +2412,7 @@ export type CurrentUserAuthAccount = {
   /**
    * DEPRECATED. Use `email` field.
    *
+   *
    * @deprecated
    */
   login: string;
@@ -2208,6 +2431,7 @@ export type UpdateUserInfoRequest = {
   id: string;
   /**
    * DEPRECATED. This field is ignored.
+   *
    *
    * @deprecated
    */
@@ -2231,6 +2455,7 @@ export type CurrentUserInfoResponse = {
   image: string;
   /**
    * DEPRECATED. Use `email` field.
+   *
    *
    * @deprecated
    */
@@ -2363,13 +2588,6 @@ export type DefaultEndpointSettings = {
   autoscaling_limit_min_cu?: ComputeUnit;
   autoscaling_limit_max_cu?: ComputeUnit;
   suspend_timeout_seconds?: SuspendTimeoutSeconds;
-  [key: string]:
-    | string
-    | PgSettingsData
-    | PgbouncerSettingsData
-    | ComputeUnit
-    | SuspendTimeoutSeconds
-    | undefined;
 };
 
 /**
@@ -2435,6 +2653,52 @@ export type UserDeletionConditionName =
 export type OrgDeletionConditionName = "project_count";
 
 /**
+ * Configuration settings for the Neon Data API
+ */
+export type DataApiSettings = {
+  /**
+   * Enable aggregates feature
+   */
+  db_aggregates_enabled?: boolean;
+  /**
+   * Database role to use for anonymous requests
+   */
+  db_anon_role?: string;
+  /**
+   * Extra schemas to add to the search path
+   */
+  db_extra_search_path?: string;
+  /**
+   * Maximum number of rows that can be returned in a single request
+   */
+  db_max_rows?: number;
+  /**
+   * List of schemas to expose via the API. Default: ["public"]
+   */
+  db_schemas?: Array<string>;
+  /**
+   * JWT claim key to use for role extraction
+   */
+  jwt_role_claim_key?: string;
+  /**
+   * Maximum lifetime for JWT cache in seconds
+   */
+  jwt_cache_max_lifetime?: number;
+  /**
+   * OpenAPI specification mode (ignore-privileges, disabled)
+   */
+  openapi_mode?: string;
+  /**
+   * CORS allowed origins
+   */
+  server_cors_allowed_origins?: string;
+  /**
+   * Enable server timing headers
+   */
+  server_timing_enabled?: boolean;
+};
+
+/**
  * Create Neon Data API
  */
 export type DataApiCreateRequest = {
@@ -2461,6 +2725,11 @@ export type DataApiCreateRequest = {
    * Grant all permissions to the tables in the public schema to authenticated users
    */
   add_default_grants?: boolean;
+  /**
+   * Skip creating the auth schema and RLS functions
+   */
+  skip_auth_schema?: boolean;
+  settings?: DataApiSettings;
 };
 
 /**
@@ -2482,6 +2751,21 @@ export type DataApiReponse = {
    * The status of the Neon Data API deployment
    */
   status: string;
+  /**
+   * Configuration settings for the Data API (SubZero only)
+   */
+  settings?: DataApiSettings | null;
+  /**
+   * List of available database schemas (SubZero only)
+   */
+  available_schemas?: Array<string> | null;
+};
+
+/**
+ * Update Neon Data API
+ */
+export type DataApiUpdateRequest = {
+  settings?: DataApiSettings;
 };
 
 export type NeonAuthSupportedAuthProvider =
@@ -2553,7 +2837,11 @@ export type NeonAuthCreateNewUserRequest = {
   project_id: string;
   auth_provider: NeonAuthSupportedAuthProvider;
   email: string;
-  password?: string;
+  name?: string;
+};
+
+export type CreateBranchNeonAuthNewUserRequest = {
+  email: string;
   name?: string;
 };
 
@@ -2562,6 +2850,34 @@ export type NeonAuthCreateNewUserResponse = {
    * ID of newly created user
    */
   id: string;
+};
+
+export type UpdateNeonAuthUserRoleRequest = {
+  /**
+   * Array of roles to assign to the user
+   */
+  roles: Array<string>;
+};
+
+export type UpdateNeonAuthUserRoleResponse = {
+  /**
+   * ID of the updated user
+   */
+  id: string;
+};
+
+export type NeonAuthAllowLocalhostResponse = {
+  /**
+   * Whether to allow localhost connections
+   */
+  allow_localhost: boolean;
+};
+
+export type UpdateNeonAuthAllowLocalhostRequest = {
+  /**
+   * Whether to allow localhost connections
+   */
+  allow_localhost: boolean;
 };
 
 export type NeonAuthTransferAuthProviderProjectRequest = {
@@ -2591,7 +2907,11 @@ export type NeonAuthOauthProvider = {
   client_secret?: string;
 };
 
-export type NeonAuthOauthProviderId = "google" | "github" | "microsoft";
+export type NeonAuthOauthProviderId =
+  | "google"
+  | "github"
+  | "microsoft"
+  | "vercel";
 
 export type NeonAuthOauthProviderType = "standard" | "shared";
 
@@ -2599,15 +2919,18 @@ export type NeonAuthAddOAuthProviderRequest = {
   id: NeonAuthOauthProviderId;
   client_id?: string;
   client_secret?: string;
+  microsoft_tenant_id?: string;
 };
 
 export type NeonAuthUpdateOAuthProviderRequest = {
   client_id?: string;
   client_secret?: string;
+  microsoft_tenant_id?: string;
 };
 
 export type SharedEmailServer = {
-  [key: string]: unknown;
+  sender_email?: string;
+  sender_name?: string;
 };
 
 export type StandardEmailServer = {
@@ -2643,6 +2966,70 @@ export type SendNeonAuthTestEmailResponse = {
    * The error message from the email server.
    */
   error_message?: string;
+};
+
+/**
+ * The email verification method to use.
+ * - `link`: Sends a verification link via email
+ * - `otp`: Sends a one-time password (OTP) via email
+ *
+ */
+export type NeonAuthEmailVerificationMethod = "link" | "otp";
+
+export type NeonAuthEmailAndPasswordConfig = {
+  /**
+   * Whether email and password authentication is enabled
+   */
+  enabled: boolean;
+  email_verification_method: NeonAuthEmailVerificationMethod;
+  /**
+   * Whether email verification is required before users can sign in
+   */
+  require_email_verification: boolean;
+  /**
+   * Whether users are automatically signed in after verifying their email
+   */
+  auto_sign_in_after_verification: boolean;
+  /**
+   * Whether to send a verification email when users sign up
+   */
+  send_verification_email_on_sign_up: boolean;
+  /**
+   * Whether to send a verification email when users sign in
+   */
+  send_verification_email_on_sign_in: boolean;
+  /**
+   * Whether to disable new user sign ups
+   */
+  disable_sign_up: boolean;
+};
+
+export type NeonAuthEmailAndPasswordConfigUpdate = {
+  /**
+   * Whether email and password authentication is enabled
+   */
+  enabled?: boolean;
+  email_verification_method?: NeonAuthEmailVerificationMethod;
+  /**
+   * Whether email verification is required before users can sign in
+   */
+  require_email_verification?: boolean;
+  /**
+   * Whether users are automatically signed in after verifying their email
+   */
+  auto_sign_in_after_verification?: boolean;
+  /**
+   * Whether to send a verification email when users sign up
+   */
+  send_verification_email_on_sign_up?: boolean;
+  /**
+   * Whether to send a verification email when users sign in
+   */
+  send_verification_email_on_sign_in?: boolean;
+  /**
+   * Whether to disable new user sign ups
+   */
+  disable_sign_up?: boolean;
 };
 
 export type NeonAuthIntegration = {
@@ -2778,7 +3165,7 @@ export type SnapshotUpdateRequest = {
   };
 };
 
-export type SnapshotScheduleItem = {
+export type BackupScheduleItem = {
   /**
    * How often to take snapshots. Must be one of the following values:
    * - `hourly`
@@ -2812,13 +3199,13 @@ export type SnapshotScheduleItem = {
   retention_seconds?: number;
 };
 
-export type SnapshotSchedule = {
-  schedule: Array<SnapshotScheduleItem>;
+export type BackupSchedule = {
+  schedule: Array<BackupScheduleItem>;
 };
 
 export type SupportTicket = {
-  zendesk_id?: number;
   salesforce_id?: string;
+  failed_uploads?: Array<string>;
 };
 
 export type BranchSchemaJson = {
@@ -2828,8 +3215,37 @@ export type BranchSchemaJson = {
     columns: Array<{
       name: string;
       type: string;
+      /**
+       * Whether the column allows NULL values
+       */
+      nullable?: boolean;
+      /**
+       * Whether the column is a generated (computed) column
+       */
+      generated?: boolean;
+    }>;
+    constraints?: Array<{
+      /**
+       * Type of constraint. Possible values: `primary_key`, `unique`
+       *
+       */
+      type: string;
+      /**
+       * Column names participating in this constraint
+       */
+      columns: Array<string>;
+      /**
+       * Optional name of the constraint
+       */
+      name?: string;
     }>;
   }>;
+};
+
+export type SystemStatusSummaryResponse = {
+  ongoing_incidents: number;
+  in_progress_maintenances: number;
+  scheduled_maintenances: number;
 };
 
 /**
@@ -2891,6 +3307,24 @@ export type ListApiKeysResponses = {
    * Returned the API keys for the Neon account
    */
   200: Array<ApiKeysListResponseItem>;
+  /**
+   * General Error.
+   *
+   * The request may or may not be safe to retry, depending on the HTTP method, response status code,
+   * and whether a response was received.
+   *
+   * - If no response is returned from the API, a network error or timeout likely occurred.
+   * - In some cases, the request may have reached the server and been successfully processed, but the response failed to reach the client. As a result, retrying non-idempotent requests can lead to unintended results.
+   *
+   * The following HTTP methods are considered non-idempotent: `POST`, `PATCH`, `DELETE`, and `PUT`. Retrying these methods is generally **not safe**.
+   * The following methods are considered idempotent: `GET`, `HEAD`, and `OPTIONS`. Retrying these methods is **safe** in the event of a network error or timeout.
+   *
+   * Any request that returns a `503 Service Unavailable` response is always safe to retry.
+   *
+   * Any request that returns a `423 Locked` response is safe to retry. `423 Locked` indicates that the resource is temporarily locked, for example, due to another operation in progress.
+   *
+   */
+  default: GeneralError;
 };
 
 export type ListApiKeysResponse =
@@ -2931,6 +3365,24 @@ export type CreateApiKeyResponses = {
    * Created an API key
    */
   200: ApiKeyCreateResponse;
+  /**
+   * General Error.
+   *
+   * The request may or may not be safe to retry, depending on the HTTP method, response status code,
+   * and whether a response was received.
+   *
+   * - If no response is returned from the API, a network error or timeout likely occurred.
+   * - In some cases, the request may have reached the server and been successfully processed, but the response failed to reach the client. As a result, retrying non-idempotent requests can lead to unintended results.
+   *
+   * The following HTTP methods are considered non-idempotent: `POST`, `PATCH`, `DELETE`, and `PUT`. Retrying these methods is generally **not safe**.
+   * The following methods are considered idempotent: `GET`, `HEAD`, and `OPTIONS`. Retrying these methods is **safe** in the event of a network error or timeout.
+   *
+   * Any request that returns a `503 Service Unavailable` response is always safe to retry.
+   *
+   * Any request that returns a `423 Locked` response is safe to retry. `423 Locked` indicates that the resource is temporarily locked, for example, due to another operation in progress.
+   *
+   */
+  default: GeneralError;
 };
 
 export type CreateApiKeyResponse =
@@ -2976,6 +3428,24 @@ export type RevokeApiKeyResponses = {
    * Revoked the specified API key
    */
   200: ApiKeyRevokeResponse;
+  /**
+   * General Error.
+   *
+   * The request may or may not be safe to retry, depending on the HTTP method, response status code,
+   * and whether a response was received.
+   *
+   * - If no response is returned from the API, a network error or timeout likely occurred.
+   * - In some cases, the request may have reached the server and been successfully processed, but the response failed to reach the client. As a result, retrying non-idempotent requests can lead to unintended results.
+   *
+   * The following HTTP methods are considered non-idempotent: `POST`, `PATCH`, `DELETE`, and `PUT`. Retrying these methods is generally **not safe**.
+   * The following methods are considered idempotent: `GET`, `HEAD`, and `OPTIONS`. Retrying these methods is **safe** in the event of a network error or timeout.
+   *
+   * Any request that returns a `503 Service Unavailable` response is always safe to retry.
+   *
+   * Any request that returns a `423 Locked` response is safe to retry. `423 Locked` indicates that the resource is temporarily locked, for example, due to another operation in progress.
+   *
+   */
+  default: GeneralError;
 };
 
 export type RevokeApiKeyResponse =
@@ -3026,6 +3496,24 @@ export type GetProjectOperationResponses = {
    * Returned details for the specified operation
    */
   200: OperationResponse;
+  /**
+   * General Error.
+   *
+   * The request may or may not be safe to retry, depending on the HTTP method, response status code,
+   * and whether a response was received.
+   *
+   * - If no response is returned from the API, a network error or timeout likely occurred.
+   * - In some cases, the request may have reached the server and been successfully processed, but the response failed to reach the client. As a result, retrying non-idempotent requests can lead to unintended results.
+   *
+   * The following HTTP methods are considered non-idempotent: `POST`, `PATCH`, `DELETE`, and `PUT`. Retrying these methods is generally **not safe**.
+   * The following methods are considered idempotent: `GET`, `HEAD`, and `OPTIONS`. Retrying these methods is **safe** in the event of a network error or timeout.
+   *
+   * Any request that returns a `503 Service Unavailable` response is always safe to retry.
+   *
+   * Any request that returns a `423 Locked` response is safe to retry. `423 Locked` indicates that the resource is temporarily locked, for example, due to another operation in progress.
+   *
+   */
+  default: GeneralError;
 };
 
 export type GetProjectOperationResponse =
@@ -3059,6 +3547,11 @@ export type ListProjectsData = {
      *
      */
     timeout?: number;
+    /**
+     * Show only deleted projects within the recovery window.
+     *
+     */
+    recoverable?: boolean;
   };
   url: "/projects";
 };
@@ -3094,6 +3587,24 @@ export type ListProjectsResponses = {
     PaginationResponse &
     ProjectsApplicationsMapResponse &
     ProjectsIntegrationsMapResponse;
+  /**
+   * General Error.
+   *
+   * The request may or may not be safe to retry, depending on the HTTP method, response status code,
+   * and whether a response was received.
+   *
+   * - If no response is returned from the API, a network error or timeout likely occurred.
+   * - In some cases, the request may have reached the server and been successfully processed, but the response failed to reach the client. As a result, retrying non-idempotent requests can lead to unintended results.
+   *
+   * The following HTTP methods are considered non-idempotent: `POST`, `PATCH`, `DELETE`, and `PUT`. Retrying these methods is generally **not safe**.
+   * The following methods are considered idempotent: `GET`, `HEAD`, and `OPTIONS`. Retrying these methods is **safe** in the event of a network error or timeout.
+   *
+   * Any request that returns a `503 Service Unavailable` response is always safe to retry.
+   *
+   * Any request that returns a `423 Locked` response is safe to retry. `423 Locked` indicates that the resource is temporarily locked, for example, due to another operation in progress.
+   *
+   */
+  default: GeneralError;
 };
 
 export type ListProjectsResponse =
@@ -3144,6 +3655,24 @@ export type CreateProjectResponses = {
     OperationsResponse &
     BranchResponse &
     EndpointsResponse;
+  /**
+   * General Error.
+   *
+   * The request may or may not be safe to retry, depending on the HTTP method, response status code,
+   * and whether a response was received.
+   *
+   * - If no response is returned from the API, a network error or timeout likely occurred.
+   * - In some cases, the request may have reached the server and been successfully processed, but the response failed to reach the client. As a result, retrying non-idempotent requests can lead to unintended results.
+   *
+   * The following HTTP methods are considered non-idempotent: `POST`, `PATCH`, `DELETE`, and `PUT`. Retrying these methods is generally **not safe**.
+   * The following methods are considered idempotent: `GET`, `HEAD`, and `OPTIONS`. Retrying these methods is **safe** in the event of a network error or timeout.
+   *
+   * Any request that returns a `503 Service Unavailable` response is always safe to retry.
+   *
+   * Any request that returns a `423 Locked` response is safe to retry. `423 Locked` indicates that the resource is temporarily locked, for example, due to another operation in progress.
+   *
+   */
+  default: GeneralError;
 };
 
 export type CreateProjectResponse =
@@ -3206,6 +3735,24 @@ export type ListSharedProjectsResponses = {
    * Returned a list of shared projects for the Neon account
    */
   200: ProjectsResponse & PaginationResponse;
+  /**
+   * General Error.
+   *
+   * The request may or may not be safe to retry, depending on the HTTP method, response status code,
+   * and whether a response was received.
+   *
+   * - If no response is returned from the API, a network error or timeout likely occurred.
+   * - In some cases, the request may have reached the server and been successfully processed, but the response failed to reach the client. As a result, retrying non-idempotent requests can lead to unintended results.
+   *
+   * The following HTTP methods are considered non-idempotent: `POST`, `PATCH`, `DELETE`, and `PUT`. Retrying these methods is generally **not safe**.
+   * The following methods are considered idempotent: `GET`, `HEAD`, and `OPTIONS`. Retrying these methods is **safe** in the event of a network error or timeout.
+   *
+   * Any request that returns a `503 Service Unavailable` response is always safe to retry.
+   *
+   * Any request that returns a `423 Locked` response is safe to retry. `423 Locked` indicates that the resource is temporarily locked, for example, due to another operation in progress.
+   *
+   */
+  default: GeneralError;
 };
 
 export type ListSharedProjectsResponse =
@@ -3251,6 +3798,24 @@ export type DeleteProjectResponses = {
    * Deleted the specified project
    */
   200: ProjectResponse;
+  /**
+   * General Error.
+   *
+   * The request may or may not be safe to retry, depending on the HTTP method, response status code,
+   * and whether a response was received.
+   *
+   * - If no response is returned from the API, a network error or timeout likely occurred.
+   * - In some cases, the request may have reached the server and been successfully processed, but the response failed to reach the client. As a result, retrying non-idempotent requests can lead to unintended results.
+   *
+   * The following HTTP methods are considered non-idempotent: `POST`, `PATCH`, `DELETE`, and `PUT`. Retrying these methods is generally **not safe**.
+   * The following methods are considered idempotent: `GET`, `HEAD`, and `OPTIONS`. Retrying these methods is **safe** in the event of a network error or timeout.
+   *
+   * Any request that returns a `503 Service Unavailable` response is always safe to retry.
+   *
+   * Any request that returns a `423 Locked` response is safe to retry. `423 Locked` indicates that the resource is temporarily locked, for example, due to another operation in progress.
+   *
+   */
+  default: GeneralError;
 };
 
 export type DeleteProjectResponse =
@@ -3296,6 +3861,24 @@ export type GetProjectResponses = {
    * Returned information about the specified project
    */
   200: ProjectResponse;
+  /**
+   * General Error.
+   *
+   * The request may or may not be safe to retry, depending on the HTTP method, response status code,
+   * and whether a response was received.
+   *
+   * - If no response is returned from the API, a network error or timeout likely occurred.
+   * - In some cases, the request may have reached the server and been successfully processed, but the response failed to reach the client. As a result, retrying non-idempotent requests can lead to unintended results.
+   *
+   * The following HTTP methods are considered non-idempotent: `POST`, `PATCH`, `DELETE`, and `PUT`. Retrying these methods is generally **not safe**.
+   * The following methods are considered idempotent: `GET`, `HEAD`, and `OPTIONS`. Retrying these methods is **safe** in the event of a network error or timeout.
+   *
+   * Any request that returns a `503 Service Unavailable` response is always safe to retry.
+   *
+   * Any request that returns a `423 Locked` response is safe to retry. `423 Locked` indicates that the resource is temporarily locked, for example, due to another operation in progress.
+   *
+   */
+  default: GeneralError;
 };
 
 export type GetProjectResponse = GetProjectResponses[keyof GetProjectResponses];
@@ -3340,10 +3923,156 @@ export type UpdateProjectResponses = {
    * Updated the specified project
    */
   200: ProjectResponse & OperationsResponse;
+  /**
+   * General Error.
+   *
+   * The request may or may not be safe to retry, depending on the HTTP method, response status code,
+   * and whether a response was received.
+   *
+   * - If no response is returned from the API, a network error or timeout likely occurred.
+   * - In some cases, the request may have reached the server and been successfully processed, but the response failed to reach the client. As a result, retrying non-idempotent requests can lead to unintended results.
+   *
+   * The following HTTP methods are considered non-idempotent: `POST`, `PATCH`, `DELETE`, and `PUT`. Retrying these methods is generally **not safe**.
+   * The following methods are considered idempotent: `GET`, `HEAD`, and `OPTIONS`. Retrying these methods is **safe** in the event of a network error or timeout.
+   *
+   * Any request that returns a `503 Service Unavailable` response is always safe to retry.
+   *
+   * Any request that returns a `423 Locked` response is safe to retry. `423 Locked` indicates that the resource is temporarily locked, for example, due to another operation in progress.
+   *
+   */
+  default: GeneralError;
 };
 
 export type UpdateProjectResponse =
   UpdateProjectResponses[keyof UpdateProjectResponses];
+
+export type RestoreProjectData = {
+  body?: never;
+  path: {
+    /**
+     * The Neon project ID
+     */
+    project_id: string;
+  };
+  query?: never;
+  url: "/projects/{project_id}/restore";
+};
+
+export type RestoreProjectErrors = {
+  /**
+   * General Error.
+   *
+   * The request may or may not be safe to retry, depending on the HTTP method, response status code,
+   * and whether a response was received.
+   *
+   * - If no response is returned from the API, a network error or timeout likely occurred.
+   * - In some cases, the request may have reached the server and been successfully processed, but the response failed to reach the client. As a result, retrying non-idempotent requests can lead to unintended results.
+   *
+   * The following HTTP methods are considered non-idempotent: `POST`, `PATCH`, `DELETE`, and `PUT`. Retrying these methods is generally **not safe**.
+   * The following methods are considered idempotent: `GET`, `HEAD`, and `OPTIONS`. Retrying these methods is **safe** in the event of a network error or timeout.
+   *
+   * Any request that returns a `503 Service Unavailable` response is always safe to retry.
+   *
+   * Any request that returns a `423 Locked` response is safe to retry. `423 Locked` indicates that the resource is temporarily locked, for example, due to another operation in progress.
+   *
+   */
+  default: GeneralError;
+};
+
+export type RestoreProjectError =
+  RestoreProjectErrors[keyof RestoreProjectErrors];
+
+export type RestoreProjectResponses = {
+  /**
+   * Returned the restored project
+   */
+  200: ProjectRecoverResponse;
+  /**
+   * General Error.
+   *
+   * The request may or may not be safe to retry, depending on the HTTP method, response status code,
+   * and whether a response was received.
+   *
+   * - If no response is returned from the API, a network error or timeout likely occurred.
+   * - In some cases, the request may have reached the server and been successfully processed, but the response failed to reach the client. As a result, retrying non-idempotent requests can lead to unintended results.
+   *
+   * The following HTTP methods are considered non-idempotent: `POST`, `PATCH`, `DELETE`, and `PUT`. Retrying these methods is generally **not safe**.
+   * The following methods are considered idempotent: `GET`, `HEAD`, and `OPTIONS`. Retrying these methods is **safe** in the event of a network error or timeout.
+   *
+   * Any request that returns a `503 Service Unavailable` response is always safe to retry.
+   *
+   * Any request that returns a `423 Locked` response is safe to retry. `423 Locked` indicates that the resource is temporarily locked, for example, due to another operation in progress.
+   *
+   */
+  default: GeneralError;
+};
+
+export type RestoreProjectResponse =
+  RestoreProjectResponses[keyof RestoreProjectResponses];
+
+export type RecoverProjectData = {
+  body?: never;
+  path: {
+    /**
+     * The Neon project ID
+     */
+    project_id: string;
+  };
+  query?: never;
+  url: "/projects/{project_id}/recover";
+};
+
+export type RecoverProjectErrors = {
+  /**
+   * General Error.
+   *
+   * The request may or may not be safe to retry, depending on the HTTP method, response status code,
+   * and whether a response was received.
+   *
+   * - If no response is returned from the API, a network error or timeout likely occurred.
+   * - In some cases, the request may have reached the server and been successfully processed, but the response failed to reach the client. As a result, retrying non-idempotent requests can lead to unintended results.
+   *
+   * The following HTTP methods are considered non-idempotent: `POST`, `PATCH`, `DELETE`, and `PUT`. Retrying these methods is generally **not safe**.
+   * The following methods are considered idempotent: `GET`, `HEAD`, and `OPTIONS`. Retrying these methods is **safe** in the event of a network error or timeout.
+   *
+   * Any request that returns a `503 Service Unavailable` response is always safe to retry.
+   *
+   * Any request that returns a `423 Locked` response is safe to retry. `423 Locked` indicates that the resource is temporarily locked, for example, due to another operation in progress.
+   *
+   */
+  default: GeneralError;
+};
+
+export type RecoverProjectError =
+  RecoverProjectErrors[keyof RecoverProjectErrors];
+
+export type RecoverProjectResponses = {
+  /**
+   * Returned the recovered project
+   */
+  200: ProjectRecoverResponse;
+  /**
+   * General Error.
+   *
+   * The request may or may not be safe to retry, depending on the HTTP method, response status code,
+   * and whether a response was received.
+   *
+   * - If no response is returned from the API, a network error or timeout likely occurred.
+   * - In some cases, the request may have reached the server and been successfully processed, but the response failed to reach the client. As a result, retrying non-idempotent requests can lead to unintended results.
+   *
+   * The following HTTP methods are considered non-idempotent: `POST`, `PATCH`, `DELETE`, and `PUT`. Retrying these methods is generally **not safe**.
+   * The following methods are considered idempotent: `GET`, `HEAD`, and `OPTIONS`. Retrying these methods is **safe** in the event of a network error or timeout.
+   *
+   * Any request that returns a `503 Service Unavailable` response is always safe to retry.
+   *
+   * Any request that returns a `423 Locked` response is safe to retry. `423 Locked` indicates that the resource is temporarily locked, for example, due to another operation in progress.
+   *
+   */
+  default: GeneralError;
+};
+
+export type RecoverProjectResponse =
+  RecoverProjectResponses[keyof RecoverProjectResponses];
 
 export type ListProjectOperationsData = {
   body?: never;
@@ -3396,6 +4125,24 @@ export type ListProjectOperationsResponses = {
    *
    */
   200: OperationsResponse & PaginationResponse;
+  /**
+   * General Error.
+   *
+   * The request may or may not be safe to retry, depending on the HTTP method, response status code,
+   * and whether a response was received.
+   *
+   * - If no response is returned from the API, a network error or timeout likely occurred.
+   * - In some cases, the request may have reached the server and been successfully processed, but the response failed to reach the client. As a result, retrying non-idempotent requests can lead to unintended results.
+   *
+   * The following HTTP methods are considered non-idempotent: `POST`, `PATCH`, `DELETE`, and `PUT`. Retrying these methods is generally **not safe**.
+   * The following methods are considered idempotent: `GET`, `HEAD`, and `OPTIONS`. Retrying these methods is **safe** in the event of a network error or timeout.
+   *
+   * Any request that returns a `503 Service Unavailable` response is always safe to retry.
+   *
+   * Any request that returns a `423 Locked` response is safe to retry. `423 Locked` indicates that the resource is temporarily locked, for example, due to another operation in progress.
+   *
+   */
+  default: GeneralError;
 };
 
 export type ListProjectOperationsResponse =
@@ -3439,6 +4186,24 @@ export type ListProjectPermissionsResponses = {
    * Returned project access details
    */
   200: ProjectPermissions;
+  /**
+   * General Error.
+   *
+   * The request may or may not be safe to retry, depending on the HTTP method, response status code,
+   * and whether a response was received.
+   *
+   * - If no response is returned from the API, a network error or timeout likely occurred.
+   * - In some cases, the request may have reached the server and been successfully processed, but the response failed to reach the client. As a result, retrying non-idempotent requests can lead to unintended results.
+   *
+   * The following HTTP methods are considered non-idempotent: `POST`, `PATCH`, `DELETE`, and `PUT`. Retrying these methods is generally **not safe**.
+   * The following methods are considered idempotent: `GET`, `HEAD`, and `OPTIONS`. Retrying these methods is **safe** in the event of a network error or timeout.
+   *
+   * Any request that returns a `503 Service Unavailable` response is always safe to retry.
+   *
+   * Any request that returns a `423 Locked` response is safe to retry. `423 Locked` indicates that the resource is temporarily locked, for example, due to another operation in progress.
+   *
+   */
+  default: GeneralError;
 };
 
 export type ListProjectPermissionsResponse =
@@ -3482,6 +4247,24 @@ export type GrantPermissionToProjectResponses = {
    * Granted project access
    */
   200: ProjectPermission;
+  /**
+   * General Error.
+   *
+   * The request may or may not be safe to retry, depending on the HTTP method, response status code,
+   * and whether a response was received.
+   *
+   * - If no response is returned from the API, a network error or timeout likely occurred.
+   * - In some cases, the request may have reached the server and been successfully processed, but the response failed to reach the client. As a result, retrying non-idempotent requests can lead to unintended results.
+   *
+   * The following HTTP methods are considered non-idempotent: `POST`, `PATCH`, `DELETE`, and `PUT`. Retrying these methods is generally **not safe**.
+   * The following methods are considered idempotent: `GET`, `HEAD`, and `OPTIONS`. Retrying these methods is **safe** in the event of a network error or timeout.
+   *
+   * Any request that returns a `503 Service Unavailable` response is always safe to retry.
+   *
+   * Any request that returns a `423 Locked` response is safe to retry. `423 Locked` indicates that the resource is temporarily locked, for example, due to another operation in progress.
+   *
+   */
+  default: GeneralError;
 };
 
 export type GrantPermissionToProjectResponse =
@@ -3526,6 +4309,24 @@ export type RevokePermissionFromProjectResponses = {
    * Revoked project access
    */
   200: ProjectPermission;
+  /**
+   * General Error.
+   *
+   * The request may or may not be safe to retry, depending on the HTTP method, response status code,
+   * and whether a response was received.
+   *
+   * - If no response is returned from the API, a network error or timeout likely occurred.
+   * - In some cases, the request may have reached the server and been successfully processed, but the response failed to reach the client. As a result, retrying non-idempotent requests can lead to unintended results.
+   *
+   * The following HTTP methods are considered non-idempotent: `POST`, `PATCH`, `DELETE`, and `PUT`. Retrying these methods is generally **not safe**.
+   * The following methods are considered idempotent: `GET`, `HEAD`, and `OPTIONS`. Retrying these methods is **safe** in the event of a network error or timeout.
+   *
+   * Any request that returns a `503 Service Unavailable` response is always safe to retry.
+   *
+   * Any request that returns a `423 Locked` response is safe to retry. `423 Locked` indicates that the resource is temporarily locked, for example, due to another operation in progress.
+   *
+   */
+  default: GeneralError;
 };
 
 export type RevokePermissionFromProjectResponse =
@@ -3569,6 +4370,24 @@ export type GetAvailablePreloadLibrariesResponses = {
    * Successfully returned available shared preload libraries
    */
   200: AvailablePreloadLibraries;
+  /**
+   * General Error.
+   *
+   * The request may or may not be safe to retry, depending on the HTTP method, response status code,
+   * and whether a response was received.
+   *
+   * - If no response is returned from the API, a network error or timeout likely occurred.
+   * - In some cases, the request may have reached the server and been successfully processed, but the response failed to reach the client. As a result, retrying non-idempotent requests can lead to unintended results.
+   *
+   * The following HTTP methods are considered non-idempotent: `POST`, `PATCH`, `DELETE`, and `PUT`. Retrying these methods is generally **not safe**.
+   * The following methods are considered idempotent: `GET`, `HEAD`, and `OPTIONS`. Retrying these methods is **safe** in the event of a network error or timeout.
+   *
+   * Any request that returns a `503 Service Unavailable` response is always safe to retry.
+   *
+   * Any request that returns a `423 Locked` response is safe to retry. `423 Locked` indicates that the resource is temporarily locked, for example, due to another operation in progress.
+   *
+   */
+  default: GeneralError;
 };
 
 export type GetAvailablePreloadLibrariesResponse =
@@ -3622,6 +4441,24 @@ export type CreateProjectTransferRequestResponses = {
    * Project transfer request created successfully
    */
   201: ProjectTransferRequestResponse;
+  /**
+   * General Error.
+   *
+   * The request may or may not be safe to retry, depending on the HTTP method, response status code,
+   * and whether a response was received.
+   *
+   * - If no response is returned from the API, a network error or timeout likely occurred.
+   * - In some cases, the request may have reached the server and been successfully processed, but the response failed to reach the client. As a result, retrying non-idempotent requests can lead to unintended results.
+   *
+   * The following HTTP methods are considered non-idempotent: `POST`, `PATCH`, `DELETE`, and `PUT`. Retrying these methods is generally **not safe**.
+   * The following methods are considered idempotent: `GET`, `HEAD`, and `OPTIONS`. Retrying these methods is **safe** in the event of a network error or timeout.
+   *
+   * Any request that returns a `503 Service Unavailable` response is always safe to retry.
+   *
+   * Any request that returns a `423 Locked` response is safe to retry. `423 Locked` indicates that the resource is temporarily locked, for example, due to another operation in progress.
+   *
+   */
+  default: GeneralError;
 };
 
 export type CreateProjectTransferRequestResponse =
@@ -3683,6 +4520,24 @@ export type AcceptProjectTransferRequestResponses = {
    * Project transfer request accepted successfully
    */
   204: void;
+  /**
+   * General Error.
+   *
+   * The request may or may not be safe to retry, depending on the HTTP method, response status code,
+   * and whether a response was received.
+   *
+   * - If no response is returned from the API, a network error or timeout likely occurred.
+   * - In some cases, the request may have reached the server and been successfully processed, but the response failed to reach the client. As a result, retrying non-idempotent requests can lead to unintended results.
+   *
+   * The following HTTP methods are considered non-idempotent: `POST`, `PATCH`, `DELETE`, and `PUT`. Retrying these methods is generally **not safe**.
+   * The following methods are considered idempotent: `GET`, `HEAD`, and `OPTIONS`. Retrying these methods is **safe** in the event of a network error or timeout.
+   *
+   * Any request that returns a `503 Service Unavailable` response is always safe to retry.
+   *
+   * Any request that returns a `423 Locked` response is safe to retry. `423 Locked` indicates that the resource is temporarily locked, for example, due to another operation in progress.
+   *
+   */
+  default: GeneralError;
 };
 
 export type AcceptProjectTransferRequestResponse =
@@ -3729,6 +4584,24 @@ export type GetProjectJwksResponses = {
    * The JWKS URLs available for the project
    */
   200: ProjectJwksResponse;
+  /**
+   * General Error.
+   *
+   * The request may or may not be safe to retry, depending on the HTTP method, response status code,
+   * and whether a response was received.
+   *
+   * - If no response is returned from the API, a network error or timeout likely occurred.
+   * - In some cases, the request may have reached the server and been successfully processed, but the response failed to reach the client. As a result, retrying non-idempotent requests can lead to unintended results.
+   *
+   * The following HTTP methods are considered non-idempotent: `POST`, `PATCH`, `DELETE`, and `PUT`. Retrying these methods is generally **not safe**.
+   * The following methods are considered idempotent: `GET`, `HEAD`, and `OPTIONS`. Retrying these methods is **safe** in the event of a network error or timeout.
+   *
+   * Any request that returns a `503 Service Unavailable` response is always safe to retry.
+   *
+   * Any request that returns a `423 Locked` response is safe to retry. `423 Locked` indicates that the resource is temporarily locked, for example, due to another operation in progress.
+   *
+   */
+  default: GeneralError;
 };
 
 export type GetProjectJwksResponse =
@@ -3775,6 +4648,24 @@ export type AddProjectJwksResponses = {
    * The JWKS URL was added to the project's authentication connections
    */
   201: JwksCreationOperation;
+  /**
+   * General Error.
+   *
+   * The request may or may not be safe to retry, depending on the HTTP method, response status code,
+   * and whether a response was received.
+   *
+   * - If no response is returned from the API, a network error or timeout likely occurred.
+   * - In some cases, the request may have reached the server and been successfully processed, but the response failed to reach the client. As a result, retrying non-idempotent requests can lead to unintended results.
+   *
+   * The following HTTP methods are considered non-idempotent: `POST`, `PATCH`, `DELETE`, and `PUT`. Retrying these methods is generally **not safe**.
+   * The following methods are considered idempotent: `GET`, `HEAD`, and `OPTIONS`. Retrying these methods is **safe** in the event of a network error or timeout.
+   *
+   * Any request that returns a `503 Service Unavailable` response is always safe to retry.
+   *
+   * Any request that returns a `423 Locked` response is safe to retry. `423 Locked` indicates that the resource is temporarily locked, for example, due to another operation in progress.
+   *
+   */
+  default: GeneralError;
 };
 
 export type AddProjectJwksResponse =
@@ -3825,6 +4716,24 @@ export type DeleteProjectJwksResponses = {
    * Deleted a JWKS URL from the project
    */
   200: Jwks;
+  /**
+   * General Error.
+   *
+   * The request may or may not be safe to retry, depending on the HTTP method, response status code,
+   * and whether a response was received.
+   *
+   * - If no response is returned from the API, a network error or timeout likely occurred.
+   * - In some cases, the request may have reached the server and been successfully processed, but the response failed to reach the client. As a result, retrying non-idempotent requests can lead to unintended results.
+   *
+   * The following HTTP methods are considered non-idempotent: `POST`, `PATCH`, `DELETE`, and `PUT`. Retrying these methods is generally **not safe**.
+   * The following methods are considered idempotent: `GET`, `HEAD`, and `OPTIONS`. Retrying these methods is **safe** in the event of a network error or timeout.
+   *
+   * Any request that returns a `503 Service Unavailable` response is always safe to retry.
+   *
+   * Any request that returns a `423 Locked` response is safe to retry. `423 Locked` indicates that the resource is temporarily locked, for example, due to another operation in progress.
+   *
+   */
+  default: GeneralError;
 };
 
 export type DeleteProjectJwksResponse =
@@ -3879,6 +4788,24 @@ export type DeleteProjectBranchDataApiResponses = {
    * Deleted the Neon Data API for the specified branch
    */
   200: EmptyResponse;
+  /**
+   * General Error.
+   *
+   * The request may or may not be safe to retry, depending on the HTTP method, response status code,
+   * and whether a response was received.
+   *
+   * - If no response is returned from the API, a network error or timeout likely occurred.
+   * - In some cases, the request may have reached the server and been successfully processed, but the response failed to reach the client. As a result, retrying non-idempotent requests can lead to unintended results.
+   *
+   * The following HTTP methods are considered non-idempotent: `POST`, `PATCH`, `DELETE`, and `PUT`. Retrying these methods is generally **not safe**.
+   * The following methods are considered idempotent: `GET`, `HEAD`, and `OPTIONS`. Retrying these methods is **safe** in the event of a network error or timeout.
+   *
+   * Any request that returns a `503 Service Unavailable` response is always safe to retry.
+   *
+   * Any request that returns a `423 Locked` response is safe to retry. `423 Locked` indicates that the resource is temporarily locked, for example, due to another operation in progress.
+   *
+   */
+  default: GeneralError;
 };
 
 export type DeleteProjectBranchDataApiResponse =
@@ -3933,32 +4860,6 @@ export type GetProjectBranchDataApiResponses = {
    * Returns the Neon Data API for the specified branch
    */
   200: DataApiReponse;
-};
-
-export type GetProjectBranchDataApiResponse =
-  GetProjectBranchDataApiResponses[keyof GetProjectBranchDataApiResponses];
-
-export type RefreshSchemaCacheDataApiData = {
-  body?: never;
-  path: {
-    /**
-     * The Neon project ID
-     */
-    project_id: string;
-    /**
-     * The Neon branch ID
-     */
-    branch_id: string;
-    /**
-     * The database name
-     */
-    database_name: string;
-  };
-  query?: never;
-  url: "/projects/{project_id}/branches/{branch_id}/data-api/{database_name}";
-};
-
-export type RefreshSchemaCacheDataApiErrors = {
   /**
    * General Error.
    *
@@ -3979,18 +4880,80 @@ export type RefreshSchemaCacheDataApiErrors = {
   default: GeneralError;
 };
 
-export type RefreshSchemaCacheDataApiError =
-  RefreshSchemaCacheDataApiErrors[keyof RefreshSchemaCacheDataApiErrors];
+export type GetProjectBranchDataApiResponse =
+  GetProjectBranchDataApiResponses[keyof GetProjectBranchDataApiResponses];
 
-export type RefreshSchemaCacheDataApiResponses = {
-  /**
-   * Refreshed the schema cache for the Neon Data API in the specified branch
-   */
-  201: EmptyResponse;
+export type UpdateProjectBranchDataApiData = {
+  body?: DataApiUpdateRequest;
+  path: {
+    /**
+     * The Neon project ID
+     */
+    project_id: string;
+    /**
+     * The Neon branch ID
+     */
+    branch_id: string;
+    /**
+     * The database name
+     */
+    database_name: string;
+  };
+  query?: never;
+  url: "/projects/{project_id}/branches/{branch_id}/data-api/{database_name}";
 };
 
-export type RefreshSchemaCacheDataApiResponse =
-  RefreshSchemaCacheDataApiResponses[keyof RefreshSchemaCacheDataApiResponses];
+export type UpdateProjectBranchDataApiErrors = {
+  /**
+   * General Error.
+   *
+   * The request may or may not be safe to retry, depending on the HTTP method, response status code,
+   * and whether a response was received.
+   *
+   * - If no response is returned from the API, a network error or timeout likely occurred.
+   * - In some cases, the request may have reached the server and been successfully processed, but the response failed to reach the client. As a result, retrying non-idempotent requests can lead to unintended results.
+   *
+   * The following HTTP methods are considered non-idempotent: `POST`, `PATCH`, `DELETE`, and `PUT`. Retrying these methods is generally **not safe**.
+   * The following methods are considered idempotent: `GET`, `HEAD`, and `OPTIONS`. Retrying these methods is **safe** in the event of a network error or timeout.
+   *
+   * Any request that returns a `503 Service Unavailable` response is always safe to retry.
+   *
+   * Any request that returns a `423 Locked` response is safe to retry. `423 Locked` indicates that the resource is temporarily locked, for example, due to another operation in progress.
+   *
+   */
+  default: GeneralError;
+};
+
+export type UpdateProjectBranchDataApiError =
+  UpdateProjectBranchDataApiErrors[keyof UpdateProjectBranchDataApiErrors];
+
+export type UpdateProjectBranchDataApiResponses = {
+  /**
+   * Updated the Neon Data API configuration and refreshed the schema cache
+   */
+  201: EmptyResponse;
+  /**
+   * General Error.
+   *
+   * The request may or may not be safe to retry, depending on the HTTP method, response status code,
+   * and whether a response was received.
+   *
+   * - If no response is returned from the API, a network error or timeout likely occurred.
+   * - In some cases, the request may have reached the server and been successfully processed, but the response failed to reach the client. As a result, retrying non-idempotent requests can lead to unintended results.
+   *
+   * The following HTTP methods are considered non-idempotent: `POST`, `PATCH`, `DELETE`, and `PUT`. Retrying these methods is generally **not safe**.
+   * The following methods are considered idempotent: `GET`, `HEAD`, and `OPTIONS`. Retrying these methods is **safe** in the event of a network error or timeout.
+   *
+   * Any request that returns a `503 Service Unavailable` response is always safe to retry.
+   *
+   * Any request that returns a `423 Locked` response is safe to retry. `423 Locked` indicates that the resource is temporarily locked, for example, due to another operation in progress.
+   *
+   */
+  default: GeneralError;
+};
+
+export type UpdateProjectBranchDataApiResponse =
+  UpdateProjectBranchDataApiResponses[keyof UpdateProjectBranchDataApiResponses];
 
 export type CreateProjectBranchDataApiData = {
   body?: DataApiCreateRequest;
@@ -4041,6 +5004,24 @@ export type CreateProjectBranchDataApiResponses = {
    * Creates a new app
    */
   201: DataApiCreateResponse;
+  /**
+   * General Error.
+   *
+   * The request may or may not be safe to retry, depending on the HTTP method, response status code,
+   * and whether a response was received.
+   *
+   * - If no response is returned from the API, a network error or timeout likely occurred.
+   * - In some cases, the request may have reached the server and been successfully processed, but the response failed to reach the client. As a result, retrying non-idempotent requests can lead to unintended results.
+   *
+   * The following HTTP methods are considered non-idempotent: `POST`, `PATCH`, `DELETE`, and `PUT`. Retrying these methods is generally **not safe**.
+   * The following methods are considered idempotent: `GET`, `HEAD`, and `OPTIONS`. Retrying these methods is **safe** in the event of a network error or timeout.
+   *
+   * Any request that returns a `503 Service Unavailable` response is always safe to retry.
+   *
+   * Any request that returns a `423 Locked` response is safe to retry. `423 Locked` indicates that the resource is temporarily locked, for example, due to another operation in progress.
+   *
+   */
+  default: GeneralError;
 };
 
 export type CreateProjectBranchDataApiResponse =
@@ -4082,10 +5063,236 @@ export type CreateNeonAuthIntegrationResponses = {
    * Creates Neon Auth integration
    */
   201: NeonAuthCreateIntegrationResponse;
+  /**
+   * General Error.
+   *
+   * The request may or may not be safe to retry, depending on the HTTP method, response status code,
+   * and whether a response was received.
+   *
+   * - If no response is returned from the API, a network error or timeout likely occurred.
+   * - In some cases, the request may have reached the server and been successfully processed, but the response failed to reach the client. As a result, retrying non-idempotent requests can lead to unintended results.
+   *
+   * The following HTTP methods are considered non-idempotent: `POST`, `PATCH`, `DELETE`, and `PUT`. Retrying these methods is generally **not safe**.
+   * The following methods are considered idempotent: `GET`, `HEAD`, and `OPTIONS`. Retrying these methods is **safe** in the event of a network error or timeout.
+   *
+   * Any request that returns a `503 Service Unavailable` response is always safe to retry.
+   *
+   * Any request that returns a `423 Locked` response is safe to retry. `423 Locked` indicates that the resource is temporarily locked, for example, due to another operation in progress.
+   *
+   */
+  default: GeneralError;
 };
 
 export type CreateNeonAuthIntegrationResponse =
   CreateNeonAuthIntegrationResponses[keyof CreateNeonAuthIntegrationResponses];
+
+export type DisableNeonAuthData = {
+  body?: {
+    /**
+     * If true, deletes the `neon_auth` schema from the database
+     */
+    delete_data?: boolean;
+  };
+  path: {
+    /**
+     * The Neon project ID
+     */
+    project_id: string;
+    /**
+     * The Neon branch ID
+     */
+    branch_id: string;
+  };
+  query?: never;
+  url: "/projects/{project_id}/branches/{branch_id}/auth";
+};
+
+export type DisableNeonAuthErrors = {
+  /**
+   * General Error.
+   *
+   * The request may or may not be safe to retry, depending on the HTTP method, response status code,
+   * and whether a response was received.
+   *
+   * - If no response is returned from the API, a network error or timeout likely occurred.
+   * - In some cases, the request may have reached the server and been successfully processed, but the response failed to reach the client. As a result, retrying non-idempotent requests can lead to unintended results.
+   *
+   * The following HTTP methods are considered non-idempotent: `POST`, `PATCH`, `DELETE`, and `PUT`. Retrying these methods is generally **not safe**.
+   * The following methods are considered idempotent: `GET`, `HEAD`, and `OPTIONS`. Retrying these methods is **safe** in the event of a network error or timeout.
+   *
+   * Any request that returns a `503 Service Unavailable` response is always safe to retry.
+   *
+   * Any request that returns a `423 Locked` response is safe to retry. `423 Locked` indicates that the resource is temporarily locked, for example, due to another operation in progress.
+   *
+   */
+  default: GeneralError;
+};
+
+export type DisableNeonAuthError =
+  DisableNeonAuthErrors[keyof DisableNeonAuthErrors];
+
+export type DisableNeonAuthResponses = {
+  /**
+   * Delete the integration with the authentication provider
+   */
+  200: unknown;
+  /**
+   * General Error.
+   *
+   * The request may or may not be safe to retry, depending on the HTTP method, response status code,
+   * and whether a response was received.
+   *
+   * - If no response is returned from the API, a network error or timeout likely occurred.
+   * - In some cases, the request may have reached the server and been successfully processed, but the response failed to reach the client. As a result, retrying non-idempotent requests can lead to unintended results.
+   *
+   * The following HTTP methods are considered non-idempotent: `POST`, `PATCH`, `DELETE`, and `PUT`. Retrying these methods is generally **not safe**.
+   * The following methods are considered idempotent: `GET`, `HEAD`, and `OPTIONS`. Retrying these methods is **safe** in the event of a network error or timeout.
+   *
+   * Any request that returns a `503 Service Unavailable` response is always safe to retry.
+   *
+   * Any request that returns a `423 Locked` response is safe to retry. `423 Locked` indicates that the resource is temporarily locked, for example, due to another operation in progress.
+   *
+   */
+  default: GeneralError;
+};
+
+export type DisableNeonAuthResponse =
+  DisableNeonAuthResponses[keyof DisableNeonAuthResponses];
+
+export type GetNeonAuthData = {
+  body?: never;
+  path: {
+    /**
+     * The Neon project ID
+     */
+    project_id: string;
+    /**
+     * The Neon branch ID
+     */
+    branch_id: string;
+  };
+  query?: never;
+  url: "/projects/{project_id}/branches/{branch_id}/auth";
+};
+
+export type GetNeonAuthErrors = {
+  /**
+   * General Error.
+   *
+   * The request may or may not be safe to retry, depending on the HTTP method, response status code,
+   * and whether a response was received.
+   *
+   * - If no response is returned from the API, a network error or timeout likely occurred.
+   * - In some cases, the request may have reached the server and been successfully processed, but the response failed to reach the client. As a result, retrying non-idempotent requests can lead to unintended results.
+   *
+   * The following HTTP methods are considered non-idempotent: `POST`, `PATCH`, `DELETE`, and `PUT`. Retrying these methods is generally **not safe**.
+   * The following methods are considered idempotent: `GET`, `HEAD`, and `OPTIONS`. Retrying these methods is **safe** in the event of a network error or timeout.
+   *
+   * Any request that returns a `503 Service Unavailable` response is always safe to retry.
+   *
+   * Any request that returns a `423 Locked` response is safe to retry. `423 Locked` indicates that the resource is temporarily locked, for example, due to another operation in progress.
+   *
+   */
+  default: GeneralError;
+};
+
+export type GetNeonAuthError = GetNeonAuthErrors[keyof GetNeonAuthErrors];
+
+export type GetNeonAuthResponses = {
+  /**
+   * Fetched the details of the Neon Auth integration for the specified branch
+   */
+  200: NeonAuthIntegration;
+  /**
+   * General Error.
+   *
+   * The request may or may not be safe to retry, depending on the HTTP method, response status code,
+   * and whether a response was received.
+   *
+   * - If no response is returned from the API, a network error or timeout likely occurred.
+   * - In some cases, the request may have reached the server and been successfully processed, but the response failed to reach the client. As a result, retrying non-idempotent requests can lead to unintended results.
+   *
+   * The following HTTP methods are considered non-idempotent: `POST`, `PATCH`, `DELETE`, and `PUT`. Retrying these methods is generally **not safe**.
+   * The following methods are considered idempotent: `GET`, `HEAD`, and `OPTIONS`. Retrying these methods is **safe** in the event of a network error or timeout.
+   *
+   * Any request that returns a `503 Service Unavailable` response is always safe to retry.
+   *
+   * Any request that returns a `423 Locked` response is safe to retry. `423 Locked` indicates that the resource is temporarily locked, for example, due to another operation in progress.
+   *
+   */
+  default: GeneralError;
+};
+
+export type GetNeonAuthResponse =
+  GetNeonAuthResponses[keyof GetNeonAuthResponses];
+
+export type CreateNeonAuthData = {
+  body: EnableNeonAuthIntegrationRequest;
+  path: {
+    /**
+     * The Neon project ID
+     */
+    project_id: string;
+    /**
+     * The Neon branch ID
+     */
+    branch_id: string;
+  };
+  query?: never;
+  url: "/projects/{project_id}/branches/{branch_id}/auth";
+};
+
+export type CreateNeonAuthErrors = {
+  /**
+   * General Error.
+   *
+   * The request may or may not be safe to retry, depending on the HTTP method, response status code,
+   * and whether a response was received.
+   *
+   * - If no response is returned from the API, a network error or timeout likely occurred.
+   * - In some cases, the request may have reached the server and been successfully processed, but the response failed to reach the client. As a result, retrying non-idempotent requests can lead to unintended results.
+   *
+   * The following HTTP methods are considered non-idempotent: `POST`, `PATCH`, `DELETE`, and `PUT`. Retrying these methods is generally **not safe**.
+   * The following methods are considered idempotent: `GET`, `HEAD`, and `OPTIONS`. Retrying these methods is **safe** in the event of a network error or timeout.
+   *
+   * Any request that returns a `503 Service Unavailable` response is always safe to retry.
+   *
+   * Any request that returns a `423 Locked` response is safe to retry. `423 Locked` indicates that the resource is temporarily locked, for example, due to another operation in progress.
+   *
+   */
+  default: GeneralError;
+};
+
+export type CreateNeonAuthError =
+  CreateNeonAuthErrors[keyof CreateNeonAuthErrors];
+
+export type CreateNeonAuthResponses = {
+  /**
+   * Enables Neon Auth integration for the branch
+   */
+  201: NeonAuthCreateIntegrationResponse;
+  /**
+   * General Error.
+   *
+   * The request may or may not be safe to retry, depending on the HTTP method, response status code,
+   * and whether a response was received.
+   *
+   * - If no response is returned from the API, a network error or timeout likely occurred.
+   * - In some cases, the request may have reached the server and been successfully processed, but the response failed to reach the client. As a result, retrying non-idempotent requests can lead to unintended results.
+   *
+   * The following HTTP methods are considered non-idempotent: `POST`, `PATCH`, `DELETE`, and `PUT`. Retrying these methods is generally **not safe**.
+   * The following methods are considered idempotent: `GET`, `HEAD`, and `OPTIONS`. Retrying these methods is **safe** in the event of a network error or timeout.
+   *
+   * Any request that returns a `503 Service Unavailable` response is always safe to retry.
+   *
+   * Any request that returns a `423 Locked` response is safe to retry. `423 Locked` indicates that the resource is temporarily locked, for example, due to another operation in progress.
+   *
+   */
+  default: GeneralError;
+};
+
+export type CreateNeonAuthResponse =
+  CreateNeonAuthResponses[keyof CreateNeonAuthResponses];
 
 export type DeleteNeonAuthDomainFromRedirectUriWhitelistData = {
   body: NeonAuthDeleteDomainFromRedirectUriWhitelistRequest;
@@ -4128,6 +5335,24 @@ export type DeleteNeonAuthDomainFromRedirectUriWhitelistResponses = {
    * Deleted the domain from the redirect_uri whitelist
    */
   200: unknown;
+  /**
+   * General Error.
+   *
+   * The request may or may not be safe to retry, depending on the HTTP method, response status code,
+   * and whether a response was received.
+   *
+   * - If no response is returned from the API, a network error or timeout likely occurred.
+   * - In some cases, the request may have reached the server and been successfully processed, but the response failed to reach the client. As a result, retrying non-idempotent requests can lead to unintended results.
+   *
+   * The following HTTP methods are considered non-idempotent: `POST`, `PATCH`, `DELETE`, and `PUT`. Retrying these methods is generally **not safe**.
+   * The following methods are considered idempotent: `GET`, `HEAD`, and `OPTIONS`. Retrying these methods is **safe** in the event of a network error or timeout.
+   *
+   * Any request that returns a `503 Service Unavailable` response is always safe to retry.
+   *
+   * Any request that returns a `423 Locked` response is safe to retry. `423 Locked` indicates that the resource is temporarily locked, for example, due to another operation in progress.
+   *
+   */
+  default: GeneralError;
 };
 
 export type DeleteNeonAuthDomainFromRedirectUriWhitelistResponse =
@@ -4174,6 +5399,24 @@ export type ListNeonAuthRedirectUriWhitelistDomainsResponses = {
    * Returned the domains in the redirect_uri whitelist
    */
   200: NeonAuthRedirectUriWhitelistResponse;
+  /**
+   * General Error.
+   *
+   * The request may or may not be safe to retry, depending on the HTTP method, response status code,
+   * and whether a response was received.
+   *
+   * - If no response is returned from the API, a network error or timeout likely occurred.
+   * - In some cases, the request may have reached the server and been successfully processed, but the response failed to reach the client. As a result, retrying non-idempotent requests can lead to unintended results.
+   *
+   * The following HTTP methods are considered non-idempotent: `POST`, `PATCH`, `DELETE`, and `PUT`. Retrying these methods is generally **not safe**.
+   * The following methods are considered idempotent: `GET`, `HEAD`, and `OPTIONS`. Retrying these methods is **safe** in the event of a network error or timeout.
+   *
+   * Any request that returns a `503 Service Unavailable` response is always safe to retry.
+   *
+   * Any request that returns a `423 Locked` response is safe to retry. `423 Locked` indicates that the resource is temporarily locked, for example, due to another operation in progress.
+   *
+   */
+  default: GeneralError;
 };
 
 export type ListNeonAuthRedirectUriWhitelistDomainsResponse =
@@ -4220,10 +5463,232 @@ export type AddNeonAuthDomainToRedirectUriWhitelistResponses = {
    * Added the domain to the redirect_uri whitelist
    */
   201: unknown;
+  /**
+   * General Error.
+   *
+   * The request may or may not be safe to retry, depending on the HTTP method, response status code,
+   * and whether a response was received.
+   *
+   * - If no response is returned from the API, a network error or timeout likely occurred.
+   * - In some cases, the request may have reached the server and been successfully processed, but the response failed to reach the client. As a result, retrying non-idempotent requests can lead to unintended results.
+   *
+   * The following HTTP methods are considered non-idempotent: `POST`, `PATCH`, `DELETE`, and `PUT`. Retrying these methods is generally **not safe**.
+   * The following methods are considered idempotent: `GET`, `HEAD`, and `OPTIONS`. Retrying these methods is **safe** in the event of a network error or timeout.
+   *
+   * Any request that returns a `503 Service Unavailable` response is always safe to retry.
+   *
+   * Any request that returns a `423 Locked` response is safe to retry. `423 Locked` indicates that the resource is temporarily locked, for example, due to another operation in progress.
+   *
+   */
+  default: GeneralError;
 };
 
 export type AddNeonAuthDomainToRedirectUriWhitelistResponse =
   AddNeonAuthDomainToRedirectUriWhitelistResponses[keyof AddNeonAuthDomainToRedirectUriWhitelistResponses];
+
+export type DeleteBranchNeonAuthTrustedDomainData = {
+  body: NeonAuthDeleteDomainFromRedirectUriWhitelistRequest;
+  path: {
+    /**
+     * The Neon project ID
+     */
+    project_id: string;
+    /**
+     * The Neon branch ID
+     */
+    branch_id: string;
+  };
+  query?: never;
+  url: "/projects/{project_id}/branches/{branch_id}/auth/domains";
+};
+
+export type DeleteBranchNeonAuthTrustedDomainErrors = {
+  /**
+   * General Error.
+   *
+   * The request may or may not be safe to retry, depending on the HTTP method, response status code,
+   * and whether a response was received.
+   *
+   * - If no response is returned from the API, a network error or timeout likely occurred.
+   * - In some cases, the request may have reached the server and been successfully processed, but the response failed to reach the client. As a result, retrying non-idempotent requests can lead to unintended results.
+   *
+   * The following HTTP methods are considered non-idempotent: `POST`, `PATCH`, `DELETE`, and `PUT`. Retrying these methods is generally **not safe**.
+   * The following methods are considered idempotent: `GET`, `HEAD`, and `OPTIONS`. Retrying these methods is **safe** in the event of a network error or timeout.
+   *
+   * Any request that returns a `503 Service Unavailable` response is always safe to retry.
+   *
+   * Any request that returns a `423 Locked` response is safe to retry. `423 Locked` indicates that the resource is temporarily locked, for example, due to another operation in progress.
+   *
+   */
+  default: GeneralError;
+};
+
+export type DeleteBranchNeonAuthTrustedDomainError =
+  DeleteBranchNeonAuthTrustedDomainErrors[keyof DeleteBranchNeonAuthTrustedDomainErrors];
+
+export type DeleteBranchNeonAuthTrustedDomainResponses = {
+  /**
+   * Deleted the domain from the redirect_uri whitelist
+   */
+  200: unknown;
+  /**
+   * General Error.
+   *
+   * The request may or may not be safe to retry, depending on the HTTP method, response status code,
+   * and whether a response was received.
+   *
+   * - If no response is returned from the API, a network error or timeout likely occurred.
+   * - In some cases, the request may have reached the server and been successfully processed, but the response failed to reach the client. As a result, retrying non-idempotent requests can lead to unintended results.
+   *
+   * The following HTTP methods are considered non-idempotent: `POST`, `PATCH`, `DELETE`, and `PUT`. Retrying these methods is generally **not safe**.
+   * The following methods are considered idempotent: `GET`, `HEAD`, and `OPTIONS`. Retrying these methods is **safe** in the event of a network error or timeout.
+   *
+   * Any request that returns a `503 Service Unavailable` response is always safe to retry.
+   *
+   * Any request that returns a `423 Locked` response is safe to retry. `423 Locked` indicates that the resource is temporarily locked, for example, due to another operation in progress.
+   *
+   */
+  default: GeneralError;
+};
+
+export type DeleteBranchNeonAuthTrustedDomainResponse =
+  DeleteBranchNeonAuthTrustedDomainResponses[keyof DeleteBranchNeonAuthTrustedDomainResponses];
+
+export type ListBranchNeonAuthTrustedDomainsData = {
+  body?: never;
+  path: {
+    /**
+     * The Neon project ID
+     */
+    project_id: string;
+    /**
+     * The Neon branch ID
+     */
+    branch_id: string;
+  };
+  query?: never;
+  url: "/projects/{project_id}/branches/{branch_id}/auth/domains";
+};
+
+export type ListBranchNeonAuthTrustedDomainsErrors = {
+  /**
+   * General Error.
+   *
+   * The request may or may not be safe to retry, depending on the HTTP method, response status code,
+   * and whether a response was received.
+   *
+   * - If no response is returned from the API, a network error or timeout likely occurred.
+   * - In some cases, the request may have reached the server and been successfully processed, but the response failed to reach the client. As a result, retrying non-idempotent requests can lead to unintended results.
+   *
+   * The following HTTP methods are considered non-idempotent: `POST`, `PATCH`, `DELETE`, and `PUT`. Retrying these methods is generally **not safe**.
+   * The following methods are considered idempotent: `GET`, `HEAD`, and `OPTIONS`. Retrying these methods is **safe** in the event of a network error or timeout.
+   *
+   * Any request that returns a `503 Service Unavailable` response is always safe to retry.
+   *
+   * Any request that returns a `423 Locked` response is safe to retry. `423 Locked` indicates that the resource is temporarily locked, for example, due to another operation in progress.
+   *
+   */
+  default: GeneralError;
+};
+
+export type ListBranchNeonAuthTrustedDomainsError =
+  ListBranchNeonAuthTrustedDomainsErrors[keyof ListBranchNeonAuthTrustedDomainsErrors];
+
+export type ListBranchNeonAuthTrustedDomainsResponses = {
+  /**
+   * Returned the domains in the redirect_uri whitelist
+   */
+  200: NeonAuthRedirectUriWhitelistResponse;
+  /**
+   * General Error.
+   *
+   * The request may or may not be safe to retry, depending on the HTTP method, response status code,
+   * and whether a response was received.
+   *
+   * - If no response is returned from the API, a network error or timeout likely occurred.
+   * - In some cases, the request may have reached the server and been successfully processed, but the response failed to reach the client. As a result, retrying non-idempotent requests can lead to unintended results.
+   *
+   * The following HTTP methods are considered non-idempotent: `POST`, `PATCH`, `DELETE`, and `PUT`. Retrying these methods is generally **not safe**.
+   * The following methods are considered idempotent: `GET`, `HEAD`, and `OPTIONS`. Retrying these methods is **safe** in the event of a network error or timeout.
+   *
+   * Any request that returns a `503 Service Unavailable` response is always safe to retry.
+   *
+   * Any request that returns a `423 Locked` response is safe to retry. `423 Locked` indicates that the resource is temporarily locked, for example, due to another operation in progress.
+   *
+   */
+  default: GeneralError;
+};
+
+export type ListBranchNeonAuthTrustedDomainsResponse =
+  ListBranchNeonAuthTrustedDomainsResponses[keyof ListBranchNeonAuthTrustedDomainsResponses];
+
+export type AddBranchNeonAuthTrustedDomainData = {
+  body: NeonAuthAddDomainToRedirectUriWhitelistRequest;
+  path: {
+    /**
+     * The Neon project ID
+     */
+    project_id: string;
+    /**
+     * The Neon branch ID
+     */
+    branch_id: string;
+  };
+  query?: never;
+  url: "/projects/{project_id}/branches/{branch_id}/auth/domains";
+};
+
+export type AddBranchNeonAuthTrustedDomainErrors = {
+  /**
+   * General Error.
+   *
+   * The request may or may not be safe to retry, depending on the HTTP method, response status code,
+   * and whether a response was received.
+   *
+   * - If no response is returned from the API, a network error or timeout likely occurred.
+   * - In some cases, the request may have reached the server and been successfully processed, but the response failed to reach the client. As a result, retrying non-idempotent requests can lead to unintended results.
+   *
+   * The following HTTP methods are considered non-idempotent: `POST`, `PATCH`, `DELETE`, and `PUT`. Retrying these methods is generally **not safe**.
+   * The following methods are considered idempotent: `GET`, `HEAD`, and `OPTIONS`. Retrying these methods is **safe** in the event of a network error or timeout.
+   *
+   * Any request that returns a `503 Service Unavailable` response is always safe to retry.
+   *
+   * Any request that returns a `423 Locked` response is safe to retry. `423 Locked` indicates that the resource is temporarily locked, for example, due to another operation in progress.
+   *
+   */
+  default: GeneralError;
+};
+
+export type AddBranchNeonAuthTrustedDomainError =
+  AddBranchNeonAuthTrustedDomainErrors[keyof AddBranchNeonAuthTrustedDomainErrors];
+
+export type AddBranchNeonAuthTrustedDomainResponses = {
+  /**
+   * Added the domain to the redirect_uri whitelist
+   */
+  201: unknown;
+  /**
+   * General Error.
+   *
+   * The request may or may not be safe to retry, depending on the HTTP method, response status code,
+   * and whether a response was received.
+   *
+   * - If no response is returned from the API, a network error or timeout likely occurred.
+   * - In some cases, the request may have reached the server and been successfully processed, but the response failed to reach the client. As a result, retrying non-idempotent requests can lead to unintended results.
+   *
+   * The following HTTP methods are considered non-idempotent: `POST`, `PATCH`, `DELETE`, and `PUT`. Retrying these methods is generally **not safe**.
+   * The following methods are considered idempotent: `GET`, `HEAD`, and `OPTIONS`. Retrying these methods is **safe** in the event of a network error or timeout.
+   *
+   * Any request that returns a `503 Service Unavailable` response is always safe to retry.
+   *
+   * Any request that returns a `423 Locked` response is safe to retry. `423 Locked` indicates that the resource is temporarily locked, for example, due to another operation in progress.
+   *
+   */
+  default: GeneralError;
+};
+
+export type AddBranchNeonAuthTrustedDomainResponse =
+  AddBranchNeonAuthTrustedDomainResponses[keyof AddBranchNeonAuthTrustedDomainResponses];
 
 export type CreateNeonAuthProviderSdkKeysData = {
   body: NeonAuthCreateAuthProviderSdkKeysRequest;
@@ -4261,6 +5726,24 @@ export type CreateNeonAuthProviderSdkKeysResponses = {
    * Creates Auth Provider SDK keys
    */
   201: NeonAuthCreateIntegrationResponse;
+  /**
+   * General Error.
+   *
+   * The request may or may not be safe to retry, depending on the HTTP method, response status code,
+   * and whether a response was received.
+   *
+   * - If no response is returned from the API, a network error or timeout likely occurred.
+   * - In some cases, the request may have reached the server and been successfully processed, but the response failed to reach the client. As a result, retrying non-idempotent requests can lead to unintended results.
+   *
+   * The following HTTP methods are considered non-idempotent: `POST`, `PATCH`, `DELETE`, and `PUT`. Retrying these methods is generally **not safe**.
+   * The following methods are considered idempotent: `GET`, `HEAD`, and `OPTIONS`. Retrying these methods is **safe** in the event of a network error or timeout.
+   *
+   * Any request that returns a `503 Service Unavailable` response is always safe to retry.
+   *
+   * Any request that returns a `423 Locked` response is safe to retry. `423 Locked` indicates that the resource is temporarily locked, for example, due to another operation in progress.
+   *
+   */
+  default: GeneralError;
 };
 
 export type CreateNeonAuthProviderSdkKeysResponse =
@@ -4302,10 +5785,240 @@ export type CreateNeonAuthNewUserResponses = {
    * Creates new user
    */
   201: NeonAuthCreateNewUserResponse;
+  /**
+   * General Error.
+   *
+   * The request may or may not be safe to retry, depending on the HTTP method, response status code,
+   * and whether a response was received.
+   *
+   * - If no response is returned from the API, a network error or timeout likely occurred.
+   * - In some cases, the request may have reached the server and been successfully processed, but the response failed to reach the client. As a result, retrying non-idempotent requests can lead to unintended results.
+   *
+   * The following HTTP methods are considered non-idempotent: `POST`, `PATCH`, `DELETE`, and `PUT`. Retrying these methods is generally **not safe**.
+   * The following methods are considered idempotent: `GET`, `HEAD`, and `OPTIONS`. Retrying these methods is **safe** in the event of a network error or timeout.
+   *
+   * Any request that returns a `503 Service Unavailable` response is always safe to retry.
+   *
+   * Any request that returns a `423 Locked` response is safe to retry. `423 Locked` indicates that the resource is temporarily locked, for example, due to another operation in progress.
+   *
+   */
+  default: GeneralError;
 };
 
 export type CreateNeonAuthNewUserResponse =
   CreateNeonAuthNewUserResponses[keyof CreateNeonAuthNewUserResponses];
+
+export type CreateBranchNeonAuthNewUserData = {
+  body: CreateBranchNeonAuthNewUserRequest;
+  path: {
+    /**
+     * The Neon project ID
+     */
+    project_id: string;
+    /**
+     * The Neon branch ID
+     */
+    branch_id: string;
+  };
+  query?: never;
+  url: "/projects/{project_id}/branches/{branch_id}/auth/users";
+};
+
+export type CreateBranchNeonAuthNewUserErrors = {
+  /**
+   * General Error.
+   *
+   * The request may or may not be safe to retry, depending on the HTTP method, response status code,
+   * and whether a response was received.
+   *
+   * - If no response is returned from the API, a network error or timeout likely occurred.
+   * - In some cases, the request may have reached the server and been successfully processed, but the response failed to reach the client. As a result, retrying non-idempotent requests can lead to unintended results.
+   *
+   * The following HTTP methods are considered non-idempotent: `POST`, `PATCH`, `DELETE`, and `PUT`. Retrying these methods is generally **not safe**.
+   * The following methods are considered idempotent: `GET`, `HEAD`, and `OPTIONS`. Retrying these methods is **safe** in the event of a network error or timeout.
+   *
+   * Any request that returns a `503 Service Unavailable` response is always safe to retry.
+   *
+   * Any request that returns a `423 Locked` response is safe to retry. `423 Locked` indicates that the resource is temporarily locked, for example, due to another operation in progress.
+   *
+   */
+  default: GeneralError;
+};
+
+export type CreateBranchNeonAuthNewUserError =
+  CreateBranchNeonAuthNewUserErrors[keyof CreateBranchNeonAuthNewUserErrors];
+
+export type CreateBranchNeonAuthNewUserResponses = {
+  /**
+   * Creates new user
+   */
+  201: NeonAuthCreateNewUserResponse;
+  /**
+   * General Error.
+   *
+   * The request may or may not be safe to retry, depending on the HTTP method, response status code,
+   * and whether a response was received.
+   *
+   * - If no response is returned from the API, a network error or timeout likely occurred.
+   * - In some cases, the request may have reached the server and been successfully processed, but the response failed to reach the client. As a result, retrying non-idempotent requests can lead to unintended results.
+   *
+   * The following HTTP methods are considered non-idempotent: `POST`, `PATCH`, `DELETE`, and `PUT`. Retrying these methods is generally **not safe**.
+   * The following methods are considered idempotent: `GET`, `HEAD`, and `OPTIONS`. Retrying these methods is **safe** in the event of a network error or timeout.
+   *
+   * Any request that returns a `503 Service Unavailable` response is always safe to retry.
+   *
+   * Any request that returns a `423 Locked` response is safe to retry. `423 Locked` indicates that the resource is temporarily locked, for example, due to another operation in progress.
+   *
+   */
+  default: GeneralError;
+};
+
+export type CreateBranchNeonAuthNewUserResponse =
+  CreateBranchNeonAuthNewUserResponses[keyof CreateBranchNeonAuthNewUserResponses];
+
+export type DeleteBranchNeonAuthUserData = {
+  body?: never;
+  path: {
+    /**
+     * The Neon project ID
+     */
+    project_id: string;
+    /**
+     * The Neon branch ID
+     */
+    branch_id: string;
+    /**
+     * The Neon user ID
+     */
+    auth_user_id: string;
+  };
+  query?: never;
+  url: "/projects/{project_id}/branches/{branch_id}/auth/users/{auth_user_id}";
+};
+
+export type DeleteBranchNeonAuthUserErrors = {
+  /**
+   * General Error.
+   *
+   * The request may or may not be safe to retry, depending on the HTTP method, response status code,
+   * and whether a response was received.
+   *
+   * - If no response is returned from the API, a network error or timeout likely occurred.
+   * - In some cases, the request may have reached the server and been successfully processed, but the response failed to reach the client. As a result, retrying non-idempotent requests can lead to unintended results.
+   *
+   * The following HTTP methods are considered non-idempotent: `POST`, `PATCH`, `DELETE`, and `PUT`. Retrying these methods is generally **not safe**.
+   * The following methods are considered idempotent: `GET`, `HEAD`, and `OPTIONS`. Retrying these methods is **safe** in the event of a network error or timeout.
+   *
+   * Any request that returns a `503 Service Unavailable` response is always safe to retry.
+   *
+   * Any request that returns a `423 Locked` response is safe to retry. `423 Locked` indicates that the resource is temporarily locked, for example, due to another operation in progress.
+   *
+   */
+  default: GeneralError;
+};
+
+export type DeleteBranchNeonAuthUserError =
+  DeleteBranchNeonAuthUserErrors[keyof DeleteBranchNeonAuthUserErrors];
+
+export type DeleteBranchNeonAuthUserResponses = {
+  /**
+   * Deleted the auth user
+   */
+  204: void;
+  /**
+   * General Error.
+   *
+   * The request may or may not be safe to retry, depending on the HTTP method, response status code,
+   * and whether a response was received.
+   *
+   * - If no response is returned from the API, a network error or timeout likely occurred.
+   * - In some cases, the request may have reached the server and been successfully processed, but the response failed to reach the client. As a result, retrying non-idempotent requests can lead to unintended results.
+   *
+   * The following HTTP methods are considered non-idempotent: `POST`, `PATCH`, `DELETE`, and `PUT`. Retrying these methods is generally **not safe**.
+   * The following methods are considered idempotent: `GET`, `HEAD`, and `OPTIONS`. Retrying these methods is **safe** in the event of a network error or timeout.
+   *
+   * Any request that returns a `503 Service Unavailable` response is always safe to retry.
+   *
+   * Any request that returns a `423 Locked` response is safe to retry. `423 Locked` indicates that the resource is temporarily locked, for example, due to another operation in progress.
+   *
+   */
+  default: GeneralError;
+};
+
+export type DeleteBranchNeonAuthUserResponse =
+  DeleteBranchNeonAuthUserResponses[keyof DeleteBranchNeonAuthUserResponses];
+
+export type UpdateNeonAuthUserRoleData = {
+  body: UpdateNeonAuthUserRoleRequest;
+  path: {
+    /**
+     * The Neon project ID
+     */
+    project_id: string;
+    /**
+     * The Neon branch ID
+     */
+    branch_id: string;
+    /**
+     * The Neon user ID
+     */
+    auth_user_id: string;
+  };
+  query?: never;
+  url: "/projects/{project_id}/branches/{branch_id}/auth/users/{auth_user_id}/role";
+};
+
+export type UpdateNeonAuthUserRoleErrors = {
+  /**
+   * General Error.
+   *
+   * The request may or may not be safe to retry, depending on the HTTP method, response status code,
+   * and whether a response was received.
+   *
+   * - If no response is returned from the API, a network error or timeout likely occurred.
+   * - In some cases, the request may have reached the server and been successfully processed, but the response failed to reach the client. As a result, retrying non-idempotent requests can lead to unintended results.
+   *
+   * The following HTTP methods are considered non-idempotent: `POST`, `PATCH`, `DELETE`, and `PUT`. Retrying these methods is generally **not safe**.
+   * The following methods are considered idempotent: `GET`, `HEAD`, and `OPTIONS`. Retrying these methods is **safe** in the event of a network error or timeout.
+   *
+   * Any request that returns a `503 Service Unavailable` response is always safe to retry.
+   *
+   * Any request that returns a `423 Locked` response is safe to retry. `423 Locked` indicates that the resource is temporarily locked, for example, due to another operation in progress.
+   *
+   */
+  default: GeneralError;
+};
+
+export type UpdateNeonAuthUserRoleError =
+  UpdateNeonAuthUserRoleErrors[keyof UpdateNeonAuthUserRoleErrors];
+
+export type UpdateNeonAuthUserRoleResponses = {
+  /**
+   * Updated the auth user role
+   */
+  200: UpdateNeonAuthUserRoleResponse;
+  /**
+   * General Error.
+   *
+   * The request may or may not be safe to retry, depending on the HTTP method, response status code,
+   * and whether a response was received.
+   *
+   * - If no response is returned from the API, a network error or timeout likely occurred.
+   * - In some cases, the request may have reached the server and been successfully processed, but the response failed to reach the client. As a result, retrying non-idempotent requests can lead to unintended results.
+   *
+   * The following HTTP methods are considered non-idempotent: `POST`, `PATCH`, `DELETE`, and `PUT`. Retrying these methods is generally **not safe**.
+   * The following methods are considered idempotent: `GET`, `HEAD`, and `OPTIONS`. Retrying these methods is **safe** in the event of a network error or timeout.
+   *
+   * Any request that returns a `503 Service Unavailable` response is always safe to retry.
+   *
+   * Any request that returns a `423 Locked` response is safe to retry. `423 Locked` indicates that the resource is temporarily locked, for example, due to another operation in progress.
+   *
+   */
+  default: GeneralError;
+};
+
+export type UpdateNeonAuthUserRoleResponse2 =
+  UpdateNeonAuthUserRoleResponses[keyof UpdateNeonAuthUserRoleResponses];
 
 export type DeleteNeonAuthUserData = {
   body?: never;
@@ -4352,6 +6065,24 @@ export type DeleteNeonAuthUserResponses = {
    * Deleted the auth user
    */
   204: void;
+  /**
+   * General Error.
+   *
+   * The request may or may not be safe to retry, depending on the HTTP method, response status code,
+   * and whether a response was received.
+   *
+   * - If no response is returned from the API, a network error or timeout likely occurred.
+   * - In some cases, the request may have reached the server and been successfully processed, but the response failed to reach the client. As a result, retrying non-idempotent requests can lead to unintended results.
+   *
+   * The following HTTP methods are considered non-idempotent: `POST`, `PATCH`, `DELETE`, and `PUT`. Retrying these methods is generally **not safe**.
+   * The following methods are considered idempotent: `GET`, `HEAD`, and `OPTIONS`. Retrying these methods is **safe** in the event of a network error or timeout.
+   *
+   * Any request that returns a `503 Service Unavailable` response is always safe to retry.
+   *
+   * Any request that returns a `423 Locked` response is safe to retry. `423 Locked` indicates that the resource is temporarily locked, for example, due to another operation in progress.
+   *
+   */
+  default: GeneralError;
 };
 
 export type DeleteNeonAuthUserResponse =
@@ -4393,6 +6124,24 @@ export type TransferNeonAuthProviderProjectResponses = {
    * Transfer initiated. Follow the URL to complete the process in your auth provider's UI.
    */
   200: NeonAuthTransferAuthProviderProjectResponse;
+  /**
+   * General Error.
+   *
+   * The request may or may not be safe to retry, depending on the HTTP method, response status code,
+   * and whether a response was received.
+   *
+   * - If no response is returned from the API, a network error or timeout likely occurred.
+   * - In some cases, the request may have reached the server and been successfully processed, but the response failed to reach the client. As a result, retrying non-idempotent requests can lead to unintended results.
+   *
+   * The following HTTP methods are considered non-idempotent: `POST`, `PATCH`, `DELETE`, and `PUT`. Retrying these methods is generally **not safe**.
+   * The following methods are considered idempotent: `GET`, `HEAD`, and `OPTIONS`. Retrying these methods is **safe** in the event of a network error or timeout.
+   *
+   * Any request that returns a `503 Service Unavailable` response is always safe to retry.
+   *
+   * Any request that returns a `423 Locked` response is safe to retry. `423 Locked` indicates that the resource is temporarily locked, for example, due to another operation in progress.
+   *
+   */
+  default: GeneralError;
 };
 
 export type TransferNeonAuthProviderProjectResponse =
@@ -4439,6 +6188,24 @@ export type ListNeonAuthIntegrationsResponses = {
    * Return management API keys metadata
    */
   200: ListNeonAuthIntegrationsResponse;
+  /**
+   * General Error.
+   *
+   * The request may or may not be safe to retry, depending on the HTTP method, response status code,
+   * and whether a response was received.
+   *
+   * - If no response is returned from the API, a network error or timeout likely occurred.
+   * - In some cases, the request may have reached the server and been successfully processed, but the response failed to reach the client. As a result, retrying non-idempotent requests can lead to unintended results.
+   *
+   * The following HTTP methods are considered non-idempotent: `POST`, `PATCH`, `DELETE`, and `PUT`. Retrying these methods is generally **not safe**.
+   * The following methods are considered idempotent: `GET`, `HEAD`, and `OPTIONS`. Retrying these methods is **safe** in the event of a network error or timeout.
+   *
+   * Any request that returns a `503 Service Unavailable` response is always safe to retry.
+   *
+   * Any request that returns a `423 Locked` response is safe to retry. `423 Locked` indicates that the resource is temporarily locked, for example, due to another operation in progress.
+   *
+   */
+  default: GeneralError;
 };
 
 export type ListNeonAuthIntegrationsResponse2 =
@@ -4485,6 +6252,24 @@ export type ListNeonAuthOauthProvidersResponses = {
    * Returns the OAuth providers for the Neon Auth
    */
   200: ListNeonAuthOauthProvidersResponse;
+  /**
+   * General Error.
+   *
+   * The request may or may not be safe to retry, depending on the HTTP method, response status code,
+   * and whether a response was received.
+   *
+   * - If no response is returned from the API, a network error or timeout likely occurred.
+   * - In some cases, the request may have reached the server and been successfully processed, but the response failed to reach the client. As a result, retrying non-idempotent requests can lead to unintended results.
+   *
+   * The following HTTP methods are considered non-idempotent: `POST`, `PATCH`, `DELETE`, and `PUT`. Retrying these methods is generally **not safe**.
+   * The following methods are considered idempotent: `GET`, `HEAD`, and `OPTIONS`. Retrying these methods is **safe** in the event of a network error or timeout.
+   *
+   * Any request that returns a `503 Service Unavailable` response is always safe to retry.
+   *
+   * Any request that returns a `423 Locked` response is safe to retry. `423 Locked` indicates that the resource is temporarily locked, for example, due to another operation in progress.
+   *
+   */
+  default: GeneralError;
 };
 
 export type ListNeonAuthOauthProvidersResponse2 =
@@ -4531,10 +6316,164 @@ export type AddNeonAuthOauthProviderResponses = {
    * The OAuth provider has been added to the project
    */
   200: NeonAuthOauthProvider;
+  /**
+   * General Error.
+   *
+   * The request may or may not be safe to retry, depending on the HTTP method, response status code,
+   * and whether a response was received.
+   *
+   * - If no response is returned from the API, a network error or timeout likely occurred.
+   * - In some cases, the request may have reached the server and been successfully processed, but the response failed to reach the client. As a result, retrying non-idempotent requests can lead to unintended results.
+   *
+   * The following HTTP methods are considered non-idempotent: `POST`, `PATCH`, `DELETE`, and `PUT`. Retrying these methods is generally **not safe**.
+   * The following methods are considered idempotent: `GET`, `HEAD`, and `OPTIONS`. Retrying these methods is **safe** in the event of a network error or timeout.
+   *
+   * Any request that returns a `503 Service Unavailable` response is always safe to retry.
+   *
+   * Any request that returns a `423 Locked` response is safe to retry. `423 Locked` indicates that the resource is temporarily locked, for example, due to another operation in progress.
+   *
+   */
+  default: GeneralError;
 };
 
 export type AddNeonAuthOauthProviderResponse =
   AddNeonAuthOauthProviderResponses[keyof AddNeonAuthOauthProviderResponses];
+
+export type ListBranchNeonAuthOauthProvidersData = {
+  body?: never;
+  path: {
+    /**
+     * The Neon project ID
+     */
+    project_id: string;
+    /**
+     * The Neon branch ID
+     */
+    branch_id: string;
+  };
+  query?: never;
+  url: "/projects/{project_id}/branches/{branch_id}/auth/oauth_providers";
+};
+
+export type ListBranchNeonAuthOauthProvidersErrors = {
+  /**
+   * General Error.
+   *
+   * The request may or may not be safe to retry, depending on the HTTP method, response status code,
+   * and whether a response was received.
+   *
+   * - If no response is returned from the API, a network error or timeout likely occurred.
+   * - In some cases, the request may have reached the server and been successfully processed, but the response failed to reach the client. As a result, retrying non-idempotent requests can lead to unintended results.
+   *
+   * The following HTTP methods are considered non-idempotent: `POST`, `PATCH`, `DELETE`, and `PUT`. Retrying these methods is generally **not safe**.
+   * The following methods are considered idempotent: `GET`, `HEAD`, and `OPTIONS`. Retrying these methods is **safe** in the event of a network error or timeout.
+   *
+   * Any request that returns a `503 Service Unavailable` response is always safe to retry.
+   *
+   * Any request that returns a `423 Locked` response is safe to retry. `423 Locked` indicates that the resource is temporarily locked, for example, due to another operation in progress.
+   *
+   */
+  default: GeneralError;
+};
+
+export type ListBranchNeonAuthOauthProvidersError =
+  ListBranchNeonAuthOauthProvidersErrors[keyof ListBranchNeonAuthOauthProvidersErrors];
+
+export type ListBranchNeonAuthOauthProvidersResponses = {
+  /**
+   * Returns the OAuth providers for the Neon Auth
+   */
+  200: ListNeonAuthOauthProvidersResponse;
+  /**
+   * General Error.
+   *
+   * The request may or may not be safe to retry, depending on the HTTP method, response status code,
+   * and whether a response was received.
+   *
+   * - If no response is returned from the API, a network error or timeout likely occurred.
+   * - In some cases, the request may have reached the server and been successfully processed, but the response failed to reach the client. As a result, retrying non-idempotent requests can lead to unintended results.
+   *
+   * The following HTTP methods are considered non-idempotent: `POST`, `PATCH`, `DELETE`, and `PUT`. Retrying these methods is generally **not safe**.
+   * The following methods are considered idempotent: `GET`, `HEAD`, and `OPTIONS`. Retrying these methods is **safe** in the event of a network error or timeout.
+   *
+   * Any request that returns a `503 Service Unavailable` response is always safe to retry.
+   *
+   * Any request that returns a `423 Locked` response is safe to retry. `423 Locked` indicates that the resource is temporarily locked, for example, due to another operation in progress.
+   *
+   */
+  default: GeneralError;
+};
+
+export type ListBranchNeonAuthOauthProvidersResponse =
+  ListBranchNeonAuthOauthProvidersResponses[keyof ListBranchNeonAuthOauthProvidersResponses];
+
+export type AddBranchNeonAuthOauthProviderData = {
+  body: NeonAuthAddOAuthProviderRequest;
+  path: {
+    /**
+     * The Neon project ID
+     */
+    project_id: string;
+    /**
+     * The Neon branch ID
+     */
+    branch_id: string;
+  };
+  query?: never;
+  url: "/projects/{project_id}/branches/{branch_id}/auth/oauth_providers";
+};
+
+export type AddBranchNeonAuthOauthProviderErrors = {
+  /**
+   * General Error.
+   *
+   * The request may or may not be safe to retry, depending on the HTTP method, response status code,
+   * and whether a response was received.
+   *
+   * - If no response is returned from the API, a network error or timeout likely occurred.
+   * - In some cases, the request may have reached the server and been successfully processed, but the response failed to reach the client. As a result, retrying non-idempotent requests can lead to unintended results.
+   *
+   * The following HTTP methods are considered non-idempotent: `POST`, `PATCH`, `DELETE`, and `PUT`. Retrying these methods is generally **not safe**.
+   * The following methods are considered idempotent: `GET`, `HEAD`, and `OPTIONS`. Retrying these methods is **safe** in the event of a network error or timeout.
+   *
+   * Any request that returns a `503 Service Unavailable` response is always safe to retry.
+   *
+   * Any request that returns a `423 Locked` response is safe to retry. `423 Locked` indicates that the resource is temporarily locked, for example, due to another operation in progress.
+   *
+   */
+  default: GeneralError;
+};
+
+export type AddBranchNeonAuthOauthProviderError =
+  AddBranchNeonAuthOauthProviderErrors[keyof AddBranchNeonAuthOauthProviderErrors];
+
+export type AddBranchNeonAuthOauthProviderResponses = {
+  /**
+   * The OAuth provider has been added to the project
+   */
+  200: NeonAuthOauthProvider;
+  /**
+   * General Error.
+   *
+   * The request may or may not be safe to retry, depending on the HTTP method, response status code,
+   * and whether a response was received.
+   *
+   * - If no response is returned from the API, a network error or timeout likely occurred.
+   * - In some cases, the request may have reached the server and been successfully processed, but the response failed to reach the client. As a result, retrying non-idempotent requests can lead to unintended results.
+   *
+   * The following HTTP methods are considered non-idempotent: `POST`, `PATCH`, `DELETE`, and `PUT`. Retrying these methods is generally **not safe**.
+   * The following methods are considered idempotent: `GET`, `HEAD`, and `OPTIONS`. Retrying these methods is **safe** in the event of a network error or timeout.
+   *
+   * Any request that returns a `503 Service Unavailable` response is always safe to retry.
+   *
+   * Any request that returns a `423 Locked` response is safe to retry. `423 Locked` indicates that the resource is temporarily locked, for example, due to another operation in progress.
+   *
+   */
+  default: GeneralError;
+};
+
+export type AddBranchNeonAuthOauthProviderResponse =
+  AddBranchNeonAuthOauthProviderResponses[keyof AddBranchNeonAuthOauthProviderResponses];
 
 export type DeleteNeonAuthOauthProviderData = {
   body?: never;
@@ -4581,6 +6520,24 @@ export type DeleteNeonAuthOauthProviderResponses = {
    * Deleted the OAuth provider from the project
    */
   200: unknown;
+  /**
+   * General Error.
+   *
+   * The request may or may not be safe to retry, depending on the HTTP method, response status code,
+   * and whether a response was received.
+   *
+   * - If no response is returned from the API, a network error or timeout likely occurred.
+   * - In some cases, the request may have reached the server and been successfully processed, but the response failed to reach the client. As a result, retrying non-idempotent requests can lead to unintended results.
+   *
+   * The following HTTP methods are considered non-idempotent: `POST`, `PATCH`, `DELETE`, and `PUT`. Retrying these methods is generally **not safe**.
+   * The following methods are considered idempotent: `GET`, `HEAD`, and `OPTIONS`. Retrying these methods is **safe** in the event of a network error or timeout.
+   *
+   * Any request that returns a `503 Service Unavailable` response is always safe to retry.
+   *
+   * Any request that returns a `423 Locked` response is safe to retry. `423 Locked` indicates that the resource is temporarily locked, for example, due to another operation in progress.
+   *
+   */
+  default: GeneralError;
 };
 
 export type DeleteNeonAuthOauthProviderResponse =
@@ -4631,10 +6588,172 @@ export type UpdateNeonAuthOauthProviderResponses = {
    * The OAuth provider has been added to the project
    */
   200: NeonAuthOauthProvider;
+  /**
+   * General Error.
+   *
+   * The request may or may not be safe to retry, depending on the HTTP method, response status code,
+   * and whether a response was received.
+   *
+   * - If no response is returned from the API, a network error or timeout likely occurred.
+   * - In some cases, the request may have reached the server and been successfully processed, but the response failed to reach the client. As a result, retrying non-idempotent requests can lead to unintended results.
+   *
+   * The following HTTP methods are considered non-idempotent: `POST`, `PATCH`, `DELETE`, and `PUT`. Retrying these methods is generally **not safe**.
+   * The following methods are considered idempotent: `GET`, `HEAD`, and `OPTIONS`. Retrying these methods is **safe** in the event of a network error or timeout.
+   *
+   * Any request that returns a `503 Service Unavailable` response is always safe to retry.
+   *
+   * Any request that returns a `423 Locked` response is safe to retry. `423 Locked` indicates that the resource is temporarily locked, for example, due to another operation in progress.
+   *
+   */
+  default: GeneralError;
 };
 
 export type UpdateNeonAuthOauthProviderResponse =
   UpdateNeonAuthOauthProviderResponses[keyof UpdateNeonAuthOauthProviderResponses];
+
+export type DeleteBranchNeonAuthOauthProviderData = {
+  body?: never;
+  path: {
+    /**
+     * The Neon project ID
+     */
+    project_id: string;
+    /**
+     * The Neon branch ID
+     */
+    branch_id: string;
+    /**
+     * The OAuth provider ID
+     */
+    oauth_provider_id: NeonAuthOauthProviderId;
+  };
+  query?: never;
+  url: "/projects/{project_id}/branches/{branch_id}/auth/oauth_providers/{oauth_provider_id}";
+};
+
+export type DeleteBranchNeonAuthOauthProviderErrors = {
+  /**
+   * General Error.
+   *
+   * The request may or may not be safe to retry, depending on the HTTP method, response status code,
+   * and whether a response was received.
+   *
+   * - If no response is returned from the API, a network error or timeout likely occurred.
+   * - In some cases, the request may have reached the server and been successfully processed, but the response failed to reach the client. As a result, retrying non-idempotent requests can lead to unintended results.
+   *
+   * The following HTTP methods are considered non-idempotent: `POST`, `PATCH`, `DELETE`, and `PUT`. Retrying these methods is generally **not safe**.
+   * The following methods are considered idempotent: `GET`, `HEAD`, and `OPTIONS`. Retrying these methods is **safe** in the event of a network error or timeout.
+   *
+   * Any request that returns a `503 Service Unavailable` response is always safe to retry.
+   *
+   * Any request that returns a `423 Locked` response is safe to retry. `423 Locked` indicates that the resource is temporarily locked, for example, due to another operation in progress.
+   *
+   */
+  default: GeneralError;
+};
+
+export type DeleteBranchNeonAuthOauthProviderError =
+  DeleteBranchNeonAuthOauthProviderErrors[keyof DeleteBranchNeonAuthOauthProviderErrors];
+
+export type DeleteBranchNeonAuthOauthProviderResponses = {
+  /**
+   * Deleted the OAuth provider from the project
+   */
+  200: unknown;
+  /**
+   * General Error.
+   *
+   * The request may or may not be safe to retry, depending on the HTTP method, response status code,
+   * and whether a response was received.
+   *
+   * - If no response is returned from the API, a network error or timeout likely occurred.
+   * - In some cases, the request may have reached the server and been successfully processed, but the response failed to reach the client. As a result, retrying non-idempotent requests can lead to unintended results.
+   *
+   * The following HTTP methods are considered non-idempotent: `POST`, `PATCH`, `DELETE`, and `PUT`. Retrying these methods is generally **not safe**.
+   * The following methods are considered idempotent: `GET`, `HEAD`, and `OPTIONS`. Retrying these methods is **safe** in the event of a network error or timeout.
+   *
+   * Any request that returns a `503 Service Unavailable` response is always safe to retry.
+   *
+   * Any request that returns a `423 Locked` response is safe to retry. `423 Locked` indicates that the resource is temporarily locked, for example, due to another operation in progress.
+   *
+   */
+  default: GeneralError;
+};
+
+export type DeleteBranchNeonAuthOauthProviderResponse =
+  DeleteBranchNeonAuthOauthProviderResponses[keyof DeleteBranchNeonAuthOauthProviderResponses];
+
+export type UpdateBranchNeonAuthOauthProviderData = {
+  body: NeonAuthUpdateOAuthProviderRequest;
+  path: {
+    /**
+     * The Neon project ID
+     */
+    project_id: string;
+    /**
+     * The Neon branch ID
+     */
+    branch_id: string;
+    /**
+     * The OAuth provider ID
+     */
+    oauth_provider_id: NeonAuthOauthProviderId;
+  };
+  query?: never;
+  url: "/projects/{project_id}/branches/{branch_id}/auth/oauth_providers/{oauth_provider_id}";
+};
+
+export type UpdateBranchNeonAuthOauthProviderErrors = {
+  /**
+   * General Error.
+   *
+   * The request may or may not be safe to retry, depending on the HTTP method, response status code,
+   * and whether a response was received.
+   *
+   * - If no response is returned from the API, a network error or timeout likely occurred.
+   * - In some cases, the request may have reached the server and been successfully processed, but the response failed to reach the client. As a result, retrying non-idempotent requests can lead to unintended results.
+   *
+   * The following HTTP methods are considered non-idempotent: `POST`, `PATCH`, `DELETE`, and `PUT`. Retrying these methods is generally **not safe**.
+   * The following methods are considered idempotent: `GET`, `HEAD`, and `OPTIONS`. Retrying these methods is **safe** in the event of a network error or timeout.
+   *
+   * Any request that returns a `503 Service Unavailable` response is always safe to retry.
+   *
+   * Any request that returns a `423 Locked` response is safe to retry. `423 Locked` indicates that the resource is temporarily locked, for example, due to another operation in progress.
+   *
+   */
+  default: GeneralError;
+};
+
+export type UpdateBranchNeonAuthOauthProviderError =
+  UpdateBranchNeonAuthOauthProviderErrors[keyof UpdateBranchNeonAuthOauthProviderErrors];
+
+export type UpdateBranchNeonAuthOauthProviderResponses = {
+  /**
+   * The OAuth provider has been added to the project
+   */
+  200: NeonAuthOauthProvider;
+  /**
+   * General Error.
+   *
+   * The request may or may not be safe to retry, depending on the HTTP method, response status code,
+   * and whether a response was received.
+   *
+   * - If no response is returned from the API, a network error or timeout likely occurred.
+   * - In some cases, the request may have reached the server and been successfully processed, but the response failed to reach the client. As a result, retrying non-idempotent requests can lead to unintended results.
+   *
+   * The following HTTP methods are considered non-idempotent: `POST`, `PATCH`, `DELETE`, and `PUT`. Retrying these methods is generally **not safe**.
+   * The following methods are considered idempotent: `GET`, `HEAD`, and `OPTIONS`. Retrying these methods is **safe** in the event of a network error or timeout.
+   *
+   * Any request that returns a `503 Service Unavailable` response is always safe to retry.
+   *
+   * Any request that returns a `423 Locked` response is safe to retry. `423 Locked` indicates that the resource is temporarily locked, for example, due to another operation in progress.
+   *
+   */
+  default: GeneralError;
+};
+
+export type UpdateBranchNeonAuthOauthProviderResponse =
+  UpdateBranchNeonAuthOauthProviderResponses[keyof UpdateBranchNeonAuthOauthProviderResponses];
 
 export type GetNeonAuthEmailServerData = {
   body?: never;
@@ -4677,6 +6796,24 @@ export type GetNeonAuthEmailServerResponses = {
    * Returns the email server configuration for the Neon Auth
    */
   200: NeonAuthEmailServerConfig;
+  /**
+   * General Error.
+   *
+   * The request may or may not be safe to retry, depending on the HTTP method, response status code,
+   * and whether a response was received.
+   *
+   * - If no response is returned from the API, a network error or timeout likely occurred.
+   * - In some cases, the request may have reached the server and been successfully processed, but the response failed to reach the client. As a result, retrying non-idempotent requests can lead to unintended results.
+   *
+   * The following HTTP methods are considered non-idempotent: `POST`, `PATCH`, `DELETE`, and `PUT`. Retrying these methods is generally **not safe**.
+   * The following methods are considered idempotent: `GET`, `HEAD`, and `OPTIONS`. Retrying these methods is **safe** in the event of a network error or timeout.
+   *
+   * Any request that returns a `503 Service Unavailable` response is always safe to retry.
+   *
+   * Any request that returns a `423 Locked` response is safe to retry. `423 Locked` indicates that the resource is temporarily locked, for example, due to another operation in progress.
+   *
+   */
+  default: GeneralError;
 };
 
 export type GetNeonAuthEmailServerResponse =
@@ -4723,10 +6860,368 @@ export type UpdateNeonAuthEmailServerResponses = {
    * The OAuth provider has been added to the project
    */
   200: NeonAuthEmailServerConfig;
+  /**
+   * General Error.
+   *
+   * The request may or may not be safe to retry, depending on the HTTP method, response status code,
+   * and whether a response was received.
+   *
+   * - If no response is returned from the API, a network error or timeout likely occurred.
+   * - In some cases, the request may have reached the server and been successfully processed, but the response failed to reach the client. As a result, retrying non-idempotent requests can lead to unintended results.
+   *
+   * The following HTTP methods are considered non-idempotent: `POST`, `PATCH`, `DELETE`, and `PUT`. Retrying these methods is generally **not safe**.
+   * The following methods are considered idempotent: `GET`, `HEAD`, and `OPTIONS`. Retrying these methods is **safe** in the event of a network error or timeout.
+   *
+   * Any request that returns a `503 Service Unavailable` response is always safe to retry.
+   *
+   * Any request that returns a `423 Locked` response is safe to retry. `423 Locked` indicates that the resource is temporarily locked, for example, due to another operation in progress.
+   *
+   */
+  default: GeneralError;
 };
 
 export type UpdateNeonAuthEmailServerResponse =
   UpdateNeonAuthEmailServerResponses[keyof UpdateNeonAuthEmailServerResponses];
+
+export type SendNeonAuthTestEmailData = {
+  body: SendNeonAuthTestEmailRequest;
+  path: {
+    /**
+     * The Neon project ID
+     */
+    project_id: string;
+    /**
+     * The Neon branch ID
+     */
+    branch_id: string;
+  };
+  query?: never;
+  url: "/projects/{project_id}/branches/{branch_id}/auth/send_test_email";
+};
+
+export type SendNeonAuthTestEmailErrors = {
+  /**
+   * General Error.
+   *
+   * The request may or may not be safe to retry, depending on the HTTP method, response status code,
+   * and whether a response was received.
+   *
+   * - If no response is returned from the API, a network error or timeout likely occurred.
+   * - In some cases, the request may have reached the server and been successfully processed, but the response failed to reach the client. As a result, retrying non-idempotent requests can lead to unintended results.
+   *
+   * The following HTTP methods are considered non-idempotent: `POST`, `PATCH`, `DELETE`, and `PUT`. Retrying these methods is generally **not safe**.
+   * The following methods are considered idempotent: `GET`, `HEAD`, and `OPTIONS`. Retrying these methods is **safe** in the event of a network error or timeout.
+   *
+   * Any request that returns a `503 Service Unavailable` response is always safe to retry.
+   *
+   * Any request that returns a `423 Locked` response is safe to retry. `423 Locked` indicates that the resource is temporarily locked, for example, due to another operation in progress.
+   *
+   */
+  default: GeneralError;
+};
+
+export type SendNeonAuthTestEmailError =
+  SendNeonAuthTestEmailErrors[keyof SendNeonAuthTestEmailErrors];
+
+export type SendNeonAuthTestEmailResponses = {
+  /**
+   * Response with the result of the test email send
+   */
+  200: SendNeonAuthTestEmailResponse;
+  /**
+   * General Error.
+   *
+   * The request may or may not be safe to retry, depending on the HTTP method, response status code,
+   * and whether a response was received.
+   *
+   * - If no response is returned from the API, a network error or timeout likely occurred.
+   * - In some cases, the request may have reached the server and been successfully processed, but the response failed to reach the client. As a result, retrying non-idempotent requests can lead to unintended results.
+   *
+   * The following HTTP methods are considered non-idempotent: `POST`, `PATCH`, `DELETE`, and `PUT`. Retrying these methods is generally **not safe**.
+   * The following methods are considered idempotent: `GET`, `HEAD`, and `OPTIONS`. Retrying these methods is **safe** in the event of a network error or timeout.
+   *
+   * Any request that returns a `503 Service Unavailable` response is always safe to retry.
+   *
+   * Any request that returns a `423 Locked` response is safe to retry. `423 Locked` indicates that the resource is temporarily locked, for example, due to another operation in progress.
+   *
+   */
+  default: GeneralError;
+};
+
+export type SendNeonAuthTestEmailResponse2 =
+  SendNeonAuthTestEmailResponses[keyof SendNeonAuthTestEmailResponses];
+
+export type GetNeonAuthEmailAndPasswordConfigData = {
+  body?: never;
+  path: {
+    /**
+     * The Neon project ID
+     */
+    project_id: string;
+    /**
+     * The Neon branch ID
+     */
+    branch_id: string;
+  };
+  query?: never;
+  url: "/projects/{project_id}/branches/{branch_id}/auth/email_and_password";
+};
+
+export type GetNeonAuthEmailAndPasswordConfigErrors = {
+  /**
+   * General Error.
+   *
+   * The request may or may not be safe to retry, depending on the HTTP method, response status code,
+   * and whether a response was received.
+   *
+   * - If no response is returned from the API, a network error or timeout likely occurred.
+   * - In some cases, the request may have reached the server and been successfully processed, but the response failed to reach the client. As a result, retrying non-idempotent requests can lead to unintended results.
+   *
+   * The following HTTP methods are considered non-idempotent: `POST`, `PATCH`, `DELETE`, and `PUT`. Retrying these methods is generally **not safe**.
+   * The following methods are considered idempotent: `GET`, `HEAD`, and `OPTIONS`. Retrying these methods is **safe** in the event of a network error or timeout.
+   *
+   * Any request that returns a `503 Service Unavailable` response is always safe to retry.
+   *
+   * Any request that returns a `423 Locked` response is safe to retry. `423 Locked` indicates that the resource is temporarily locked, for example, due to another operation in progress.
+   *
+   */
+  default: GeneralError;
+};
+
+export type GetNeonAuthEmailAndPasswordConfigError =
+  GetNeonAuthEmailAndPasswordConfigErrors[keyof GetNeonAuthEmailAndPasswordConfigErrors];
+
+export type GetNeonAuthEmailAndPasswordConfigResponses = {
+  /**
+   * Returns the email and password configuration for Neon Auth
+   */
+  200: NeonAuthEmailAndPasswordConfig;
+  /**
+   * General Error.
+   *
+   * The request may or may not be safe to retry, depending on the HTTP method, response status code,
+   * and whether a response was received.
+   *
+   * - If no response is returned from the API, a network error or timeout likely occurred.
+   * - In some cases, the request may have reached the server and been successfully processed, but the response failed to reach the client. As a result, retrying non-idempotent requests can lead to unintended results.
+   *
+   * The following HTTP methods are considered non-idempotent: `POST`, `PATCH`, `DELETE`, and `PUT`. Retrying these methods is generally **not safe**.
+   * The following methods are considered idempotent: `GET`, `HEAD`, and `OPTIONS`. Retrying these methods is **safe** in the event of a network error or timeout.
+   *
+   * Any request that returns a `503 Service Unavailable` response is always safe to retry.
+   *
+   * Any request that returns a `423 Locked` response is safe to retry. `423 Locked` indicates that the resource is temporarily locked, for example, due to another operation in progress.
+   *
+   */
+  default: GeneralError;
+};
+
+export type GetNeonAuthEmailAndPasswordConfigResponse =
+  GetNeonAuthEmailAndPasswordConfigResponses[keyof GetNeonAuthEmailAndPasswordConfigResponses];
+
+export type UpdateNeonAuthEmailAndPasswordConfigData = {
+  body: NeonAuthEmailAndPasswordConfigUpdate;
+  path: {
+    /**
+     * The Neon project ID
+     */
+    project_id: string;
+    /**
+     * The Neon branch ID
+     */
+    branch_id: string;
+  };
+  query?: never;
+  url: "/projects/{project_id}/branches/{branch_id}/auth/email_and_password";
+};
+
+export type UpdateNeonAuthEmailAndPasswordConfigErrors = {
+  /**
+   * General Error.
+   *
+   * The request may or may not be safe to retry, depending on the HTTP method, response status code,
+   * and whether a response was received.
+   *
+   * - If no response is returned from the API, a network error or timeout likely occurred.
+   * - In some cases, the request may have reached the server and been successfully processed, but the response failed to reach the client. As a result, retrying non-idempotent requests can lead to unintended results.
+   *
+   * The following HTTP methods are considered non-idempotent: `POST`, `PATCH`, `DELETE`, and `PUT`. Retrying these methods is generally **not safe**.
+   * The following methods are considered idempotent: `GET`, `HEAD`, and `OPTIONS`. Retrying these methods is **safe** in the event of a network error or timeout.
+   *
+   * Any request that returns a `503 Service Unavailable` response is always safe to retry.
+   *
+   * Any request that returns a `423 Locked` response is safe to retry. `423 Locked` indicates that the resource is temporarily locked, for example, due to another operation in progress.
+   *
+   */
+  default: GeneralError;
+};
+
+export type UpdateNeonAuthEmailAndPasswordConfigError =
+  UpdateNeonAuthEmailAndPasswordConfigErrors[keyof UpdateNeonAuthEmailAndPasswordConfigErrors];
+
+export type UpdateNeonAuthEmailAndPasswordConfigResponses = {
+  /**
+   * The email and password configuration has been updated
+   */
+  200: NeonAuthEmailAndPasswordConfig;
+  /**
+   * General Error.
+   *
+   * The request may or may not be safe to retry, depending on the HTTP method, response status code,
+   * and whether a response was received.
+   *
+   * - If no response is returned from the API, a network error or timeout likely occurred.
+   * - In some cases, the request may have reached the server and been successfully processed, but the response failed to reach the client. As a result, retrying non-idempotent requests can lead to unintended results.
+   *
+   * The following HTTP methods are considered non-idempotent: `POST`, `PATCH`, `DELETE`, and `PUT`. Retrying these methods is generally **not safe**.
+   * The following methods are considered idempotent: `GET`, `HEAD`, and `OPTIONS`. Retrying these methods is **safe** in the event of a network error or timeout.
+   *
+   * Any request that returns a `503 Service Unavailable` response is always safe to retry.
+   *
+   * Any request that returns a `423 Locked` response is safe to retry. `423 Locked` indicates that the resource is temporarily locked, for example, due to another operation in progress.
+   *
+   */
+  default: GeneralError;
+};
+
+export type UpdateNeonAuthEmailAndPasswordConfigResponse =
+  UpdateNeonAuthEmailAndPasswordConfigResponses[keyof UpdateNeonAuthEmailAndPasswordConfigResponses];
+
+export type GetNeonAuthEmailProviderData = {
+  body?: never;
+  path: {
+    /**
+     * The Neon project ID
+     */
+    project_id: string;
+    /**
+     * The Neon branch ID
+     */
+    branch_id: string;
+  };
+  query?: never;
+  url: "/projects/{project_id}/branches/{branch_id}/auth/email_provider";
+};
+
+export type GetNeonAuthEmailProviderErrors = {
+  /**
+   * General Error.
+   *
+   * The request may or may not be safe to retry, depending on the HTTP method, response status code,
+   * and whether a response was received.
+   *
+   * - If no response is returned from the API, a network error or timeout likely occurred.
+   * - In some cases, the request may have reached the server and been successfully processed, but the response failed to reach the client. As a result, retrying non-idempotent requests can lead to unintended results.
+   *
+   * The following HTTP methods are considered non-idempotent: `POST`, `PATCH`, `DELETE`, and `PUT`. Retrying these methods is generally **not safe**.
+   * The following methods are considered idempotent: `GET`, `HEAD`, and `OPTIONS`. Retrying these methods is **safe** in the event of a network error or timeout.
+   *
+   * Any request that returns a `503 Service Unavailable` response is always safe to retry.
+   *
+   * Any request that returns a `423 Locked` response is safe to retry. `423 Locked` indicates that the resource is temporarily locked, for example, due to another operation in progress.
+   *
+   */
+  default: GeneralError;
+};
+
+export type GetNeonAuthEmailProviderError =
+  GetNeonAuthEmailProviderErrors[keyof GetNeonAuthEmailProviderErrors];
+
+export type GetNeonAuthEmailProviderResponses = {
+  /**
+   * Returns the email provider configuration for the Neon Auth
+   */
+  200: NeonAuthEmailServerConfig;
+  /**
+   * General Error.
+   *
+   * The request may or may not be safe to retry, depending on the HTTP method, response status code,
+   * and whether a response was received.
+   *
+   * - If no response is returned from the API, a network error or timeout likely occurred.
+   * - In some cases, the request may have reached the server and been successfully processed, but the response failed to reach the client. As a result, retrying non-idempotent requests can lead to unintended results.
+   *
+   * The following HTTP methods are considered non-idempotent: `POST`, `PATCH`, `DELETE`, and `PUT`. Retrying these methods is generally **not safe**.
+   * The following methods are considered idempotent: `GET`, `HEAD`, and `OPTIONS`. Retrying these methods is **safe** in the event of a network error or timeout.
+   *
+   * Any request that returns a `503 Service Unavailable` response is always safe to retry.
+   *
+   * Any request that returns a `423 Locked` response is safe to retry. `423 Locked` indicates that the resource is temporarily locked, for example, due to another operation in progress.
+   *
+   */
+  default: GeneralError;
+};
+
+export type GetNeonAuthEmailProviderResponse =
+  GetNeonAuthEmailProviderResponses[keyof GetNeonAuthEmailProviderResponses];
+
+export type UpdateNeonAuthEmailProviderData = {
+  body: NeonAuthEmailServerConfig;
+  path: {
+    /**
+     * The Neon project ID
+     */
+    project_id: string;
+    /**
+     * The Neon branch ID
+     */
+    branch_id: string;
+  };
+  query?: never;
+  url: "/projects/{project_id}/branches/{branch_id}/auth/email_provider";
+};
+
+export type UpdateNeonAuthEmailProviderErrors = {
+  /**
+   * General Error.
+   *
+   * The request may or may not be safe to retry, depending on the HTTP method, response status code,
+   * and whether a response was received.
+   *
+   * - If no response is returned from the API, a network error or timeout likely occurred.
+   * - In some cases, the request may have reached the server and been successfully processed, but the response failed to reach the client. As a result, retrying non-idempotent requests can lead to unintended results.
+   *
+   * The following HTTP methods are considered non-idempotent: `POST`, `PATCH`, `DELETE`, and `PUT`. Retrying these methods is generally **not safe**.
+   * The following methods are considered idempotent: `GET`, `HEAD`, and `OPTIONS`. Retrying these methods is **safe** in the event of a network error or timeout.
+   *
+   * Any request that returns a `503 Service Unavailable` response is always safe to retry.
+   *
+   * Any request that returns a `423 Locked` response is safe to retry. `423 Locked` indicates that the resource is temporarily locked, for example, due to another operation in progress.
+   *
+   */
+  default: GeneralError;
+};
+
+export type UpdateNeonAuthEmailProviderError =
+  UpdateNeonAuthEmailProviderErrors[keyof UpdateNeonAuthEmailProviderErrors];
+
+export type UpdateNeonAuthEmailProviderResponses = {
+  /**
+   * The email provider configuration has been updated
+   */
+  200: NeonAuthEmailServerConfig;
+  /**
+   * General Error.
+   *
+   * The request may or may not be safe to retry, depending on the HTTP method, response status code,
+   * and whether a response was received.
+   *
+   * - If no response is returned from the API, a network error or timeout likely occurred.
+   * - In some cases, the request may have reached the server and been successfully processed, but the response failed to reach the client. As a result, retrying non-idempotent requests can lead to unintended results.
+   *
+   * The following HTTP methods are considered non-idempotent: `POST`, `PATCH`, `DELETE`, and `PUT`. Retrying these methods is generally **not safe**.
+   * The following methods are considered idempotent: `GET`, `HEAD`, and `OPTIONS`. Retrying these methods is **safe** in the event of a network error or timeout.
+   *
+   * Any request that returns a `503 Service Unavailable` response is always safe to retry.
+   *
+   * Any request that returns a `423 Locked` response is safe to retry. `423 Locked` indicates that the resource is temporarily locked, for example, due to another operation in progress.
+   *
+   */
+  default: GeneralError;
+};
+
+export type UpdateNeonAuthEmailProviderResponse =
+  UpdateNeonAuthEmailProviderResponses[keyof UpdateNeonAuthEmailProviderResponses];
 
 export type DeleteNeonAuthIntegrationData = {
   body?: {
@@ -4778,6 +7273,24 @@ export type DeleteNeonAuthIntegrationResponses = {
    * Delete the integration with the authentication provider
    */
   200: unknown;
+  /**
+   * General Error.
+   *
+   * The request may or may not be safe to retry, depending on the HTTP method, response status code,
+   * and whether a response was received.
+   *
+   * - If no response is returned from the API, a network error or timeout likely occurred.
+   * - In some cases, the request may have reached the server and been successfully processed, but the response failed to reach the client. As a result, retrying non-idempotent requests can lead to unintended results.
+   *
+   * The following HTTP methods are considered non-idempotent: `POST`, `PATCH`, `DELETE`, and `PUT`. Retrying these methods is generally **not safe**.
+   * The following methods are considered idempotent: `GET`, `HEAD`, and `OPTIONS`. Retrying these methods is **safe** in the event of a network error or timeout.
+   *
+   * Any request that returns a `503 Service Unavailable` response is always safe to retry.
+   *
+   * Any request that returns a `423 Locked` response is safe to retry. `423 Locked` indicates that the resource is temporarily locked, for example, due to another operation in progress.
+   *
+   */
+  default: GeneralError;
 };
 
 export type DeleteNeonAuthIntegrationResponse =
@@ -4845,10 +7358,164 @@ export type GetConnectionUriResponses = {
    * Returned the connection URI
    */
   200: ConnectionUriResponse;
+  /**
+   * General Error.
+   *
+   * The request may or may not be safe to retry, depending on the HTTP method, response status code,
+   * and whether a response was received.
+   *
+   * - If no response is returned from the API, a network error or timeout likely occurred.
+   * - In some cases, the request may have reached the server and been successfully processed, but the response failed to reach the client. As a result, retrying non-idempotent requests can lead to unintended results.
+   *
+   * The following HTTP methods are considered non-idempotent: `POST`, `PATCH`, `DELETE`, and `PUT`. Retrying these methods is generally **not safe**.
+   * The following methods are considered idempotent: `GET`, `HEAD`, and `OPTIONS`. Retrying these methods is **safe** in the event of a network error or timeout.
+   *
+   * Any request that returns a `503 Service Unavailable` response is always safe to retry.
+   *
+   * Any request that returns a `423 Locked` response is safe to retry. `423 Locked` indicates that the resource is temporarily locked, for example, due to another operation in progress.
+   *
+   */
+  default: GeneralError;
 };
 
 export type GetConnectionUriResponse =
   GetConnectionUriResponses[keyof GetConnectionUriResponses];
+
+export type GetNeonAuthAllowLocalhostData = {
+  body?: never;
+  path: {
+    /**
+     * The Neon project ID
+     */
+    project_id: string;
+    /**
+     * The Neon branch ID
+     */
+    branch_id: string;
+  };
+  query?: never;
+  url: "/projects/{project_id}/branches/{branch_id}/auth/allow_localhost";
+};
+
+export type GetNeonAuthAllowLocalhostErrors = {
+  /**
+   * General Error.
+   *
+   * The request may or may not be safe to retry, depending on the HTTP method, response status code,
+   * and whether a response was received.
+   *
+   * - If no response is returned from the API, a network error or timeout likely occurred.
+   * - In some cases, the request may have reached the server and been successfully processed, but the response failed to reach the client. As a result, retrying non-idempotent requests can lead to unintended results.
+   *
+   * The following HTTP methods are considered non-idempotent: `POST`, `PATCH`, `DELETE`, and `PUT`. Retrying these methods is generally **not safe**.
+   * The following methods are considered idempotent: `GET`, `HEAD`, and `OPTIONS`. Retrying these methods is **safe** in the event of a network error or timeout.
+   *
+   * Any request that returns a `503 Service Unavailable` response is always safe to retry.
+   *
+   * Any request that returns a `423 Locked` response is safe to retry. `423 Locked` indicates that the resource is temporarily locked, for example, due to another operation in progress.
+   *
+   */
+  default: GeneralError;
+};
+
+export type GetNeonAuthAllowLocalhostError =
+  GetNeonAuthAllowLocalhostErrors[keyof GetNeonAuthAllowLocalhostErrors];
+
+export type GetNeonAuthAllowLocalhostResponses = {
+  /**
+   * The allow localhost configuration
+   */
+  200: NeonAuthAllowLocalhostResponse;
+  /**
+   * General Error.
+   *
+   * The request may or may not be safe to retry, depending on the HTTP method, response status code,
+   * and whether a response was received.
+   *
+   * - If no response is returned from the API, a network error or timeout likely occurred.
+   * - In some cases, the request may have reached the server and been successfully processed, but the response failed to reach the client. As a result, retrying non-idempotent requests can lead to unintended results.
+   *
+   * The following HTTP methods are considered non-idempotent: `POST`, `PATCH`, `DELETE`, and `PUT`. Retrying these methods is generally **not safe**.
+   * The following methods are considered idempotent: `GET`, `HEAD`, and `OPTIONS`. Retrying these methods is **safe** in the event of a network error or timeout.
+   *
+   * Any request that returns a `503 Service Unavailable` response is always safe to retry.
+   *
+   * Any request that returns a `423 Locked` response is safe to retry. `423 Locked` indicates that the resource is temporarily locked, for example, due to another operation in progress.
+   *
+   */
+  default: GeneralError;
+};
+
+export type GetNeonAuthAllowLocalhostResponse =
+  GetNeonAuthAllowLocalhostResponses[keyof GetNeonAuthAllowLocalhostResponses];
+
+export type UpdateNeonAuthAllowLocalhostData = {
+  body: UpdateNeonAuthAllowLocalhostRequest;
+  path: {
+    /**
+     * The Neon project ID
+     */
+    project_id: string;
+    /**
+     * The Neon branch ID
+     */
+    branch_id: string;
+  };
+  query?: never;
+  url: "/projects/{project_id}/branches/{branch_id}/auth/allow_localhost";
+};
+
+export type UpdateNeonAuthAllowLocalhostErrors = {
+  /**
+   * General Error.
+   *
+   * The request may or may not be safe to retry, depending on the HTTP method, response status code,
+   * and whether a response was received.
+   *
+   * - If no response is returned from the API, a network error or timeout likely occurred.
+   * - In some cases, the request may have reached the server and been successfully processed, but the response failed to reach the client. As a result, retrying non-idempotent requests can lead to unintended results.
+   *
+   * The following HTTP methods are considered non-idempotent: `POST`, `PATCH`, `DELETE`, and `PUT`. Retrying these methods is generally **not safe**.
+   * The following methods are considered idempotent: `GET`, `HEAD`, and `OPTIONS`. Retrying these methods is **safe** in the event of a network error or timeout.
+   *
+   * Any request that returns a `503 Service Unavailable` response is always safe to retry.
+   *
+   * Any request that returns a `423 Locked` response is safe to retry. `423 Locked` indicates that the resource is temporarily locked, for example, due to another operation in progress.
+   *
+   */
+  default: GeneralError;
+};
+
+export type UpdateNeonAuthAllowLocalhostError =
+  UpdateNeonAuthAllowLocalhostErrors[keyof UpdateNeonAuthAllowLocalhostErrors];
+
+export type UpdateNeonAuthAllowLocalhostResponses = {
+  /**
+   * Updated the allow localhost configuration
+   */
+  200: NeonAuthAllowLocalhostResponse;
+  /**
+   * General Error.
+   *
+   * The request may or may not be safe to retry, depending on the HTTP method, response status code,
+   * and whether a response was received.
+   *
+   * - If no response is returned from the API, a network error or timeout likely occurred.
+   * - In some cases, the request may have reached the server and been successfully processed, but the response failed to reach the client. As a result, retrying non-idempotent requests can lead to unintended results.
+   *
+   * The following HTTP methods are considered non-idempotent: `POST`, `PATCH`, `DELETE`, and `PUT`. Retrying these methods is generally **not safe**.
+   * The following methods are considered idempotent: `GET`, `HEAD`, and `OPTIONS`. Retrying these methods is **safe** in the event of a network error or timeout.
+   *
+   * Any request that returns a `503 Service Unavailable` response is always safe to retry.
+   *
+   * Any request that returns a `423 Locked` response is safe to retry. `423 Locked` indicates that the resource is temporarily locked, for example, due to another operation in progress.
+   *
+   */
+  default: GeneralError;
+};
+
+export type UpdateNeonAuthAllowLocalhostResponse =
+  UpdateNeonAuthAllowLocalhostResponses[keyof UpdateNeonAuthAllowLocalhostResponses];
 
 export type ListProjectBranchesData = {
   body?: never;
@@ -4912,6 +7579,24 @@ export type ListProjectBranchesResponses = {
    * Returned a list of branches for the specified project
    */
   200: BranchesResponse & AnnotationsMapResponse & CursorPaginationResponse;
+  /**
+   * General Error.
+   *
+   * The request may or may not be safe to retry, depending on the HTTP method, response status code,
+   * and whether a response was received.
+   *
+   * - If no response is returned from the API, a network error or timeout likely occurred.
+   * - In some cases, the request may have reached the server and been successfully processed, but the response failed to reach the client. As a result, retrying non-idempotent requests can lead to unintended results.
+   *
+   * The following HTTP methods are considered non-idempotent: `POST`, `PATCH`, `DELETE`, and `PUT`. Retrying these methods is generally **not safe**.
+   * The following methods are considered idempotent: `GET`, `HEAD`, and `OPTIONS`. Retrying these methods is **safe** in the event of a network error or timeout.
+   *
+   * Any request that returns a `503 Service Unavailable` response is always safe to retry.
+   *
+   * Any request that returns a `423 Locked` response is safe to retry. `423 Locked` indicates that the resource is temporarily locked, for example, due to another operation in progress.
+   *
+   */
+  default: GeneralError;
 };
 
 export type ListProjectBranchesResponse =
@@ -4963,10 +7648,97 @@ export type CreateProjectBranchResponses = {
     RolesResponse &
     DatabasesResponse &
     ConnectionUrisOptionalResponse;
+  /**
+   * General Error.
+   *
+   * The request may or may not be safe to retry, depending on the HTTP method, response status code,
+   * and whether a response was received.
+   *
+   * - If no response is returned from the API, a network error or timeout likely occurred.
+   * - In some cases, the request may have reached the server and been successfully processed, but the response failed to reach the client. As a result, retrying non-idempotent requests can lead to unintended results.
+   *
+   * The following HTTP methods are considered non-idempotent: `POST`, `PATCH`, `DELETE`, and `PUT`. Retrying these methods is generally **not safe**.
+   * The following methods are considered idempotent: `GET`, `HEAD`, and `OPTIONS`. Retrying these methods is **safe** in the event of a network error or timeout.
+   *
+   * Any request that returns a `503 Service Unavailable` response is always safe to retry.
+   *
+   * Any request that returns a `423 Locked` response is safe to retry. `423 Locked` indicates that the resource is temporarily locked, for example, due to another operation in progress.
+   *
+   */
+  default: GeneralError;
 };
 
 export type CreateProjectBranchResponse =
   CreateProjectBranchResponses[keyof CreateProjectBranchResponses];
+
+export type CreateProjectBranchAnonymizedData = {
+  body: BranchAnonymizedCreateRequest;
+  path: {
+    /**
+     * The Neon project ID
+     */
+    project_id: string;
+  };
+  query?: never;
+  url: "/projects/{project_id}/branch_anonymized";
+};
+
+export type CreateProjectBranchAnonymizedErrors = {
+  /**
+   * General Error.
+   *
+   * The request may or may not be safe to retry, depending on the HTTP method, response status code,
+   * and whether a response was received.
+   *
+   * - If no response is returned from the API, a network error or timeout likely occurred.
+   * - In some cases, the request may have reached the server and been successfully processed, but the response failed to reach the client. As a result, retrying non-idempotent requests can lead to unintended results.
+   *
+   * The following HTTP methods are considered non-idempotent: `POST`, `PATCH`, `DELETE`, and `PUT`. Retrying these methods is generally **not safe**.
+   * The following methods are considered idempotent: `GET`, `HEAD`, and `OPTIONS`. Retrying these methods is **safe** in the event of a network error or timeout.
+   *
+   * Any request that returns a `503 Service Unavailable` response is always safe to retry.
+   *
+   * Any request that returns a `423 Locked` response is safe to retry. `423 Locked` indicates that the resource is temporarily locked, for example, due to another operation in progress.
+   *
+   */
+  default: GeneralError;
+};
+
+export type CreateProjectBranchAnonymizedError =
+  CreateProjectBranchAnonymizedErrors[keyof CreateProjectBranchAnonymizedErrors];
+
+export type CreateProjectBranchAnonymizedResponses = {
+  /**
+   * Created a branch. An endpoint is only created if it was specified in the request.
+   */
+  201: BranchResponse &
+    EndpointsResponse &
+    OperationsResponse &
+    RolesResponse &
+    DatabasesResponse &
+    ConnectionUrisOptionalResponse;
+  /**
+   * General Error.
+   *
+   * The request may or may not be safe to retry, depending on the HTTP method, response status code,
+   * and whether a response was received.
+   *
+   * - If no response is returned from the API, a network error or timeout likely occurred.
+   * - In some cases, the request may have reached the server and been successfully processed, but the response failed to reach the client. As a result, retrying non-idempotent requests can lead to unintended results.
+   *
+   * The following HTTP methods are considered non-idempotent: `POST`, `PATCH`, `DELETE`, and `PUT`. Retrying these methods is generally **not safe**.
+   * The following methods are considered idempotent: `GET`, `HEAD`, and `OPTIONS`. Retrying these methods is **safe** in the event of a network error or timeout.
+   *
+   * Any request that returns a `503 Service Unavailable` response is always safe to retry.
+   *
+   * Any request that returns a `423 Locked` response is safe to retry. `423 Locked` indicates that the resource is temporarily locked, for example, due to another operation in progress.
+   *
+   */
+  default: GeneralError;
+};
+
+export type CreateProjectBranchAnonymizedResponse =
+  CreateProjectBranchAnonymizedResponses[keyof CreateProjectBranchAnonymizedResponses];
 
 export type CountProjectBranchesData = {
   body?: never;
@@ -5014,6 +7786,24 @@ export type CountProjectBranchesResponses = {
    * Returned a count of branches for the specified project
    */
   200: BranchesCountResponse;
+  /**
+   * General Error.
+   *
+   * The request may or may not be safe to retry, depending on the HTTP method, response status code,
+   * and whether a response was received.
+   *
+   * - If no response is returned from the API, a network error or timeout likely occurred.
+   * - In some cases, the request may have reached the server and been successfully processed, but the response failed to reach the client. As a result, retrying non-idempotent requests can lead to unintended results.
+   *
+   * The following HTTP methods are considered non-idempotent: `POST`, `PATCH`, `DELETE`, and `PUT`. Retrying these methods is generally **not safe**.
+   * The following methods are considered idempotent: `GET`, `HEAD`, and `OPTIONS`. Retrying these methods is **safe** in the event of a network error or timeout.
+   *
+   * Any request that returns a `503 Service Unavailable` response is always safe to retry.
+   *
+   * Any request that returns a `423 Locked` response is safe to retry. `423 Locked` indicates that the resource is temporarily locked, for example, due to another operation in progress.
+   *
+   */
+  default: GeneralError;
 };
 
 export type CountProjectBranchesResponse =
@@ -5068,6 +7858,24 @@ export type DeleteProjectBranchResponses = {
    * Returned if the branch doesn't exist or has already been deleted
    */
   204: void;
+  /**
+   * General Error.
+   *
+   * The request may or may not be safe to retry, depending on the HTTP method, response status code,
+   * and whether a response was received.
+   *
+   * - If no response is returned from the API, a network error or timeout likely occurred.
+   * - In some cases, the request may have reached the server and been successfully processed, but the response failed to reach the client. As a result, retrying non-idempotent requests can lead to unintended results.
+   *
+   * The following HTTP methods are considered non-idempotent: `POST`, `PATCH`, `DELETE`, and `PUT`. Retrying these methods is generally **not safe**.
+   * The following methods are considered idempotent: `GET`, `HEAD`, and `OPTIONS`. Retrying these methods is **safe** in the event of a network error or timeout.
+   *
+   * Any request that returns a `503 Service Unavailable` response is always safe to retry.
+   *
+   * Any request that returns a `423 Locked` response is safe to retry. `423 Locked` indicates that the resource is temporarily locked, for example, due to another operation in progress.
+   *
+   */
+  default: GeneralError;
 };
 
 export type DeleteProjectBranchResponse =
@@ -5118,6 +7926,24 @@ export type GetProjectBranchResponses = {
    * Returned information about the specified branch
    */
   200: BranchResponse & AnnotationResponse;
+  /**
+   * General Error.
+   *
+   * The request may or may not be safe to retry, depending on the HTTP method, response status code,
+   * and whether a response was received.
+   *
+   * - If no response is returned from the API, a network error or timeout likely occurred.
+   * - In some cases, the request may have reached the server and been successfully processed, but the response failed to reach the client. As a result, retrying non-idempotent requests can lead to unintended results.
+   *
+   * The following HTTP methods are considered non-idempotent: `POST`, `PATCH`, `DELETE`, and `PUT`. Retrying these methods is generally **not safe**.
+   * The following methods are considered idempotent: `GET`, `HEAD`, and `OPTIONS`. Retrying these methods is **safe** in the event of a network error or timeout.
+   *
+   * Any request that returns a `503 Service Unavailable` response is always safe to retry.
+   *
+   * Any request that returns a `423 Locked` response is safe to retry. `423 Locked` indicates that the resource is temporarily locked, for example, due to another operation in progress.
+   *
+   */
+  default: GeneralError;
 };
 
 export type GetProjectBranchResponse =
@@ -5168,6 +7994,24 @@ export type UpdateProjectBranchResponses = {
    * Updated the specified branch
    */
   200: BranchOperations;
+  /**
+   * General Error.
+   *
+   * The request may or may not be safe to retry, depending on the HTTP method, response status code,
+   * and whether a response was received.
+   *
+   * - If no response is returned from the API, a network error or timeout likely occurred.
+   * - In some cases, the request may have reached the server and been successfully processed, but the response failed to reach the client. As a result, retrying non-idempotent requests can lead to unintended results.
+   *
+   * The following HTTP methods are considered non-idempotent: `POST`, `PATCH`, `DELETE`, and `PUT`. Retrying these methods is generally **not safe**.
+   * The following methods are considered idempotent: `GET`, `HEAD`, and `OPTIONS`. Retrying these methods is **safe** in the event of a network error or timeout.
+   *
+   * Any request that returns a `503 Service Unavailable` response is always safe to retry.
+   *
+   * Any request that returns a `423 Locked` response is safe to retry. `423 Locked` indicates that the resource is temporarily locked, for example, due to another operation in progress.
+   *
+   */
+  default: GeneralError;
 };
 
 export type UpdateProjectBranchResponse =
@@ -5218,6 +8062,24 @@ export type RestoreProjectBranchResponses = {
    * Updated the specified branch
    */
   200: BranchOperations;
+  /**
+   * General Error.
+   *
+   * The request may or may not be safe to retry, depending on the HTTP method, response status code,
+   * and whether a response was received.
+   *
+   * - If no response is returned from the API, a network error or timeout likely occurred.
+   * - In some cases, the request may have reached the server and been successfully processed, but the response failed to reach the client. As a result, retrying non-idempotent requests can lead to unintended results.
+   *
+   * The following HTTP methods are considered non-idempotent: `POST`, `PATCH`, `DELETE`, and `PUT`. Retrying these methods is generally **not safe**.
+   * The following methods are considered idempotent: `GET`, `HEAD`, and `OPTIONS`. Retrying these methods is **safe** in the event of a network error or timeout.
+   *
+   * Any request that returns a `503 Service Unavailable` response is always safe to retry.
+   *
+   * Any request that returns a `423 Locked` response is safe to retry. `423 Locked` indicates that the resource is temporarily locked, for example, due to another operation in progress.
+   *
+   */
+  default: GeneralError;
 };
 
 export type RestoreProjectBranchResponse =
@@ -5290,6 +8152,24 @@ export type GetProjectBranchSchemaResponses = {
    * Schema definition
    */
   200: BranchSchemaResponse;
+  /**
+   * General Error.
+   *
+   * The request may or may not be safe to retry, depending on the HTTP method, response status code,
+   * and whether a response was received.
+   *
+   * - If no response is returned from the API, a network error or timeout likely occurred.
+   * - In some cases, the request may have reached the server and been successfully processed, but the response failed to reach the client. As a result, retrying non-idempotent requests can lead to unintended results.
+   *
+   * The following HTTP methods are considered non-idempotent: `POST`, `PATCH`, `DELETE`, and `PUT`. Retrying these methods is generally **not safe**.
+   * The following methods are considered idempotent: `GET`, `HEAD`, and `OPTIONS`. Retrying these methods is **safe** in the event of a network error or timeout.
+   *
+   * Any request that returns a `503 Service Unavailable` response is always safe to retry.
+   *
+   * Any request that returns a `423 Locked` response is safe to retry. `423 Locked` indicates that the resource is temporarily locked, for example, due to another operation in progress.
+   *
+   */
+  default: GeneralError;
 };
 
 export type GetProjectBranchSchemaResponse =
@@ -5369,10 +8249,300 @@ export type GetProjectBranchSchemaComparisonResponses = {
    * Difference between the schemas
    */
   200: BranchSchemaCompareResponse;
+  /**
+   * General Error.
+   *
+   * The request may or may not be safe to retry, depending on the HTTP method, response status code,
+   * and whether a response was received.
+   *
+   * - If no response is returned from the API, a network error or timeout likely occurred.
+   * - In some cases, the request may have reached the server and been successfully processed, but the response failed to reach the client. As a result, retrying non-idempotent requests can lead to unintended results.
+   *
+   * The following HTTP methods are considered non-idempotent: `POST`, `PATCH`, `DELETE`, and `PUT`. Retrying these methods is generally **not safe**.
+   * The following methods are considered idempotent: `GET`, `HEAD`, and `OPTIONS`. Retrying these methods is **safe** in the event of a network error or timeout.
+   *
+   * Any request that returns a `503 Service Unavailable` response is always safe to retry.
+   *
+   * Any request that returns a `423 Locked` response is safe to retry. `423 Locked` indicates that the resource is temporarily locked, for example, due to another operation in progress.
+   *
+   */
+  default: GeneralError;
 };
 
 export type GetProjectBranchSchemaComparisonResponse =
   GetProjectBranchSchemaComparisonResponses[keyof GetProjectBranchSchemaComparisonResponses];
+
+export type GetMaskingRulesData = {
+  body?: never;
+  path: {
+    /**
+     * The Neon project ID
+     */
+    project_id: string;
+    /**
+     * The branch ID
+     */
+    branch_id: string;
+  };
+  query?: never;
+  url: "/projects/{project_id}/branches/{branch_id}/masking_rules";
+};
+
+export type GetMaskingRulesErrors = {
+  /**
+   * General Error.
+   *
+   * The request may or may not be safe to retry, depending on the HTTP method, response status code,
+   * and whether a response was received.
+   *
+   * - If no response is returned from the API, a network error or timeout likely occurred.
+   * - In some cases, the request may have reached the server and been successfully processed, but the response failed to reach the client. As a result, retrying non-idempotent requests can lead to unintended results.
+   *
+   * The following HTTP methods are considered non-idempotent: `POST`, `PATCH`, `DELETE`, and `PUT`. Retrying these methods is generally **not safe**.
+   * The following methods are considered idempotent: `GET`, `HEAD`, and `OPTIONS`. Retrying these methods is **safe** in the event of a network error or timeout.
+   *
+   * Any request that returns a `503 Service Unavailable` response is always safe to retry.
+   *
+   * Any request that returns a `423 Locked` response is safe to retry. `423 Locked` indicates that the resource is temporarily locked, for example, due to another operation in progress.
+   *
+   */
+  default: GeneralError;
+};
+
+export type GetMaskingRulesError =
+  GetMaskingRulesErrors[keyof GetMaskingRulesErrors];
+
+export type GetMaskingRulesResponses = {
+  /**
+   * Masking rules retrieved successfully
+   */
+  200: MaskingRulesResponse;
+  /**
+   * General Error.
+   *
+   * The request may or may not be safe to retry, depending on the HTTP method, response status code,
+   * and whether a response was received.
+   *
+   * - If no response is returned from the API, a network error or timeout likely occurred.
+   * - In some cases, the request may have reached the server and been successfully processed, but the response failed to reach the client. As a result, retrying non-idempotent requests can lead to unintended results.
+   *
+   * The following HTTP methods are considered non-idempotent: `POST`, `PATCH`, `DELETE`, and `PUT`. Retrying these methods is generally **not safe**.
+   * The following methods are considered idempotent: `GET`, `HEAD`, and `OPTIONS`. Retrying these methods is **safe** in the event of a network error or timeout.
+   *
+   * Any request that returns a `503 Service Unavailable` response is always safe to retry.
+   *
+   * Any request that returns a `423 Locked` response is safe to retry. `423 Locked` indicates that the resource is temporarily locked, for example, due to another operation in progress.
+   *
+   */
+  default: GeneralError;
+};
+
+export type GetMaskingRulesResponse =
+  GetMaskingRulesResponses[keyof GetMaskingRulesResponses];
+
+export type UpdateMaskingRulesData = {
+  body: MaskingRulesUpdateRequest;
+  path: {
+    /**
+     * The Neon project ID
+     */
+    project_id: string;
+    /**
+     * The branch ID
+     */
+    branch_id: string;
+  };
+  query?: never;
+  url: "/projects/{project_id}/branches/{branch_id}/masking_rules";
+};
+
+export type UpdateMaskingRulesErrors = {
+  /**
+   * General Error.
+   *
+   * The request may or may not be safe to retry, depending on the HTTP method, response status code,
+   * and whether a response was received.
+   *
+   * - If no response is returned from the API, a network error or timeout likely occurred.
+   * - In some cases, the request may have reached the server and been successfully processed, but the response failed to reach the client. As a result, retrying non-idempotent requests can lead to unintended results.
+   *
+   * The following HTTP methods are considered non-idempotent: `POST`, `PATCH`, `DELETE`, and `PUT`. Retrying these methods is generally **not safe**.
+   * The following methods are considered idempotent: `GET`, `HEAD`, and `OPTIONS`. Retrying these methods is **safe** in the event of a network error or timeout.
+   *
+   * Any request that returns a `503 Service Unavailable` response is always safe to retry.
+   *
+   * Any request that returns a `423 Locked` response is safe to retry. `423 Locked` indicates that the resource is temporarily locked, for example, due to another operation in progress.
+   *
+   */
+  default: GeneralError;
+};
+
+export type UpdateMaskingRulesError =
+  UpdateMaskingRulesErrors[keyof UpdateMaskingRulesErrors];
+
+export type UpdateMaskingRulesResponses = {
+  /**
+   * Masking rules updated successfully
+   */
+  200: MaskingRulesResponse;
+  /**
+   * General Error.
+   *
+   * The request may or may not be safe to retry, depending on the HTTP method, response status code,
+   * and whether a response was received.
+   *
+   * - If no response is returned from the API, a network error or timeout likely occurred.
+   * - In some cases, the request may have reached the server and been successfully processed, but the response failed to reach the client. As a result, retrying non-idempotent requests can lead to unintended results.
+   *
+   * The following HTTP methods are considered non-idempotent: `POST`, `PATCH`, `DELETE`, and `PUT`. Retrying these methods is generally **not safe**.
+   * The following methods are considered idempotent: `GET`, `HEAD`, and `OPTIONS`. Retrying these methods is **safe** in the event of a network error or timeout.
+   *
+   * Any request that returns a `503 Service Unavailable` response is always safe to retry.
+   *
+   * Any request that returns a `423 Locked` response is safe to retry. `423 Locked` indicates that the resource is temporarily locked, for example, due to another operation in progress.
+   *
+   */
+  default: GeneralError;
+};
+
+export type UpdateMaskingRulesResponse =
+  UpdateMaskingRulesResponses[keyof UpdateMaskingRulesResponses];
+
+export type GetAnonymizedBranchStatusData = {
+  body?: never;
+  path: {
+    /**
+     * The Neon project ID
+     */
+    project_id: string;
+    /**
+     * The branch ID
+     */
+    branch_id: string;
+  };
+  query?: never;
+  url: "/projects/{project_id}/branches/{branch_id}/anonymized_status";
+};
+
+export type GetAnonymizedBranchStatusErrors = {
+  /**
+   * General Error.
+   *
+   * The request may or may not be safe to retry, depending on the HTTP method, response status code,
+   * and whether a response was received.
+   *
+   * - If no response is returned from the API, a network error or timeout likely occurred.
+   * - In some cases, the request may have reached the server and been successfully processed, but the response failed to reach the client. As a result, retrying non-idempotent requests can lead to unintended results.
+   *
+   * The following HTTP methods are considered non-idempotent: `POST`, `PATCH`, `DELETE`, and `PUT`. Retrying these methods is generally **not safe**.
+   * The following methods are considered idempotent: `GET`, `HEAD`, and `OPTIONS`. Retrying these methods is **safe** in the event of a network error or timeout.
+   *
+   * Any request that returns a `503 Service Unavailable` response is always safe to retry.
+   *
+   * Any request that returns a `423 Locked` response is safe to retry. `423 Locked` indicates that the resource is temporarily locked, for example, due to another operation in progress.
+   *
+   */
+  default: GeneralError;
+};
+
+export type GetAnonymizedBranchStatusError =
+  GetAnonymizedBranchStatusErrors[keyof GetAnonymizedBranchStatusErrors];
+
+export type GetAnonymizedBranchStatusResponses = {
+  /**
+   * Anonymized branch status retrieved successfully
+   */
+  200: AnonymizedBranchStatusResponse;
+  /**
+   * General Error.
+   *
+   * The request may or may not be safe to retry, depending on the HTTP method, response status code,
+   * and whether a response was received.
+   *
+   * - If no response is returned from the API, a network error or timeout likely occurred.
+   * - In some cases, the request may have reached the server and been successfully processed, but the response failed to reach the client. As a result, retrying non-idempotent requests can lead to unintended results.
+   *
+   * The following HTTP methods are considered non-idempotent: `POST`, `PATCH`, `DELETE`, and `PUT`. Retrying these methods is generally **not safe**.
+   * The following methods are considered idempotent: `GET`, `HEAD`, and `OPTIONS`. Retrying these methods is **safe** in the event of a network error or timeout.
+   *
+   * Any request that returns a `503 Service Unavailable` response is always safe to retry.
+   *
+   * Any request that returns a `423 Locked` response is safe to retry. `423 Locked` indicates that the resource is temporarily locked, for example, due to another operation in progress.
+   *
+   */
+  default: GeneralError;
+};
+
+export type GetAnonymizedBranchStatusResponse =
+  GetAnonymizedBranchStatusResponses[keyof GetAnonymizedBranchStatusResponses];
+
+export type StartAnonymizationData = {
+  body?: never;
+  path: {
+    /**
+     * The Neon project ID
+     */
+    project_id: string;
+    /**
+     * The branch ID
+     */
+    branch_id: string;
+  };
+  query?: never;
+  url: "/projects/{project_id}/branches/{branch_id}/anonymize";
+};
+
+export type StartAnonymizationErrors = {
+  /**
+   * General Error.
+   *
+   * The request may or may not be safe to retry, depending on the HTTP method, response status code,
+   * and whether a response was received.
+   *
+   * - If no response is returned from the API, a network error or timeout likely occurred.
+   * - In some cases, the request may have reached the server and been successfully processed, but the response failed to reach the client. As a result, retrying non-idempotent requests can lead to unintended results.
+   *
+   * The following HTTP methods are considered non-idempotent: `POST`, `PATCH`, `DELETE`, and `PUT`. Retrying these methods is generally **not safe**.
+   * The following methods are considered idempotent: `GET`, `HEAD`, and `OPTIONS`. Retrying these methods is **safe** in the event of a network error or timeout.
+   *
+   * Any request that returns a `503 Service Unavailable` response is always safe to retry.
+   *
+   * Any request that returns a `423 Locked` response is safe to retry. `423 Locked` indicates that the resource is temporarily locked, for example, due to another operation in progress.
+   *
+   */
+  default: GeneralError;
+};
+
+export type StartAnonymizationError =
+  StartAnonymizationErrors[keyof StartAnonymizationErrors];
+
+export type StartAnonymizationResponses = {
+  /**
+   * Anonymization started successfully
+   */
+  200: AnonymizedBranchStatusResponse;
+  /**
+   * General Error.
+   *
+   * The request may or may not be safe to retry, depending on the HTTP method, response status code,
+   * and whether a response was received.
+   *
+   * - If no response is returned from the API, a network error or timeout likely occurred.
+   * - In some cases, the request may have reached the server and been successfully processed, but the response failed to reach the client. As a result, retrying non-idempotent requests can lead to unintended results.
+   *
+   * The following HTTP methods are considered non-idempotent: `POST`, `PATCH`, `DELETE`, and `PUT`. Retrying these methods is generally **not safe**.
+   * The following methods are considered idempotent: `GET`, `HEAD`, and `OPTIONS`. Retrying these methods is **safe** in the event of a network error or timeout.
+   *
+   * Any request that returns a `503 Service Unavailable` response is always safe to retry.
+   *
+   * Any request that returns a `423 Locked` response is safe to retry. `423 Locked` indicates that the resource is temporarily locked, for example, due to another operation in progress.
+   *
+   */
+  default: GeneralError;
+};
+
+export type StartAnonymizationResponse =
+  StartAnonymizationResponses[keyof StartAnonymizationResponses];
 
 export type SetDefaultProjectBranchData = {
   body?: never;
@@ -5419,6 +8589,24 @@ export type SetDefaultProjectBranchResponses = {
    * Updated the specified branch
    */
   200: BranchOperations;
+  /**
+   * General Error.
+   *
+   * The request may or may not be safe to retry, depending on the HTTP method, response status code,
+   * and whether a response was received.
+   *
+   * - If no response is returned from the API, a network error or timeout likely occurred.
+   * - In some cases, the request may have reached the server and been successfully processed, but the response failed to reach the client. As a result, retrying non-idempotent requests can lead to unintended results.
+   *
+   * The following HTTP methods are considered non-idempotent: `POST`, `PATCH`, `DELETE`, and `PUT`. Retrying these methods is generally **not safe**.
+   * The following methods are considered idempotent: `GET`, `HEAD`, and `OPTIONS`. Retrying these methods is **safe** in the event of a network error or timeout.
+   *
+   * Any request that returns a `503 Service Unavailable` response is always safe to retry.
+   *
+   * Any request that returns a `423 Locked` response is safe to retry. `423 Locked` indicates that the resource is temporarily locked, for example, due to another operation in progress.
+   *
+   */
+  default: GeneralError;
 };
 
 export type SetDefaultProjectBranchResponse =
@@ -5474,6 +8662,24 @@ export type FinalizeRestoreBranchResponses = {
    * OK
    */
   200: OperationsResponse;
+  /**
+   * General Error.
+   *
+   * The request may or may not be safe to retry, depending on the HTTP method, response status code,
+   * and whether a response was received.
+   *
+   * - If no response is returned from the API, a network error or timeout likely occurred.
+   * - In some cases, the request may have reached the server and been successfully processed, but the response failed to reach the client. As a result, retrying non-idempotent requests can lead to unintended results.
+   *
+   * The following HTTP methods are considered non-idempotent: `POST`, `PATCH`, `DELETE`, and `PUT`. Retrying these methods is generally **not safe**.
+   * The following methods are considered idempotent: `GET`, `HEAD`, and `OPTIONS`. Retrying these methods is **safe** in the event of a network error or timeout.
+   *
+   * Any request that returns a `503 Service Unavailable` response is always safe to retry.
+   *
+   * Any request that returns a `423 Locked` response is safe to retry. `423 Locked` indicates that the resource is temporarily locked, for example, due to another operation in progress.
+   *
+   */
+  default: GeneralError;
 };
 
 export type FinalizeRestoreBranchResponse =
@@ -5524,6 +8730,24 @@ export type ListProjectBranchEndpointsResponses = {
    * Returned a list of endpoints for the specified branch
    */
   200: EndpointsResponse;
+  /**
+   * General Error.
+   *
+   * The request may or may not be safe to retry, depending on the HTTP method, response status code,
+   * and whether a response was received.
+   *
+   * - If no response is returned from the API, a network error or timeout likely occurred.
+   * - In some cases, the request may have reached the server and been successfully processed, but the response failed to reach the client. As a result, retrying non-idempotent requests can lead to unintended results.
+   *
+   * The following HTTP methods are considered non-idempotent: `POST`, `PATCH`, `DELETE`, and `PUT`. Retrying these methods is generally **not safe**.
+   * The following methods are considered idempotent: `GET`, `HEAD`, and `OPTIONS`. Retrying these methods is **safe** in the event of a network error or timeout.
+   *
+   * Any request that returns a `503 Service Unavailable` response is always safe to retry.
+   *
+   * Any request that returns a `423 Locked` response is safe to retry. `423 Locked` indicates that the resource is temporarily locked, for example, due to another operation in progress.
+   *
+   */
+  default: GeneralError;
 };
 
 export type ListProjectBranchEndpointsResponse =
@@ -5574,6 +8798,24 @@ export type ListProjectBranchDatabasesResponses = {
    * Returned a list of databases of the specified branch
    */
   200: DatabasesResponse;
+  /**
+   * General Error.
+   *
+   * The request may or may not be safe to retry, depending on the HTTP method, response status code,
+   * and whether a response was received.
+   *
+   * - If no response is returned from the API, a network error or timeout likely occurred.
+   * - In some cases, the request may have reached the server and been successfully processed, but the response failed to reach the client. As a result, retrying non-idempotent requests can lead to unintended results.
+   *
+   * The following HTTP methods are considered non-idempotent: `POST`, `PATCH`, `DELETE`, and `PUT`. Retrying these methods is generally **not safe**.
+   * The following methods are considered idempotent: `GET`, `HEAD`, and `OPTIONS`. Retrying these methods is **safe** in the event of a network error or timeout.
+   *
+   * Any request that returns a `503 Service Unavailable` response is always safe to retry.
+   *
+   * Any request that returns a `423 Locked` response is safe to retry. `423 Locked` indicates that the resource is temporarily locked, for example, due to another operation in progress.
+   *
+   */
+  default: GeneralError;
 };
 
 export type ListProjectBranchDatabasesResponse =
@@ -5624,6 +8866,24 @@ export type CreateProjectBranchDatabaseResponses = {
    * Created a database in the specified branch
    */
   201: DatabaseOperations;
+  /**
+   * General Error.
+   *
+   * The request may or may not be safe to retry, depending on the HTTP method, response status code,
+   * and whether a response was received.
+   *
+   * - If no response is returned from the API, a network error or timeout likely occurred.
+   * - In some cases, the request may have reached the server and been successfully processed, but the response failed to reach the client. As a result, retrying non-idempotent requests can lead to unintended results.
+   *
+   * The following HTTP methods are considered non-idempotent: `POST`, `PATCH`, `DELETE`, and `PUT`. Retrying these methods is generally **not safe**.
+   * The following methods are considered idempotent: `GET`, `HEAD`, and `OPTIONS`. Retrying these methods is **safe** in the event of a network error or timeout.
+   *
+   * Any request that returns a `503 Service Unavailable` response is always safe to retry.
+   *
+   * Any request that returns a `423 Locked` response is safe to retry. `423 Locked` indicates that the resource is temporarily locked, for example, due to another operation in progress.
+   *
+   */
+  default: GeneralError;
 };
 
 export type CreateProjectBranchDatabaseResponse =
@@ -5682,6 +8942,24 @@ export type DeleteProjectBranchDatabaseResponses = {
    * Returned if the database doesn't exist or has already been deleted
    */
   204: void;
+  /**
+   * General Error.
+   *
+   * The request may or may not be safe to retry, depending on the HTTP method, response status code,
+   * and whether a response was received.
+   *
+   * - If no response is returned from the API, a network error or timeout likely occurred.
+   * - In some cases, the request may have reached the server and been successfully processed, but the response failed to reach the client. As a result, retrying non-idempotent requests can lead to unintended results.
+   *
+   * The following HTTP methods are considered non-idempotent: `POST`, `PATCH`, `DELETE`, and `PUT`. Retrying these methods is generally **not safe**.
+   * The following methods are considered idempotent: `GET`, `HEAD`, and `OPTIONS`. Retrying these methods is **safe** in the event of a network error or timeout.
+   *
+   * Any request that returns a `503 Service Unavailable` response is always safe to retry.
+   *
+   * Any request that returns a `423 Locked` response is safe to retry. `423 Locked` indicates that the resource is temporarily locked, for example, due to another operation in progress.
+   *
+   */
+  default: GeneralError;
 };
 
 export type DeleteProjectBranchDatabaseResponse =
@@ -5736,6 +9014,24 @@ export type GetProjectBranchDatabaseResponses = {
    * Returned the database details
    */
   200: DatabaseResponse;
+  /**
+   * General Error.
+   *
+   * The request may or may not be safe to retry, depending on the HTTP method, response status code,
+   * and whether a response was received.
+   *
+   * - If no response is returned from the API, a network error or timeout likely occurred.
+   * - In some cases, the request may have reached the server and been successfully processed, but the response failed to reach the client. As a result, retrying non-idempotent requests can lead to unintended results.
+   *
+   * The following HTTP methods are considered non-idempotent: `POST`, `PATCH`, `DELETE`, and `PUT`. Retrying these methods is generally **not safe**.
+   * The following methods are considered idempotent: `GET`, `HEAD`, and `OPTIONS`. Retrying these methods is **safe** in the event of a network error or timeout.
+   *
+   * Any request that returns a `503 Service Unavailable` response is always safe to retry.
+   *
+   * Any request that returns a `423 Locked` response is safe to retry. `423 Locked` indicates that the resource is temporarily locked, for example, due to another operation in progress.
+   *
+   */
+  default: GeneralError;
 };
 
 export type GetProjectBranchDatabaseResponse =
@@ -5790,6 +9086,24 @@ export type UpdateProjectBranchDatabaseResponses = {
    * Updated the database
    */
   200: DatabaseOperations;
+  /**
+   * General Error.
+   *
+   * The request may or may not be safe to retry, depending on the HTTP method, response status code,
+   * and whether a response was received.
+   *
+   * - If no response is returned from the API, a network error or timeout likely occurred.
+   * - In some cases, the request may have reached the server and been successfully processed, but the response failed to reach the client. As a result, retrying non-idempotent requests can lead to unintended results.
+   *
+   * The following HTTP methods are considered non-idempotent: `POST`, `PATCH`, `DELETE`, and `PUT`. Retrying these methods is generally **not safe**.
+   * The following methods are considered idempotent: `GET`, `HEAD`, and `OPTIONS`. Retrying these methods is **safe** in the event of a network error or timeout.
+   *
+   * Any request that returns a `503 Service Unavailable` response is always safe to retry.
+   *
+   * Any request that returns a `423 Locked` response is safe to retry. `423 Locked` indicates that the resource is temporarily locked, for example, due to another operation in progress.
+   *
+   */
+  default: GeneralError;
 };
 
 export type UpdateProjectBranchDatabaseResponse =
@@ -5840,6 +9154,24 @@ export type ListProjectBranchRolesResponses = {
    * Returned a list of roles from the specified branch.
    */
   200: RolesResponse;
+  /**
+   * General Error.
+   *
+   * The request may or may not be safe to retry, depending on the HTTP method, response status code,
+   * and whether a response was received.
+   *
+   * - If no response is returned from the API, a network error or timeout likely occurred.
+   * - In some cases, the request may have reached the server and been successfully processed, but the response failed to reach the client. As a result, retrying non-idempotent requests can lead to unintended results.
+   *
+   * The following HTTP methods are considered non-idempotent: `POST`, `PATCH`, `DELETE`, and `PUT`. Retrying these methods is generally **not safe**.
+   * The following methods are considered idempotent: `GET`, `HEAD`, and `OPTIONS`. Retrying these methods is **safe** in the event of a network error or timeout.
+   *
+   * Any request that returns a `503 Service Unavailable` response is always safe to retry.
+   *
+   * Any request that returns a `423 Locked` response is safe to retry. `423 Locked` indicates that the resource is temporarily locked, for example, due to another operation in progress.
+   *
+   */
+  default: GeneralError;
 };
 
 export type ListProjectBranchRolesResponse =
@@ -5890,6 +9222,24 @@ export type CreateProjectBranchRoleResponses = {
    * Created a role in the specified branch
    */
   201: RoleOperations;
+  /**
+   * General Error.
+   *
+   * The request may or may not be safe to retry, depending on the HTTP method, response status code,
+   * and whether a response was received.
+   *
+   * - If no response is returned from the API, a network error or timeout likely occurred.
+   * - In some cases, the request may have reached the server and been successfully processed, but the response failed to reach the client. As a result, retrying non-idempotent requests can lead to unintended results.
+   *
+   * The following HTTP methods are considered non-idempotent: `POST`, `PATCH`, `DELETE`, and `PUT`. Retrying these methods is generally **not safe**.
+   * The following methods are considered idempotent: `GET`, `HEAD`, and `OPTIONS`. Retrying these methods is **safe** in the event of a network error or timeout.
+   *
+   * Any request that returns a `503 Service Unavailable` response is always safe to retry.
+   *
+   * Any request that returns a `423 Locked` response is safe to retry. `423 Locked` indicates that the resource is temporarily locked, for example, due to another operation in progress.
+   *
+   */
+  default: GeneralError;
 };
 
 export type CreateProjectBranchRoleResponse =
@@ -5948,6 +9298,24 @@ export type DeleteProjectBranchRoleResponses = {
    * Returned if the role doesn't exist or has already been deleted
    */
   204: void;
+  /**
+   * General Error.
+   *
+   * The request may or may not be safe to retry, depending on the HTTP method, response status code,
+   * and whether a response was received.
+   *
+   * - If no response is returned from the API, a network error or timeout likely occurred.
+   * - In some cases, the request may have reached the server and been successfully processed, but the response failed to reach the client. As a result, retrying non-idempotent requests can lead to unintended results.
+   *
+   * The following HTTP methods are considered non-idempotent: `POST`, `PATCH`, `DELETE`, and `PUT`. Retrying these methods is generally **not safe**.
+   * The following methods are considered idempotent: `GET`, `HEAD`, and `OPTIONS`. Retrying these methods is **safe** in the event of a network error or timeout.
+   *
+   * Any request that returns a `503 Service Unavailable` response is always safe to retry.
+   *
+   * Any request that returns a `423 Locked` response is safe to retry. `423 Locked` indicates that the resource is temporarily locked, for example, due to another operation in progress.
+   *
+   */
+  default: GeneralError;
 };
 
 export type DeleteProjectBranchRoleResponse =
@@ -6002,6 +9370,24 @@ export type GetProjectBranchRoleResponses = {
    * Returned details for the specified role
    */
   200: RoleResponse;
+  /**
+   * General Error.
+   *
+   * The request may or may not be safe to retry, depending on the HTTP method, response status code,
+   * and whether a response was received.
+   *
+   * - If no response is returned from the API, a network error or timeout likely occurred.
+   * - In some cases, the request may have reached the server and been successfully processed, but the response failed to reach the client. As a result, retrying non-idempotent requests can lead to unintended results.
+   *
+   * The following HTTP methods are considered non-idempotent: `POST`, `PATCH`, `DELETE`, and `PUT`. Retrying these methods is generally **not safe**.
+   * The following methods are considered idempotent: `GET`, `HEAD`, and `OPTIONS`. Retrying these methods is **safe** in the event of a network error or timeout.
+   *
+   * Any request that returns a `503 Service Unavailable` response is always safe to retry.
+   *
+   * Any request that returns a `423 Locked` response is safe to retry. `423 Locked` indicates that the resource is temporarily locked, for example, due to another operation in progress.
+   *
+   */
+  default: GeneralError;
 };
 
 export type GetProjectBranchRoleResponse =
@@ -6064,6 +9450,24 @@ export type GetProjectBranchRolePasswordResponses = {
    * Returned password for the specified role
    */
   200: RolePasswordResponse;
+  /**
+   * General Error.
+   *
+   * The request may or may not be safe to retry, depending on the HTTP method, response status code,
+   * and whether a response was received.
+   *
+   * - If no response is returned from the API, a network error or timeout likely occurred.
+   * - In some cases, the request may have reached the server and been successfully processed, but the response failed to reach the client. As a result, retrying non-idempotent requests can lead to unintended results.
+   *
+   * The following HTTP methods are considered non-idempotent: `POST`, `PATCH`, `DELETE`, and `PUT`. Retrying these methods is generally **not safe**.
+   * The following methods are considered idempotent: `GET`, `HEAD`, and `OPTIONS`. Retrying these methods is **safe** in the event of a network error or timeout.
+   *
+   * Any request that returns a `503 Service Unavailable` response is always safe to retry.
+   *
+   * Any request that returns a `423 Locked` response is safe to retry. `423 Locked` indicates that the resource is temporarily locked, for example, due to another operation in progress.
+   *
+   */
+  default: GeneralError;
 };
 
 export type GetProjectBranchRolePasswordResponse =
@@ -6118,6 +9522,24 @@ export type ResetProjectBranchRolePasswordResponses = {
    * Reset the password for the specified role
    */
   200: RoleOperations;
+  /**
+   * General Error.
+   *
+   * The request may or may not be safe to retry, depending on the HTTP method, response status code,
+   * and whether a response was received.
+   *
+   * - If no response is returned from the API, a network error or timeout likely occurred.
+   * - In some cases, the request may have reached the server and been successfully processed, but the response failed to reach the client. As a result, retrying non-idempotent requests can lead to unintended results.
+   *
+   * The following HTTP methods are considered non-idempotent: `POST`, `PATCH`, `DELETE`, and `PUT`. Retrying these methods is generally **not safe**.
+   * The following methods are considered idempotent: `GET`, `HEAD`, and `OPTIONS`. Retrying these methods is **safe** in the event of a network error or timeout.
+   *
+   * Any request that returns a `503 Service Unavailable` response is always safe to retry.
+   *
+   * Any request that returns a `423 Locked` response is safe to retry. `423 Locked` indicates that the resource is temporarily locked, for example, due to another operation in progress.
+   *
+   */
+  default: GeneralError;
 };
 
 export type ResetProjectBranchRolePasswordResponse =
@@ -6164,6 +9586,24 @@ export type ListProjectVpcEndpointsResponses = {
    * Returned VPC endpoint restrictions for the specified project
    */
   200: VpcEndpointsResponse;
+  /**
+   * General Error.
+   *
+   * The request may or may not be safe to retry, depending on the HTTP method, response status code,
+   * and whether a response was received.
+   *
+   * - If no response is returned from the API, a network error or timeout likely occurred.
+   * - In some cases, the request may have reached the server and been successfully processed, but the response failed to reach the client. As a result, retrying non-idempotent requests can lead to unintended results.
+   *
+   * The following HTTP methods are considered non-idempotent: `POST`, `PATCH`, `DELETE`, and `PUT`. Retrying these methods is generally **not safe**.
+   * The following methods are considered idempotent: `GET`, `HEAD`, and `OPTIONS`. Retrying these methods is **safe** in the event of a network error or timeout.
+   *
+   * Any request that returns a `503 Service Unavailable` response is always safe to retry.
+   *
+   * Any request that returns a `423 Locked` response is safe to retry. `423 Locked` indicates that the resource is temporarily locked, for example, due to another operation in progress.
+   *
+   */
+  default: GeneralError;
 };
 
 export type ListProjectVpcEndpointsResponse =
@@ -6214,6 +9654,24 @@ export type DeleteProjectVpcEndpointResponses = {
    * Removed the VPC endpoint restriction from the specified Neon project
    */
   200: unknown;
+  /**
+   * General Error.
+   *
+   * The request may or may not be safe to retry, depending on the HTTP method, response status code,
+   * and whether a response was received.
+   *
+   * - If no response is returned from the API, a network error or timeout likely occurred.
+   * - In some cases, the request may have reached the server and been successfully processed, but the response failed to reach the client. As a result, retrying non-idempotent requests can lead to unintended results.
+   *
+   * The following HTTP methods are considered non-idempotent: `POST`, `PATCH`, `DELETE`, and `PUT`. Retrying these methods is generally **not safe**.
+   * The following methods are considered idempotent: `GET`, `HEAD`, and `OPTIONS`. Retrying these methods is **safe** in the event of a network error or timeout.
+   *
+   * Any request that returns a `503 Service Unavailable` response is always safe to retry.
+   *
+   * Any request that returns a `423 Locked` response is safe to retry. `423 Locked` indicates that the resource is temporarily locked, for example, due to another operation in progress.
+   *
+   */
+  default: GeneralError;
 };
 
 export type DeleteProjectVpcEndpointResponse =
@@ -6264,6 +9722,24 @@ export type AssignProjectVpcEndpointResponses = {
    * Configured the specified VPC endpoint as a restriction for the specified project.
    */
   200: unknown;
+  /**
+   * General Error.
+   *
+   * The request may or may not be safe to retry, depending on the HTTP method, response status code,
+   * and whether a response was received.
+   *
+   * - If no response is returned from the API, a network error or timeout likely occurred.
+   * - In some cases, the request may have reached the server and been successfully processed, but the response failed to reach the client. As a result, retrying non-idempotent requests can lead to unintended results.
+   *
+   * The following HTTP methods are considered non-idempotent: `POST`, `PATCH`, `DELETE`, and `PUT`. Retrying these methods is generally **not safe**.
+   * The following methods are considered idempotent: `GET`, `HEAD`, and `OPTIONS`. Retrying these methods is **safe** in the event of a network error or timeout.
+   *
+   * Any request that returns a `503 Service Unavailable` response is always safe to retry.
+   *
+   * Any request that returns a `423 Locked` response is safe to retry. `423 Locked` indicates that the resource is temporarily locked, for example, due to another operation in progress.
+   *
+   */
+  default: GeneralError;
 };
 
 export type AssignProjectVpcEndpointResponse =
@@ -6310,6 +9786,24 @@ export type ListProjectEndpointsResponses = {
    * Returned a list of endpoints for the specified project
    */
   200: EndpointsResponse;
+  /**
+   * General Error.
+   *
+   * The request may or may not be safe to retry, depending on the HTTP method, response status code,
+   * and whether a response was received.
+   *
+   * - If no response is returned from the API, a network error or timeout likely occurred.
+   * - In some cases, the request may have reached the server and been successfully processed, but the response failed to reach the client. As a result, retrying non-idempotent requests can lead to unintended results.
+   *
+   * The following HTTP methods are considered non-idempotent: `POST`, `PATCH`, `DELETE`, and `PUT`. Retrying these methods is generally **not safe**.
+   * The following methods are considered idempotent: `GET`, `HEAD`, and `OPTIONS`. Retrying these methods is **safe** in the event of a network error or timeout.
+   *
+   * Any request that returns a `503 Service Unavailable` response is always safe to retry.
+   *
+   * Any request that returns a `423 Locked` response is safe to retry. `423 Locked` indicates that the resource is temporarily locked, for example, due to another operation in progress.
+   *
+   */
+  default: GeneralError;
 };
 
 export type ListProjectEndpointsResponse =
@@ -6356,6 +9850,24 @@ export type CreateProjectEndpointResponses = {
    * Created a compute endpoint
    */
   201: EndpointOperations;
+  /**
+   * General Error.
+   *
+   * The request may or may not be safe to retry, depending on the HTTP method, response status code,
+   * and whether a response was received.
+   *
+   * - If no response is returned from the API, a network error or timeout likely occurred.
+   * - In some cases, the request may have reached the server and been successfully processed, but the response failed to reach the client. As a result, retrying non-idempotent requests can lead to unintended results.
+   *
+   * The following HTTP methods are considered non-idempotent: `POST`, `PATCH`, `DELETE`, and `PUT`. Retrying these methods is generally **not safe**.
+   * The following methods are considered idempotent: `GET`, `HEAD`, and `OPTIONS`. Retrying these methods is **safe** in the event of a network error or timeout.
+   *
+   * Any request that returns a `503 Service Unavailable` response is always safe to retry.
+   *
+   * Any request that returns a `423 Locked` response is safe to retry. `423 Locked` indicates that the resource is temporarily locked, for example, due to another operation in progress.
+   *
+   */
+  default: GeneralError;
 };
 
 export type CreateProjectEndpointResponse =
@@ -6410,6 +9922,24 @@ export type DeleteProjectEndpointResponses = {
    * Returned if the endpoint doesn't exist or has already been deleted
    */
   204: void;
+  /**
+   * General Error.
+   *
+   * The request may or may not be safe to retry, depending on the HTTP method, response status code,
+   * and whether a response was received.
+   *
+   * - If no response is returned from the API, a network error or timeout likely occurred.
+   * - In some cases, the request may have reached the server and been successfully processed, but the response failed to reach the client. As a result, retrying non-idempotent requests can lead to unintended results.
+   *
+   * The following HTTP methods are considered non-idempotent: `POST`, `PATCH`, `DELETE`, and `PUT`. Retrying these methods is generally **not safe**.
+   * The following methods are considered idempotent: `GET`, `HEAD`, and `OPTIONS`. Retrying these methods is **safe** in the event of a network error or timeout.
+   *
+   * Any request that returns a `503 Service Unavailable` response is always safe to retry.
+   *
+   * Any request that returns a `423 Locked` response is safe to retry. `423 Locked` indicates that the resource is temporarily locked, for example, due to another operation in progress.
+   *
+   */
+  default: GeneralError;
 };
 
 export type DeleteProjectEndpointResponse =
@@ -6460,6 +9990,24 @@ export type GetProjectEndpointResponses = {
    * Returned information about the specified endpoint
    */
   200: EndpointResponse;
+  /**
+   * General Error.
+   *
+   * The request may or may not be safe to retry, depending on the HTTP method, response status code,
+   * and whether a response was received.
+   *
+   * - If no response is returned from the API, a network error or timeout likely occurred.
+   * - In some cases, the request may have reached the server and been successfully processed, but the response failed to reach the client. As a result, retrying non-idempotent requests can lead to unintended results.
+   *
+   * The following HTTP methods are considered non-idempotent: `POST`, `PATCH`, `DELETE`, and `PUT`. Retrying these methods is generally **not safe**.
+   * The following methods are considered idempotent: `GET`, `HEAD`, and `OPTIONS`. Retrying these methods is **safe** in the event of a network error or timeout.
+   *
+   * Any request that returns a `503 Service Unavailable` response is always safe to retry.
+   *
+   * Any request that returns a `423 Locked` response is safe to retry. `423 Locked` indicates that the resource is temporarily locked, for example, due to another operation in progress.
+   *
+   */
+  default: GeneralError;
 };
 
 export type GetProjectEndpointResponse =
@@ -6510,6 +10058,24 @@ export type UpdateProjectEndpointResponses = {
    * Updated the specified compute endpoint
    */
   200: EndpointOperations;
+  /**
+   * General Error.
+   *
+   * The request may or may not be safe to retry, depending on the HTTP method, response status code,
+   * and whether a response was received.
+   *
+   * - If no response is returned from the API, a network error or timeout likely occurred.
+   * - In some cases, the request may have reached the server and been successfully processed, but the response failed to reach the client. As a result, retrying non-idempotent requests can lead to unintended results.
+   *
+   * The following HTTP methods are considered non-idempotent: `POST`, `PATCH`, `DELETE`, and `PUT`. Retrying these methods is generally **not safe**.
+   * The following methods are considered idempotent: `GET`, `HEAD`, and `OPTIONS`. Retrying these methods is **safe** in the event of a network error or timeout.
+   *
+   * Any request that returns a `503 Service Unavailable` response is always safe to retry.
+   *
+   * Any request that returns a `423 Locked` response is safe to retry. `423 Locked` indicates that the resource is temporarily locked, for example, due to another operation in progress.
+   *
+   */
+  default: GeneralError;
 };
 
 export type UpdateProjectEndpointResponse =
@@ -6560,6 +10126,24 @@ export type StartProjectEndpointResponses = {
    * Started the specified compute endpoint
    */
   200: EndpointOperations;
+  /**
+   * General Error.
+   *
+   * The request may or may not be safe to retry, depending on the HTTP method, response status code,
+   * and whether a response was received.
+   *
+   * - If no response is returned from the API, a network error or timeout likely occurred.
+   * - In some cases, the request may have reached the server and been successfully processed, but the response failed to reach the client. As a result, retrying non-idempotent requests can lead to unintended results.
+   *
+   * The following HTTP methods are considered non-idempotent: `POST`, `PATCH`, `DELETE`, and `PUT`. Retrying these methods is generally **not safe**.
+   * The following methods are considered idempotent: `GET`, `HEAD`, and `OPTIONS`. Retrying these methods is **safe** in the event of a network error or timeout.
+   *
+   * Any request that returns a `503 Service Unavailable` response is always safe to retry.
+   *
+   * Any request that returns a `423 Locked` response is safe to retry. `423 Locked` indicates that the resource is temporarily locked, for example, due to another operation in progress.
+   *
+   */
+  default: GeneralError;
 };
 
 export type StartProjectEndpointResponse =
@@ -6610,6 +10194,24 @@ export type SuspendProjectEndpointResponses = {
    * Suspended the specified endpoint
    */
   200: EndpointOperations;
+  /**
+   * General Error.
+   *
+   * The request may or may not be safe to retry, depending on the HTTP method, response status code,
+   * and whether a response was received.
+   *
+   * - If no response is returned from the API, a network error or timeout likely occurred.
+   * - In some cases, the request may have reached the server and been successfully processed, but the response failed to reach the client. As a result, retrying non-idempotent requests can lead to unintended results.
+   *
+   * The following HTTP methods are considered non-idempotent: `POST`, `PATCH`, `DELETE`, and `PUT`. Retrying these methods is generally **not safe**.
+   * The following methods are considered idempotent: `GET`, `HEAD`, and `OPTIONS`. Retrying these methods is **safe** in the event of a network error or timeout.
+   *
+   * Any request that returns a `503 Service Unavailable` response is always safe to retry.
+   *
+   * Any request that returns a `423 Locked` response is safe to retry. `423 Locked` indicates that the resource is temporarily locked, for example, due to another operation in progress.
+   *
+   */
+  default: GeneralError;
 };
 
 export type SuspendProjectEndpointResponse =
@@ -6660,6 +10262,24 @@ export type RestartProjectEndpointResponses = {
    * Restarted endpoint
    */
   200: EndpointOperations;
+  /**
+   * General Error.
+   *
+   * The request may or may not be safe to retry, depending on the HTTP method, response status code,
+   * and whether a response was received.
+   *
+   * - If no response is returned from the API, a network error or timeout likely occurred.
+   * - In some cases, the request may have reached the server and been successfully processed, but the response failed to reach the client. As a result, retrying non-idempotent requests can lead to unintended results.
+   *
+   * The following HTTP methods are considered non-idempotent: `POST`, `PATCH`, `DELETE`, and `PUT`. Retrying these methods is generally **not safe**.
+   * The following methods are considered idempotent: `GET`, `HEAD`, and `OPTIONS`. Retrying these methods is **safe** in the event of a network error or timeout.
+   *
+   * Any request that returns a `503 Service Unavailable` response is always safe to retry.
+   *
+   * Any request that returns a `423 Locked` response is safe to retry. `423 Locked` indicates that the resource is temporarily locked, for example, due to another operation in progress.
+   *
+   */
+  default: GeneralError;
 };
 
 export type RestartProjectEndpointResponse =
@@ -6713,6 +10333,7 @@ export type GetConsumptionHistoryPerAccountData = {
      * Include metrics utilized in previous pricing models.
      * - **data_storage_bytes_hour**: The sum of the maximum observed storage values for each hour
      * for each project, which never decreases.
+     *
      *
      * @deprecated
      */
@@ -6784,6 +10405,24 @@ export type GetConsumptionHistoryPerAccountResponses = {
    * Returned consumption metrics for the Neon account
    */
   200: ConsumptionHistoryPerAccountResponse;
+  /**
+   * General Error.
+   *
+   * The request may or may not be safe to retry, depending on the HTTP method, response status code,
+   * and whether a response was received.
+   *
+   * - If no response is returned from the API, a network error or timeout likely occurred.
+   * - In some cases, the request may have reached the server and been successfully processed, but the response failed to reach the client. As a result, retrying non-idempotent requests can lead to unintended results.
+   *
+   * The following HTTP methods are considered non-idempotent: `POST`, `PATCH`, `DELETE`, and `PUT`. Retrying these methods is generally **not safe**.
+   * The following methods are considered idempotent: `GET`, `HEAD`, and `OPTIONS`. Retrying these methods is **safe** in the event of a network error or timeout.
+   *
+   * Any request that returns a `503 Service Unavailable` response is always safe to retry.
+   *
+   * Any request that returns a `423 Locked` response is safe to retry. `423 Locked` indicates that the resource is temporarily locked, for example, due to another operation in progress.
+   *
+   */
+  default: GeneralError;
 };
 
 export type GetConsumptionHistoryPerAccountResponse =
@@ -6854,6 +10493,7 @@ export type GetConsumptionHistoryPerProjectData = {
      * Include metrics utilized in previous pricing models.
      * - **data_storage_bytes_hour**: The sum of the maximum observed storage values for each hour,
      * which never decreases.
+     *
      *
      * @deprecated
      */
@@ -6927,6 +10567,24 @@ export type GetConsumptionHistoryPerProjectResponses = {
    * Returned project consumption metrics for the Neon account
    */
   200: ConsumptionHistoryPerProjectResponse & PaginationResponse;
+  /**
+   * General Error.
+   *
+   * The request may or may not be safe to retry, depending on the HTTP method, response status code,
+   * and whether a response was received.
+   *
+   * - If no response is returned from the API, a network error or timeout likely occurred.
+   * - In some cases, the request may have reached the server and been successfully processed, but the response failed to reach the client. As a result, retrying non-idempotent requests can lead to unintended results.
+   *
+   * The following HTTP methods are considered non-idempotent: `POST`, `PATCH`, `DELETE`, and `PUT`. Retrying these methods is generally **not safe**.
+   * The following methods are considered idempotent: `GET`, `HEAD`, and `OPTIONS`. Retrying these methods is **safe** in the event of a network error or timeout.
+   *
+   * Any request that returns a `503 Service Unavailable` response is always safe to retry.
+   *
+   * Any request that returns a `423 Locked` response is safe to retry. `423 Locked` indicates that the resource is temporarily locked, for example, due to another operation in progress.
+   *
+   */
+  default: GeneralError;
 };
 
 export type GetConsumptionHistoryPerProjectResponse =
@@ -6973,6 +10631,24 @@ export type GetOrganizationResponses = {
    * Returned information about the organization
    */
   200: Organization;
+  /**
+   * General Error.
+   *
+   * The request may or may not be safe to retry, depending on the HTTP method, response status code,
+   * and whether a response was received.
+   *
+   * - If no response is returned from the API, a network error or timeout likely occurred.
+   * - In some cases, the request may have reached the server and been successfully processed, but the response failed to reach the client. As a result, retrying non-idempotent requests can lead to unintended results.
+   *
+   * The following HTTP methods are considered non-idempotent: `POST`, `PATCH`, `DELETE`, and `PUT`. Retrying these methods is generally **not safe**.
+   * The following methods are considered idempotent: `GET`, `HEAD`, and `OPTIONS`. Retrying these methods is **safe** in the event of a network error or timeout.
+   *
+   * Any request that returns a `503 Service Unavailable` response is always safe to retry.
+   *
+   * Any request that returns a `423 Locked` response is safe to retry. `423 Locked` indicates that the resource is temporarily locked, for example, due to another operation in progress.
+   *
+   */
+  default: GeneralError;
 };
 
 export type GetOrganizationResponse =
@@ -7019,6 +10695,24 @@ export type ListOrgApiKeysResponses = {
    * Returned the API keys for the specified organization
    */
   200: Array<OrgApiKeysListResponseItem>;
+  /**
+   * General Error.
+   *
+   * The request may or may not be safe to retry, depending on the HTTP method, response status code,
+   * and whether a response was received.
+   *
+   * - If no response is returned from the API, a network error or timeout likely occurred.
+   * - In some cases, the request may have reached the server and been successfully processed, but the response failed to reach the client. As a result, retrying non-idempotent requests can lead to unintended results.
+   *
+   * The following HTTP methods are considered non-idempotent: `POST`, `PATCH`, `DELETE`, and `PUT`. Retrying these methods is generally **not safe**.
+   * The following methods are considered idempotent: `GET`, `HEAD`, and `OPTIONS`. Retrying these methods is **safe** in the event of a network error or timeout.
+   *
+   * Any request that returns a `503 Service Unavailable` response is always safe to retry.
+   *
+   * Any request that returns a `423 Locked` response is safe to retry. `423 Locked` indicates that the resource is temporarily locked, for example, due to another operation in progress.
+   *
+   */
+  default: GeneralError;
 };
 
 export type ListOrgApiKeysResponse =
@@ -7065,6 +10759,24 @@ export type CreateOrgApiKeyResponses = {
    * Created an organization API key
    */
   200: OrgApiKeyCreateResponse;
+  /**
+   * General Error.
+   *
+   * The request may or may not be safe to retry, depending on the HTTP method, response status code,
+   * and whether a response was received.
+   *
+   * - If no response is returned from the API, a network error or timeout likely occurred.
+   * - In some cases, the request may have reached the server and been successfully processed, but the response failed to reach the client. As a result, retrying non-idempotent requests can lead to unintended results.
+   *
+   * The following HTTP methods are considered non-idempotent: `POST`, `PATCH`, `DELETE`, and `PUT`. Retrying these methods is generally **not safe**.
+   * The following methods are considered idempotent: `GET`, `HEAD`, and `OPTIONS`. Retrying these methods is **safe** in the event of a network error or timeout.
+   *
+   * Any request that returns a `503 Service Unavailable` response is always safe to retry.
+   *
+   * Any request that returns a `423 Locked` response is safe to retry. `423 Locked` indicates that the resource is temporarily locked, for example, due to another operation in progress.
+   *
+   */
+  default: GeneralError;
 };
 
 export type CreateOrgApiKeyResponse =
@@ -7115,6 +10827,24 @@ export type RevokeOrgApiKeyResponses = {
    * Revoked the specified organization API key
    */
   200: OrgApiKeyRevokeResponse;
+  /**
+   * General Error.
+   *
+   * The request may or may not be safe to retry, depending on the HTTP method, response status code,
+   * and whether a response was received.
+   *
+   * - If no response is returned from the API, a network error or timeout likely occurred.
+   * - In some cases, the request may have reached the server and been successfully processed, but the response failed to reach the client. As a result, retrying non-idempotent requests can lead to unintended results.
+   *
+   * The following HTTP methods are considered non-idempotent: `POST`, `PATCH`, `DELETE`, and `PUT`. Retrying these methods is generally **not safe**.
+   * The following methods are considered idempotent: `GET`, `HEAD`, and `OPTIONS`. Retrying these methods is **safe** in the event of a network error or timeout.
+   *
+   * Any request that returns a `503 Service Unavailable` response is always safe to retry.
+   *
+   * Any request that returns a `423 Locked` response is safe to retry. `423 Locked` indicates that the resource is temporarily locked, for example, due to another operation in progress.
+   *
+   */
+  default: GeneralError;
 };
 
 export type RevokeOrgApiKeyResponse =
@@ -7161,6 +10891,24 @@ export type GetOrganizationMembersResponses = {
    * Returned information about organization members
    */
   200: OrganizationMembersResponse;
+  /**
+   * General Error.
+   *
+   * The request may or may not be safe to retry, depending on the HTTP method, response status code,
+   * and whether a response was received.
+   *
+   * - If no response is returned from the API, a network error or timeout likely occurred.
+   * - In some cases, the request may have reached the server and been successfully processed, but the response failed to reach the client. As a result, retrying non-idempotent requests can lead to unintended results.
+   *
+   * The following HTTP methods are considered non-idempotent: `POST`, `PATCH`, `DELETE`, and `PUT`. Retrying these methods is generally **not safe**.
+   * The following methods are considered idempotent: `GET`, `HEAD`, and `OPTIONS`. Retrying these methods is **safe** in the event of a network error or timeout.
+   *
+   * Any request that returns a `503 Service Unavailable` response is always safe to retry.
+   *
+   * Any request that returns a `423 Locked` response is safe to retry. `423 Locked` indicates that the resource is temporarily locked, for example, due to another operation in progress.
+   *
+   */
+  default: GeneralError;
 };
 
 export type GetOrganizationMembersResponse =
@@ -7211,6 +10959,24 @@ export type RemoveOrganizationMemberResponses = {
    * Removed organization member
    */
   200: EmptyResponse;
+  /**
+   * General Error.
+   *
+   * The request may or may not be safe to retry, depending on the HTTP method, response status code,
+   * and whether a response was received.
+   *
+   * - If no response is returned from the API, a network error or timeout likely occurred.
+   * - In some cases, the request may have reached the server and been successfully processed, but the response failed to reach the client. As a result, retrying non-idempotent requests can lead to unintended results.
+   *
+   * The following HTTP methods are considered non-idempotent: `POST`, `PATCH`, `DELETE`, and `PUT`. Retrying these methods is generally **not safe**.
+   * The following methods are considered idempotent: `GET`, `HEAD`, and `OPTIONS`. Retrying these methods is **safe** in the event of a network error or timeout.
+   *
+   * Any request that returns a `503 Service Unavailable` response is always safe to retry.
+   *
+   * Any request that returns a `423 Locked` response is safe to retry. `423 Locked` indicates that the resource is temporarily locked, for example, due to another operation in progress.
+   *
+   */
+  default: GeneralError;
 };
 
 export type RemoveOrganizationMemberResponse =
@@ -7261,6 +11027,24 @@ export type GetOrganizationMemberResponses = {
    * Returned information about the organization member
    */
   200: Member;
+  /**
+   * General Error.
+   *
+   * The request may or may not be safe to retry, depending on the HTTP method, response status code,
+   * and whether a response was received.
+   *
+   * - If no response is returned from the API, a network error or timeout likely occurred.
+   * - In some cases, the request may have reached the server and been successfully processed, but the response failed to reach the client. As a result, retrying non-idempotent requests can lead to unintended results.
+   *
+   * The following HTTP methods are considered non-idempotent: `POST`, `PATCH`, `DELETE`, and `PUT`. Retrying these methods is generally **not safe**.
+   * The following methods are considered idempotent: `GET`, `HEAD`, and `OPTIONS`. Retrying these methods is **safe** in the event of a network error or timeout.
+   *
+   * Any request that returns a `503 Service Unavailable` response is always safe to retry.
+   *
+   * Any request that returns a `423 Locked` response is safe to retry. `423 Locked` indicates that the resource is temporarily locked, for example, due to another operation in progress.
+   *
+   */
+  default: GeneralError;
 };
 
 export type GetOrganizationMemberResponse =
@@ -7311,6 +11095,24 @@ export type UpdateOrganizationMemberResponses = {
    * The updated organization member
    */
   200: Member;
+  /**
+   * General Error.
+   *
+   * The request may or may not be safe to retry, depending on the HTTP method, response status code,
+   * and whether a response was received.
+   *
+   * - If no response is returned from the API, a network error or timeout likely occurred.
+   * - In some cases, the request may have reached the server and been successfully processed, but the response failed to reach the client. As a result, retrying non-idempotent requests can lead to unintended results.
+   *
+   * The following HTTP methods are considered non-idempotent: `POST`, `PATCH`, `DELETE`, and `PUT`. Retrying these methods is generally **not safe**.
+   * The following methods are considered idempotent: `GET`, `HEAD`, and `OPTIONS`. Retrying these methods is **safe** in the event of a network error or timeout.
+   *
+   * Any request that returns a `503 Service Unavailable` response is always safe to retry.
+   *
+   * Any request that returns a `423 Locked` response is safe to retry. `423 Locked` indicates that the resource is temporarily locked, for example, due to another operation in progress.
+   *
+   */
+  default: GeneralError;
 };
 
 export type UpdateOrganizationMemberResponse =
@@ -7357,6 +11159,24 @@ export type GetOrganizationInvitationsResponses = {
    * Returned information about the organization invitations
    */
   200: OrganizationInvitationsResponse;
+  /**
+   * General Error.
+   *
+   * The request may or may not be safe to retry, depending on the HTTP method, response status code,
+   * and whether a response was received.
+   *
+   * - If no response is returned from the API, a network error or timeout likely occurred.
+   * - In some cases, the request may have reached the server and been successfully processed, but the response failed to reach the client. As a result, retrying non-idempotent requests can lead to unintended results.
+   *
+   * The following HTTP methods are considered non-idempotent: `POST`, `PATCH`, `DELETE`, and `PUT`. Retrying these methods is generally **not safe**.
+   * The following methods are considered idempotent: `GET`, `HEAD`, and `OPTIONS`. Retrying these methods is **safe** in the event of a network error or timeout.
+   *
+   * Any request that returns a `503 Service Unavailable` response is always safe to retry.
+   *
+   * Any request that returns a `423 Locked` response is safe to retry. `423 Locked` indicates that the resource is temporarily locked, for example, due to another operation in progress.
+   *
+   */
+  default: GeneralError;
 };
 
 export type GetOrganizationInvitationsResponse =
@@ -7403,6 +11223,24 @@ export type CreateOrganizationInvitationsResponses = {
    * The created organization invitation
    */
   200: OrganizationInvitationsResponse;
+  /**
+   * General Error.
+   *
+   * The request may or may not be safe to retry, depending on the HTTP method, response status code,
+   * and whether a response was received.
+   *
+   * - If no response is returned from the API, a network error or timeout likely occurred.
+   * - In some cases, the request may have reached the server and been successfully processed, but the response failed to reach the client. As a result, retrying non-idempotent requests can lead to unintended results.
+   *
+   * The following HTTP methods are considered non-idempotent: `POST`, `PATCH`, `DELETE`, and `PUT`. Retrying these methods is generally **not safe**.
+   * The following methods are considered idempotent: `GET`, `HEAD`, and `OPTIONS`. Retrying these methods is **safe** in the event of a network error or timeout.
+   *
+   * Any request that returns a `503 Service Unavailable` response is always safe to retry.
+   *
+   * Any request that returns a `423 Locked` response is safe to retry. `423 Locked` indicates that the resource is temporarily locked, for example, due to another operation in progress.
+   *
+   */
+  default: GeneralError;
 };
 
 export type CreateOrganizationInvitationsResponse =
@@ -7457,6 +11295,24 @@ export type TransferProjectsFromOrgToOrgResponses = {
    * Projects successfully transferred from organization to organization
    */
   200: EmptyResponse;
+  /**
+   * General Error.
+   *
+   * The request may or may not be safe to retry, depending on the HTTP method, response status code,
+   * and whether a response was received.
+   *
+   * - If no response is returned from the API, a network error or timeout likely occurred.
+   * - In some cases, the request may have reached the server and been successfully processed, but the response failed to reach the client. As a result, retrying non-idempotent requests can lead to unintended results.
+   *
+   * The following HTTP methods are considered non-idempotent: `POST`, `PATCH`, `DELETE`, and `PUT`. Retrying these methods is generally **not safe**.
+   * The following methods are considered idempotent: `GET`, `HEAD`, and `OPTIONS`. Retrying these methods is **safe** in the event of a network error or timeout.
+   *
+   * Any request that returns a `503 Service Unavailable` response is always safe to retry.
+   *
+   * Any request that returns a `423 Locked` response is safe to retry. `423 Locked` indicates that the resource is temporarily locked, for example, due to another operation in progress.
+   *
+   */
+  default: GeneralError;
 };
 
 export type TransferProjectsFromOrgToOrgResponse =
@@ -7503,6 +11359,24 @@ export type ListOrganizationVpcEndpointsAllRegionsResponses = {
    * The list of configured VPC endpoint IDs for the specified organization across all regions
    */
   200: VpcEndpointsWithRegionResponse;
+  /**
+   * General Error.
+   *
+   * The request may or may not be safe to retry, depending on the HTTP method, response status code,
+   * and whether a response was received.
+   *
+   * - If no response is returned from the API, a network error or timeout likely occurred.
+   * - In some cases, the request may have reached the server and been successfully processed, but the response failed to reach the client. As a result, retrying non-idempotent requests can lead to unintended results.
+   *
+   * The following HTTP methods are considered non-idempotent: `POST`, `PATCH`, `DELETE`, and `PUT`. Retrying these methods is generally **not safe**.
+   * The following methods are considered idempotent: `GET`, `HEAD`, and `OPTIONS`. Retrying these methods is **safe** in the event of a network error or timeout.
+   *
+   * Any request that returns a `503 Service Unavailable` response is always safe to retry.
+   *
+   * Any request that returns a `423 Locked` response is safe to retry. `423 Locked` indicates that the resource is temporarily locked, for example, due to another operation in progress.
+   *
+   */
+  default: GeneralError;
 };
 
 export type ListOrganizationVpcEndpointsAllRegionsResponse =
@@ -7553,6 +11427,24 @@ export type ListOrganizationVpcEndpointsResponses = {
    * The list of configured VPC endpoint IDs for the specified organization
    */
   200: VpcEndpointsResponse;
+  /**
+   * General Error.
+   *
+   * The request may or may not be safe to retry, depending on the HTTP method, response status code,
+   * and whether a response was received.
+   *
+   * - If no response is returned from the API, a network error or timeout likely occurred.
+   * - In some cases, the request may have reached the server and been successfully processed, but the response failed to reach the client. As a result, retrying non-idempotent requests can lead to unintended results.
+   *
+   * The following HTTP methods are considered non-idempotent: `POST`, `PATCH`, `DELETE`, and `PUT`. Retrying these methods is generally **not safe**.
+   * The following methods are considered idempotent: `GET`, `HEAD`, and `OPTIONS`. Retrying these methods is **safe** in the event of a network error or timeout.
+   *
+   * Any request that returns a `503 Service Unavailable` response is always safe to retry.
+   *
+   * Any request that returns a `423 Locked` response is safe to retry. `423 Locked` indicates that the resource is temporarily locked, for example, due to another operation in progress.
+   *
+   */
+  default: GeneralError;
 };
 
 export type ListOrganizationVpcEndpointsResponse =
@@ -7609,6 +11501,24 @@ export type DeleteOrganizationVpcEndpointResponses = {
    * Deleted the VPC endpoint from the specified Neon organization
    */
   200: unknown;
+  /**
+   * General Error.
+   *
+   * The request may or may not be safe to retry, depending on the HTTP method, response status code,
+   * and whether a response was received.
+   *
+   * - If no response is returned from the API, a network error or timeout likely occurred.
+   * - In some cases, the request may have reached the server and been successfully processed, but the response failed to reach the client. As a result, retrying non-idempotent requests can lead to unintended results.
+   *
+   * The following HTTP methods are considered non-idempotent: `POST`, `PATCH`, `DELETE`, and `PUT`. Retrying these methods is generally **not safe**.
+   * The following methods are considered idempotent: `GET`, `HEAD`, and `OPTIONS`. Retrying these methods is **safe** in the event of a network error or timeout.
+   *
+   * Any request that returns a `503 Service Unavailable` response is always safe to retry.
+   *
+   * Any request that returns a `423 Locked` response is safe to retry. `423 Locked` indicates that the resource is temporarily locked, for example, due to another operation in progress.
+   *
+   */
+  default: GeneralError;
 };
 
 export type DeleteOrganizationVpcEndpointResponse =
@@ -7665,6 +11575,24 @@ export type GetOrganizationVpcEndpointDetailsResponses = {
    * Returned the current status and configuration details of the specified VPC endpoint.
    */
   200: VpcEndpointDetails;
+  /**
+   * General Error.
+   *
+   * The request may or may not be safe to retry, depending on the HTTP method, response status code,
+   * and whether a response was received.
+   *
+   * - If no response is returned from the API, a network error or timeout likely occurred.
+   * - In some cases, the request may have reached the server and been successfully processed, but the response failed to reach the client. As a result, retrying non-idempotent requests can lead to unintended results.
+   *
+   * The following HTTP methods are considered non-idempotent: `POST`, `PATCH`, `DELETE`, and `PUT`. Retrying these methods is generally **not safe**.
+   * The following methods are considered idempotent: `GET`, `HEAD`, and `OPTIONS`. Retrying these methods is **safe** in the event of a network error or timeout.
+   *
+   * Any request that returns a `503 Service Unavailable` response is always safe to retry.
+   *
+   * Any request that returns a `423 Locked` response is safe to retry. `423 Locked` indicates that the resource is temporarily locked, for example, due to another operation in progress.
+   *
+   */
+  default: GeneralError;
 };
 
 export type GetOrganizationVpcEndpointDetailsResponse =
@@ -7721,6 +11649,24 @@ export type AssignOrganizationVpcEndpointResponses = {
    * Assigned the VPC endpoint to the specified Neon organization
    */
   200: unknown;
+  /**
+   * General Error.
+   *
+   * The request may or may not be safe to retry, depending on the HTTP method, response status code,
+   * and whether a response was received.
+   *
+   * - If no response is returned from the API, a network error or timeout likely occurred.
+   * - In some cases, the request may have reached the server and been successfully processed, but the response failed to reach the client. As a result, retrying non-idempotent requests can lead to unintended results.
+   *
+   * The following HTTP methods are considered non-idempotent: `POST`, `PATCH`, `DELETE`, and `PUT`. Retrying these methods is generally **not safe**.
+   * The following methods are considered idempotent: `GET`, `HEAD`, and `OPTIONS`. Retrying these methods is **safe** in the event of a network error or timeout.
+   *
+   * Any request that returns a `503 Service Unavailable` response is always safe to retry.
+   *
+   * Any request that returns a `423 Locked` response is safe to retry. `423 Locked` indicates that the resource is temporarily locked, for example, due to another operation in progress.
+   *
+   */
+  default: GeneralError;
 };
 
 export type AssignOrganizationVpcEndpointResponse =
@@ -7762,6 +11708,24 @@ export type GetActiveRegionsResponses = {
    * The list of active regions
    */
   200: ActiveRegionsResponse;
+  /**
+   * General Error.
+   *
+   * The request may or may not be safe to retry, depending on the HTTP method, response status code,
+   * and whether a response was received.
+   *
+   * - If no response is returned from the API, a network error or timeout likely occurred.
+   * - In some cases, the request may have reached the server and been successfully processed, but the response failed to reach the client. As a result, retrying non-idempotent requests can lead to unintended results.
+   *
+   * The following HTTP methods are considered non-idempotent: `POST`, `PATCH`, `DELETE`, and `PUT`. Retrying these methods is generally **not safe**.
+   * The following methods are considered idempotent: `GET`, `HEAD`, and `OPTIONS`. Retrying these methods is **safe** in the event of a network error or timeout.
+   *
+   * Any request that returns a `503 Service Unavailable` response is always safe to retry.
+   *
+   * Any request that returns a `423 Locked` response is safe to retry. `423 Locked` indicates that the resource is temporarily locked, for example, due to another operation in progress.
+   *
+   */
+  default: GeneralError;
 };
 
 export type GetActiveRegionsResponse =
@@ -7804,6 +11768,24 @@ export type GetCurrentUserInfoResponses = {
    *
    */
   200: CurrentUserInfoResponse;
+  /**
+   * General Error.
+   *
+   * The request may or may not be safe to retry, depending on the HTTP method, response status code,
+   * and whether a response was received.
+   *
+   * - If no response is returned from the API, a network error or timeout likely occurred.
+   * - In some cases, the request may have reached the server and been successfully processed, but the response failed to reach the client. As a result, retrying non-idempotent requests can lead to unintended results.
+   *
+   * The following HTTP methods are considered non-idempotent: `POST`, `PATCH`, `DELETE`, and `PUT`. Retrying these methods is generally **not safe**.
+   * The following methods are considered idempotent: `GET`, `HEAD`, and `OPTIONS`. Retrying these methods is **safe** in the event of a network error or timeout.
+   *
+   * Any request that returns a `503 Service Unavailable` response is always safe to retry.
+   *
+   * Any request that returns a `423 Locked` response is safe to retry. `423 Locked` indicates that the resource is temporarily locked, for example, due to another operation in progress.
+   *
+   */
+  default: GeneralError;
 };
 
 export type GetCurrentUserInfoResponse =
@@ -7846,6 +11828,24 @@ export type GetCurrentUserOrganizationsResponses = {
    *
    */
   200: OrganizationsResponse;
+  /**
+   * General Error.
+   *
+   * The request may or may not be safe to retry, depending on the HTTP method, response status code,
+   * and whether a response was received.
+   *
+   * - If no response is returned from the API, a network error or timeout likely occurred.
+   * - In some cases, the request may have reached the server and been successfully processed, but the response failed to reach the client. As a result, retrying non-idempotent requests can lead to unintended results.
+   *
+   * The following HTTP methods are considered non-idempotent: `POST`, `PATCH`, `DELETE`, and `PUT`. Retrying these methods is generally **not safe**.
+   * The following methods are considered idempotent: `GET`, `HEAD`, and `OPTIONS`. Retrying these methods is **safe** in the event of a network error or timeout.
+   *
+   * Any request that returns a `503 Service Unavailable` response is always safe to retry.
+   *
+   * Any request that returns a `423 Locked` response is safe to retry. `423 Locked` indicates that the resource is temporarily locked, for example, due to another operation in progress.
+   *
+   */
+  default: GeneralError;
 };
 
 export type GetCurrentUserOrganizationsResponse =
@@ -7895,6 +11895,24 @@ export type TransferProjectsFromUserToOrgResponses = {
    * Projects successfully transferred from personal account to organization
    */
   200: EmptyResponse;
+  /**
+   * General Error.
+   *
+   * The request may or may not be safe to retry, depending on the HTTP method, response status code,
+   * and whether a response was received.
+   *
+   * - If no response is returned from the API, a network error or timeout likely occurred.
+   * - In some cases, the request may have reached the server and been successfully processed, but the response failed to reach the client. As a result, retrying non-idempotent requests can lead to unintended results.
+   *
+   * The following HTTP methods are considered non-idempotent: `POST`, `PATCH`, `DELETE`, and `PUT`. Retrying these methods is generally **not safe**.
+   * The following methods are considered idempotent: `GET`, `HEAD`, and `OPTIONS`. Retrying these methods is **safe** in the event of a network error or timeout.
+   *
+   * Any request that returns a `503 Service Unavailable` response is always safe to retry.
+   *
+   * Any request that returns a `423 Locked` response is safe to retry. `423 Locked` indicates that the resource is temporarily locked, for example, due to another operation in progress.
+   *
+   */
+  default: GeneralError;
 };
 
 export type TransferProjectsFromUserToOrgResponse =
@@ -7937,6 +11955,24 @@ export type GetAuthDetailsResponses = {
    *
    */
   200: AuthDetailsResponse;
+  /**
+   * General Error.
+   *
+   * The request may or may not be safe to retry, depending on the HTTP method, response status code,
+   * and whether a response was received.
+   *
+   * - If no response is returned from the API, a network error or timeout likely occurred.
+   * - In some cases, the request may have reached the server and been successfully processed, but the response failed to reach the client. As a result, retrying non-idempotent requests can lead to unintended results.
+   *
+   * The following HTTP methods are considered non-idempotent: `POST`, `PATCH`, `DELETE`, and `PUT`. Retrying these methods is generally **not safe**.
+   * The following methods are considered idempotent: `GET`, `HEAD`, and `OPTIONS`. Retrying these methods is **safe** in the event of a network error or timeout.
+   *
+   * Any request that returns a `503 Service Unavailable` response is always safe to retry.
+   *
+   * Any request that returns a `423 Locked` response is safe to retry. `423 Locked` indicates that the resource is temporarily locked, for example, due to another operation in progress.
+   *
+   */
+  default: GeneralError;
 };
 
 export type GetAuthDetailsResponse =
@@ -8146,6 +12182,24 @@ export type DeleteSnapshotResponses = {
    * OK
    */
   202: OperationsResponse;
+  /**
+   * General Error.
+   *
+   * The request may or may not be safe to retry, depending on the HTTP method, response status code,
+   * and whether a response was received.
+   *
+   * - If no response is returned from the API, a network error or timeout likely occurred.
+   * - In some cases, the request may have reached the server and been successfully processed, but the response failed to reach the client. As a result, retrying non-idempotent requests can lead to unintended results.
+   *
+   * The following HTTP methods are considered non-idempotent: `POST`, `PATCH`, `DELETE`, and `PUT`. Retrying these methods is generally **not safe**.
+   * The following methods are considered idempotent: `GET`, `HEAD`, and `OPTIONS`. Retrying these methods is **safe** in the event of a network error or timeout.
+   *
+   * Any request that returns a `503 Service Unavailable` response is always safe to retry.
+   *
+   * Any request that returns a `423 Locked` response is safe to retry. `423 Locked` indicates that the resource is temporarily locked, for example, due to another operation in progress.
+   *
+   */
+  default: GeneralError;
 };
 
 export type DeleteSnapshotResponse =
@@ -8257,7 +12311,11 @@ export type RestoreSnapshotData = {
   };
   query?: {
     /**
+     * DEPRECATED. Use the `name` field in the request body instead.
      * A name for the newly restored branch. If omitted, a default name will be generated.
+     *
+     *
+     * @deprecated
      */
     name?: string;
   };
@@ -8293,7 +12351,161 @@ export type RestoreSnapshotResponses = {
    * Branch restored from snapshot and its operations.
    */
   200: BranchResponse & EndpointsOptionalResponse & OperationsResponse;
+  /**
+   * General Error.
+   *
+   * The request may or may not be safe to retry, depending on the HTTP method, response status code,
+   * and whether a response was received.
+   *
+   * - If no response is returned from the API, a network error or timeout likely occurred.
+   * - In some cases, the request may have reached the server and been successfully processed, but the response failed to reach the client. As a result, retrying non-idempotent requests can lead to unintended results.
+   *
+   * The following HTTP methods are considered non-idempotent: `POST`, `PATCH`, `DELETE`, and `PUT`. Retrying these methods is generally **not safe**.
+   * The following methods are considered idempotent: `GET`, `HEAD`, and `OPTIONS`. Retrying these methods is **safe** in the event of a network error or timeout.
+   *
+   * Any request that returns a `503 Service Unavailable` response is always safe to retry.
+   *
+   * Any request that returns a `423 Locked` response is safe to retry. `423 Locked` indicates that the resource is temporarily locked, for example, due to another operation in progress.
+   *
+   */
+  default: GeneralError;
 };
 
 export type RestoreSnapshotResponse =
   RestoreSnapshotResponses[keyof RestoreSnapshotResponses];
+
+export type GetSnapshotScheduleData = {
+  body?: never;
+  path: {
+    /**
+     * The Neon project ID
+     */
+    project_id: string;
+    /**
+     * The branch ID
+     */
+    branch_id: string;
+  };
+  query?: never;
+  url: "/projects/{project_id}/branches/{branch_id}/backup_schedule";
+};
+
+export type GetSnapshotScheduleErrors = {
+  /**
+   * General Error.
+   *
+   * The request may or may not be safe to retry, depending on the HTTP method, response status code,
+   * and whether a response was received.
+   *
+   * - If no response is returned from the API, a network error or timeout likely occurred.
+   * - In some cases, the request may have reached the server and been successfully processed, but the response failed to reach the client. As a result, retrying non-idempotent requests can lead to unintended results.
+   *
+   * The following HTTP methods are considered non-idempotent: `POST`, `PATCH`, `DELETE`, and `PUT`. Retrying these methods is generally **not safe**.
+   * The following methods are considered idempotent: `GET`, `HEAD`, and `OPTIONS`. Retrying these methods is **safe** in the event of a network error or timeout.
+   *
+   * Any request that returns a `503 Service Unavailable` response is always safe to retry.
+   *
+   * Any request that returns a `423 Locked` response is safe to retry. `423 Locked` indicates that the resource is temporarily locked, for example, due to another operation in progress.
+   *
+   */
+  default: GeneralError;
+};
+
+export type GetSnapshotScheduleError =
+  GetSnapshotScheduleErrors[keyof GetSnapshotScheduleErrors];
+
+export type GetSnapshotScheduleResponses = {
+  /**
+   * Schedule of frequencies to create snapshots
+   */
+  200: BackupSchedule;
+  /**
+   * General Error.
+   *
+   * The request may or may not be safe to retry, depending on the HTTP method, response status code,
+   * and whether a response was received.
+   *
+   * - If no response is returned from the API, a network error or timeout likely occurred.
+   * - In some cases, the request may have reached the server and been successfully processed, but the response failed to reach the client. As a result, retrying non-idempotent requests can lead to unintended results.
+   *
+   * The following HTTP methods are considered non-idempotent: `POST`, `PATCH`, `DELETE`, and `PUT`. Retrying these methods is generally **not safe**.
+   * The following methods are considered idempotent: `GET`, `HEAD`, and `OPTIONS`. Retrying these methods is **safe** in the event of a network error or timeout.
+   *
+   * Any request that returns a `503 Service Unavailable` response is always safe to retry.
+   *
+   * Any request that returns a `423 Locked` response is safe to retry. `423 Locked` indicates that the resource is temporarily locked, for example, due to another operation in progress.
+   *
+   */
+  default: GeneralError;
+};
+
+export type GetSnapshotScheduleResponse =
+  GetSnapshotScheduleResponses[keyof GetSnapshotScheduleResponses];
+
+export type SetSnapshotScheduleData = {
+  body: BackupSchedule;
+  path: {
+    /**
+     * The Neon project ID
+     */
+    project_id: string;
+    /**
+     * The branch ID
+     */
+    branch_id: string;
+  };
+  query?: never;
+  url: "/projects/{project_id}/branches/{branch_id}/backup_schedule";
+};
+
+export type SetSnapshotScheduleErrors = {
+  /**
+   * General Error.
+   *
+   * The request may or may not be safe to retry, depending on the HTTP method, response status code,
+   * and whether a response was received.
+   *
+   * - If no response is returned from the API, a network error or timeout likely occurred.
+   * - In some cases, the request may have reached the server and been successfully processed, but the response failed to reach the client. As a result, retrying non-idempotent requests can lead to unintended results.
+   *
+   * The following HTTP methods are considered non-idempotent: `POST`, `PATCH`, `DELETE`, and `PUT`. Retrying these methods is generally **not safe**.
+   * The following methods are considered idempotent: `GET`, `HEAD`, and `OPTIONS`. Retrying these methods is **safe** in the event of a network error or timeout.
+   *
+   * Any request that returns a `503 Service Unavailable` response is always safe to retry.
+   *
+   * Any request that returns a `423 Locked` response is safe to retry. `423 Locked` indicates that the resource is temporarily locked, for example, due to another operation in progress.
+   *
+   */
+  default: GeneralError;
+};
+
+export type SetSnapshotScheduleError =
+  SetSnapshotScheduleErrors[keyof SetSnapshotScheduleErrors];
+
+export type SetSnapshotScheduleResponses = {
+  /**
+   * Empty response
+   */
+  200: EmptyResponse;
+  /**
+   * General Error.
+   *
+   * The request may or may not be safe to retry, depending on the HTTP method, response status code,
+   * and whether a response was received.
+   *
+   * - If no response is returned from the API, a network error or timeout likely occurred.
+   * - In some cases, the request may have reached the server and been successfully processed, but the response failed to reach the client. As a result, retrying non-idempotent requests can lead to unintended results.
+   *
+   * The following HTTP methods are considered non-idempotent: `POST`, `PATCH`, `DELETE`, and `PUT`. Retrying these methods is generally **not safe**.
+   * The following methods are considered idempotent: `GET`, `HEAD`, and `OPTIONS`. Retrying these methods is **safe** in the event of a network error or timeout.
+   *
+   * Any request that returns a `503 Service Unavailable` response is always safe to retry.
+   *
+   * Any request that returns a `423 Locked` response is safe to retry. `423 Locked` indicates that the resource is temporarily locked, for example, due to another operation in progress.
+   *
+   */
+  default: GeneralError;
+};
+
+export type SetSnapshotScheduleResponse =
+  SetSnapshotScheduleResponses[keyof SetSnapshotScheduleResponses];

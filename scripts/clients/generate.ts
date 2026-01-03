@@ -1,8 +1,4 @@
-import {
-  createClient,
-  defineConfig,
-  type UserConfig,
-} from "@hey-api/openapi-ts";
+import { createClient, type UserConfig } from "@hey-api/openapi-ts";
 import fs from "node:fs/promises";
 import path from "pathe";
 import { patchNeonResponseTypes } from "./neon.ts";
@@ -16,13 +12,15 @@ export const clients = [
 
 export const generate = async () => {
   // 1. Generate clients
-  for (const client of clients) {
-    const input = (await import(`./${client}.ts`)) as {
-      default: UserConfig;
-    };
-    const config = await defineConfig(input.default);
-    await createClient(config);
-  }
+  const configs = await Promise.all(
+    clients.map(async (client) => {
+      const input = (await import(`./${client}.ts`)) as {
+        default: UserConfig;
+      };
+      return input.default;
+    }),
+  );
+  await createClient(configs);
 
   // 2. Move shared code to util/api
   const $ = Bun.$.cwd(path.join(process.cwd(), "alchemy"));

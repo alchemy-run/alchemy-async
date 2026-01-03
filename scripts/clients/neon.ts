@@ -7,22 +7,22 @@ const spec = await fetch("https://neon.tech/api_spec/release/v2.json").then(
 export default {
   input: spec as any,
   output: {
+    indexFile: false,
     path: "alchemy/src/neon/api",
   },
   plugins: [
     {
-      name: "@hey-api/typescript",
-      exportFromIndex: false,
-    },
-    {
-      name: "@hey-api/sdk",
-      instance: "NeonClient",
-      exportFromIndex: false,
-      auth: false,
-    },
-    {
       name: "@hey-api/client-fetch",
       throwOnError: true,
+    },
+    "@hey-api/typescript",
+    {
+      name: "@hey-api/sdk",
+      auth: false,
+      operations: {
+        containerName: "NeonClient",
+        strategy: "single",
+      },
     },
   ],
 } satisfies UserConfig;

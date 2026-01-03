@@ -33,22 +33,22 @@ for (const path of keys(spec.paths)) {
 export default {
   input: spec as any,
   output: {
+    indexFile: false,
     path: "alchemy/src/prisma-postgres/api",
   },
   plugins: [
     {
-      name: "@hey-api/typescript",
-      exportFromIndex: false,
-    },
-    {
-      name: "@hey-api/sdk",
-      instance: "PrismaClient",
-      exportFromIndex: false,
-      auth: false,
-    },
-    {
       name: "@hey-api/client-fetch",
       throwOnError: true,
+    },
+    "@hey-api/typescript",
+    {
+      name: "@hey-api/sdk",
+      auth: false,
+      operations: {
+        containerName: "PrismaClient",
+        strategy: "single",
+      },
     },
   ],
 } satisfies UserConfig;

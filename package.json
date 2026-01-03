@@ -57,7 +57,7 @@
   },
   "devDependencies": {
     "@cloudflare/workers-types": "catalog:",
-    "@hey-api/openapi-ts": "^0.84.3",
+    "@hey-api/openapi-ts": "^0.90.0",
     "@redwoodjs/sdk": "^0.0.80",
     "@types/bun": "latest",
     "@types/node": "latest",
@@ -70,6 +70,7 @@
     "glob": "^11.0.3",
     "jsonc-parser": "^3.3.1",
     "openai": "^4.103.0",
+    "pathe": "^2.0.3",
     "typescript": "catalog:",
     "vite": "catalog:",
     "vitest": "^3.1.4",
