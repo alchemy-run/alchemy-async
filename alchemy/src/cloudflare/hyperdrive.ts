@@ -210,6 +210,12 @@ export interface HyperdriveProps extends CloudflareApiOptions {
      * @default origin
      */
     origin?: HyperdriveOriginInput;
+
+    /**
+     * Whether to run the hyperdrive remotely instead of locally
+     * @default false
+     */
+    remote?: boolean;
   };
 }
 
@@ -247,6 +253,11 @@ export type Hyperdrive = Omit<HyperdriveProps, "origin" | "dev"> & {
      * The connection string to use for local development
      */
     origin: Secret;
+
+    /**
+     * Whether the hyperdrive is running remotely
+     */
+    remote: boolean;
   };
 
   /**
@@ -333,6 +344,22 @@ export type Hyperdrive = Omit<HyperdriveProps, "origin" | "dev"> & {
  *     user: "postgres"
  *   }
  * });
+ *
+ * @example
+ * // Create a Hyperdrive that runs remotely even in local dev mode
+ * const remoteDevHyperdrive = await Hyperdrive("remote-dev-db", {
+ *   name: "remote-dev-db",
+ *   origin: {
+ *     database: "postgres",
+ *     host: "database.example.com",
+ *     password: alchemy.secret(process.env.DB_PASSWORD),
+ *     port: 5432,
+ *     user: "postgres"
+ *   },
+ *   dev: {
+ *     remote: true
+ *   }
+ * });
  */
 export async function Hyperdrive(
   id: string,
@@ -343,6 +370,7 @@ export async function Hyperdrive(
     origin: toConnectionString(
       normalizeHyperdriveOrigin(props.dev?.origin ?? origin),
     ),
+    remote: props.dev?.remote ?? false,
     force: Scope.current.local,
   };
   return await _Hyperdrive(id, {
@@ -364,6 +392,7 @@ interface InternalHyperdriveProps extends CloudflareApiOptions {
   mtls?: HyperdriveMtls;
   dev: {
     origin: Secret;
+    remote?: boolean;
     force?: boolean;
   };
   adopt?: boolean;
@@ -382,7 +411,7 @@ const _Hyperdrive = Resource(
     const name =
       props.name ?? this.output?.name ?? this.scope.createPhysicalName(id);
 
-    if (this.scope.local) {
+    if (this.scope.local && !props.dev?.remote) {
       return {
         id,
         hyperdriveId: hyperdriveId || "",
@@ -390,7 +419,10 @@ const _Hyperdrive = Resource(
         origin: props.origin,
         caching: props.caching,
         mtls: props.mtls,
-        dev: props.dev,
+        dev: {
+          origin: props.dev.origin,
+          remote: false,
+        },
         type: "hyperdrive",
       };
     }
@@ -485,7 +517,10 @@ const _Hyperdrive = Resource(
       origin: props.origin,
       caching: result.caching,
       mtls: result.mtls,
-      dev: props.dev,
+      dev: {
+        origin: props.dev.origin,
+        remote: props.dev.remote ?? false,
+      },
       type: "hyperdrive",
     };
   },
