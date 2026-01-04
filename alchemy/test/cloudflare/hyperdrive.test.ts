@@ -168,6 +168,52 @@ describe.concurrent("Hyperdrive Resource", () => {
     }
   });
 
+  test("dev.remote creates hyperdrive remotely", async (scope) => {
+    let hyperdrive: Hyperdrive | undefined;
+    let project: NeonProject | undefined;
+
+    try {
+      // Create a Neon PostgreSQL project
+      project = await NeonProject(`${testId}-db-remote`, {
+        name: `Hyperdrive Test DB Remote ${BRANCH_PREFIX}`,
+      });
+
+      // Create hyperdrive with dev.remote: true
+      hyperdrive = await Hyperdrive(`${testId}-remote`, {
+        name: `test-hyperdrive-remote-${BRANCH_PREFIX}`,
+        origin: project.connection_uris[0].connection_parameters,
+        dev: {
+          remote: true,
+        },
+      });
+
+      // Verify the hyperdrive was created remotely (has hyperdriveId)
+      expect(hyperdrive.hyperdriveId).toBeTruthy();
+      expect(hyperdrive.dev.remote).toEqual(true);
+
+      // Verify hyperdrive exists in Cloudflare API
+      const getResponse = await api.get(
+        `/accounts/${api.accountId}/hyperdrive/configs/${hyperdrive.hyperdriveId}`,
+      );
+      expect(getResponse.status).toEqual(200);
+
+      const responseData: any = await getResponse.json();
+      expect(responseData.result.name).toEqual(
+        `test-hyperdrive-remote-${BRANCH_PREFIX}`,
+      );
+    } finally {
+      await destroy(scope);
+
+      // Verify hyperdrive was deleted
+      if (hyperdrive?.hyperdriveId) {
+        const getDeletedResponse = await api.get(
+          `/accounts/${api.accountId}/hyperdrive/configs/${hyperdrive.hyperdriveId}`,
+        );
+        expect(getDeletedResponse.status).toEqual(404);
+      }
+    }
+  });
+
   describe("normalizeHyperdriveOrigin", () => {
     it("normalizes postgres string origin", () => {
       const origin = normalizeHyperdriveOrigin(
