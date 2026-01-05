@@ -41,6 +41,7 @@ export * from "./hyperdrive.ts";
 export * from "./images.ts";
 export * from "./kv-namespace.ts";
 export * from "./logpush-job.ts";
+export * from "./miniflare/miniflare-controller.ts";
 export * from "./next.ts";
 export * from "./nuxt/nuxt.ts";
 export * from "./orange.ts";
