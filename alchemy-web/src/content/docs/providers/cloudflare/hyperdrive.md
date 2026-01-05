@@ -38,6 +38,26 @@ const db = await Hyperdrive("my-postgres-db", {
 });
 ```
 
+## With Remote Development
+
+If you want to use the remote Hyperdrive even when running in local/watch mode, set `dev.remote: true`.
+
+This is useful when you need to test against the actual Cloudflare Hyperdrive connection pooling during development.
+
+```ts
+const db = await Hyperdrive("my-postgres-db", {
+  name: "my-postgres-db",
+  origin: "postgresql://user:password@ep-example-host-1234.us-east-1.aws.neon.tech/mydb?sslmode=require",
+  dev: {
+    remote: true,
+  },
+});
+```
+
+:::tip
+When `dev.remote` is `true`, the Hyperdrive configuration will be deployed to Cloudflare even in local development mode, allowing you to test the actual connection pooling behavior.
+:::
+
 ## With Explicit Origin Object
 
 If you'd prefer to set parameters explicitly, you can use an object.
