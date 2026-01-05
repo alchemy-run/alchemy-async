@@ -71,6 +71,7 @@
     "jsonc-parser": "^3.3.1",
     "openai": "^4.103.0",
     "pathe": "^2.0.3",
+    "ts-morph": "^27.0.2",
     "typescript": "catalog:",
     "vite": "catalog:",
     "vitest": "^3.1.4",
