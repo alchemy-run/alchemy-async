@@ -1,12 +1,16 @@
-import { MiniflareController } from "alchemy/cloudflare";
+/// <reference types="vitest" />
+
 import type { TestProject } from "vitest/node";
 
 export async function setup({ provide }: TestProject) {
-  const { worker } = await import("./alchemy.run.ts");
+  const { app, worker } = await import("./alchemy.run.ts");
   if (!worker.url) {
     throw new Error("worker.url is not defined");
   }
   provide("workerUrl", worker.url);
+  return async () => {
+    await app.cleanup();
+  }
 }
 
 export async function teardown() {
