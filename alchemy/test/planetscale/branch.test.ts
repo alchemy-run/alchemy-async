@@ -78,7 +78,7 @@ describe.skipIf(!process.env.PLANETSCALE_TEST).concurrent.each(kinds)(
           path: {
             organization: organizationName,
             database: database.name,
-            name,
+            branch: name,
           },
           throwOnError: false,
         });
@@ -94,7 +94,7 @@ describe.skipIf(!process.env.PLANETSCALE_TEST).concurrent.each(kinds)(
           path: {
             organization: organizationName,
             database: database.name,
-            name,
+            branch: name,
           },
           throwOnError: false,
         });
@@ -132,7 +132,7 @@ describe.skipIf(!process.env.PLANETSCALE_TEST).concurrent.each(kinds)(
           path: {
             organization: organizationName,
             database: database.name,
-            name,
+            branch: name,
           },
           throwOnError: false,
         });
@@ -148,7 +148,7 @@ describe.skipIf(!process.env.PLANETSCALE_TEST).concurrent.each(kinds)(
           path: {
             organization: organizationName,
             database: database.name,
-            name,
+            branch: name,
           },
           throwOnError: false,
         });
@@ -214,7 +214,7 @@ describe.skipIf(!process.env.PLANETSCALE_TEST).concurrent.each(kinds)(
           path: {
             organization: organizationName,
             database: database.name,
-            name,
+            branch: name,
           },
           throwOnError: false,
         });
@@ -230,7 +230,7 @@ describe.skipIf(!process.env.PLANETSCALE_TEST).concurrent.each(kinds)(
           path: {
             organization: organizationName,
             database: database.name,
-            name,
+            branch: name,
           },
           throwOnError: false,
         });
@@ -265,7 +265,7 @@ describe.skipIf(!process.env.PLANETSCALE_TEST).concurrent.each(kinds)(
             path: {
               organization: organizationName,
               database: database.name,
-              name,
+              branch: name,
             },
           });
           expect(response.data.safe_migrations).toBe(true);
@@ -285,7 +285,7 @@ describe.skipIf(!process.env.PLANETSCALE_TEST).concurrent.each(kinds)(
             path: {
               organization: organizationName,
               database: database.name,
-              name,
+              branch: name,
             },
           });
           expect(response.data.safe_migrations).toBe(false);
@@ -320,7 +320,7 @@ describe.skipIf(!process.env.PLANETSCALE_TEST).concurrent.each(kinds)(
           path: {
             organization: organizationName,
             database: database.name,
-            name,
+            branch: name,
           },
         });
         expect(data1.cluster_name).toEqual(expectedClusterSizes.ps10);
@@ -341,7 +341,7 @@ describe.skipIf(!process.env.PLANETSCALE_TEST).concurrent.each(kinds)(
           path: {
             organization: organizationName,
             database: database.name,
-            name,
+            branch: name,
           },
         });
         expect(data2.cluster_name).toEqual(expectedClusterSizes.ps20);
@@ -391,7 +391,7 @@ describe.skipIf(!process.env.PLANETSCALE_TEST).concurrent.each(kinds)(
           path: {
             organization: organizationName,
             database: database.name,
-            name: parentBranchName,
+            branch: parentBranchName,
           },
           throwOnError: false,
         });
@@ -402,7 +402,7 @@ describe.skipIf(!process.env.PLANETSCALE_TEST).concurrent.each(kinds)(
             path: {
               organization: organizationName,
               database: database.name,
-              name: childBranchName,
+              branch: childBranchName,
             },
             throwOnError: false,
           });
@@ -419,7 +419,7 @@ describe.skipIf(!process.env.PLANETSCALE_TEST).concurrent.each(kinds)(
           path: {
             organization: organizationName,
             database: database.name,
-            name: parentBranchName,
+            branch: parentBranchName,
           },
           throwOnError: false,
         });
@@ -429,7 +429,7 @@ describe.skipIf(!process.env.PLANETSCALE_TEST).concurrent.each(kinds)(
           path: {
             organization: organizationName,
             database: database.name,
-            name: childBranchName,
+            branch: childBranchName,
           },
           throwOnError: false,
         });
@@ -460,7 +460,7 @@ describe.skipIf(!process.env.PLANETSCALE_TEST).concurrent.each(kinds)(
           path: {
             organization: organizationName,
             database: database.name,
-            name,
+            branch: name,
           },
         });
         expect(data.name).toBe(name);
@@ -476,7 +476,7 @@ describe.skipIf(!process.env.PLANETSCALE_TEST).concurrent.each(kinds)(
           path: {
             organization: organizationName,
             database: database.name,
-            name,
+            branch: name,
           },
           throwOnError: false,
         });
@@ -487,7 +487,7 @@ describe.skipIf(!process.env.PLANETSCALE_TEST).concurrent.each(kinds)(
           path: {
             organization: organizationName,
             database: database.name,
-            name,
+            branch: name,
           },
           throwOnError: false,
         });
@@ -497,7 +497,7 @@ describe.skipIf(!process.env.PLANETSCALE_TEST).concurrent.each(kinds)(
           path: {
             organization: organizationName,
             database: database.name,
-            name,
+            branch: name,
           },
           throwOnError: false,
         });

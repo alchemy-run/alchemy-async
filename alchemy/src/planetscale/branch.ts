@@ -205,7 +205,7 @@ export const Branch = Resource(
           path: {
             organization,
             database,
-            name: this.output.name,
+            branch: this.output.name,
           },
           throwOnError: false,
         });
@@ -236,7 +236,7 @@ export const Branch = Resource(
       path: {
         organization,
         database,
-        name: branchName,
+        branch: branchName,
       },
       throwOnError: false,
     });
@@ -287,7 +287,7 @@ export const Branch = Resource(
           path: {
             organization,
             database,
-            name: branchName,
+            branch: branchName,
           },
         });
       }
@@ -367,7 +367,7 @@ export const Branch = Resource(
         path: {
           organization,
           database,
-          name: branchName,
+          branch: branchName,
         },
       });
     }

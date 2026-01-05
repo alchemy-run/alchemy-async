@@ -60,7 +60,7 @@ describe.skipIf(!process.env.PLANETSCALE_TEST).concurrent.each(kinds)(
           path: {
             organization,
             database: name,
-            name: "main",
+            branch: "main",
           },
         });
 
@@ -151,7 +151,7 @@ describe.skipIf(!process.env.PLANETSCALE_TEST).concurrent.each(kinds)(
           path: {
             organization,
             database: name,
-            name: "main",
+            branch: "main",
           },
         });
         expect(mainBranchData.cluster_name).toEqual(expectedClusterSizes.ps20);
@@ -193,7 +193,7 @@ describe.skipIf(!process.env.PLANETSCALE_TEST).concurrent.each(kinds)(
           path: {
             organization,
             database: name,
-            name: defaultBranch,
+            branch: defaultBranch,
           },
         });
         expect(branchData.parent_branch).toEqual("main");
@@ -219,7 +219,7 @@ describe.skipIf(!process.env.PLANETSCALE_TEST).concurrent.each(kinds)(
           path: {
             organization,
             database: name,
-            name: defaultBranch,
+            branch: defaultBranch,
           },
         });
         expect(newBranchData.cluster_name).toEqual(expectedClusterSizes.ps20);
@@ -257,7 +257,7 @@ describe.skipIf(!process.env.PLANETSCALE_TEST).concurrent.each(kinds)(
             path: {
               organization,
               database: name,
-              name: "main",
+              branch: "main",
             },
           });
           expect(branchData.cluster_name).toEqual("PS_10_AWS_ARM");
@@ -295,7 +295,7 @@ describe.skipIf(!process.env.PLANETSCALE_TEST).concurrent.each(kinds)(
         const { data } = await api.getDatabase({
           path: {
             organization,
-            name,
+            database: name,
           },
         });
         expect(data.name).toBe(name);
@@ -310,7 +310,7 @@ describe.skipIf(!process.env.PLANETSCALE_TEST).concurrent.each(kinds)(
         const { response } = await api.getDatabase({
           path: {
             organization,
-            name,
+            database: name,
           },
           throwOnError: false,
         });
@@ -320,7 +320,7 @@ describe.skipIf(!process.env.PLANETSCALE_TEST).concurrent.each(kinds)(
         await api.deleteDatabase({
           path: {
             organization,
-            name,
+            database: name,
           },
           throwOnError: false,
         });
@@ -348,7 +348,7 @@ async function assertDatabaseDeleted(
     const { response } = await api.getDatabase({
       path: {
         organization: organizationName,
-        name: databaseName,
+        database: databaseName,
       },
       throwOnError: false,
     });

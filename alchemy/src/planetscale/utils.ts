@@ -59,7 +59,7 @@ export async function waitForBranchReady(
     description: `branch "${branch}" ready`,
     fn: () =>
       api.getBranch({
-        path: { organization, database, name: branch },
+        path: { organization, database, branch: branch },
       }),
     predicate: ({ data }) => data.ready,
   });
@@ -78,7 +78,7 @@ export async function waitForDatabaseReady(
     description: `database "${database}" ready`,
     fn: () =>
       api.getDatabase({
-        path: { organization, name: database },
+        path: { organization, database: database },
       }),
     predicate: ({ data }) => data.ready,
   });
@@ -161,7 +161,7 @@ async function ensureProductionBranch(
     path: {
       organization,
       database,
-      name,
+      branch: name,
     },
   });
   if (!data.production) {
@@ -169,7 +169,7 @@ async function ensureProductionBranch(
       await waitForBranchReady(api, organization, database, name);
     }
     await api.promoteBranch({
-      path: { organization, database, name },
+      path: { organization, database, branch: name },
     });
   }
 }
@@ -213,7 +213,7 @@ async function ensureMySQLClusterSize(
       path: {
         organization,
         database,
-        name: branch,
+        branch,
       },
       body: { cluster_size: expectedClusterSize },
     });
@@ -243,7 +243,7 @@ async function ensurePostgresClusterSize(
     path: {
       organization,
       database,
-      name: branch,
+      branch: branch,
     },
   });
   if (data.cluster_name === expectedClusterSize) {

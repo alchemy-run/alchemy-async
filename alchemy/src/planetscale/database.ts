@@ -240,7 +240,7 @@ export const Database = Resource(
       await api.updateDatabaseSettings({
         path: {
           organization,
-          name: this.output.name,
+          database: this.output.name,
         },
         body: { new_name: databaseName },
       });
@@ -251,7 +251,7 @@ export const Database = Resource(
         const response = await api.deleteDatabase({
           path: {
             organization,
-            name: this.output.name,
+            database: this.output.name,
           },
           throwOnError: false,
         });
@@ -269,7 +269,7 @@ export const Database = Resource(
     const getResponse = await api.getDatabase({
       path: {
         organization,
-        name: databaseName,
+        database: databaseName,
       },
       throwOnError: false,
     });
@@ -286,7 +286,7 @@ export const Database = Resource(
           path: {
             organization,
             database: databaseName,
-            name: props.defaultBranch,
+            branch: props.defaultBranch,
           },
           throwOnError: false,
         });
@@ -311,7 +311,7 @@ export const Database = Resource(
       const { data } = await api.updateDatabaseSettings({
         path: {
           organization,
-          name: databaseName,
+          database: databaseName,
         },
         body: {
           automatic_migrations: props.automaticMigrations,
@@ -370,7 +370,7 @@ export const Database = Resource(
     const { data } = await api.updateDatabaseSettings({
       path: {
         organization,
-        name: databaseName,
+        database: databaseName,
       },
       body: {
         require_approval_for_deploy: props.requireApprovalForDeploy,
@@ -393,7 +393,7 @@ export const Database = Resource(
         path: {
           organization,
           database: databaseName,
-          name: props.defaultBranch,
+          branch: props.defaultBranch,
         },
         throwOnError: false,
       });
@@ -424,7 +424,7 @@ export const Database = Resource(
         const { data: updatedData } = await api.updateDatabaseSettings({
           path: {
             organization,
-            name: databaseName,
+            database: databaseName,
           },
           body: {
             default_branch: props.defaultBranch,
