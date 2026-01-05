@@ -26,6 +26,13 @@ export type MskIamUser = {
   secretKey?: string;
 };
 
+export type ServiceAccount = {
+  /**
+   * Google Cloud service account JSON key file content, base64 encoded.
+   */
+  serviceAccountFile?: string;
+};
+
 export type ClickPipeKafkaOffset = {
   /**
    * Offset strategy.
@@ -323,6 +330,8 @@ export type ClickPipeObjectStorageSource = {
     | "JSONAsObject"
     | "CSV"
     | "CSVWithNames"
+    | "TabSeparated"
+    | "TabSeparatedWithNames"
     | "Parquet"
     | "Avro";
   /**
@@ -349,6 +358,10 @@ export type ClickPipeObjectStorageSource = {
    * If set to true, the pipe will continuously read new files from the source. If set to false, the pipe will read the files only once. New files have to be uploaded lexically order.
    */
   isContinuous?: boolean | null;
+  /**
+   * SQS queue URL for event-based continuous ingestion. When provided, files are ingested based on S3 event notifications rather than lexicographical order. Only applicable when isContinuous is true and authentication is not public.
+   */
+  queueUrl?: string | null;
   /**
    * Authentication method. CONNECTION_STRING is for Azure Blob Storage. IAM_ROLE and IAM_USER are for AWS S3/GCS/DigitalOcean. If not provided, no authentication is used.
    */
@@ -384,6 +397,8 @@ export type ClickPipePostObjectStorageSource = {
     | "JSONAsObject"
     | "CSV"
     | "CSVWithNames"
+    | "TabSeparated"
+    | "TabSeparatedWithNames"
     | "Parquet"
     | "Avro";
   /**
@@ -410,6 +425,10 @@ export type ClickPipePostObjectStorageSource = {
    * If set to true, the pipe will continuously read new files from the source. If set to false, the pipe will read the files only once. New files have to be uploaded lexically order.
    */
   isContinuous?: boolean | null;
+  /**
+   * SQS queue URL for event-based continuous ingestion. When provided, files are ingested based on S3 event notifications rather than lexicographical order. Only applicable when isContinuous is true and authentication is not public.
+   */
+  queueUrl?: string | null;
   /**
    * Authentication method. CONNECTION_STRING is for Azure Blob Storage. IAM_ROLE and IAM_USER are for AWS S3/GCS/DigitalOcean. If not provided, no authentication is used.
    */
@@ -498,6 +517,10 @@ export type ClickPipePostgresPipeSettings = {
    * Enable failover for created replication slot. Requires a replication slot to NOT be set.
    */
   enableFailoverSlots?: boolean;
+  /**
+   * Create tables with deletion on merge behaviour on ClickHouse
+   */
+  deleteOnMerge?: boolean;
 };
 
 export type ClickPipePatchPostgresPipeSettings = {
@@ -509,6 +532,10 @@ export type ClickPipePatchPostgresPipeSettings = {
    * Number of rows to pull in each batch.
    */
   pullBatchSize?: number | null;
+  /**
+   * Create tables with deletion on merge behaviour on ClickHouse
+   */
+  deleteOnMerge?: boolean | null;
 };
 
 export type ClickPipePostgresPipeTableMapping = {
@@ -627,6 +654,85 @@ export type ClickPipePatchPostgresSource = {
   tableMappingsToRemove?: Array<ClickPipePatchPostgresPipeRemoveTableMapping>;
 };
 
+export type ClickPipeBigQueryPipeSettings = {
+  /**
+   * Replication mode. BigQuery only supports snapshot mode.
+   */
+  replicationMode?: "snapshot";
+  /**
+   * Allow nullable columns in the destination table.
+   */
+  allowNullableColumns?: boolean;
+  /**
+   * Number of parallel workers during initial load.
+   */
+  initialLoadParallelism?: number;
+  /**
+   * Number of rows to snapshot per partition.
+   */
+  snapshotNumRowsPerPartition?: number;
+  /**
+   * Number of parallel tables to snapshot.
+   */
+  snapshotNumberOfParallelTables?: number;
+};
+
+export type ClickPipeBigQueryPipeTableMapping = {
+  /**
+   * Source BigQuery dataset name.
+   */
+  sourceDatasetName?: string;
+  /**
+   * Source table name.
+   */
+  sourceTable?: string;
+  /**
+   * Target ClickHouse table name.
+   */
+  targetTable?: string;
+  /**
+   * Columns to exclude from the target table.
+   */
+  excludedColumns?: Array<string>;
+  /**
+   * Whether to use a custom sorting key for the target table.
+   */
+  useCustomSortingKey?: boolean;
+  /**
+   * Ordered list of columns to use as sorting key for the target table.
+   */
+  sortingKeys?: Array<string>;
+  /**
+   * Table engine to use for the target table.
+   */
+  tableEngine?: "MergeTree" | "ReplacingMergeTree" | "Null";
+};
+
+export type ClickPipeBigQuerySource = {
+  /**
+   * GCS bucket path for staging snapshot data (e.g., gs://my-bucket/staging/). Data will be automatically cleaned up after initial load.
+   */
+  snapshotStagingPath?: string;
+  settings?: ClickPipeBigQueryPipeSettings;
+  /**
+   * Table mappings for BigQuery pipe.
+   */
+  tableMappings?: Array<ClickPipeBigQueryPipeTableMapping>;
+};
+
+export type ClickPipeMutateBigQuerySource = {
+  /**
+   * GCS bucket path for staging snapshot data (e.g., gs://my-bucket/staging/). Data will be automatically cleaned up after initial load.
+   */
+  snapshotStagingPath?: string;
+  settings?: ClickPipeBigQueryPipeSettings;
+  /**
+   * Table mappings for BigQuery pipe.
+   */
+  tableMappings?: Array<ClickPipeBigQueryPipeTableMapping>;
+  credentials?: ServiceAccount;
+};
+
 export type ClickPipeScaling = {
   /**
    * Desired number of replicas. Only for scalable pipes.
@@ -634,6 +740,8 @@ export type ClickPipeScaling = {
   replicas?: number;
   /**
    * Desired number of concurrency. Only for S3 pipes. If set to 0, concurrency is auto-scaled based on the cluster memory.
+   *
+   * @deprecated
    */
   concurrency?: number;
   /**
@@ -651,6 +759,7 @@ export type ClickPipeSource = {
   objectStorage?: ClickPipeObjectStorageSource | null;
   kinesis?: ClickPipeKinesisSource | null;
   postgres?: ClickPipePostgresSource | null;
+  bigquery?: ClickPipeBigQuerySource | null;
 };
 
 export type ClickPipeDestinationColumn = {
@@ -817,6 +926,7 @@ export type ClickPipePostSource = {
   objectStorage?: ClickPipePostObjectStorageSource | null;
   kinesis?: ClickPipePostKinesisSource | null;
   postgres?: ClickPipeMutatePostgresSource;
+  bigquery?: ClickPipeMutateBigQuerySource | null;
   /**
    * Validate data samples received from data source. It will validate the connection and data availability and correctness. If not enabled, only connection will be validated. This has no effect on Postgres pipes, they always only validate the connection and table definitions. This is experimental and can be removed in the future.
    */
@@ -978,6 +1088,17 @@ export type ClickPipeSettingsPutRequest = {
   clickhouse_parallel_view_processing?: boolean | null;
 };
 
+export type ResourceTagsV1 = {
+  /**
+   * Tag key. Must be alphanumeric with dashes, underscores and dots.
+   */
+  key?: string;
+  /**
+   * Tag value. Must be alphanumeric with dashes, underscores and dots.
+   */
+  value?: string | null;
+};
+
 export type ServiceEndpoint = {
   /**
    * Endpoint protocol: 'https', 'nativesecure', 'mysql'.
@@ -1025,25 +1146,29 @@ export type Service = {
    * Service region.
    */
   region?:
+    | "ap-northeast-1"
+    | "ap-northeast-2"
     | "ap-south-1"
     | "ap-southeast-1"
+    | "ap-southeast-2"
     | "eu-central-1"
     | "eu-west-1"
     | "eu-west-2"
+    | "il-central-1"
+    | "me-central-1"
     | "us-east-1"
     | "us-east-2"
     | "us-west-2"
-    | "ap-southeast-2"
-    | "ap-northeast-1"
-    | "me-central-1"
     | "us-east1"
     | "us-central1"
     | "europe-west4"
     | "asia-southeast1"
+    | "asia-northeast1"
     | "eastus"
     | "eastus2"
     | "westus3"
-    | "germanywestcentral";
+    | "germanywestcentral"
+    | "centralus";
   /**
    * Current state of the service.
    */
@@ -1057,6 +1182,7 @@ export type Service = {
     | "running"
     | "stopped"
     | "terminated"
+    | "softdeleted"
     | "degraded"
     | "failed"
     | "idle";
@@ -1069,7 +1195,8 @@ export type Service = {
    */
   endpoints?: Array<ServiceEndpoint>;
   /**
-   * DEPRECATED for BASIC, SCALE and ENTERPRISE organization tiers. Tier of the service: 'development', 'production', 'dedicated_high_mem', 'dedicated_high_cpu', 'dedicated_standard', 'dedicated_standard_n2d_standard_4', 'dedicated_standard_n2d_standard_8', 'dedicated_standard_n2d_standard_32', 'dedicated_standard_n2d_standard_128', 'dedicated_standard_n2d_standard_32_16SSD', 'dedicated_standard_n2d_standard_64_24SSD'. Production services scale, Development are fixed size. Azure services don't support Development tier
+   * DEPRECATED for BASIC, SCALE and ENTERPRISE organization tiers. Use `minReplicaMemoryGb`, `maxReplicaMemoryGb`, and `numReplicas` instead. Tier of the service: 'development', 'production', 'dedicated_high_mem', 'dedicated_high_cpu', 'dedicated_standard', 'dedicated_standard_n2d_standard_4', 'dedicated_standard_n2d_standard_8', 'dedicated_standard_n2d_standard_32', 'dedicated_standard_n2d_standard_128', 'dedicated_standard_n2d_standard_32_16SSD', 'dedicated_standard_n2d_standard_64_24SSD'. Production services scale, Development are fixed size. Azure services don't support Development tier
+   *
    * @deprecated
    */
   tier?:
@@ -1085,12 +1212,14 @@ export type Service = {
     | "dedicated_standard_n2d_standard_32_16SSD"
     | "dedicated_standard_n2d_standard_64_24SSD";
   /**
-   * DEPRECATED - inaccurate for services with non-default numbers of replicas. Minimum memory of three workers during auto-scaling in Gb. Available only for 'production' services. Must be a multiple of 12 and greater than or equal to 24.
+   * DEPRECATED - inaccurate for services with non-default numbers of replicas. Use `minReplicaMemoryGb` instead. Minimum memory of three workers during auto-scaling in Gb. Available only for 'production' services. Must be a multiple of 12 and greater than or equal to 24.
+   *
    * @deprecated
    */
   minTotalMemoryGb?: number;
   /**
-   * DEPRECATED - inaccurate for services with non-default numbers of replicas. Maximum memory of three workers during auto-scaling in Gb. Available only for 'production' services. Must be a multiple of 12 and lower than or equal to 360 for non paid services or 1068 for paid services.
+   * DEPRECATED - inaccurate for services with non-default numbers of replicas. Use `maxReplicaMemoryGb` instead. Maximum memory of three workers during auto-scaling in Gb. Available only for 'production' services. Must be a multiple of 12 and lower than or equal to 360 for non paid services or 1068 for paid services.
+   *
    * @deprecated
    */
   maxTotalMemoryGb?: number;
@@ -1192,6 +1321,10 @@ export type Service = {
    * Type of regulatory compliance for service.
    */
   complianceType?: "hipaa" | "pci";
+  /**
+   * Tags associated with the service.
+   */
+  tags?: Array<ResourceTagsV1>;
 };
 
 export type PrivateEndpointConfig = {
@@ -1246,6 +1379,17 @@ export type IpAccessListPatch = {
   remove?: Array<IpAccessListEntry>;
 };
 
+export type InstanceTagsPatch = {
+  /**
+   * Elements to add. Executed after "remove" part is processed.
+   */
+  add?: Array<ResourceTagsV1>;
+  /**
+   * Elements to remove. Executed before "add" part is processed.
+   */
+  remove?: Array<ResourceTagsV1>;
+};
+
 export type InstancePrivateEndpointsPatch = {
   /**
    * Elements to add. Executed after "remove" part is processed.
@@ -1274,25 +1418,29 @@ export type InstancePrivateEndpoint = {
    * Region in which the private endpoint is located
    */
   region?:
+    | "ap-northeast-1"
+    | "ap-northeast-2"
     | "ap-south-1"
     | "ap-southeast-1"
+    | "ap-southeast-2"
     | "eu-central-1"
     | "eu-west-1"
     | "eu-west-2"
+    | "il-central-1"
+    | "me-central-1"
     | "us-east-1"
     | "us-east-2"
     | "us-west-2"
-    | "ap-southeast-2"
-    | "ap-northeast-1"
-    | "me-central-1"
     | "us-east1"
     | "us-central1"
     | "europe-west4"
     | "asia-southeast1"
+    | "asia-northeast1"
     | "eastus"
     | "eastus2"
     | "westus3"
-    | "germanywestcentral";
+    | "germanywestcentral"
+    | "centralus";
 };
 
 export type UsageCostMetrics = {
@@ -1399,25 +1547,29 @@ export type OrganizationPrivateEndpoint = {
    * Region in which the private endpoint is located
    */
   region?:
+    | "ap-northeast-1"
+    | "ap-northeast-2"
     | "ap-south-1"
     | "ap-southeast-1"
+    | "ap-southeast-2"
     | "eu-central-1"
     | "eu-west-1"
     | "eu-west-2"
+    | "il-central-1"
+    | "me-central-1"
     | "us-east-1"
     | "us-east-2"
     | "us-west-2"
-    | "ap-southeast-2"
-    | "ap-northeast-1"
-    | "me-central-1"
     | "us-east1"
     | "us-central1"
     | "europe-west4"
     | "asia-southeast1"
+    | "asia-northeast1"
     | "eastus"
     | "eastus2"
     | "westus3"
-    | "germanywestcentral";
+    | "germanywestcentral"
+    | "centralus";
 };
 
 export type ByocConfig = {
@@ -1437,29 +1589,37 @@ export type ByocConfig = {
    * Region for which the BYOC has been configured and where it is possible to create services
    */
   regionId?:
+    | "ap-northeast-1"
+    | "ap-northeast-2"
     | "ap-south-1"
     | "ap-southeast-1"
+    | "ap-southeast-2"
     | "eu-central-1"
     | "eu-west-1"
     | "eu-west-2"
+    | "il-central-1"
+    | "me-central-1"
     | "us-east-1"
     | "us-east-2"
     | "us-west-2"
-    | "ap-southeast-2"
-    | "ap-northeast-1"
-    | "me-central-1"
     | "us-east1"
     | "us-central1"
     | "europe-west4"
     | "asia-southeast1"
+    | "asia-northeast1"
     | "eastus"
     | "eastus2"
     | "westus3"
-    | "germanywestcentral";
+    | "germanywestcentral"
+    | "centralus";
   /**
    * Cloud provider of the region
    */
   cloudProvider?: "gcp" | "aws" | "azure";
+  /**
+   * Human readable name for infrastructure
+   */
+  displayName?: string;
 };
 
 export type Organization = {
@@ -1509,30 +1669,35 @@ export type OrganizationPatchPrivateEndpoint = {
    * Region in which the private endpoint is located
    */
   region?:
+    | "ap-northeast-1"
+    | "ap-northeast-2"
     | "ap-south-1"
     | "ap-southeast-1"
+    | "ap-southeast-2"
     | "eu-central-1"
     | "eu-west-1"
     | "eu-west-2"
+    | "il-central-1"
+    | "me-central-1"
     | "us-east-1"
     | "us-east-2"
     | "us-west-2"
-    | "ap-southeast-2"
-    | "ap-northeast-1"
-    | "me-central-1"
     | "us-east1"
     | "us-central1"
     | "europe-west4"
     | "asia-southeast1"
+    | "asia-northeast1"
     | "eastus"
     | "eastus2"
     | "westus3"
-    | "germanywestcentral";
+    | "germanywestcentral"
+    | "centralus";
 };
 
 export type OrganizationPrivateEndpointsPatch = {
   /**
-   * Elements to add. Executed after "remove" part is processed. Please use the `Update Service Basic Details` endpoint instead to modify the private endpoints.
+   * DEPRECATED. Elements to add. Executed after "remove" part is processed. Please use the `Update Service Basic Details` endpoint with the `privateEndpointIds` field instead to modify the private endpoints.
+   *
    * @deprecated
    */
   add?: Array<OrganizationPatchPrivateEndpoint>;
@@ -2159,27 +2324,32 @@ export type ServicePostRequest = {
    * Service region.
    */
   region?:
+    | "ap-northeast-1"
+    | "ap-northeast-2"
     | "ap-south-1"
     | "ap-southeast-1"
+    | "ap-southeast-2"
     | "eu-central-1"
     | "eu-west-1"
     | "eu-west-2"
+    | "il-central-1"
+    | "me-central-1"
     | "us-east-1"
     | "us-east-2"
     | "us-west-2"
-    | "ap-southeast-2"
-    | "ap-northeast-1"
-    | "me-central-1"
     | "us-east1"
     | "us-central1"
     | "europe-west4"
     | "asia-southeast1"
+    | "asia-northeast1"
     | "eastus"
     | "eastus2"
     | "westus3"
-    | "germanywestcentral";
+    | "germanywestcentral"
+    | "centralus";
   /**
-   * DEPRECATED for BASIC, SCALE and ENTERPRISE organization tiers. Tier of the service: 'development', 'production', 'dedicated_high_mem', 'dedicated_high_cpu', 'dedicated_standard', 'dedicated_standard_n2d_standard_4', 'dedicated_standard_n2d_standard_8', 'dedicated_standard_n2d_standard_32', 'dedicated_standard_n2d_standard_128', 'dedicated_standard_n2d_standard_32_16SSD', 'dedicated_standard_n2d_standard_64_24SSD'. Production services scale, Development are fixed size. Azure services don't support Development tier
+   * DEPRECATED for BASIC, SCALE and ENTERPRISE organization tiers. Use `minReplicaMemoryGb`, `maxReplicaMemoryGb`, and `numReplicas` instead. Tier of the service: 'development', 'production', 'dedicated_high_mem', 'dedicated_high_cpu', 'dedicated_standard', 'dedicated_standard_n2d_standard_4', 'dedicated_standard_n2d_standard_8', 'dedicated_standard_n2d_standard_32', 'dedicated_standard_n2d_standard_128', 'dedicated_standard_n2d_standard_32_16SSD', 'dedicated_standard_n2d_standard_64_24SSD'. Production services scale, Development are fixed size. Azure services don't support Development tier
+   *
    * @deprecated
    */
   tier?:
@@ -2199,12 +2369,14 @@ export type ServicePostRequest = {
    */
   ipAccessList?: Array<IpAccessListEntry>;
   /**
-   * DEPRECATED - inaccurate for services with non-default numbers of replicas. Minimum memory of three workers during auto-scaling in Gb. Available only for 'production' services. Must be a multiple of 12 and greater than or equal to 24.
+   * DEPRECATED - inaccurate for services with non-default numbers of replicas. Use `minReplicaMemoryGb` instead. Minimum memory of three workers during auto-scaling in Gb. Available only for 'production' services. Must be a multiple of 12 and greater than or equal to 24.
+   *
    * @deprecated
    */
   minTotalMemoryGb?: number;
   /**
-   * DEPRECATED - inaccurate for services with non-default numbers of replicas. Maximum memory of three workers during auto-scaling in Gb. Available only for 'production' services. Must be a multiple of 12 and lower than or equal to 360 for non paid services or 1068 for paid services.
+   * DEPRECATED - inaccurate for services with non-default numbers of replicas. Use `maxReplicaMemoryGb` instead. Maximum memory of three workers during auto-scaling in Gb. Available only for 'production' services. Must be a multiple of 12 and lower than or equal to 360 for non paid services or 1068 for paid services.
+   *
    * @deprecated
    */
   maxTotalMemoryGb?: number;
@@ -2249,7 +2421,8 @@ export type ServicePostRequest = {
    */
   encryptionAssumedRoleIdentifier?: string;
   /**
-   * To associate the service with private endpoints, first create the service, then use the `Update Service Basic Details` endpoint to modify private endpoints.
+   * DEPRECATED. To associate the service with private endpoints, first create the service, then use the `Update Service Basic Details` endpoint with the `privateEndpointIds` field to modify private endpoints.
+   *
    * @deprecated
    */
   privateEndpointIds?: Array<string>;
@@ -2291,6 +2464,10 @@ export type ServicePostRequest = {
    * Type of regulatory compliance for service.
    */
   complianceType?: "hipaa" | "pci";
+  /**
+   * Tags associated with the service.
+   */
+  tags?: Array<ResourceTagsV1>;
 };
 
 export type ServicePatchRequest = {
@@ -2312,6 +2489,10 @@ export type ServicePatchRequest = {
    * The id of the key to rotate
    */
   transparentDataEncryptionKeyId?: string;
+  /**
+   * Tags associated with the service.
+   */
+  tags?: Array<InstanceTagsPatch>;
 };
 
 export type ServiceStatePatchRequest = {
@@ -2323,12 +2504,14 @@ export type ServiceStatePatchRequest = {
 
 export type ServiceScalingPatchRequest = {
   /**
-   * DEPRECATED - inaccurate for services with non-default numbers of replicas. Minimum memory of three workers during auto-scaling in Gb. Available only for 'production' services. Must be a multiple of 12 and greater than or equal to 24.
+   * DEPRECATED - inaccurate for services with non-default numbers of replicas. Use `minReplicaMemoryGb` instead. Minimum memory of three workers during auto-scaling in Gb. Available only for 'production' services. Must be a multiple of 12 and greater than or equal to 24.
+   *
    * @deprecated
    */
   minTotalMemoryGb?: number;
   /**
-   * DEPRECATED - inaccurate for services with non-default numbers of replicas. Maximum memory of three workers during auto-scaling in Gb. Available only for 'production' services. Must be a multiple of 12 and lower than or equal to 360 for non paid services or 1068 for paid services.
+   * DEPRECATED - inaccurate for services with non-default numbers of replicas. Use `maxReplicaMemoryGb` instead. Maximum memory of three workers during auto-scaling in Gb. Available only for 'production' services. Must be a multiple of 12 and lower than or equal to 360 for non paid services or 1068 for paid services.
+   *
    * @deprecated
    */
   maxTotalMemoryGb?: number;
@@ -2363,25 +2546,29 @@ export type ServiceScalingPatchResponse = {
    * Service region.
    */
   region?:
+    | "ap-northeast-1"
+    | "ap-northeast-2"
     | "ap-south-1"
     | "ap-southeast-1"
+    | "ap-southeast-2"
     | "eu-central-1"
     | "eu-west-1"
     | "eu-west-2"
+    | "il-central-1"
+    | "me-central-1"
     | "us-east-1"
     | "us-east-2"
     | "us-west-2"
-    | "ap-southeast-2"
-    | "ap-northeast-1"
-    | "me-central-1"
     | "us-east1"
     | "us-central1"
     | "europe-west4"
     | "asia-southeast1"
+    | "asia-northeast1"
     | "eastus"
     | "eastus2"
     | "westus3"
-    | "germanywestcentral";
+    | "germanywestcentral"
+    | "centralus";
   /**
    * Current state of the service.
    */
@@ -2395,6 +2582,7 @@ export type ServiceScalingPatchResponse = {
     | "running"
     | "stopped"
     | "terminated"
+    | "softdeleted"
     | "degraded"
     | "failed"
     | "idle";
@@ -2407,7 +2595,8 @@ export type ServiceScalingPatchResponse = {
    */
   endpoints?: Array<ServiceEndpoint>;
   /**
-   * DEPRECATED for BASIC, SCALE and ENTERPRISE organization tiers. Tier of the service: 'development', 'production', 'dedicated_high_mem', 'dedicated_high_cpu', 'dedicated_standard', 'dedicated_standard_n2d_standard_4', 'dedicated_standard_n2d_standard_8', 'dedicated_standard_n2d_standard_32', 'dedicated_standard_n2d_standard_128', 'dedicated_standard_n2d_standard_32_16SSD', 'dedicated_standard_n2d_standard_64_24SSD'. Production services scale, Development are fixed size. Azure services don't support Development tier
+   * DEPRECATED for BASIC, SCALE and ENTERPRISE organization tiers. Use `minReplicaMemoryGb`, `maxReplicaMemoryGb`, and `numReplicas` instead. Tier of the service: 'development', 'production', 'dedicated_high_mem', 'dedicated_high_cpu', 'dedicated_standard', 'dedicated_standard_n2d_standard_4', 'dedicated_standard_n2d_standard_8', 'dedicated_standard_n2d_standard_32', 'dedicated_standard_n2d_standard_128', 'dedicated_standard_n2d_standard_32_16SSD', 'dedicated_standard_n2d_standard_64_24SSD'. Production services scale, Development are fixed size. Azure services don't support Development tier
+   *
    * @deprecated
    */
   tier?:
@@ -2423,12 +2612,14 @@ export type ServiceScalingPatchResponse = {
     | "dedicated_standard_n2d_standard_32_16SSD"
     | "dedicated_standard_n2d_standard_64_24SSD";
   /**
-   * DEPRECATED - inaccurate for services with non-default numbers of replicas. Minimum memory of three workers during auto-scaling in Gb. Available only for 'production' services. Must be a multiple of 12 and greater than or equal to 24.
+   * DEPRECATED - inaccurate for services with non-default numbers of replicas. Use `minReplicaMemoryGb` instead. Minimum memory of three workers during auto-scaling in Gb. Available only for 'production' services. Must be a multiple of 12 and greater than or equal to 24.
+   *
    * @deprecated
    */
   minTotalMemoryGb?: number;
   /**
-   * DEPRECATED - inaccurate for services with non-default numbers of replicas. Maximum memory of three workers during auto-scaling in Gb. Available only for 'production' services. Must be a multiple of 12 and lower than or equal to 360 for non paid services or 1068 for paid services.
+   * DEPRECATED - inaccurate for services with non-default numbers of replicas. Use `maxReplicaMemoryGb` instead. Maximum memory of three workers during auto-scaling in Gb. Available only for 'production' services. Must be a multiple of 12 and lower than or equal to 360 for non paid services or 1068 for paid services.
+   *
    * @deprecated
    */
   maxTotalMemoryGb?: number;
@@ -2530,6 +2721,10 @@ export type ServiceScalingPatchResponse = {
    * Type of regulatory compliance for service.
    */
   complianceType?: "hipaa" | "pci";
+  /**
+   * Tags associated with the service.
+   */
+  tags?: Array<ResourceTagsV1>;
 };
 
 export type ServiceReplicaScalingPatchRequest = {
@@ -2747,25 +2942,29 @@ export type ByocInfrastructurePostRequest = {
    * Region in which the BYOC infrastructure will be located
    */
   regionId?:
+    | "ap-northeast-1"
+    | "ap-northeast-2"
     | "ap-south-1"
     | "ap-southeast-1"
+    | "ap-southeast-2"
     | "eu-central-1"
     | "eu-west-1"
     | "eu-west-2"
+    | "il-central-1"
+    | "me-central-1"
     | "us-east-1"
     | "us-east-2"
     | "us-west-2"
-    | "ap-southeast-2"
-    | "ap-northeast-1"
-    | "me-central-1"
     | "us-east1"
     | "us-central1"
     | "europe-west4"
     | "asia-southeast1"
+    | "asia-northeast1"
     | "eastus"
     | "eastus2"
     | "westus3"
-    | "germanywestcentral";
+    | "germanywestcentral"
+    | "centralus";
   /**
    * Cloud account ID the BYOC infrastructure is configured for
    */
@@ -2778,6 +2977,17 @@ export type ByocInfrastructurePostRequest = {
    * CIDR range for VPC
    */
   vpcCidrRange?: string;
+  /**
+   * Human readable name for infrastructure
+   */
+  displayName?: string;
+};
+
+export type ByocInfrastructurePatchRequest = {
+  /**
+   * Human readable name for infrastructure object
+   */
+  displayName?: string;
 };
 
 export type ListAvailableOrganizationsData = {
@@ -4011,6 +4221,225 @@ export type UpdateServiceBackupConfigurationResponses = {
 
 export type UpdateServiceBackupConfigurationResponse =
   UpdateServiceBackupConfigurationResponses[keyof UpdateServiceBackupConfigurationResponses];
+
+export type DeleteServiceBackupBucketData = {
+  body?: never;
+  path: {
+    /**
+     * ID of the requested organization.
+     */
+    organizationId: string;
+    /**
+     * ID of the requested service.
+     */
+    serviceId: string;
+  };
+  query?: never;
+  url: "/v1/organizations/{organizationId}/services/{serviceId}/backupBucket";
+};
+
+export type DeleteServiceBackupBucketErrors = {
+  /**
+   * The server cannot or will not process the request due to something that is perceived to be a client error.
+   */
+  400: {
+    /**
+     * HTTP status code.
+     */
+    status?: number;
+    /**
+     * Detailed error description.
+     */
+    error?: string;
+  };
+};
+
+export type DeleteServiceBackupBucketError =
+  DeleteServiceBackupBucketErrors[keyof DeleteServiceBackupBucketErrors];
+
+export type DeleteServiceBackupBucketResponses = {
+  /**
+   * Successful response
+   */
+  200: {
+    /**
+     * HTTP status code.
+     */
+    status?: number;
+    /**
+     * Unique id assigned to every request. UUIDv4
+     */
+    requestId?: string;
+  };
+};
+
+export type DeleteServiceBackupBucketResponse =
+  DeleteServiceBackupBucketResponses[keyof DeleteServiceBackupBucketResponses];
+
+export type GetServiceBackupBucketData = {
+  body?: never;
+  path: {
+    /**
+     * ID of the organization that owns the service.
+     */
+    organizationId: string;
+    /**
+     * ID of the service.
+     */
+    serviceId: string;
+  };
+  query?: never;
+  url: "/v1/organizations/{organizationId}/services/{serviceId}/backupBucket";
+};
+
+export type GetServiceBackupBucketErrors = {
+  /**
+   * The server cannot or will not process the request due to something that is perceived to be a client error.
+   */
+  400: {
+    /**
+     * HTTP status code.
+     */
+    status?: number;
+    /**
+     * Detailed error description.
+     */
+    error?: string;
+  };
+};
+
+export type GetServiceBackupBucketError =
+  GetServiceBackupBucketErrors[keyof GetServiceBackupBucketErrors];
+
+export type GetServiceBackupBucketResponses = {
+  /**
+   * Successful response
+   */
+  200: {
+    /**
+     * HTTP status code.
+     */
+    status?: number;
+    /**
+     * Unique id assigned to every request. UUIDv4
+     */
+    requestId?: string;
+    result?: BackupBucket;
+  };
+};
+
+export type GetServiceBackupBucketResponse =
+  GetServiceBackupBucketResponses[keyof GetServiceBackupBucketResponses];
+
+export type UpdateServiceBackupBucketData = {
+  body?: BackupBucketPatchRequest;
+  path: {
+    /**
+     * ID of the requested organization.
+     */
+    organizationId: string;
+    /**
+     * ID of the requested service.
+     */
+    serviceId: string;
+  };
+  query?: never;
+  url: "/v1/organizations/{organizationId}/services/{serviceId}/backupBucket";
+};
+
+export type UpdateServiceBackupBucketErrors = {
+  /**
+   * The server cannot or will not process the request due to something that is perceived to be a client error.
+   */
+  400: {
+    /**
+     * HTTP status code.
+     */
+    status?: number;
+    /**
+     * Detailed error description.
+     */
+    error?: string;
+  };
+};
+
+export type UpdateServiceBackupBucketError =
+  UpdateServiceBackupBucketErrors[keyof UpdateServiceBackupBucketErrors];
+
+export type UpdateServiceBackupBucketResponses = {
+  /**
+   * Successful response
+   */
+  200: {
+    /**
+     * HTTP status code.
+     */
+    status?: number;
+    /**
+     * Unique id assigned to every request. UUIDv4
+     */
+    requestId?: string;
+    result?: BackupBucket;
+  };
+};
+
+export type UpdateServiceBackupBucketResponse =
+  UpdateServiceBackupBucketResponses[keyof UpdateServiceBackupBucketResponses];
+
+export type CreateServiceBackupBucketData = {
+  body?: BackupBucketPostRequest;
+  path: {
+    /**
+     * ID of the requested organization.
+     */
+    organizationId: string;
+    /**
+     * ID of the requested service.
+     */
+    serviceId: string;
+  };
+  query?: never;
+  url: "/v1/organizations/{organizationId}/services/{serviceId}/backupBucket";
+};
+
+export type CreateServiceBackupBucketErrors = {
+  /**
+   * The server cannot or will not process the request due to something that is perceived to be a client error.
+   */
+  400: {
+    /**
+     * HTTP status code.
+     */
+    status?: number;
+    /**
+     * Detailed error description.
+     */
+    error?: string;
+  };
+};
+
+export type CreateServiceBackupBucketError =
+  CreateServiceBackupBucketErrors[keyof CreateServiceBackupBucketErrors];
+
+export type CreateServiceBackupBucketResponses = {
+  /**
+   * Successful response
+   */
+  200: {
+    /**
+     * HTTP status code.
+     */
+    status?: number;
+    /**
+     * Unique id assigned to every request. UUIDv4
+     */
+    requestId?: string;
+    result?: BackupBucket;
+  };
+};
+
+export type CreateServiceBackupBucketResponse =
+  CreateServiceBackupBucketResponses[keyof CreateServiceBackupBucketResponses];
 
 export type ListAllKeysData = {
   body?: never;
@@ -5669,6 +6098,61 @@ export type RemoveByocInfrastructureResponses = {
 
 export type RemoveByocInfrastructureResponse =
   RemoveByocInfrastructureResponses[keyof RemoveByocInfrastructureResponses];
+
+export type UpdateByocInfrastructureData = {
+  body?: ByocInfrastructurePatchRequest;
+  path: {
+    /**
+     * ID of the requested organization.
+     */
+    organizationId: string;
+    /**
+     * ID of the requested BYOC Infrastructure
+     */
+    byocInfrastructureId: string;
+  };
+  query?: never;
+  url: "/v1/organizations/{organizationId}/byocInfrastructure/{byocInfrastructureId}";
+};
+
+export type UpdateByocInfrastructureErrors = {
+  /**
+   * The server cannot or will not process the request due to something that is perceived to be a client error.
+   */
+  400: {
+    /**
+     * HTTP status code.
+     */
+    status?: number;
+    /**
+     * Detailed error description.
+     */
+    error?: string;
+  };
+};
+
+export type UpdateByocInfrastructureError =
+  UpdateByocInfrastructureErrors[keyof UpdateByocInfrastructureErrors];
+
+export type UpdateByocInfrastructureResponses = {
+  /**
+   * Successful response
+   */
+  200: {
+    /**
+     * HTTP status code.
+     */
+    status?: number;
+    /**
+     * Unique id assigned to every request. UUIDv4
+     */
+    requestId?: string;
+    result?: ByocConfig;
+  };
+};
+
+export type UpdateByocInfrastructureResponse =
+  UpdateByocInfrastructureResponses[keyof UpdateByocInfrastructureResponses];
 
 export type ListReversePrivateEndpointsData = {
   body?: never;
