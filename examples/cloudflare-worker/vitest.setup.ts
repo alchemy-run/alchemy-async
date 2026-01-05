@@ -13,10 +13,6 @@ export async function setup({ provide }: TestProject) {
   }
 }
 
-export async function teardown() {
-  await MiniflareController.singleton.dispose();
-}
-
 declare module "vitest" {
   export interface ProvidedContext {
     workerUrl: string;
