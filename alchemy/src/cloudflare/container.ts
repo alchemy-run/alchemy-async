@@ -890,7 +890,7 @@ export async function createContainerApplication(
     return result.result;
   }
 
-  const error = result.errors.find((e) => e.code === 1000);
+  const error = result.errors.find((e) => e.code === 1608);
   if (error) {
     // WEIRD: json-encoded error message - might change when they release an official API
     const errorMessage = JSON.parse(error.message) as {
@@ -938,7 +938,7 @@ export async function createContainerApplication(
   }
 
   throw Error(
-    `Failed to create container application: ${result.errors?.map((e: { message: string }) => e.message).join(", ") ?? "Unknown error"}`,
+    `Failed to create container application: ${result.errors?.map((e) => `[${e.code}] ${e.message}`).join(", ") ?? "Unknown error"}`,
   );
 }
 type Region =
