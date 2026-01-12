@@ -44,6 +44,14 @@ export const adopt = z
     "Adopt resources if they already exist but are not yet managed by your Alchemy app",
   );
 
+export const eraseSecrets = z
+  .boolean()
+  .optional()
+  .default(false)
+  .describe(
+    "Skip decrypting secrets and treat them as undefined (requires --force)",
+  );
+
 export const execArgs = {
   cwd: z
     .string()
@@ -103,6 +111,7 @@ export async function execAlchemy(
     app,
     rootDir,
     profile,
+    eraseSecrets,
   }: {
     cwd?: string;
     quiet?: boolean;
@@ -120,6 +129,7 @@ export async function execAlchemy(
     app?: string;
     rootDir?: string;
     profile?: string;
+    eraseSecrets?: boolean;
   },
 ) {
   const args: string[] = [];
@@ -162,6 +172,7 @@ export async function execAlchemy(
   if (inspectWait) execArgs.push("--inspect-wait");
   if (inspectBrk) execArgs.push("--inspect-brk");
   if (adopt) args.push("--adopt");
+  if (eraseSecrets) args.push("--erase-secrets");
   if (profile) args.push(`--profile ${profile}`);
   if (app) args.push(`--app ${app}`);
   if (rootDir) {

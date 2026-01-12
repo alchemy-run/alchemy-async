@@ -102,6 +102,14 @@ export interface ScopeOptions extends ProviderCredentials {
    */
   adopt?: boolean;
   /**
+   * Skip decrypting secrets and treat them as undefined.
+   * Requires --force to be enabled.
+   * Useful for recovering from lost encryption passwords.
+   *
+   * @default false
+   */
+  eraseSecrets?: boolean;
+  /**
    * The path to the root directory of the project.
    *
    * @default process.cwd()
@@ -209,6 +217,7 @@ export class Scope {
   public readonly tunnel: boolean;
   public readonly force: boolean;
   public readonly adopt: boolean;
+  public readonly eraseSecrets: boolean;
   public readonly destroyStrategy: DestroyStrategy;
   public readonly logger: LoggerApi;
   public readonly noTrack: boolean;
@@ -252,6 +261,7 @@ export class Scope {
       destroyStrategy,
       logger,
       adopt,
+      eraseSecrets,
       dotAlchemy,
       rootDir,
       isSelected,
@@ -310,6 +320,7 @@ export class Scope {
     this.tunnel = tunnel ?? this.parent?.tunnel ?? false;
     this.force = force ?? this.parent?.force ?? false;
     this.adopt = adopt ?? this.parent?.adopt ?? false;
+    this.eraseSecrets = eraseSecrets ?? this.parent?.eraseSecrets ?? false;
     this.destroyStrategy =
       destroyStrategy ?? this.parent?.destroyStrategy ?? "sequential";
     if (this.local) {
