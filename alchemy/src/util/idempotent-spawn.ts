@@ -296,7 +296,8 @@ export async function idempotentSpawn({
           parse(`${remainder || ""}${chunk.toString("utf8")}`);
           offset += bytesRead;
         }
-        await persist();
+        // Don't persist during drain to avoid triggering watch loops
+        // State will be persisted on stop() instead
       });
     }
   }
