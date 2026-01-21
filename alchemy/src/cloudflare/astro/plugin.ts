@@ -7,13 +7,26 @@ const isAstroCheck =
   process.argv.includes("check");
 
 const alchemy = (options?: Options): AstroIntegration => {
-  return cloudflare({
+  const integration = cloudflare({
     platformProxy: getPlatformProxyOptions(
       options?.platformProxy,
       !isAstroCheck,
     ),
     ...options,
   });
+  integration.hooks["astro:config:setup"] = async (options) => {
+    options.updateConfig({
+      vite: {
+        server: {
+          watch: {
+            ignored: ["**/.alchemy/**"],
+          },
+        },
+      },
+    });
+    await integration.hooks["astro:config:setup"]?.(options);
+  };
+  return integration;
 };
 
 export default alchemy;
