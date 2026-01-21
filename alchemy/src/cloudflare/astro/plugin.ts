@@ -14,7 +14,7 @@ const alchemy = (options?: Options): AstroIntegration => {
     ),
     ...options,
   });
-  const setup = integration.hooks["astro:config:setup"]
+  const setup = integration.hooks["astro:config:setup"];
   integration.hooks["astro:config:setup"] = async (options) => {
     options.updateConfig({
       vite: {
