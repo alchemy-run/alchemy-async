@@ -24,6 +24,7 @@ import {
   isWorker,
   Worker,
   type AssetsConfig,
+  type WorkerPlacement,
   type WorkerProps,
 } from "./worker.ts";
 
@@ -217,9 +218,7 @@ export interface WorkerMetadata {
     suspended: boolean;
   }[];
   containers?: { class_name: string }[];
-  placement?: {
-    mode: "smart";
-  };
+  placement?: WorkerPlacement;
   limits?: {
     cpu_ms?: number;
   };
@@ -240,9 +239,7 @@ export async function prepareWorkerMetadata(
     };
     tags?: string[];
     unstable_cacheWorkerSettings?: boolean;
-    placement?: {
-      mode: "smart";
-    };
+    placement?: WorkerPlacement;
   },
 ): Promise<WorkerMetadata> {
   const oldSettings = await (

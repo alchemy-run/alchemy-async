@@ -78,7 +78,7 @@ export const worker = await Worker("api", {
     cpu_ms: 50_000                        // Max CPU time in ms (default: 30_000)
   },
   // Other Advanced 🧪 & commonly used options
-  placement: { mode: "smart" },          // Smart placement to optimize network placement for latency
+  placement: { mode: "smart" },          // Placement to optimize network latency to back-end infrastructure
   assets: { path: "./public", run_worker_first: false }, // Static assets configuration
   crons: ["0 0 * * *"],                  // Scheduled cron triggers (standard cron syntax)
   eventSources: [                        // Background event sources (queues, streams)
@@ -682,27 +682,87 @@ export const authWorker = await Worker("auth", {
 - **API Gateway pattern** with unidirectional data flow
 
 
-### Smart Placement (performance optimization)
+### Placement (performance optimization)
 
-Enable automatic network optimization by configuring smart placement to reduce latency and improve performance:
+Control where your Worker runs to reduce latency to back-end infrastructure. By default, Workers run in the data center closest to the incoming request. Use placement options when your Worker makes requests to databases or APIs and would benefit from running closer to that infrastructure.
+
+:::caution
+Placement options are **mutually exclusive** - only specify one option at a time.
+:::
+
+#### Smart Placement
+
+Automatically optimize placement based on traffic patterns. Use when your Worker connects to multiple back-end services or you don't know the exact location of your infrastructure:
 
 ```ts
 // alchemy.run.ts
-export const optimizedWorker = await Worker("api", {
+export const worker = await Worker("api", {
   entrypoint: "./src/api.ts",
-  placement: {
-    mode: "smart"  // Automatically optimize placement for performance
-  }
+  placement: { mode: "smart" }
 });
 ```
 
-**Benefits:**
-- ✅ Automatic network optimization based on performance metrics
-- ✅ Reduced latency for global users
-- ✅ No infrastructure management required
-- ✅ Seamless scaling across Cloudflare's network
+#### Region Placement Hints
 
-**When to use:** Global applications, latency-sensitive APIs, high-traffic workloads, applications with geographically distributed users.
+Explicitly place your Worker near a specific cloud provider region. Use when your back-end infrastructure runs in a known AWS, GCP, or Azure region:
+
+```ts
+// Place near AWS us-east-1
+const awsWorker = await Worker("api", {
+  entrypoint: "./src/api.ts",
+  placement: { region: "aws:us-east-1" }
+});
+
+// Place near GCP us-east4
+const gcpWorker = await Worker("api", {
+  entrypoint: "./src/api.ts",
+  placement: { region: "gcp:us-east4" }
+});
+
+// Place near Azure West Europe
+const azureWorker = await Worker("api", {
+  entrypoint: "./src/api.ts",
+  placement: { region: "azure:westeurope" }
+});
+```
+
+**Supported providers:**
+- **AWS**: `aws:us-east-1`, `aws:us-west-2`, `aws:eu-central-1`, etc.
+- **GCP**: `gcp:us-east4`, `gcp:europe-west1`, `gcp:asia-east1`, etc.
+- **Azure**: `azure:westeurope`, `azure:eastus`, `azure:southeastasia`, etc.
+
+#### Host Placement Hints (Layer 4)
+
+Probe a TCP endpoint to determine optimal placement. Use for database hosts or other TCP services not in a major cloud provider:
+
+```ts
+// Place near a PostgreSQL database
+const worker = await Worker("api", {
+  entrypoint: "./src/api.ts",
+  placement: { host: "my-database.example.com:5432" }
+});
+```
+
+#### Hostname Placement Hints (Layer 7)
+
+Probe an HTTP endpoint to determine optimal placement. Use for API endpoints or HTTP services not in a major cloud provider:
+
+```ts
+// Place near an API server
+const worker = await Worker("api", {
+  entrypoint: "./src/api.ts",
+  placement: { hostname: "my-api.example.com" }
+});
+```
+
+**Placement Options Summary:**
+
+| Option | Best For | Example |
+|--------|----------|---------|
+| `mode: "smart"` | Multiple back-ends or unknown locations | `{ mode: "smart" }` |
+| `region` | Single back-end in a known cloud region | `{ region: "aws:us-east-1" }` |
+| `host` | TCP services (databases) not in major clouds | `{ host: "db.example.com:5432" }` |
+| `hostname` | HTTP services (APIs) not in major clouds | `{ hostname: "api.example.com" }` |
 
 :::note
 You can learn more about [Smart Placement](https://developers.cloudflare.com/workers/configuration/smart-placement/) in the Cloudflare documentation.
