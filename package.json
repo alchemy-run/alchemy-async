@@ -2,13 +2,30 @@
   "name": "alchemy-mono",
   "version": "0.0.0",
   "private": true,
-  "type": "module",
-  "module": "./lib/index.js",
   "license": "Apache-2.0",
   "repository": {
     "type": "git",
     "url": "https://github.com/alchemy-run/alchemy"
   },
+  "workspaces": {
+    "catalog": {
+      "@cloudflare/containers": "^0.0.30",
+      "@cloudflare/workers-types": "^4.20250805.0",
+      "@cloudflare/vite-plugin": "^1.13.14",
+      "vite": "^7.1.9",
+      "typescript": "^5.8.3",
+      "wrangler": "^4.42.2"
+    },
+    "packages": [
+      "alchemy-web",
+      "alchemy",
+      "alchemy/templates/*",
+      "examples/*",
+      "stacks"
+    ]
+  },
+  "type": "module",
+  "module": "./lib/index.js",
   "scripts": {
     "build:clean": "git clean -fqdx . && bun i && bun run build && bun i && bun build:monorepo && bun download:env",
     "build:monorepo": "cd ./example-monorepo && bun i && cp .env.example .env && cd ..",
@@ -38,23 +55,6 @@
     "format": "oxfmt '.' '!./alchemy/lib/' '!/**/*.mdx' '!/examples/**/*.gen.ts' '!/examples/cloudflare-tanstack-start/src/routeTree.gen.ts' '!/examples/cloudflare-redwood/worker-configuration.d.ts' '!/examples/cloudflare-tanstack-start/.output/' '!/examples/cloudflare-nuxt-pipeline/.output/' '!/alchemy-web/src/scripts/posthog.js' '!**/*.json' '!**/*.md' '!**/*.css' '!**/*.html' '!**/*.js'",
     "format:check": "bun run format -- --check"
   },
-  "workspaces": {
-    "catalog": {
-      "@cloudflare/containers": "^0.0.30",
-      "@cloudflare/workers-types": "^4.20250805.0",
-      "@cloudflare/vite-plugin": "^1.13.14",
-      "vite": "^7.1.9",
-      "typescript": "^5.8.3",
-      "wrangler": "^4.42.2"
-    },
-    "packages": [
-      "alchemy-web",
-      "alchemy",
-      "alchemy/templates/*",
-      "examples/*",
-      "stacks"
-    ]
-  },
   "devDependencies": {
     "@cloudflare/workers-types": "catalog:",
     "@hey-api/openapi-ts": "^0.84.3",
@@ -70,12 +70,10 @@
     "glob": "^11.0.3",
     "jsonc-parser": "^3.3.1",
     "openai": "^4.103.0",
+    "oxfmt": "^0.27.0",
     "typescript": "catalog:",
     "vite": "catalog:",
     "vitest": "^3.1.4",
     "yaml": "^2.7.1"
-  },
-  "dependencies": {
-    "oxfmt": "^0.5.0"
   }
 }

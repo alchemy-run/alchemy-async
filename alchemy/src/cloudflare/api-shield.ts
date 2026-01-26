@@ -18,8 +18,9 @@ import { findZoneForHostname } from "./zone.ts";
 /**
  * Properties for creating or updating Schema Validation
  */
-export interface APIShieldProps<S extends string | URL | OpenAPIV3.Document>
-  extends CloudflareApiOptions {
+export interface APIShieldProps<
+  S extends string | URL | OpenAPIV3.Document,
+> extends CloudflareApiOptions {
   /**
    * The zone to configure schema validation for
    */

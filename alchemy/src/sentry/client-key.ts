@@ -340,7 +340,11 @@ async function findClientKeyByName(
  */
 async function getClientKeyName(
   api: SentryApi,
-  { organization, project, keyId }: {
+  {
+    organization,
+    project,
+    keyId,
+  }: {
     organization: string;
     project: string;
     keyId: string;

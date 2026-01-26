@@ -88,8 +88,10 @@ export function isTunnelRoute(resource: any): resource is TunnelRoute {
 /**
  * Output returned after TunnelRoute creation/update
  */
-export interface TunnelRoute
-  extends Omit<TunnelRouteProps, "delete" | "tunnel" | "routeId"> {
+export interface TunnelRoute extends Omit<
+  TunnelRouteProps,
+  "delete" | "tunnel" | "routeId"
+> {
   /**
    * The ID of the route
    */

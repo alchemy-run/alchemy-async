@@ -13,8 +13,7 @@ import { inferZoneIdFromPattern } from "./route.ts";
 import type { Zone } from "./zone.ts";
 
 export interface R2BucketCustomDomainProps
-  extends CloudflareApiOptions,
-    R2BucketCustomDomainOptions {
+  extends CloudflareApiOptions, R2BucketCustomDomainOptions {
   /**
    * The bucket to attach the domain to.
    */

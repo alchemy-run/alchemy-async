@@ -184,8 +184,8 @@ export class Scope {
 
   public static readonly KIND = "alchemy::Scope" as const;
 
-  public static storage = globalThis.__ALCHEMY_STORAGE__ ??=
-    new AsyncLocalStorage<Scope>();
+  public static storage = (globalThis.__ALCHEMY_STORAGE__ ??=
+    new AsyncLocalStorage<Scope>());
 
   public static getScope(): Scope | undefined {
     return Scope.storage.getStore();

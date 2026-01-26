@@ -242,7 +242,8 @@ export namespace WorkerBundleSource {
   }
 
   export interface ESBuildProps
-    extends WorkerBundleSource.BaseProps,
+    extends
+      WorkerBundleSource.BaseProps,
       Omit<
         esbuild.BuildOptions,
         "entryPoints" | "format" | "absWorkingDir" | "outdir"

@@ -12,8 +12,9 @@ import { findZoneForHostname, type Zone } from "./zone.ts";
 /**
  * Properties for creating or updating a Ruleset
  */
-export interface RulesetProps<Phase extends RulePhase>
-  extends Partial<CloudflareApiOptions> {
+export interface RulesetProps<
+  Phase extends RulePhase,
+> extends Partial<CloudflareApiOptions> {
   /**
    * The zone to apply the ruleset to
    */

@@ -45,8 +45,10 @@ export function isDispatchNamespace(
 /**
  * Output returned after Dispatch Namespace creation/update
  */
-export interface DispatchNamespace
-  extends Omit<DispatchNamespaceProps, "delete"> {
+export interface DispatchNamespace extends Omit<
+  DispatchNamespaceProps,
+  "delete"
+> {
   type: "dispatch_namespace";
   /**
    * The name of the namespace

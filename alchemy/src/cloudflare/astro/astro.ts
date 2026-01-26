@@ -15,8 +15,10 @@ import type { Worker } from "../worker.ts";
  * Properties for creating an Astro resource.
  * Extends WebsiteProps, allowing customization of the underlying Website.
  */
-export interface AstroProps<B extends Bindings>
-  extends Omit<WebsiteProps<B>, "spa"> {
+export interface AstroProps<B extends Bindings> extends Omit<
+  WebsiteProps<B>,
+  "spa"
+> {
   output?: "server" | "static";
 }
 

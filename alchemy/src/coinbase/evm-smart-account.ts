@@ -48,8 +48,7 @@ export interface EvmSmartAccountProps extends CoinbaseClientOptions {
   faucet?: FaucetConfig;
 }
 
-export interface EvmSmartAccount
-  extends Resource<"coinbase::evm-smart-account"> {
+export interface EvmSmartAccount extends Resource<"coinbase::evm-smart-account"> {
   /**
    * The smart account name in CDP
    */
