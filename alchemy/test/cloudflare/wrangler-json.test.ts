@@ -1015,7 +1015,7 @@ describe("WranglerJson Resource", () => {
   test("create worker with subdomain binding", async (scope) => {
     const workerName = `${BRANCH_PREFIX}-test-worker-subdomain-binding`;
 
-    const tempDir = path.join(".out", "alchemy-direct-queue-test");
+    const tempDir = path.join(".out", "alchemy-subdomain-binding-test");
     const entrypoint = path.join(tempDir, "worker.ts");
 
     let worker: Worker | undefined;
