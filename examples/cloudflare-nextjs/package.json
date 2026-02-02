@@ -12,8 +12,8 @@
     "destroy": "alchemy destroy"
   },
   "dependencies": {
-    "@opennextjs/cloudflare": "^1.6.5",
-    "next": "15.4.6",
+    "@opennextjs/cloudflare": "^1.16.2",
+    "next": "16.1.6",
     "react": "19.1.0",
     "react-dom": "19.1.0"
   },
