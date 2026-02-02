@@ -1,5 +1,6 @@
 import type esbuild from "esbuild";
 import assert from "node:assert";
+import crypto from "node:crypto";
 import fs from "node:fs/promises";
 import path from "pathe";
 import type { WorkerBundle } from "../worker-bundle.ts";
@@ -35,11 +36,9 @@ export function createWasmPlugin() {
           build.initialOptions.outdir,
         );
 
-        // Use relative path as module specifier for portability (note: the `?module` suffix is not needed in workerd)
-        const specifier = path.relative(
-          build.initialOptions.absWorkingDir,
-          copyFrom,
-        );
+        // Use path hash as module specifier for portability (note: the `?module` suffix is not needed in workerd)
+        const hash = crypto.createHash("sha256").update(copyFrom).digest("hex");
+        const specifier = `${hash}.wasm`;
 
         // Copy to outdir so it's included in the upload
         const copyTo = path.join(outdir, specifier);
