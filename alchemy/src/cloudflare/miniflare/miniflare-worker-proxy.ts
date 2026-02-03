@@ -197,7 +197,7 @@ const writeMiniflareResponseToNode = (
     // Request failed error="Unable to reach the origin service. The service may be down or it may not be
     // responding to traffic from cloudflared: net/http: HTTP/1.x transport connection broken: too many
     // transfer encodings: [\"chunked\" \"chunked\"]"
-    if (key !== "transfer-encoding" && key !== "set-cookie") {
+    if (key !== "transfer-encoding") {
       out.appendHeader(key, value);
     }
   });
