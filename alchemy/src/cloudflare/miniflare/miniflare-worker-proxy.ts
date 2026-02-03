@@ -191,12 +191,23 @@ const writeMiniflareResponseToNode = (
   out: http.ServerResponse,
 ) => {
   out.statusCode = res.status;
+
+  // Node.js http.ServerResponse.setHeader() will overwrite previous headers with same name instead
+  // of appending them. In the case of `set-cookie` headers, this causes only the last
+  // cookie to bet set. We handle them manually here to prevent this
+  const setCookies = res.headers.getSetCookie() 
+  if (setCookies.length > 0) {
+    out.setHeader("set-cookie", setCookies);
+  }
+  
   res.headers.forEach((value, key) => {
     // The `transfer-encoding` header prevents Cloudflare Tunnels from working because of the following error:
     // Request failed error="Unable to reach the origin service. The service may be down or it may not be
     // responding to traffic from cloudflared: net/http: HTTP/1.x transport connection broken: too many
     // transfer encodings: [\"chunked\" \"chunked\"]"
-    if (key !== "transfer-encoding") {
+    //
+    // Also ignore set-cookie since we handle it above
+    if (key !== "transfer-encoding" && key !== "set-cookie") {
       out.setHeader(key, value);
     }
   });
