@@ -191,7 +191,6 @@ const writeMiniflareResponseToNode = (
   out: http.ServerResponse,
 ) => {
   out.statusCode = res.status;
-  
   res.headers.forEach((value, key) => {
     // The `transfer-encoding` header prevents Cloudflare Tunnels from working because of the following error:
     // Request failed error="Unable to reach the origin service. The service may be down or it may not be
