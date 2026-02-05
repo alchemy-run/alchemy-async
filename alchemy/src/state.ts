@@ -40,4 +40,6 @@ export interface StateStore {
   all(): Promise<Record<string, State>>;
   set(key: string, value: State): Promise<void>;
   delete(key: string): Promise<void>;
+  /** Clear all resources in the current scope (used with forceUpdate) */
+  clearScope?(): Promise<void>;
 }

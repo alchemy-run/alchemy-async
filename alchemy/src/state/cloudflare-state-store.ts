@@ -62,6 +62,30 @@ export class CloudflareStateStore extends StateStoreProxy {
 
   async provision(): Promise<StateStoreProxy.Dispatch> {
     const { url, token } = await provision(this.options);
+    
+    // If forceUpdate is enabled, clear the state for this scope
+    if (this.options.forceUpdate) {
+      logger.log(`[CloudflareStateStore] forceUpdate enabled - clearing state for scope ${this.scope.chain.join('/')}`);
+      const clearRequest: StateStoreProxy.Request<'clearScope', { chain: string[] }> = {
+        method: 'clearScope' as any,
+        params: [] as any,
+        context: { chain: this.scope.chain },
+      };
+      const clearResponse = await safeFetch(url, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(clearRequest),
+      });
+      if (clearResponse.ok) {
+        logger.log(`[CloudflareStateStore] State cleared successfully`);
+      } else {
+        logger.warn(`[CloudflareStateStore] Failed to clear state: ${clearResponse.status}`);
+      }
+    }
+    
     return async (method, params) => {
       const request: StateStoreProxy.Request<
         typeof method,

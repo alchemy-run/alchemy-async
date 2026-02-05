@@ -50,6 +50,9 @@ export class SQLiteStateStoreOperations implements StateStore {
         const [key] = params as StateStoreProxy.API["delete"]["params"];
         return this.delete(key);
       }
+      case "clearScope": {
+        return this.clearScope();
+      }
       default:
         assertNever(method);
     }
@@ -148,5 +151,11 @@ export class SQLiteStateStoreOperations implements StateStore {
       };
     }
     return record;
+  }
+  async clearScope() {
+    // Delete all resources in the current scope
+    await this.db
+      .delete(schema.resources)
+      .where(eq(schema.resources.scope, this.context.chain));
   }
 }
