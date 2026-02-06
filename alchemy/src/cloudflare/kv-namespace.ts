@@ -1,3 +1,4 @@
+import * as mf from "miniflare";
 import type { Context } from "../context.ts";
 import { Resource, ResourceKind } from "../resource.ts";
 import { Scope } from "../scope.ts";
@@ -13,7 +14,6 @@ import {
   type CloudflareApiOptions,
 } from "./api.ts";
 import { deleteMiniflareBinding } from "./miniflare/delete.ts";
-import * as mf from "miniflare";
 import { getDefaultPersistPath } from "./miniflare/paths.ts";
 
 /**
@@ -248,7 +248,11 @@ const _KVNamespace = Resource(
 
     if (this.phase === "delete") {
       if (this.output.dev?.id) {
-        await deleteMiniflareBinding(this.scope, "kv", this.output.dev.id);
+        await deleteMiniflareBinding(
+          this.scope,
+          "kv",
+          this.output.dev.id,
+        ).catch(() => {});
       }
       if (this.output.namespaceId && props.delete !== false) {
         await deleteKVNamespace(api, this.output.namespaceId);
