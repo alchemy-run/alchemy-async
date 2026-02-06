@@ -1315,8 +1315,7 @@ const _Worker = Resource(
       } else {
         const previewsEnabled =
           options.durableObjects.length === 0 &&
-          options.externalDurableObjects.length === 0 &&
-          !props.logpush;
+          options.externalDurableObjects.length === 0;
         await enableWorkerSubdomain(
           api,
           scriptName,
