@@ -1142,6 +1142,7 @@ const _Worker = Resource(
           local: true,
           dispatchNamespace: options.dispatchNamespace,
           containers: options.containers,
+          hasDurableObjects: options.durableObjects.length > 0,
         },
       );
       return {
@@ -1283,6 +1284,7 @@ const _Worker = Resource(
         local: false,
         dispatchNamespace: options.dispatchNamespace,
         containers: options.containers,
+        hasDurableObjects: options.durableObjects.length > 0,
         result,
         api,
       },
@@ -1369,6 +1371,7 @@ async function provisionResources<B extends Bindings>(
         local: true;
         dispatchNamespace: string | undefined;
         containers: Container[] | undefined;
+        hasDurableObjects: boolean;
         result?: undefined;
         api?: undefined;
       }
@@ -1377,6 +1380,7 @@ async function provisionResources<B extends Bindings>(
         local: false;
         dispatchNamespace: string | undefined;
         containers: Container[] | undefined;
+        hasDurableObjects: boolean;
         result: PutWorkerResult;
         api: CloudflareApi;
       },
@@ -1514,6 +1518,7 @@ async function provisionResources<B extends Bindings>(
         ? WorkerSubdomain("url", {
             scriptName: options.name,
             previewVersionId: props.version ? options.result?.id : undefined,
+            previewsEnabled: !options.hasDurableObjects,
             retain: !!props.version,
             dev: options.local,
             ...input.api,

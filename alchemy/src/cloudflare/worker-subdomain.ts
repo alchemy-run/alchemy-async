@@ -22,6 +22,14 @@ interface WorkerSubdomainProps extends CloudflareApiOptions {
    */
   previewVersionId?: string;
   /**
+   * Whether to enable previews for the subdomain.
+   *
+   * Must be `false` when the worker has Durable Object bindings.
+   *
+   * @default true
+   */
+  previewsEnabled?: boolean;
+  /**
    * Prevents the subdomain from being deleted when the worker is deleted.
    *
    * @default false
@@ -64,7 +72,7 @@ export const WorkerSubdomain = Resource(
       }
       return this.destroy();
     }
-    await enableWorkerSubdomain(api, props.scriptName);
+    await enableWorkerSubdomain(api, props.scriptName, props.previewsEnabled ?? true);
     const subdomain = await getAccountSubdomain(api);
     const base = `${subdomain}.workers.dev`;
     let url: string;
@@ -102,6 +110,7 @@ export async function disableWorkerSubdomain(
 export async function enableWorkerSubdomain(
   api: CloudflareApi,
   scriptName: string,
+  previewsEnabled: boolean = true,
 ) {
   await withExponentialBackoff(
     () =>
@@ -111,7 +120,7 @@ export async function enableWorkerSubdomain(
           `/accounts/${api.accountId}/workers/scripts/${scriptName}/subdomain`,
           {
             enabled: true,
-            previews_enabled: true,
+            previews_enabled: previewsEnabled,
           },
         ),
       ),
