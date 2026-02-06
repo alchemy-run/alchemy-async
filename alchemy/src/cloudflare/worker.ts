@@ -54,7 +54,11 @@ import {
   getWorkerSettings,
   prepareWorkerMetadata,
 } from "./worker-metadata.ts";
-import { WorkerSubdomain, disableWorkerSubdomain } from "./worker-subdomain.ts";
+import {
+  WorkerSubdomain,
+  disableWorkerSubdomain,
+  enableWorkerSubdomain,
+} from "./worker-subdomain.ts";
 import { createTail } from "./worker-tail.ts";
 import {
   Workflow,
@@ -1225,6 +1229,17 @@ const _Worker = Resource(
           namespace: options.dispatchNamespace,
         })
       : undefined;
+
+    // When adding DOs to an existing worker, the subdomain may have previews enabled.
+    // Cloudflare rejects deploying a worker with DOs when previews are enabled on the subdomain,
+    // so we must disable previews before uploading the worker script.
+    if (
+      options.durableObjects.length > 0 &&
+      (props.url ?? !options.dispatchNamespace)
+    ) {
+      await enableWorkerSubdomain(api, options.name, false);
+    }
+
     let result: PutWorkerResult;
 
     if (this.scope.watch) {
