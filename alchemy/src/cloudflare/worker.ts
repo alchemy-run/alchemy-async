@@ -181,6 +181,14 @@ export interface BaseWorkerProps<
   url?: boolean;
 
   /**
+   * Whether to enable preview subdomains for this worker
+   *
+   * If true, the worker will be available at {name}-preview.{subdomain}.workers.dev
+   * @default false if durable objects are used, otherwise true
+   */
+  previewSubdomains?: boolean;
+
+  /**
    * Specify the observability behavior of the Worker.
    *
    * @see https://developers.cloudflare.com/workers/wrangler/configuration/#observability
@@ -1306,7 +1314,11 @@ const _Worker = Resource(
           options.durableObjects.length === 0 &&
           options.externalDurableObjects.length === 0 &&
           !props.logpush;
-        await enableWorkerSubdomain(api, scriptName, previewsEnabled);
+        await enableWorkerSubdomain(
+          api,
+          scriptName,
+          props.previewSubdomains ?? previewsEnabled,
+        );
       }
     }
 
