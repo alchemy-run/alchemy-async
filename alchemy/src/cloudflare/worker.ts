@@ -1041,7 +1041,6 @@ const _Worker = Resource(
       const containers: Container[] = [];
       const workflows: Workflow[] = [];
       const durableObjects: DurableObjectNamespace[] = [];
-      const externalDurableObjects: DurableObjectNamespace[] = [];
       for (const binding of Object.values(props.bindings ?? {})) {
         if (typeof binding !== "object") continue;
 
@@ -1059,12 +1058,6 @@ const _Worker = Resource(
           (!binding.scriptName || binding.scriptName === workerName)
         ) {
           durableObjects.push(binding);
-        } else if (
-          binding.type === "durable_object_namespace" &&
-          binding.scriptName &&
-          binding.scriptName !== workerName
-        ) {
-          externalDurableObjects.push(binding);
         }
       }
 
@@ -1079,7 +1072,6 @@ const _Worker = Resource(
         containers,
         workflows,
         durableObjects,
-        externalDurableObjects,
       };
     })();
     const scriptName = options.name;
@@ -1313,9 +1305,7 @@ const _Worker = Resource(
       if (props.url === false) {
         await disableWorkerSubdomain(api, scriptName);
       } else {
-        const previewsEnabled =
-          options.durableObjects.length === 0 &&
-          options.externalDurableObjects.length === 0;
+        const previewsEnabled = options.durableObjects.length === 0;
         await enableWorkerSubdomain(
           api,
           scriptName,
