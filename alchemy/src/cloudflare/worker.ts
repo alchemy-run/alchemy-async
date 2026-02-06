@@ -1268,7 +1268,10 @@ const _Worker = Resource(
       });
       this.onCleanup(() => tail?.close());
     } else {
-      const retryForever = <T>(operation: () => Promise<T>) =>
+      // cloudflare has awkward sequencing requirements for modifying subdomains
+      // because conflicts with Durable Objects and preview_enabled is stateful
+      // to solve this, we try and do both in parallel and push them through
+      const bruteForce = <T>(operation: () => Promise<T>) =>
         withExponentialBackoff(
           operation,
           (error) => {
@@ -1287,8 +1290,8 @@ const _Worker = Resource(
         );
       const scriptBundle = await bundle.create();
       const [_, _result] = await Promise.all([
-        retryForever(updateSubdomain),
-        retryForever(() =>
+        bruteForce(updateSubdomain),
+        bruteForce(() =>
           putWorker(api, {
             ...props,
             workerName: options.name,
