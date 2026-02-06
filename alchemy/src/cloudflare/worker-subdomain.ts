@@ -72,11 +72,7 @@ export const WorkerSubdomain = Resource(
       }
       return this.destroy();
     }
-    await enableWorkerSubdomain(
-      api,
-      props.scriptName,
-      props.previewsEnabled ?? true,
-    );
+    await enableWorkerSubdomain(api, props.scriptName, props.previewsEnabled ?? true);
     const subdomain = await getAccountSubdomain(api);
     const base = `${subdomain}.workers.dev`;
     let url: string;
