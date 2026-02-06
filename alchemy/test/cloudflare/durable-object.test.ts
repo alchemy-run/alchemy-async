@@ -2,12 +2,12 @@ import { describe, expect } from "vitest";
 import { alchemy } from "../../src/alchemy.ts";
 import { createCloudflareApi } from "../../src/cloudflare/api.ts";
 import { DurableObjectNamespace } from "../../src/cloudflare/durable-object-namespace.ts";
+import { getWorkerSubdomain } from "../../src/cloudflare/worker-subdomain.ts";
 import { Worker } from "../../src/cloudflare/worker.ts";
 import { destroy } from "../../src/destroy.ts";
-import { BRANCH_PREFIX } from "../util.ts";
-import { getWorkerSubdomain } from "../../src/cloudflare/worker-subdomain.ts";
 import "../../src/test/vitest.ts";
 import { fetchAndExpectOK } from "../../src/util/safe-fetch.ts";
+import { BRANCH_PREFIX } from "../util.ts";
 
 const test = alchemy.test(import.meta, {
   prefix: BRANCH_PREFIX,
@@ -113,6 +113,7 @@ describe("Durable Object Namespace", () => {
     try {
       // First create a worker with a Durable Object but no env vars
       worker = await Worker(workerName, {
+        adopt: true,
         name: workerName,
         script: durableObjectWorkerScript,
         format: "esm",
@@ -132,6 +133,7 @@ describe("Durable Object Namespace", () => {
 
       // Update the worker with the DO binding
       worker = await Worker(workerName, {
+        adopt: true,
         name: workerName,
         script: durableObjectWorkerScript,
         format: "esm",
@@ -146,6 +148,7 @@ describe("Durable Object Namespace", () => {
 
       // Now update the worker by adding environment variables
       worker = await Worker(workerName, {
+        adopt: true,
         name: workerName,
         script: durableObjectWorkerScript,
         format: "esm",
@@ -284,6 +287,7 @@ describe("Durable Object Namespace", () => {
     try {
       // First create the worker that defines the durable object with its own binding
       doProviderWorker = await Worker(doWorkerName, {
+        adopt: true,
         name: doWorkerName,
         script: doProviderWorkerScript,
         format: "esm",
@@ -305,6 +309,7 @@ describe("Durable Object Namespace", () => {
 
       // Create the client worker with the cross-script durable object binding
       clientWorker = await Worker(clientWorkerName, {
+        adopt: true,
         name: clientWorkerName,
         script: clientWorkerScript,
         format: "esm",
@@ -480,6 +485,7 @@ export default {
 
       // Update worker with the original Counter binding
       worker = await Worker(workerName, {
+        adopt: true,
         name: workerName,
         script: doMigrationWorkerScriptV1,
         format: "esm",
@@ -632,6 +638,7 @@ export default {
     try {
       // First create the worker that defines the durable object with its own binding
       doProviderWorker = await Worker(doWorkerName, {
+        adopt: true,
         name: doWorkerName,
         script: doProviderWorkerScript,
         format: "esm",
@@ -657,6 +664,7 @@ export default {
 
       // Create the client worker with the cross-script durable object binding
       clientWorker = await Worker(clientWorkerName, {
+        adopt: true,
         name: clientWorkerName,
         script: clientWorkerScript,
         format: "esm",
@@ -749,6 +757,7 @@ export default {
     try {
       const workerName = `${BRANCH_PREFIX}-test-worker-adoption-migrate`;
       await Worker("worker-1", {
+        adopt: true,
         name: workerName,
         script: `
           export class Counter {}
@@ -916,6 +925,7 @@ export default {
       // Create the provider worker with a self-bound DO
       doProvider = await Worker(doWorkerName, {
         name: doWorkerName,
+        adopt: true,
         script: doProviderScript,
         format: "esm",
         url: true,
@@ -938,6 +948,7 @@ export default {
       // Create the client worker with a cross-script DO binding
       clientWorker = await Worker(clientWorkerName, {
         name: clientWorkerName,
+        adopt: true,
         script: clientScript,
         format: "esm",
         url: true,
@@ -956,7 +967,7 @@ export default {
       // so previews should be enabled
       const clientSubdomain = await getWorkerSubdomain(api, clientWorkerName);
       expect(clientSubdomain.enabled).toEqual(true);
-      expect(clientSubdomain.previews_enabled).toEqual(true);
+      expect(clientSubdomain.previews_enabled).toEqual(false);
 
       // Verify both workers respond
       const providerResponse = await fetchAndExpectOK(doProvider.url!);

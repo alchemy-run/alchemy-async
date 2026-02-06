@@ -55,7 +55,7 @@ import {
   prepareWorkerMetadata,
 } from "./worker-metadata.ts";
 import {
-  WorkerSubdomain,
+  createWorkerUrl,
   disableWorkerSubdomain,
   enableWorkerSubdomain,
 } from "./worker-subdomain.ts";
@@ -1033,6 +1033,7 @@ const _Worker = Resource(
       const containers: Container[] = [];
       const workflows: Workflow[] = [];
       const durableObjects: DurableObjectNamespace[] = [];
+      const externalDurableObjects: DurableObjectNamespace[] = [];
       for (const binding of Object.values(props.bindings ?? {})) {
         if (typeof binding !== "object") continue;
 
@@ -1050,6 +1051,12 @@ const _Worker = Resource(
           (!binding.scriptName || binding.scriptName === workerName)
         ) {
           durableObjects.push(binding);
+        } else if (
+          binding.type === "durable_object_namespace" &&
+          binding.scriptName &&
+          binding.scriptName !== workerName
+        ) {
+          externalDurableObjects.push(binding);
         }
       }
 
@@ -1064,8 +1071,10 @@ const _Worker = Resource(
         containers,
         workflows,
         durableObjects,
+        externalDurableObjects,
       };
     })();
+    const scriptName = options.name;
 
     if (this.phase === "delete") {
       // Heuristic: we must detect the case where this is the Worker wrapped in the old Website nested scope and not delete it
@@ -1230,16 +1239,6 @@ const _Worker = Resource(
         })
       : undefined;
 
-    // When adding DOs to an existing worker, the subdomain may have previews enabled.
-    // Cloudflare rejects deploying a worker with DOs when previews are enabled on the subdomain,
-    // so we must disable previews before uploading the worker script.
-    if (
-      options.durableObjects.length > 0 &&
-      (props.url ?? !options.dispatchNamespace)
-    ) {
-      await enableWorkerSubdomain(api, options.name, false);
-    }
-
     let result: PutWorkerResult;
 
     if (this.scope.watch) {
@@ -1261,15 +1260,54 @@ const _Worker = Resource(
       });
       this.onCleanup(() => tail?.close());
     } else {
-      result = await putWorker(api, {
-        ...props,
-        workerName: options.name,
-        scriptBundle: await bundle.create(),
-        dispatchNamespace: options.dispatchNamespace,
-        compatibilityDate: options.compatibilityDate,
-        compatibilityFlags: options.compatibilityFlags,
-        assetUploadResult: assets,
-      });
+      const retryForever = <T>(operation: () => Promise<T>) =>
+        withExponentialBackoff(
+          operation,
+          (error) => {
+            operation;
+            return (
+              error instanceof CloudflareApiError &&
+              error.status === 400 &&
+              error.message.includes(
+                "Cannot use Durable Objects with Preview URLs",
+              )
+            );
+          },
+          10,
+          100,
+          1000,
+        );
+      const scriptBundle = await bundle.create();
+      const [_, _result] = await Promise.all([
+        retryForever(updateSubdomain),
+        retryForever(() =>
+          putWorker(api, {
+            ...props,
+            workerName: options.name,
+            scriptBundle,
+            dispatchNamespace: options.dispatchNamespace,
+            compatibilityDate: options.compatibilityDate,
+            compatibilityFlags: options.compatibilityFlags,
+            assetUploadResult: assets,
+          }),
+        ),
+      ]);
+      result = _result;
+    }
+
+    async function updateSubdomain() {
+      if (options.dispatchNamespace) {
+        return;
+      }
+      if (props.url === false) {
+        await disableWorkerSubdomain(api, scriptName);
+      } else {
+        const previewsEnabled =
+          options.durableObjects.length === 0 &&
+          options.externalDurableObjects.length === 0 &&
+          !props.logpush;
+        await enableWorkerSubdomain(api, scriptName, previewsEnabled);
+      }
     }
 
     if (props.crons) {
@@ -1289,7 +1327,7 @@ const _Worker = Resource(
       ),
     );
 
-    const { domains, routes, subdomain } = await provisionResources(
+    const { domains, routes } = await provisionResources(
       {
         ...props,
         adopt,
@@ -1322,7 +1360,14 @@ const _Worker = Resource(
       createdAt: this.output?.createdAt ?? now,
       updatedAt: now,
       eventSources: props.eventSources,
-      url: subdomain?.url,
+      url:
+        props.url !== false
+          ? await createWorkerUrl(
+              api,
+              scriptName,
+              props.version ? result?.id : undefined,
+            )
+          : undefined,
       assets: props.assets,
       crons: props.crons,
       tailConsumers: props.tailConsumers,
@@ -1376,29 +1421,31 @@ const assertUnique = <T, Key extends keyof T>(
   }
 };
 
+type ProvisionOptions =
+  | {
+      name: string;
+      local: true;
+      dispatchNamespace: string | undefined;
+      containers: Container[] | undefined;
+      hasDurableObjects: boolean;
+      result?: undefined;
+      api?: undefined;
+    }
+  | {
+      name: string;
+      local: false;
+      dispatchNamespace: string | undefined;
+      containers: Container[] | undefined;
+      hasDurableObjects: boolean;
+      result: PutWorkerResult;
+      api: CloudflareApi;
+    };
+
 async function provisionResources<B extends Bindings>(
   props: WorkerProps<B> & {
     adopt: boolean;
   },
-  options:
-    | {
-        name: string;
-        local: true;
-        dispatchNamespace: string | undefined;
-        containers: Container[] | undefined;
-        hasDurableObjects: boolean;
-        result?: undefined;
-        api?: undefined;
-      }
-    | {
-        name: string;
-        local: false;
-        dispatchNamespace: string | undefined;
-        containers: Container[] | undefined;
-        hasDurableObjects: boolean;
-        result: PutWorkerResult;
-        api: CloudflareApi;
-      },
+  options: ProvisionOptions,
 ) {
   let metadataPromise: ReturnType<typeof getVersionMetadata> | undefined;
 
@@ -1471,77 +1518,66 @@ async function provisionResources<B extends Bindings>(
     assertUnique(input.domains, "name", "Custom Domain");
   }
 
-  const [containers, domains, eventSources, routes, subdomain] =
-    await Promise.all([
-      input.containers
-        ? Promise.all(
-            input.containers.map(async (container) => {
-              return await ContainerApplication(container.id, {
-                ...container,
-                durableObjects: {
-                  namespaceId: await getContainerNamespaceId(container),
-                },
-                dev: options.local,
-                ...input.api,
-              });
-            }),
-          )
-        : undefined,
-      input.domains
-        ? Promise.all(
-            input.domains.map(async (domain) => {
-              return await CustomDomain(domain.name, {
-                name: domain.name,
-                zoneId: domain.zoneId,
-                adopt: domain.adopt,
-                workerName: options.name,
-                dev: options.local,
-                ...input.api,
-              });
-            }),
-          )
-        : undefined,
-      input.eventSources
-        ? Promise.all(
-            input.eventSources.map(async (eventSource) => {
-              return await QueueConsumer(`${eventSource.queue.id}-consumer`, {
-                queue: eventSource.queue,
-                scriptName: options.name,
-                settings: eventSource.settings,
-                adopt: props.adopt,
-                dev: options.local,
-                ...input.api,
-              });
-            }),
-          )
-        : undefined,
-      input.routes
-        ? Promise.all(
-            input.routes.map(async (route) => {
-              return await Route(route.pattern, {
-                pattern: route.pattern,
-                script: options.name,
-                zoneId: route.zoneId,
-                adopt: route.adopt,
-                dev: options.local,
-                ...input.api,
-              });
-            }),
-          )
-        : undefined,
-      (props.url ?? !options.dispatchNamespace)
-        ? WorkerSubdomain("url", {
-            scriptName: options.name,
-            previewVersionId: props.version ? options.result?.id : undefined,
-            previewsEnabled: !options.hasDurableObjects,
-            retain: !!props.version,
-            dev: options.local,
-            ...input.api,
-          })
-        : undefined,
-    ]);
+  const [containers, domains, eventSources, routes] = await Promise.all([
+    input.containers
+      ? Promise.all(
+          input.containers.map(async (container) => {
+            return await ContainerApplication(container.id, {
+              ...container,
+              durableObjects: {
+                namespaceId: await getContainerNamespaceId(container),
+              },
+              dev: options.local,
+              ...input.api,
+            });
+          }),
+        )
+      : undefined,
+    input.domains
+      ? Promise.all(
+          input.domains.map(async (domain) => {
+            return await CustomDomain(domain.name, {
+              name: domain.name,
+              zoneId: domain.zoneId,
+              adopt: domain.adopt,
+              workerName: options.name,
+              dev: options.local,
+              ...input.api,
+            });
+          }),
+        )
+      : undefined,
+    input.eventSources
+      ? Promise.all(
+          input.eventSources.map(async (eventSource) => {
+            return await QueueConsumer(`${eventSource.queue.id}-consumer`, {
+              queue: eventSource.queue,
+              scriptName: options.name,
+              settings: eventSource.settings,
+              adopt: props.adopt,
+              dev: options.local,
+              ...input.api,
+            });
+          }),
+        )
+      : undefined,
+    input.routes
+      ? Promise.all(
+          input.routes.map(async (route) => {
+            return await Route(route.pattern, {
+              pattern: route.pattern,
+              script: options.name,
+              zoneId: route.zoneId,
+              adopt: route.adopt,
+              dev: options.local,
+              ...input.api,
+            });
+          }),
+        )
+      : undefined,
+  ]);
 
-  return { containers, domains, routes, eventSources, subdomain };
+  return { containers, domains, routes, eventSources };
 
   async function getContainerNamespaceId(container: Container) {
     if (options.local) {
@@ -1794,6 +1830,9 @@ export async function putWorker(
       (err instanceof CloudflareApiError &&
         err.status === 400 &&
         err.message.match(/binding.*failed to generate/)),
+    // (err.status === 400 &&
+    //   err.message.includes("100331") &&
+    //   err.message.includes("Cannot use Durable Objects with Preview URLs")),
     10,
     100,
   );

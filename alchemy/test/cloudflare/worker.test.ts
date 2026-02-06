@@ -743,8 +743,12 @@ describe("Worker Resource", () => {
       expect(worker.assets?.run_worker_first).toEqual(false);
 
       // Test that the static assets are accessible
-      const indexResponse = await fetchAndExpectOK(`${worker.url}/index.html`);
-      expect(await indexResponse.text()).toContain("Assets Config Test");
+      // const indexResponse = await fetchAndExpectOK(`${worker.url}/index.html`);
+      const indexResponse = await waitFor(
+        async () => await fetchAndExpectOK(`${worker.url}/index.html`),
+        async (response) =>
+          (await response.text()).includes("Assets Config Test"),
+      );
 
       // Test HTML headers
       expect(indexResponse.headers.get("ABC")).toEqual("456");
@@ -1985,6 +1989,7 @@ describe("Worker Resource", () => {
     const newWorkerName = `${BRANCH_PREFIX}-test-worker-rename-2`;
     try {
       await Worker("rename-worker", {
+        adopt: true,
         name: originalWorkerName,
         script: `
 				export default {

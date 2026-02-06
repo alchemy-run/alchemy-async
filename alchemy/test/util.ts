@@ -73,7 +73,7 @@ export const createTestOptions = (
  */
 export async function waitFor<T>(
   producer: () => Promise<T> | T,
-  predicate: (value: T) => boolean,
+  predicate: (value: T) => boolean | Promise<boolean>,
   options?: {
     timeoutMs?: number;
     intervalMs?: number;
@@ -88,7 +88,7 @@ export async function waitFor<T>(
   while (true) {
     // eslint-disable-next-line no-await-in-loop
     lastValue = await producer();
-    if (predicate(lastValue)) return lastValue;
+    if (await predicate(lastValue)) return lastValue;
     if (Date.now() >= deadline) return lastValue;
     // eslint-disable-next-line no-await-in-loop
     await new Promise((resolve) => setTimeout(resolve, intervalMs));

@@ -4,11 +4,7 @@ import { memoize } from "../util/memoize.ts";
 import { withExponentialBackoff } from "../util/retry.ts";
 import { CloudflareApiError } from "./api-error.ts";
 import { extractCloudflareResult } from "./api-response.ts";
-import {
-  createCloudflareApi,
-  type CloudflareApi,
-  type CloudflareApiOptions,
-} from "./api.ts";
+import { type CloudflareApi, type CloudflareApiOptions } from "./api.ts";
 
 interface WorkerSubdomainProps extends CloudflareApiOptions {
   /**
@@ -45,12 +41,7 @@ interface WorkerSubdomainProps extends CloudflareApiOptions {
   dev?: boolean;
 }
 
-export interface WorkerSubdomain {
-  /**
-   * The `workers.dev` URL for the worker or preview version.
-   */
-  url: string;
-}
+export interface WorkerSubdomain {}
 
 export const WorkerSubdomain = Resource(
   "cloudflare::WorkerSubdomain",
@@ -59,35 +50,10 @@ export const WorkerSubdomain = Resource(
     _id: string,
     props: WorkerSubdomainProps,
   ) {
-    if (this.scope.local && props.dev) {
-      return {
-        url: this.output?.url ?? "https://unavailable.alchemy.run",
-      };
-    }
-
-    const api = await createCloudflareApi(props);
     if (this.phase === "delete") {
-      if (!props.retain) {
-        await disableWorkerSubdomain(api, props.scriptName);
-      }
       return this.destroy();
     }
-    await enableWorkerSubdomain(
-      api,
-      props.scriptName,
-      props.previewsEnabled ?? true,
-    );
-    const subdomain = await getAccountSubdomain(api);
-    const base = `${subdomain}.workers.dev`;
-    let url: string;
-    if (props.previewVersionId) {
-      url = `https://${props.previewVersionId.substring(0, 8)}-${props.scriptName}.${base}`;
-    } else {
-      url = `https://${props.scriptName}.${base}`;
-    }
-    return {
-      url,
-    };
+    return {};
   },
 );
 
@@ -128,7 +94,10 @@ export async function enableWorkerSubdomain(
           },
         ),
       ),
-    (error) => error instanceof CloudflareApiError && error.status === 404,
+    (error) => {
+      console.log(error);
+      return error instanceof CloudflareApiError && error.status === 404;
+    },
     20,
     1000,
   );
@@ -173,3 +142,19 @@ export const getAccountSubdomain = memoize(
   },
   (api) => api.accountId,
 );
+
+export async function createWorkerUrl(
+  api: CloudflareApi,
+  scriptName: string,
+  previewVersionId?: string,
+) {
+  const subdomain = await getAccountSubdomain(api);
+  const base = `${subdomain}.workers.dev`;
+  let url: string;
+  if (previewVersionId) {
+    url = `https://${previewVersionId.substring(0, 8)}-${scriptName}.${base}`;
+  } else {
+    url = `https://${scriptName}.${base}`;
+  }
+  return url;
+}
