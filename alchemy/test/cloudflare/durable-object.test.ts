@@ -5,7 +5,7 @@ import { DurableObjectNamespace } from "../../src/cloudflare/durable-object-name
 import { Worker } from "../../src/cloudflare/worker.ts";
 import { destroy } from "../../src/destroy.ts";
 import { BRANCH_PREFIX } from "../util.ts";
-
+import { getWorkerSubdomain } from "../../src/cloudflare/worker-subdomain.ts";
 import "../../src/test/vitest.ts";
 import { fetchAndExpectOK } from "../../src/util/safe-fetch.ts";
 
