@@ -86,6 +86,7 @@ describe.skipIf(!process.env.PLANETSCALE_TEST).concurrent.each(kinds)(
           clusterSize: "PS_10",
           ...(kind === "mysql"
             ? {
+                allowDataBranching: true,
                 automaticMigrations: true,
                 requireApprovalForDeploy: false,
                 restrictBranchRegion: true,
@@ -117,13 +118,14 @@ describe.skipIf(!process.env.PLANETSCALE_TEST).concurrent.each(kinds)(
                 migrationFramework: "rails",
                 migrationTableName: "schema_migrations",
               }
-            : {}),
+            : {
+                kind: "postgresql",
+              }),
           state: expect.any(String),
           plan: expect.any(String),
           createdAt: expect.any(String),
           updatedAt: expect.any(String),
           htmlUrl: expect.any(String),
-          kind,
         });
 
         // Update database settings
@@ -147,8 +149,8 @@ describe.skipIf(!process.env.PLANETSCALE_TEST).concurrent.each(kinds)(
           delete: true,
         });
 
-        expect(database).toMatchObject({
-          ...(kind === "mysql"
+        expect(database).toMatchObject(
+          kind === "mysql"
             ? {
                 allowDataBranching: false,
                 automaticMigrations: false,
@@ -160,9 +162,10 @@ describe.skipIf(!process.env.PLANETSCALE_TEST).concurrent.each(kinds)(
                 migrationFramework: "django",
                 migrationTableName: "django_migrations",
               }
-            : {}),
-          kind,
-        });
+            : {
+                kind: "postgresql",
+              },
+        );
 
         // Verify main branch cluster size was updated
         const { data: mainBranchData } = await api.getBranch({
