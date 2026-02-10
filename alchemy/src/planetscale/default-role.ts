@@ -146,6 +146,15 @@ export const DefaultRole = Resource(
         return this.output;
       }
       case "delete": {
+        // reset default role - even though we don't need new credentials,
+        // it's best to invalidate existing ones, and there's no delete endpoint
+        await api.resetDefaultRole({
+          path: {
+            organization,
+            database,
+            branch,
+          },
+        });
         return this.destroy();
       }
     }
