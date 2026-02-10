@@ -338,7 +338,7 @@ export const Database = Resource(
           database: databaseName,
         },
         body: {
-          ...(props.kind === "mysql"
+          ...(props.kind !== "postgresql"
             ? {
                 automatic_migrations: props.automaticMigrations,
                 migration_framework: props.migrationFramework,
@@ -408,7 +408,7 @@ export const Database = Resource(
         database: databaseName,
       },
       body: {
-        ...(props.kind === "mysql"
+        ...(props.kind !== "postgresql"
           ? {
               automatic_migrations: props.automaticMigrations,
               migration_framework: props.migrationFramework,
