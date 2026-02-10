@@ -1,4 +1,4 @@
-import { afterAll, describe, expect } from "vitest";
+import { afterAll, assert, describe, expect } from "vitest";
 import { alchemy } from "../../src/alchemy.ts";
 import { destroy } from "../../src/destroy.ts";
 import { createPlanetScaleClient } from "../../src/planetscale/api.ts";
@@ -202,7 +202,7 @@ describe.skipIf(!process.env.PLANETSCALE_TEST)("Password Resource", () => {
       // When we call destroy, the password should NOT be deleted via API
       await destroy(scope);
 
-      expect(passwordId).not.toBeNull();
+      assert(passwordId);
 
       // Verify password still exists (was not deleted via API)
       const { response } = await api.getPassword({
@@ -210,7 +210,7 @@ describe.skipIf(!process.env.PLANETSCALE_TEST)("Password Resource", () => {
           organization: database.organization,
           database: database.name,
           branch: branch.name,
-          id: passwordId!,
+          id: passwordId,
         },
         throwOnError: false,
       });
@@ -222,9 +222,9 @@ describe.skipIf(!process.env.PLANETSCALE_TEST)("Password Resource", () => {
           organization: database.organization,
           database: database.name,
           branch: branch.name,
-          id: passwordId!,
+          id: passwordId,
         },
-        throwOnError: false,
+        throwOnError: true,
       });
 
       // Verify manual cleanup worked
@@ -233,7 +233,7 @@ describe.skipIf(!process.env.PLANETSCALE_TEST)("Password Resource", () => {
           organization: database.organization,
           database: database.name,
           branch: branch.name,
-          id: passwordId!,
+          id: passwordId,
         },
         throwOnError: false,
       });
