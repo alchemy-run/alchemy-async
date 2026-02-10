@@ -7,6 +7,12 @@ import type {
 } from "../../util/api/client/index.ts";
 import { client } from "./client.gen.ts";
 import type {
+  AddOrganizationTeamMemberData,
+  AddOrganizationTeamMemberErrors,
+  AddOrganizationTeamMemberResponses,
+  CancelBouncerResizeRequestData,
+  CancelBouncerResizeRequestErrors,
+  CancelBouncerResizeRequestResponses,
   CancelBranchChangeRequestData,
   CancelBranchChangeRequestErrors,
   CancelBranchChangeRequestResponses,
@@ -28,11 +34,17 @@ import type {
   CreateBackupData,
   CreateBackupErrors,
   CreateBackupResponses,
+  CreateBouncerData,
+  CreateBouncerErrors,
+  CreateBouncerResponses,
   CreateBranchData,
   CreateBranchErrors,
   CreateBranchResponses,
   CreateDatabaseData,
   CreateDatabaseErrors,
+  CreateDatabasePostgresCidrData,
+  CreateDatabasePostgresCidrErrors,
+  CreateDatabasePostgresCidrResponses,
   CreateDatabaseResponses,
   CreateDeployRequestData,
   CreateDeployRequestErrors,
@@ -43,6 +55,9 @@ import type {
   CreateOauthTokenData,
   CreateOauthTokenErrors,
   CreateOauthTokenResponses,
+  CreateOrganizationTeamData,
+  CreateOrganizationTeamErrors,
+  CreateOrganizationTeamResponses,
   CreatePasswordData,
   CreatePasswordErrors,
   CreatePasswordResponses,
@@ -52,6 +67,9 @@ import type {
   CreateRoleData,
   CreateRoleErrors,
   CreateRoleResponses,
+  CreateServiceTokenData,
+  CreateServiceTokenErrors,
+  CreateServiceTokenResponses,
   CreateWebhookData,
   CreateWebhookErrors,
   CreateWebhookResponses,
@@ -61,11 +79,17 @@ import type {
   DeleteBackupData,
   DeleteBackupErrors,
   DeleteBackupResponses,
+  DeleteBouncerData,
+  DeleteBouncerErrors,
+  DeleteBouncerResponses,
   DeleteBranchData,
   DeleteBranchErrors,
   DeleteBranchResponses,
   DeleteDatabaseData,
   DeleteDatabaseErrors,
+  DeleteDatabasePostgresCidrData,
+  DeleteDatabasePostgresCidrErrors,
+  DeleteDatabasePostgresCidrResponses,
   DeleteDatabaseResponses,
   DeleteKeyspaceData,
   DeleteKeyspaceErrors,
@@ -73,6 +97,9 @@ import type {
   DeleteOauthTokenData,
   DeleteOauthTokenErrors,
   DeleteOauthTokenResponses,
+  DeleteOrganizationTeamData,
+  DeleteOrganizationTeamErrors,
+  DeleteOrganizationTeamResponses,
   DeletePasswordData,
   DeletePasswordErrors,
   DeletePasswordResponses,
@@ -82,6 +109,9 @@ import type {
   DeleteRoleData,
   DeleteRoleErrors,
   DeleteRoleResponses,
+  DeleteServiceTokenData,
+  DeleteServiceTokenErrors,
+  DeleteServiceTokenResponses,
   DeleteWebhookData,
   DeleteWebhookErrors,
   DeleteWebhookResponses,
@@ -91,12 +121,21 @@ import type {
   DisableSafeMigrationsData,
   DisableSafeMigrationsErrors,
   DisableSafeMigrationsResponses,
+  DismissSchemaRecommendationData,
+  DismissSchemaRecommendationErrors,
+  DismissSchemaRecommendationResponses,
   EnableSafeMigrationsData,
   EnableSafeMigrationsErrors,
   EnableSafeMigrationsResponses,
   GetBackupData,
   GetBackupErrors,
   GetBackupResponses,
+  GetBouncerData,
+  GetBouncerErrors,
+  GetBouncerResponses,
+  GetBranchChangeRequestData,
+  GetBranchChangeRequestErrors,
+  GetBranchChangeRequestResponses,
   GetBranchData,
   GetBranchErrors,
   GetBranchResponses,
@@ -108,10 +147,16 @@ import type {
   GetCurrentUserResponses,
   GetDatabaseData,
   GetDatabaseErrors,
+  GetDatabasePostgresCidrData,
+  GetDatabasePostgresCidrErrors,
+  GetDatabasePostgresCidrResponses,
   GetDatabaseResponses,
   GetDatabaseThrottlerData,
   GetDatabaseThrottlerErrors,
   GetDatabaseThrottlerResponses,
+  GetDefaultRoleData,
+  GetDefaultRoleErrors,
+  GetDefaultRoleResponses,
   GetDeploymentData,
   GetDeploymentErrors,
   GetDeploymentResponses,
@@ -147,7 +192,16 @@ import type {
   GetOauthTokenResponses,
   GetOrganizationData,
   GetOrganizationErrors,
+  GetOrganizationMembershipData,
+  GetOrganizationMembershipErrors,
+  GetOrganizationMembershipResponses,
   GetOrganizationResponses,
+  GetOrganizationTeamData,
+  GetOrganizationTeamErrors,
+  GetOrganizationTeamMemberData,
+  GetOrganizationTeamMemberErrors,
+  GetOrganizationTeamMemberResponses,
+  GetOrganizationTeamResponses,
   GetPasswordData,
   GetPasswordErrors,
   GetPasswordResponses,
@@ -159,6 +213,12 @@ import type {
   GetRoleData,
   GetRoleErrors,
   GetRoleResponses,
+  GetSchemaRecommendationData,
+  GetSchemaRecommendationErrors,
+  GetSchemaRecommendationResponses,
+  GetServiceTokenData,
+  GetServiceTokenErrors,
+  GetServiceTokenResponses,
   GetWebhookData,
   GetWebhookErrors,
   GetWebhookResponses,
@@ -174,12 +234,27 @@ import type {
   ListBackupsData,
   ListBackupsErrors,
   ListBackupsResponses,
+  ListBouncerResizeRequestsData,
+  ListBouncerResizeRequestsErrors,
+  ListBouncerResizeRequestsResponses,
+  ListBouncersData,
+  ListBouncersErrors,
+  ListBouncersResponses,
+  ListBranchBouncerResizeRequestsData,
+  ListBranchBouncerResizeRequestsErrors,
+  ListBranchBouncerResizeRequestsResponses,
   ListBranchChangeRequestsData,
   ListBranchChangeRequestsErrors,
   ListBranchChangeRequestsResponses,
   ListBranchesData,
   ListBranchesErrors,
   ListBranchesResponses,
+  ListClusterSizeSkusData,
+  ListClusterSizeSkusErrors,
+  ListClusterSizeSkusResponses,
+  ListDatabasePostgresCidrsData,
+  ListDatabasePostgresCidrsErrors,
+  ListDatabasePostgresCidrsResponses,
   ListDatabaseRegionsData,
   ListDatabaseRegionsErrors,
   ListDatabaseRegionsResponses,
@@ -222,6 +297,12 @@ import type {
   ListOrganizationsData,
   ListOrganizationsErrors,
   ListOrganizationsResponses,
+  ListOrganizationTeamMembersData,
+  ListOrganizationTeamMembersErrors,
+  ListOrganizationTeamMembersResponses,
+  ListOrganizationTeamsData,
+  ListOrganizationTeamsErrors,
+  ListOrganizationTeamsResponses,
   ListParametersData,
   ListParametersErrors,
   ListParametersResponses,
@@ -240,6 +321,12 @@ import type {
   ListRolesData,
   ListRolesErrors,
   ListRolesResponses,
+  ListSchemaRecommendationsData,
+  ListSchemaRecommendationsErrors,
+  ListSchemaRecommendationsResponses,
+  ListServiceTokensData,
+  ListServiceTokensErrors,
+  ListServiceTokensResponses,
   ListWebhooksData,
   ListWebhooksErrors,
   ListWebhooksResponses,
@@ -252,12 +339,27 @@ import type {
   QueueDeployRequestData,
   QueueDeployRequestErrors,
   QueueDeployRequestResponses,
+  ReassignRoleObjectsData,
+  ReassignRoleObjectsErrors,
+  ReassignRoleObjectsResponses,
+  RemoveOrganizationMemberData,
+  RemoveOrganizationMemberErrors,
+  RemoveOrganizationMemberResponses,
+  RemoveOrganizationTeamMemberData,
+  RemoveOrganizationTeamMemberErrors,
+  RemoveOrganizationTeamMemberResponses,
   RenewPasswordData,
   RenewPasswordErrors,
   RenewPasswordResponses,
   RenewRoleData,
   RenewRoleErrors,
   RenewRoleResponses,
+  ResetDefaultRoleData,
+  ResetDefaultRoleErrors,
+  ResetDefaultRoleResponses,
+  ResetRoleData,
+  ResetRoleErrors,
+  ResetRoleResponses,
   ReviewDeployRequestData,
   ReviewDeployRequestErrors,
   ReviewDeployRequestResponses,
@@ -270,15 +372,27 @@ import type {
   UpdateAutoApplyData,
   UpdateAutoApplyErrors,
   UpdateAutoApplyResponses,
+  UpdateAutoDeleteBranchData,
+  UpdateAutoDeleteBranchErrors,
+  UpdateAutoDeleteBranchResponses,
   UpdateBackupData,
   UpdateBackupErrors,
   UpdateBackupResponses,
+  UpdateBouncerResizeRequestData,
+  UpdateBouncerResizeRequestErrors,
+  UpdateBouncerResizeRequestResponses,
   UpdateBranchChangeRequestData,
   UpdateBranchChangeRequestErrors,
   UpdateBranchChangeRequestResponses,
   UpdateBranchClusterConfigData,
   UpdateBranchClusterConfigErrors,
   UpdateBranchClusterConfigResponses,
+  UpdateBranchData,
+  UpdateBranchErrors,
+  UpdateBranchResponses,
+  UpdateDatabasePostgresCidrData,
+  UpdateDatabasePostgresCidrErrors,
+  UpdateDatabasePostgresCidrResponses,
   UpdateDatabaseSettingsData,
   UpdateDatabaseSettingsErrors,
   UpdateDatabaseSettingsResponses,
@@ -296,7 +410,13 @@ import type {
   UpdateKeyspaceVschemaResponses,
   UpdateOrganizationData,
   UpdateOrganizationErrors,
+  UpdateOrganizationMembershipData,
+  UpdateOrganizationMembershipErrors,
+  UpdateOrganizationMembershipResponses,
   UpdateOrganizationResponses,
+  UpdateOrganizationTeamData,
+  UpdateOrganizationTeamErrors,
+  UpdateOrganizationTeamResponses,
   UpdatePasswordData,
   UpdatePasswordErrors,
   UpdatePasswordResponses,
@@ -412,7 +532,7 @@ export class PlanetScaleClient extends _HeyApiClient {
       GetOrganizationErrors,
       ThrowOnError
     >({
-      url: "/organizations/{name}",
+      url: "/organizations/{organization}",
       ...options,
     });
   }
@@ -437,7 +557,7 @@ export class PlanetScaleClient extends _HeyApiClient {
       UpdateOrganizationErrors,
       ThrowOnError
     >({
-      url: "/organizations/{name}",
+      url: "/organizations/{organization}",
       ...options,
       headers: {
         "Content-Type": "application/json",
@@ -465,14 +585,14 @@ export class PlanetScaleClient extends _HeyApiClient {
       ListAuditLogsErrors,
       ThrowOnError
     >({
-      url: "/organizations/{name}/audit-log",
+      url: "/organizations/{organization}/audit-log",
       ...options,
     });
   }
 
   /**
-   * List regions for an organization
-   *
+   * List available cluster sizes
+   * List available cluster sizes for an organization
    * ### Authorization
    * A service token or OAuth token must have at least one of the following access or scopes in order to use this API endpoint:
    *
@@ -486,15 +606,15 @@ export class PlanetScaleClient extends _HeyApiClient {
    * | User | `read_organizations` |
    * | Organization | `read_organization` |
    */
-  public listRegionsForOrganization<ThrowOnError extends boolean = true>(
-    options: Options<ListRegionsForOrganizationData, ThrowOnError>,
+  public listClusterSizeSkus<ThrowOnError extends boolean = true>(
+    options: Options<ListClusterSizeSkusData, ThrowOnError>,
   ) {
     return (options.client ?? this._client).get<
-      ListRegionsForOrganizationResponses,
-      ListRegionsForOrganizationErrors,
+      ListClusterSizeSkusResponses,
+      ListClusterSizeSkusErrors,
       ThrowOnError
     >({
-      url: "/organizations/{name}/regions",
+      url: "/organizations/{organization}/cluster-size-skus",
       ...options,
     });
   }
@@ -506,7 +626,7 @@ export class PlanetScaleClient extends _HeyApiClient {
    * A service token or OAuth token must have at least one of the following access or scopes in order to use this API endpoint:
    *
    * **Service Token Accesses**
-   * `read_database`, `delete_database`, `write_database`, `read_branch`, `delete_branch`, `create_branch`, `delete_production_branch`, `connect_branch`, `connect_production_branch`, `delete_branch_password`, `delete_production_branch_password`, `read_deploy_request`, `create_deploy_request`, `approve_deploy_request`, `read_schema_recommendations`, `close_schema_recommendations`, `read_comment`, `create_comment`, `restore_backup`, `restore_production_branch_backup`, `read_backups`, `write_backups`, `delete_backups`, `delete_production_branch_backups`, `write_branch_vschema`, `write_production_branch_vschema`
+   * `read_database`, `delete_database`, `write_database`, `read_branch`, `delete_branch`, `create_branch`, `delete_production_branch`, `connect_branch`, `connect_production_branch`, `connect_production_read_only_branch`, `delete_branch_password`, `delete_production_branch_password`, `delete_production_read_only_branch_password`, `read_deploy_request`, `create_deploy_request`, `approve_deploy_request`, `read_comment`, `create_comment`, `restore_backup`, `restore_production_branch_backup`, `read_backups`, `write_backups`, `delete_backups`, `delete_production_branch_backups`, `write_branch_vschema`, `write_production_branch_vschema`
    *
    * **OAuth Scopes**
    *
@@ -551,6 +671,97 @@ export class PlanetScaleClient extends _HeyApiClient {
       ThrowOnError
     >({
       url: "/organizations/{organization}/databases",
+      ...options,
+      headers: {
+        "Content-Type": "application/json",
+        ...options.headers,
+      },
+    });
+  }
+
+  /**
+   * Delete a database
+   *
+   * ### Authorization
+   * A service token or OAuth token must have at least one of the following access or scopes in order to use this API endpoint:
+   *
+   * **Service Token Accesses**
+   * `delete_database`
+   *
+   * **OAuth Scopes**
+   *
+   * | Resource | Scopes |
+   * | :------- | :---------- |
+   * | Organization | `delete_databases` |
+   * | Database | `delete_database` |
+   */
+  public deleteDatabase<ThrowOnError extends boolean = true>(
+    options: Options<DeleteDatabaseData, ThrowOnError>,
+  ) {
+    return (options.client ?? this._client).delete<
+      DeleteDatabaseResponses,
+      DeleteDatabaseErrors,
+      ThrowOnError
+    >({
+      url: "/organizations/{organization}/databases/{database}",
+      ...options,
+    });
+  }
+
+  /**
+   * Get a database
+   *
+   * ### Authorization
+   * A service token or OAuth token must have at least one of the following access or scopes in order to use this API endpoint:
+   *
+   * **Service Token Accesses**
+   * `read_database`, `delete_database`, `write_database`, `read_branch`, `delete_branch`, `create_branch`, `delete_production_branch`, `connect_branch`, `connect_production_branch`, `connect_production_read_only_branch`, `delete_branch_password`, `delete_production_branch_password`, `delete_production_read_only_branch_password`, `read_deploy_request`, `create_deploy_request`, `approve_deploy_request`, `read_comment`, `create_comment`, `restore_backup`, `restore_production_branch_backup`, `read_backups`, `write_backups`, `delete_backups`, `delete_production_branch_backups`, `write_branch_vschema`, `write_production_branch_vschema`
+   *
+   * **OAuth Scopes**
+   *
+   * | Resource | Scopes |
+   * | :------- | :---------- |
+   * | Organization | `read_databases` |
+   * | Database | `read_database` |
+   */
+  public getDatabase<ThrowOnError extends boolean = true>(
+    options: Options<GetDatabaseData, ThrowOnError>,
+  ) {
+    return (options.client ?? this._client).get<
+      GetDatabaseResponses,
+      GetDatabaseErrors,
+      ThrowOnError
+    >({
+      url: "/organizations/{organization}/databases/{database}",
+      ...options,
+    });
+  }
+
+  /**
+   * Update database settings
+   *
+   * ### Authorization
+   * A service token or OAuth token must have at least one of the following access or scopes in order to use this API endpoint:
+   *
+   * **Service Token Accesses**
+   * `write_database`
+   *
+   * **OAuth Scopes**
+   *
+   * | Resource | Scopes |
+   * | :------- | :---------- |
+   * | Organization | `write_databases` |
+   * | Database | `write_database` |
+   */
+  public updateDatabaseSettings<ThrowOnError extends boolean = true>(
+    options: Options<UpdateDatabaseSettingsData, ThrowOnError>,
+  ) {
+    return (options.client ?? this._client).patch<
+      UpdateDatabaseSettingsResponses,
+      UpdateDatabaseSettingsErrors,
+      ThrowOnError
+    >({
+      url: "/organizations/{organization}/databases/{database}",
       ...options,
       headers: {
         "Content-Type": "application/json",
@@ -615,6 +826,100 @@ export class PlanetScaleClient extends _HeyApiClient {
       ThrowOnError
     >({
       url: "/organizations/{organization}/databases/{database}/branches",
+      ...options,
+      headers: {
+        "Content-Type": "application/json",
+        ...options.headers,
+      },
+    });
+  }
+
+  /**
+   * Delete a branch
+   *
+   * ### Authorization
+   * A service token or OAuth token must have at least one of the following access or scopes in order to use this API endpoint:
+   *
+   * **Service Token Accesses**
+   * `delete_branch`
+   *
+   * **OAuth Scopes**
+   *
+   * | Resource | Scopes |
+   * | :------- | :---------- |
+   * | Organization | `delete_branches`, `delete_production_branches` |
+   * | Database | `delete_branches`, `delete_production_branches` |
+   * | Branch | `delete_branch` |
+   */
+  public deleteBranch<ThrowOnError extends boolean = true>(
+    options: Options<DeleteBranchData, ThrowOnError>,
+  ) {
+    return (options.client ?? this._client).delete<
+      DeleteBranchResponses,
+      DeleteBranchErrors,
+      ThrowOnError
+    >({
+      url: "/organizations/{organization}/databases/{database}/branches/{branch}",
+      ...options,
+    });
+  }
+
+  /**
+   * Get a branch
+   *
+   * ### Authorization
+   * A service token or OAuth token must have at least one of the following access or scopes in order to use this API endpoint:
+   *
+   * **Service Token Accesses**
+   * `read_branch`, `delete_branch`, `create_branch`, `connect_production_branch`, `connect_branch`
+   *
+   * **OAuth Scopes**
+   *
+   * | Resource | Scopes |
+   * | :------- | :---------- |
+   * | Organization | `read_branches` |
+   * | Database | `read_branches` |
+   * | Branch | `read_branch` |
+   */
+  public getBranch<ThrowOnError extends boolean = true>(
+    options: Options<GetBranchData, ThrowOnError>,
+  ) {
+    return (options.client ?? this._client).get<
+      GetBranchResponses,
+      GetBranchErrors,
+      ThrowOnError
+    >({
+      url: "/organizations/{organization}/databases/{database}/branches/{branch}",
+      ...options,
+    });
+  }
+
+  /**
+   * Update a branch
+   *
+   * ### Authorization
+   * A service token or OAuth token must have at least one of the following access or scopes in order to use this API endpoint:
+   *
+   * **Service Token Accesses**
+   * `write_database`
+   *
+   * **OAuth Scopes**
+   *
+   * | Resource | Scopes |
+   * | :------- | :---------- |
+   * | Organization | `write_branches` |
+   * | Database | `write_branches` |
+   * | Branch | `write_branch` |
+   */
+  public updateBranch<ThrowOnError extends boolean = true>(
+    options: Options<UpdateBranchData, ThrowOnError>,
+  ) {
+    return (options.client ?? this._client).patch<
+      UpdateBranchResponses,
+      UpdateBranchErrors,
+      ThrowOnError
+    >({
+      url: "/organizations/{organization}/databases/{database}/branches/{branch}",
       ...options,
       headers: {
         "Content-Type": "application/json",
@@ -782,6 +1087,250 @@ export class PlanetScaleClient extends _HeyApiClient {
   }
 
   /**
+   * Get bouncer resize requests
+   *
+   * ### Authorization
+   * A service token or OAuth token must have at least one of the following access or scopes in order to use this API endpoint:
+   *
+   * **Service Token Accesses**
+   * `read_branch`, `delete_branch`, `create_branch`, `connect_production_branch`, `connect_branch`
+   *
+   * **OAuth Scopes**
+   *
+   * | Resource | Scopes |
+   * | :------- | :---------- |
+   * | Organization | `read_branches` |
+   * | Database | `read_branches` |
+   * | Branch | `read_branch` |
+   */
+  public listBranchBouncerResizeRequests<ThrowOnError extends boolean = true>(
+    options: Options<ListBranchBouncerResizeRequestsData, ThrowOnError>,
+  ) {
+    return (options.client ?? this._client).get<
+      ListBranchBouncerResizeRequestsResponses,
+      ListBranchBouncerResizeRequestsErrors,
+      ThrowOnError
+    >({
+      url: "/organizations/{organization}/databases/{database}/branches/{branch}/bouncer-resizes",
+      ...options,
+    });
+  }
+
+  /**
+   * List bouncers
+   *
+   * ### Authorization
+   * A service token or OAuth token must have at least one of the following access or scopes in order to use this API endpoint:
+   *
+   * **Service Token Accesses**
+   * `read_branch`, `delete_branch`, `create_branch`, `connect_production_branch`, `connect_branch`
+   *
+   * **OAuth Scopes**
+   *
+   * | Resource | Scopes |
+   * | :------- | :---------- |
+   * | Organization | `read_branches` |
+   * | Database | `read_branches` |
+   * | Branch | `read_branch` |
+   */
+  public listBouncers<ThrowOnError extends boolean = true>(
+    options: Options<ListBouncersData, ThrowOnError>,
+  ) {
+    return (options.client ?? this._client).get<
+      ListBouncersResponses,
+      ListBouncersErrors,
+      ThrowOnError
+    >({
+      url: "/organizations/{organization}/databases/{database}/branches/{branch}/bouncers",
+      ...options,
+    });
+  }
+
+  /**
+   * Create a bouncer
+   *
+   * ### Authorization
+   * A service token or OAuth token must have at least one of the following access or scopes in order to use this API endpoint:
+   *
+   * **Service Token Accesses**
+   * `write_database`
+   *
+   * **OAuth Scopes**
+   *
+   * | Resource | Scopes |
+   * | :------- | :---------- |
+   * | Organization | `write_databases` |
+   * | Database | `write_database` |
+   */
+  public createBouncer<ThrowOnError extends boolean = true>(
+    options: Options<CreateBouncerData, ThrowOnError>,
+  ) {
+    return (options.client ?? this._client).post<
+      CreateBouncerResponses,
+      CreateBouncerErrors,
+      ThrowOnError
+    >({
+      url: "/organizations/{organization}/databases/{database}/branches/{branch}/bouncers",
+      ...options,
+      headers: {
+        "Content-Type": "application/json",
+        ...options.headers,
+      },
+    });
+  }
+
+  /**
+   * Delete a bouncer
+   *
+   * ### Authorization
+   * A service token or OAuth token must have at least one of the following access or scopes in order to use this API endpoint:
+   *
+   * **Service Token Accesses**
+   * `write_database`
+   *
+   * **OAuth Scopes**
+   *
+   * | Resource | Scopes |
+   * | :------- | :---------- |
+   * | Organization | `write_databases` |
+   * | Database | `write_database` |
+   */
+  public deleteBouncer<ThrowOnError extends boolean = true>(
+    options: Options<DeleteBouncerData, ThrowOnError>,
+  ) {
+    return (options.client ?? this._client).delete<
+      DeleteBouncerResponses,
+      DeleteBouncerErrors,
+      ThrowOnError
+    >({
+      url: "/organizations/{organization}/databases/{database}/branches/{branch}/bouncers/{bouncer}",
+      ...options,
+    });
+  }
+
+  /**
+   * Get a bouncer
+   *
+   * ### Authorization
+   * A service token or OAuth token must have at least one of the following access or scopes in order to use this API endpoint:
+   *
+   * **Service Token Accesses**
+   * `read_branch`, `delete_branch`, `create_branch`, `connect_production_branch`, `connect_branch`
+   *
+   * **OAuth Scopes**
+   *
+   * | Resource | Scopes |
+   * | :------- | :---------- |
+   * | Organization | `read_branches` |
+   * | Database | `read_branches` |
+   * | Branch | `read_branch` |
+   */
+  public getBouncer<ThrowOnError extends boolean = true>(
+    options: Options<GetBouncerData, ThrowOnError>,
+  ) {
+    return (options.client ?? this._client).get<
+      GetBouncerResponses,
+      GetBouncerErrors,
+      ThrowOnError
+    >({
+      url: "/organizations/{organization}/databases/{database}/branches/{branch}/bouncers/{bouncer}",
+      ...options,
+    });
+  }
+
+  /**
+   * Cancel a resize request
+   *
+   * ### Authorization
+   * A service token or OAuth token must have at least one of the following access or scopes in order to use this API endpoint:
+   *
+   * **Service Token Accesses**
+   * `write_database`
+   *
+   * **OAuth Scopes**
+   *
+   * | Resource | Scopes |
+   * | :------- | :---------- |
+   * | Organization | `write_databases` |
+   * | Database | `write_database` |
+   */
+  public cancelBouncerResizeRequest<ThrowOnError extends boolean = true>(
+    options: Options<CancelBouncerResizeRequestData, ThrowOnError>,
+  ) {
+    return (options.client ?? this._client).delete<
+      CancelBouncerResizeRequestResponses,
+      CancelBouncerResizeRequestErrors,
+      ThrowOnError
+    >({
+      url: "/organizations/{organization}/databases/{database}/branches/{branch}/bouncers/{bouncer}/resizes",
+      ...options,
+    });
+  }
+
+  /**
+   * Get bouncer resize requests
+   *
+   * ### Authorization
+   * A service token or OAuth token must have at least one of the following access or scopes in order to use this API endpoint:
+   *
+   * **Service Token Accesses**
+   * `read_branch`, `delete_branch`, `create_branch`, `connect_production_branch`, `connect_branch`
+   *
+   * **OAuth Scopes**
+   *
+   * | Resource | Scopes |
+   * | :------- | :---------- |
+   * | Organization | `read_branches` |
+   * | Database | `read_branches` |
+   * | Branch | `read_branch` |
+   */
+  public listBouncerResizeRequests<ThrowOnError extends boolean = true>(
+    options: Options<ListBouncerResizeRequestsData, ThrowOnError>,
+  ) {
+    return (options.client ?? this._client).get<
+      ListBouncerResizeRequestsResponses,
+      ListBouncerResizeRequestsErrors,
+      ThrowOnError
+    >({
+      url: "/organizations/{organization}/databases/{database}/branches/{branch}/bouncers/{bouncer}/resizes",
+      ...options,
+    });
+  }
+
+  /**
+   * Upsert a bouncer resize request
+   *
+   * ### Authorization
+   * A service token or OAuth token must have at least one of the following access or scopes in order to use this API endpoint:
+   *
+   * **Service Token Accesses**
+   * `write_database`
+   *
+   * **OAuth Scopes**
+   *
+   * | Resource | Scopes |
+   * | :------- | :---------- |
+   * | Organization | `write_databases` |
+   * | Database | `write_database` |
+   */
+  public updateBouncerResizeRequest<ThrowOnError extends boolean = true>(
+    options: Options<UpdateBouncerResizeRequestData, ThrowOnError>,
+  ) {
+    return (options.client ?? this._client).patch<
+      UpdateBouncerResizeRequestResponses,
+      UpdateBouncerResizeRequestErrors,
+      ThrowOnError
+    >({
+      url: "/organizations/{organization}/databases/{database}/branches/{branch}/bouncers/{bouncer}/resizes",
+      ...options,
+      headers: {
+        "Content-Type": "application/json",
+        ...options.headers,
+      },
+    });
+  }
+
+  /**
    * Get branch change requests
    *
    * ### Authorization
@@ -845,6 +1394,93 @@ export class PlanetScaleClient extends _HeyApiClient {
   }
 
   /**
+   * Get a branch change request
+   *
+   * ### Authorization
+   * A service token or OAuth token must have at least one of the following access or scopes in order to use this API endpoint:
+   *
+   * **Service Token Accesses**
+   * `read_branch`, `delete_branch`, `create_branch`, `connect_production_branch`, `connect_branch`
+   *
+   * **OAuth Scopes**
+   *
+   * | Resource | Scopes |
+   * | :------- | :---------- |
+   * | Organization | `read_branches` |
+   * | Database | `read_branches` |
+   * | Branch | `read_branch` |
+   */
+  public getBranchChangeRequest<ThrowOnError extends boolean = true>(
+    options: Options<GetBranchChangeRequestData, ThrowOnError>,
+  ) {
+    return (options.client ?? this._client).get<
+      GetBranchChangeRequestResponses,
+      GetBranchChangeRequestErrors,
+      ThrowOnError
+    >({
+      url: "/organizations/{organization}/databases/{database}/branches/{branch}/changes/{id}",
+      ...options,
+    });
+  }
+
+  /**
+   * Change a branch cluster configuration
+   *
+   * ### Authorization
+   * A service token   must have at least one of the following access   in order to use this API endpoint:
+   *
+   * **Service Token Accesses**
+   * `write_database`
+   *
+   *
+   */
+  public updateBranchClusterConfig<ThrowOnError extends boolean = true>(
+    options: Options<UpdateBranchClusterConfigData, ThrowOnError>,
+  ) {
+    return (options.client ?? this._client).patch<
+      UpdateBranchClusterConfigResponses,
+      UpdateBranchClusterConfigErrors,
+      ThrowOnError
+    >({
+      url: "/organizations/{organization}/databases/{database}/branches/{branch}/cluster",
+      ...options,
+      headers: {
+        "Content-Type": "application/json",
+        ...options.headers,
+      },
+    });
+  }
+
+  /**
+   * Demote a branch
+   * Demotes a branch from production to development
+   * ### Authorization
+   * A service token or OAuth token must have at least one of the following access or scopes in order to use this API endpoint:
+   *
+   * **Service Token Accesses**
+   * `connect_production_branch`, `demote_branches`
+   *
+   * **OAuth Scopes**
+   *
+   * | Resource | Scopes |
+   * | :------- | :---------- |
+   * | Organization | `demote_branches` |
+   * | Database | `demote_branches` |
+   */
+  public demoteBranch<ThrowOnError extends boolean = true>(
+    options: Options<DemoteBranchData, ThrowOnError>,
+  ) {
+    return (options.client ?? this._client).post<
+      DemoteBranchResponses,
+      DemoteBranchErrors,
+      ThrowOnError
+    >({
+      url: "/organizations/{organization}/databases/{database}/branches/{branch}/demote",
+      ...options,
+    });
+  }
+
+  /**
    * List cluster extensions
    *
    * ### Authorization
@@ -877,6 +1513,12 @@ export class PlanetScaleClient extends _HeyApiClient {
   /**
    * Get keyspaces
    *
+   * ### Authorization
+   * A service token   must have at least one of the following access   in order to use this API endpoint:
+   *
+   * **Service Token Accesses**
+   * `read_branch`
+   *
    *
    */
   public listKeyspaces<ThrowOnError extends boolean = true>(
@@ -895,6 +1537,12 @@ export class PlanetScaleClient extends _HeyApiClient {
   /**
    * Create a keyspace
    *
+   * ### Authorization
+   * A service token   must have at least one of the following access   in order to use this API endpoint:
+   *
+   * **Service Token Accesses**
+   * `create_branch`
+   *
    *
    */
   public createKeyspace<ThrowOnError extends boolean = true>(
@@ -911,6 +1559,102 @@ export class PlanetScaleClient extends _HeyApiClient {
         "Content-Type": "application/json",
         ...options.headers,
       },
+    });
+  }
+
+  /**
+   * Delete a keyspace
+   *
+   * ### Authorization
+   * A service token   must have at least one of the following access   in order to use this API endpoint:
+   *
+   * **Service Token Accesses**
+   * `delete_branch`, `delete_production_branch`
+   *
+   *
+   */
+  public deleteKeyspace<ThrowOnError extends boolean = true>(
+    options: Options<DeleteKeyspaceData, ThrowOnError>,
+  ) {
+    return (options.client ?? this._client).delete<
+      DeleteKeyspaceResponses,
+      DeleteKeyspaceErrors,
+      ThrowOnError
+    >({
+      url: "/organizations/{organization}/databases/{database}/branches/{branch}/keyspaces/{keyspace}",
+      ...options,
+    });
+  }
+
+  /**
+   * Get a keyspace
+   *
+   * ### Authorization
+   * A service token   must have at least one of the following access   in order to use this API endpoint:
+   *
+   * **Service Token Accesses**
+   * `read_branch`
+   *
+   *
+   */
+  public getKeyspace<ThrowOnError extends boolean = true>(
+    options: Options<GetKeyspaceData, ThrowOnError>,
+  ) {
+    return (options.client ?? this._client).get<
+      GetKeyspaceResponses,
+      GetKeyspaceErrors,
+      ThrowOnError
+    >({
+      url: "/organizations/{organization}/databases/{database}/branches/{branch}/keyspaces/{keyspace}",
+      ...options,
+    });
+  }
+
+  /**
+   * Configure keyspace settings
+   *
+   * ### Authorization
+   * A service token   must have at least one of the following access   in order to use this API endpoint:
+   *
+   * **Service Token Accesses**
+   * `create_branch`
+   *
+   *
+   */
+  public updateKeyspace<ThrowOnError extends boolean = true>(
+    options: Options<UpdateKeyspaceData, ThrowOnError>,
+  ) {
+    return (options.client ?? this._client).patch<
+      UpdateKeyspaceResponses,
+      UpdateKeyspaceErrors,
+      ThrowOnError
+    >({
+      url: "/organizations/{organization}/databases/{database}/branches/{branch}/keyspaces/{keyspace}",
+      ...options,
+    });
+  }
+
+  /**
+   * Get keyspace rollout status
+   *
+   * ### Authorization
+   * A service token   must have at least one of the following access   in order to use this API endpoint:
+   *
+   * **Service Token Accesses**
+   * `read_branch`
+   *
+   *
+   */
+  public getKeyspaceRolloutStatus<ThrowOnError extends boolean = true>(
+    options: Options<GetKeyspaceRolloutStatusData, ThrowOnError>,
+  ) {
+    return (options.client ?? this._client).get<
+      GetKeyspaceRolloutStatusResponses,
+      GetKeyspaceRolloutStatusErrors,
+      ThrowOnError
+    >({
+      url: "/organizations/{organization}/databases/{database}/branches/{branch}/keyspaces/{keyspace}/rollout-status",
+      ...options,
     });
   }
 
@@ -967,79 +1711,8 @@ export class PlanetScaleClient extends _HeyApiClient {
   }
 
   /**
-   * Delete a keyspace
-   *
-   *
-   */
-  public deleteKeyspace<ThrowOnError extends boolean = true>(
-    options: Options<DeleteKeyspaceData, ThrowOnError>,
-  ) {
-    return (options.client ?? this._client).delete<
-      DeleteKeyspaceResponses,
-      DeleteKeyspaceErrors,
-      ThrowOnError
-    >({
-      url: "/organizations/{organization}/databases/{database}/branches/{branch}/keyspaces/{name}",
-      ...options,
-    });
-  }
-
-  /**
-   * Get a keyspace
-   *
-   *
-   */
-  public getKeyspace<ThrowOnError extends boolean = true>(
-    options: Options<GetKeyspaceData, ThrowOnError>,
-  ) {
-    return (options.client ?? this._client).get<
-      GetKeyspaceResponses,
-      GetKeyspaceErrors,
-      ThrowOnError
-    >({
-      url: "/organizations/{organization}/databases/{database}/branches/{branch}/keyspaces/{name}",
-      ...options,
-    });
-  }
-
-  /**
-   * Configure keyspace settings
-   *
-   *
-   */
-  public updateKeyspace<ThrowOnError extends boolean = true>(
-    options: Options<UpdateKeyspaceData, ThrowOnError>,
-  ) {
-    return (options.client ?? this._client).patch<
-      UpdateKeyspaceResponses,
-      UpdateKeyspaceErrors,
-      ThrowOnError
-    >({
-      url: "/organizations/{organization}/databases/{database}/branches/{branch}/keyspaces/{name}",
-      ...options,
-    });
-  }
-
-  /**
-   * Get keyspace rollout status
-   *
-   *
-   */
-  public getKeyspaceRolloutStatus<ThrowOnError extends boolean = true>(
-    options: Options<GetKeyspaceRolloutStatusData, ThrowOnError>,
-  ) {
-    return (options.client ?? this._client).get<
-      GetKeyspaceRolloutStatusResponses,
-      GetKeyspaceRolloutStatusErrors,
-      ThrowOnError
-    >({
-      url: "/organizations/{organization}/databases/{database}/branches/{branch}/keyspaces/{name}/rollout-status",
-      ...options,
-    });
-  }
-
-  /**
    * List cluster parameters
+   *         Returns the parameters for a branch. To update the parameters, use the "Upsert a change request" endpoint.
    *
    * ### Authorization
    * A service token or OAuth token must have at least one of the following access or scopes in order to use this API endpoint:
@@ -1075,15 +1748,15 @@ export class PlanetScaleClient extends _HeyApiClient {
    * A service token or OAuth token must have at least one of the following access or scopes in order to use this API endpoint:
    *
    * **Service Token Accesses**
-   * `read_branch`, `delete_branch`, `create_branch`, `connect_production_branch`, `connect_branch`
+   * `read_branch`, `delete_branch`, `create_branch`, `connect_production_branch`, `connect_production_read_only_branch`, `connect_branch`
    *
    * **OAuth Scopes**
    *
    * | Resource | Scopes |
    * | :------- | :---------- |
-   * | Organization | `manage_passwords`, `manage_production_branch_passwords` |
-   * | Database | `manage_passwords`, `manage_production_branch_passwords` |
-   * | Branch | `manage_passwords` |
+   * | Organization | `manage_passwords`, `manage_production_branch_passwords`, `manage_read_only_passwords`, `manage_production_read_only_passwords` |
+   * | Database | `manage_passwords`, `manage_production_branch_passwords`, `manage_read_only_passwords`, `manage_production_read_only_passwords` |
+   * | Branch | `manage_passwords`, `manage_read_only_passwords` |
    */
   public listPasswords<ThrowOnError extends boolean = true>(
     options: Options<ListPasswordsData, ThrowOnError>,
@@ -1105,15 +1778,15 @@ export class PlanetScaleClient extends _HeyApiClient {
    * A service token or OAuth token must have at least one of the following access or scopes in order to use this API endpoint:
    *
    * **Service Token Accesses**
-   * `connect_production_branch`, `connect_branch`
+   * `connect_production_branch`, `connect_production_read_only_branch`, `connect_branch`
    *
    * **OAuth Scopes**
    *
    * | Resource | Scopes |
    * | :------- | :---------- |
-   * | Organization | `manage_passwords`, `manage_production_branch_passwords` |
-   * | Database | `manage_passwords`, `manage_production_branch_passwords` |
-   * | Branch | `manage_passwords` |
+   * | Organization | `manage_passwords`, `manage_production_branch_passwords`, `manage_read_only_passwords`, `manage_production_read_only_passwords` |
+   * | Database | `manage_passwords`, `manage_production_branch_passwords`, `manage_read_only_passwords`, `manage_production_read_only_passwords` |
+   * | Branch | `manage_passwords`, `manage_read_only_passwords` |
    */
   public createPassword<ThrowOnError extends boolean = true>(
     options: Options<CreatePasswordData, ThrowOnError>,
@@ -1139,15 +1812,15 @@ export class PlanetScaleClient extends _HeyApiClient {
    * A service token or OAuth token must have at least one of the following access or scopes in order to use this API endpoint:
    *
    * **Service Token Accesses**
-   * `delete_production_branch_password`, `delete_branch_password`
+   * `delete_production_branch_password`, `delete_production_read_only_branch_password`, `delete_branch_password`
    *
    * **OAuth Scopes**
    *
    * | Resource | Scopes |
    * | :------- | :---------- |
-   * | Organization | `manage_passwords`, `manage_production_branch_passwords` |
-   * | Database | `manage_passwords`, `manage_production_branch_passwords` |
-   * | Branch | `manage_passwords` |
+   * | Organization | `manage_passwords`, `manage_production_branch_passwords`, `manage_read_only_passwords`, `manage_production_read_only_passwords` |
+   * | Database | `manage_passwords`, `manage_production_branch_passwords`, `manage_read_only_passwords`, `manage_production_read_only_passwords` |
+   * | Branch | `manage_passwords`, `manage_read_only_passwords` |
    */
   public deletePassword<ThrowOnError extends boolean = true>(
     options: Options<DeletePasswordData, ThrowOnError>,
@@ -1169,15 +1842,15 @@ export class PlanetScaleClient extends _HeyApiClient {
    * A service token or OAuth token must have at least one of the following access or scopes in order to use this API endpoint:
    *
    * **Service Token Accesses**
-   * `read_branch`, `delete_branch`, `create_branch`, `connect_production_branch`, `connect_branch`
+   * `read_branch`, `delete_branch`, `create_branch`, `connect_production_branch`, `connect_production_read_only_branch`, `connect_branch`
    *
    * **OAuth Scopes**
    *
    * | Resource | Scopes |
    * | :------- | :---------- |
-   * | Organization | `manage_passwords`, `manage_production_branch_passwords` |
-   * | Database | `manage_passwords`, `manage_production_branch_passwords` |
-   * | Branch | `manage_passwords` |
+   * | Organization | `manage_passwords`, `manage_production_branch_passwords`, `manage_read_only_passwords`, `manage_production_read_only_passwords` |
+   * | Database | `manage_passwords`, `manage_production_branch_passwords`, `manage_read_only_passwords`, `manage_production_read_only_passwords` |
+   * | Branch | `manage_passwords`, `manage_read_only_passwords` |
    */
   public getPassword<ThrowOnError extends boolean = true>(
     options: Options<GetPasswordData, ThrowOnError>,
@@ -1199,15 +1872,15 @@ export class PlanetScaleClient extends _HeyApiClient {
    * A service token or OAuth token must have at least one of the following access or scopes in order to use this API endpoint:
    *
    * **Service Token Accesses**
-   * `connect_production_branch`, `connect_branch`
+   * `connect_production_branch`, `connect_production_read_only_branch`, `connect_branch`
    *
    * **OAuth Scopes**
    *
    * | Resource | Scopes |
    * | :------- | :---------- |
-   * | Organization | `manage_passwords`, `manage_production_branch_passwords` |
-   * | Database | `manage_passwords`, `manage_production_branch_passwords` |
-   * | Branch | `manage_passwords` |
+   * | Organization | `manage_passwords`, `manage_production_branch_passwords`, `manage_read_only_passwords`, `manage_production_read_only_passwords` |
+   * | Database | `manage_passwords`, `manage_production_branch_passwords`, `manage_read_only_passwords`, `manage_production_read_only_passwords` |
+   * | Branch | `manage_passwords`, `manage_read_only_passwords` |
    */
   public updatePassword<ThrowOnError extends boolean = true>(
     options: Options<UpdatePasswordData, ThrowOnError>,
@@ -1233,15 +1906,15 @@ export class PlanetScaleClient extends _HeyApiClient {
    * A service token or OAuth token must have at least one of the following access or scopes in order to use this API endpoint:
    *
    * **Service Token Accesses**
-   * `connect_production_branch`, `connect_branch`
+   * `connect_production_branch`, `connect_production_read_only_branch`, `connect_branch`
    *
    * **OAuth Scopes**
    *
    * | Resource | Scopes |
    * | :------- | :---------- |
-   * | Organization | `manage_passwords`, `manage_production_branch_passwords` |
-   * | Database | `manage_passwords`, `manage_production_branch_passwords` |
-   * | Branch | `manage_passwords` |
+   * | Organization | `manage_passwords`, `manage_production_branch_passwords`, `manage_read_only_passwords`, `manage_production_read_only_passwords` |
+   * | Database | `manage_passwords`, `manage_production_branch_passwords`, `manage_read_only_passwords`, `manage_production_read_only_passwords` |
+   * | Branch | `manage_passwords`, `manage_read_only_passwords` |
    */
   public renewPassword<ThrowOnError extends boolean = true>(
     options: Options<RenewPasswordData, ThrowOnError>,
@@ -1252,6 +1925,35 @@ export class PlanetScaleClient extends _HeyApiClient {
       ThrowOnError
     >({
       url: "/organizations/{organization}/databases/{database}/branches/{branch}/passwords/{id}/renew",
+      ...options,
+    });
+  }
+
+  /**
+   * Promote a branch
+   * Promotes a branch from development to production
+   * ### Authorization
+   * A service token or OAuth token must have at least one of the following access or scopes in order to use this API endpoint:
+   *
+   * **Service Token Accesses**
+   * `connect_production_branch`, `promote_branches`
+   *
+   * **OAuth Scopes**
+   *
+   * | Resource | Scopes |
+   * | :------- | :---------- |
+   * | Organization | `promote_branches` |
+   * | Database | `promote_branches` |
+   */
+  public promoteBranch<ThrowOnError extends boolean = true>(
+    options: Options<PromoteBranchData, ThrowOnError>,
+  ) {
+    return (options.client ?? this._client).post<
+      PromoteBranchResponses,
+      PromoteBranchErrors,
+      ThrowOnError
+    >({
+      url: "/organizations/{organization}/databases/{database}/branches/{branch}/promote",
       ...options,
     });
   }
@@ -1442,15 +2144,15 @@ export class PlanetScaleClient extends _HeyApiClient {
    * A service token or OAuth token must have at least one of the following access or scopes in order to use this API endpoint:
    *
    * **Service Token Accesses**
-   * `read_branch`, `delete_branch`, `create_branch`, `connect_production_branch`, `connect_branch`
+   * `read_branch`, `delete_branch`, `create_branch`, `connect_production_branch`, `connect_production_read_only_branch`, `connect_branch`
    *
    * **OAuth Scopes**
    *
    * | Resource | Scopes |
    * | :------- | :---------- |
-   * | Organization | `manage_passwords`, `manage_production_branch_passwords` |
-   * | Database | `manage_passwords`, `manage_production_branch_passwords` |
-   * | Branch | `manage_passwords` |
+   * | Organization | `manage_passwords`, `manage_production_branch_passwords`, `manage_read_only_passwords`, `manage_production_read_only_passwords` |
+   * | Database | `manage_passwords`, `manage_production_branch_passwords`, `manage_read_only_passwords`, `manage_production_read_only_passwords` |
+   * | Branch | `manage_passwords`, `manage_read_only_passwords` |
    */
   public listRoles<ThrowOnError extends boolean = true>(
     options: Options<ListRolesData, ThrowOnError>,
@@ -1472,15 +2174,15 @@ export class PlanetScaleClient extends _HeyApiClient {
    * A service token or OAuth token must have at least one of the following access or scopes in order to use this API endpoint:
    *
    * **Service Token Accesses**
-   * `create_production_branch_password`, `create_branch_password`
+   * `create_production_branch_password`, `create_production_read_only_branch_password`, `create_branch_password`
    *
    * **OAuth Scopes**
    *
    * | Resource | Scopes |
    * | :------- | :---------- |
-   * | Organization | `manage_passwords`, `manage_production_branch_passwords` |
-   * | Database | `manage_passwords`, `manage_production_branch_passwords` |
-   * | Branch | `manage_passwords` |
+   * | Organization | `manage_passwords`, `manage_production_branch_passwords`, `manage_read_only_passwords`, `manage_production_read_only_passwords` |
+   * | Database | `manage_passwords`, `manage_production_branch_passwords`, `manage_read_only_passwords`, `manage_production_read_only_passwords` |
+   * | Branch | `manage_passwords`, `manage_read_only_passwords` |
    */
   public createRole<ThrowOnError extends boolean = true>(
     options: Options<CreateRoleData, ThrowOnError>,
@@ -1500,21 +2202,81 @@ export class PlanetScaleClient extends _HeyApiClient {
   }
 
   /**
+   * Get the default postgres role
+   *
+   * ### Authorization
+   * A service token or OAuth token must have at least one of the following access or scopes in order to use this API endpoint:
+   *
+   * **Service Token Accesses**
+   * `read_branch`, `delete_branch`, `create_branch`, `connect_production_branch`, `connect_production_read_only_branch`, `connect_branch`
+   *
+   * **OAuth Scopes**
+   *
+   * | Resource | Scopes |
+   * | :------- | :---------- |
+   * | Organization | `manage_passwords`, `manage_production_branch_passwords`, `manage_read_only_passwords`, `manage_production_read_only_passwords` |
+   * | Database | `manage_passwords`, `manage_production_branch_passwords`, `manage_read_only_passwords`, `manage_production_read_only_passwords` |
+   * | Branch | `manage_passwords`, `manage_read_only_passwords` |
+   */
+  public getDefaultRole<ThrowOnError extends boolean = true>(
+    options: Options<GetDefaultRoleData, ThrowOnError>,
+  ) {
+    return (options.client ?? this._client).get<
+      GetDefaultRoleResponses,
+      GetDefaultRoleErrors,
+      ThrowOnError
+    >({
+      url: "/organizations/{organization}/databases/{database}/branches/{branch}/roles/default",
+      ...options,
+    });
+  }
+
+  /**
+   * Reset default credentials
+   *
+   * ### Authorization
+   * A service token or OAuth token must have at least one of the following access or scopes in order to use this API endpoint:
+   *
+   * **Service Token Accesses**
+   * `delete_production_branch_password`, `delete_production_read_only_branch_password`, `delete_branch_password`
+   *
+   * **OAuth Scopes**
+   *
+   * | Resource | Scopes |
+   * | :------- | :---------- |
+   * | Organization | `manage_passwords`, `manage_production_branch_passwords`, `manage_read_only_passwords`, `manage_production_read_only_passwords` |
+   * | Database | `manage_passwords`, `manage_production_branch_passwords`, `manage_read_only_passwords`, `manage_production_read_only_passwords` |
+   * | Branch | `manage_passwords`, `manage_read_only_passwords` |
+   */
+  public resetDefaultRole<ThrowOnError extends boolean = true>(
+    options: Options<ResetDefaultRoleData, ThrowOnError>,
+  ) {
+    return (options.client ?? this._client).post<
+      ResetDefaultRoleResponses,
+      ResetDefaultRoleErrors,
+      ThrowOnError
+    >({
+      url: "/organizations/{organization}/databases/{database}/branches/{branch}/roles/reset-default",
+      ...options,
+    });
+  }
+
+  /**
    * Delete role credentials
    *
    * ### Authorization
    * A service token or OAuth token must have at least one of the following access or scopes in order to use this API endpoint:
    *
    * **Service Token Accesses**
-   * `delete_production_branch_password`, `delete_branch_password`
+   * `delete_production_branch_password`, `delete_production_read_only_branch_password`, `delete_branch_password`
    *
    * **OAuth Scopes**
    *
    * | Resource | Scopes |
    * | :------- | :---------- |
-   * | Organization | `manage_passwords`, `manage_production_branch_passwords` |
-   * | Database | `manage_passwords`, `manage_production_branch_passwords` |
-   * | Branch | `manage_passwords` |
+   * | Organization | `manage_passwords`, `manage_production_branch_passwords`, `manage_read_only_passwords`, `manage_production_read_only_passwords` |
+   * | Database | `manage_passwords`, `manage_production_branch_passwords`, `manage_read_only_passwords`, `manage_production_read_only_passwords` |
+   * | Branch | `manage_passwords`, `manage_read_only_passwords` |
    */
   public deleteRole<ThrowOnError extends boolean = true>(
     options: Options<DeleteRoleData, ThrowOnError>,
@@ -1540,15 +2302,15 @@ export class PlanetScaleClient extends _HeyApiClient {
    * A service token or OAuth token must have at least one of the following access or scopes in order to use this API endpoint:
    *
    * **Service Token Accesses**
-   * `read_branch`, `delete_branch`, `create_branch`, `connect_production_branch`, `connect_branch`
+   * `read_branch`, `delete_branch`, `create_branch`, `connect_production_branch`, `connect_production_read_only_branch`, `connect_branch`
    *
    * **OAuth Scopes**
    *
    * | Resource | Scopes |
    * | :------- | :---------- |
-   * | Organization | `manage_passwords`, `manage_production_branch_passwords` |
-   * | Database | `manage_passwords`, `manage_production_branch_passwords` |
-   * | Branch | `manage_passwords` |
+   * | Organization | `manage_passwords`, `manage_production_branch_passwords`, `manage_read_only_passwords`, `manage_production_read_only_passwords` |
+   * | Database | `manage_passwords`, `manage_production_branch_passwords`, `manage_read_only_passwords`, `manage_production_read_only_passwords` |
+   * | Branch | `manage_passwords`, `manage_read_only_passwords` |
    */
   public getRole<ThrowOnError extends boolean = true>(
     options: Options<GetRoleData, ThrowOnError>,
@@ -1570,15 +2332,15 @@ export class PlanetScaleClient extends _HeyApiClient {
    * A service token or OAuth token must have at least one of the following access or scopes in order to use this API endpoint:
    *
    * **Service Token Accesses**
-   * `create_production_branch_password`, `create_branch_password`
+   * `create_production_branch_password`, `create_production_read_only_branch_password`, `create_branch_password`
    *
    * **OAuth Scopes**
    *
    * | Resource | Scopes |
    * | :------- | :---------- |
-   * | Organization | `manage_passwords`, `manage_production_branch_passwords` |
-   * | Database | `manage_passwords`, `manage_production_branch_passwords` |
-   * | Branch | `manage_passwords` |
+   * | Organization | `manage_passwords`, `manage_production_branch_passwords`, `manage_read_only_passwords`, `manage_production_read_only_passwords` |
+   * | Database | `manage_passwords`, `manage_production_branch_passwords`, `manage_read_only_passwords`, `manage_production_read_only_passwords` |
+   * | Branch | `manage_passwords`, `manage_read_only_passwords` |
    */
   public updateRole<ThrowOnError extends boolean = true>(
     options: Options<UpdateRoleData, ThrowOnError>,
@@ -1598,21 +2360,55 @@ export class PlanetScaleClient extends _HeyApiClient {
   }
 
   /**
+   * Reassign objects owned by one role to another role
+   *
+   * ### Authorization
+   * A service token or OAuth token must have at least one of the following access or scopes in order to use this API endpoint:
+   *
+   * **Service Token Accesses**
+   * `delete_production_branch_password`, `delete_production_read_only_branch_password`, `delete_branch_password`
+   *
+   * **OAuth Scopes**
+   *
+   * | Resource | Scopes |
+   * | :------- | :---------- |
+   * | Organization | `manage_passwords`, `manage_production_branch_passwords`, `manage_read_only_passwords`, `manage_production_read_only_passwords` |
+   * | Database | `manage_passwords`, `manage_production_branch_passwords`, `manage_read_only_passwords`, `manage_production_read_only_passwords` |
+   * | Branch | `manage_passwords`, `manage_read_only_passwords` |
+   */
+  public reassignRoleObjects<ThrowOnError extends boolean = true>(
+    options: Options<ReassignRoleObjectsData, ThrowOnError>,
+  ) {
+    return (options.client ?? this._client).post<
+      ReassignRoleObjectsResponses,
+      ReassignRoleObjectsErrors,
+      ThrowOnError
+    >({
+      url: "/organizations/{organization}/databases/{database}/branches/{branch}/roles/{id}/reassign",
+      ...options,
+      headers: {
+        "Content-Type": "application/json",
+        ...options.headers,
+      },
+    });
+  }
+
+  /**
    * Renew role expiration
    *
    * ### Authorization
    * A service token or OAuth token must have at least one of the following access or scopes in order to use this API endpoint:
    *
    * **Service Token Accesses**
-   * `create_production_branch_password`, `create_branch_password`
+   * `create_production_branch_password`, `create_production_read_only_branch_password`, `create_branch_password`
    *
    * **OAuth Scopes**
    *
    * | Resource | Scopes |
    * | :------- | :---------- |
-   * | Organization | `manage_passwords`, `manage_production_branch_passwords` |
-   * | Database | `manage_passwords`, `manage_production_branch_passwords` |
-   * | Branch | `manage_passwords` |
+   * | Organization | `manage_passwords`, `manage_production_branch_passwords`, `manage_read_only_passwords`, `manage_production_read_only_passwords` |
+   * | Database | `manage_passwords`, `manage_production_branch_passwords`, `manage_read_only_passwords`, `manage_production_read_only_passwords` |
+   * | Branch | `manage_passwords`, `manage_read_only_passwords` |
    */
   public renewRole<ThrowOnError extends boolean = true>(
     options: Options<RenewRoleData, ThrowOnError>,
@@ -1628,147 +2424,31 @@ export class PlanetScaleClient extends _HeyApiClient {
   }
 
   /**
-   * Delete a branch
+   * Reset a role's password
    *
    * ### Authorization
    * A service token or OAuth token must have at least one of the following access or scopes in order to use this API endpoint:
    *
    * **Service Token Accesses**
-   * `delete_branch`
+   * `delete_production_branch_password`, `delete_production_read_only_branch_password`, `delete_branch_password`
    *
    * **OAuth Scopes**
    *
    * | Resource | Scopes |
    * | :------- | :---------- |
-   * | Organization | `delete_branches`, `delete_production_branches` |
-   * | Database | `delete_branches`, `delete_production_branches` |
-   * | Branch | `delete_branch` |
+   * | Organization | `manage_passwords`, `manage_production_branch_passwords`, `manage_read_only_passwords`, `manage_production_read_only_passwords` |
+   * | Database | `manage_passwords`, `manage_production_branch_passwords`, `manage_read_only_passwords`, `manage_production_read_only_passwords` |
+   * | Branch | `manage_passwords`, `manage_read_only_passwords` |
    */
-  public deleteBranch<ThrowOnError extends boolean = true>(
-    options: Options<DeleteBranchData, ThrowOnError>,
-  ) {
-    return (options.client ?? this._client).delete<
-      DeleteBranchResponses,
-      DeleteBranchErrors,
-      ThrowOnError
-    >({
-      url: "/organizations/{organization}/databases/{database}/branches/{name}",
-      ...options,
-    });
-  }
-
-  /**
-   * Get a branch
-   *
-   * ### Authorization
-   * A service token or OAuth token must have at least one of the following access or scopes in order to use this API endpoint:
-   *
-   * **Service Token Accesses**
-   * `read_branch`, `delete_branch`, `create_branch`, `connect_production_branch`, `connect_branch`
-   *
-   * **OAuth Scopes**
-   *
-   * | Resource | Scopes |
-   * | :------- | :---------- |
-   * | Organization | `read_branches` |
-   * | Database | `read_branches` |
-   * | Branch | `read_branch` |
-   */
-  public getBranch<ThrowOnError extends boolean = true>(
-    options: Options<GetBranchData, ThrowOnError>,
-  ) {
-    return (options.client ?? this._client).get<
-      GetBranchResponses,
-      GetBranchErrors,
-      ThrowOnError
-    >({
-      url: "/organizations/{organization}/databases/{database}/branches/{name}",
-      ...options,
-    });
-  }
-
-  /**
-   * Change a branch cluster configuration
-   *
-   * ### Authorization
-   * A service token   must have at least one of the following access   in order to use this API endpoint:
-   *
-   * **Service Token Accesses**
-   * `write_database`
-   *
-   *
-   */
-  public updateBranchClusterConfig<ThrowOnError extends boolean = true>(
-    options: Options<UpdateBranchClusterConfigData, ThrowOnError>,
-  ) {
-    return (options.client ?? this._client).patch<
-      UpdateBranchClusterConfigResponses,
-      UpdateBranchClusterConfigErrors,
-      ThrowOnError
-    >({
-      url: "/organizations/{organization}/databases/{database}/branches/{name}/cluster",
-      ...options,
-      headers: {
-        "Content-Type": "application/json",
-        ...options.headers,
-      },
-    });
-  }
-
-  /**
-   * Demote a branch
-   * Demotes a branch from production to development
-   * ### Authorization
-   * A service token or OAuth token must have at least one of the following access or scopes in order to use this API endpoint:
-   *
-   * **Service Token Accesses**
-   * `connect_production_branch`, `demote_branches`
-   *
-   * **OAuth Scopes**
-   *
-   * | Resource | Scopes |
-   * | :------- | :---------- |
-   * | Organization | `demote_branches` |
-   * | Database | `demote_branches` |
-   */
-  public demoteBranch<ThrowOnError extends boolean = true>(
-    options: Options<DemoteBranchData, ThrowOnError>,
+  public resetRole<ThrowOnError extends boolean = true>(
+    options: Options<ResetRoleData, ThrowOnError>,
   ) {
     return (options.client ?? this._client).post<
-      DemoteBranchResponses,
-      DemoteBranchErrors,
+      ResetRoleResponses,
+      ResetRoleErrors,
       ThrowOnError
     >({
-      url: "/organizations/{organization}/databases/{database}/branches/{name}/demote",
-      ...options,
-    });
-  }
-
-  /**
-   * Promote a branch
-   * Promotes a branch from development to production
-   * ### Authorization
-   * A service token or OAuth token must have at least one of the following access or scopes in order to use this API endpoint:
-   *
-   * **Service Token Accesses**
-   * `connect_production_branch`, `promote_branches`
-   *
-   * **OAuth Scopes**
-   *
-   * | Resource | Scopes |
-   * | :------- | :---------- |
-   * | Organization | `promote_branches` |
-   * | Database | `promote_branches` |
-   */
-  public promoteBranch<ThrowOnError extends boolean = true>(
-    options: Options<PromoteBranchData, ThrowOnError>,
-  ) {
-    return (options.client ?? this._client).post<
-      PromoteBranchResponses,
-      PromoteBranchErrors,
-      ThrowOnError
-    >({
-      url: "/organizations/{organization}/databases/{database}/branches/{name}/promote",
+      url: "/organizations/{organization}/databases/{database}/branches/{branch}/roles/{id}/reset",
       ...options,
     });
   }
@@ -1786,7 +2466,7 @@ export class PlanetScaleClient extends _HeyApiClient {
       DisableSafeMigrationsErrors,
       ThrowOnError
     >({
-      url: "/organizations/{organization}/databases/{database}/branches/{name}/safe-migrations",
+      url: "/organizations/{organization}/databases/{database}/branches/{branch}/safe-migrations",
       ...options,
     });
   }
@@ -1804,7 +2484,7 @@ export class PlanetScaleClient extends _HeyApiClient {
       EnableSafeMigrationsErrors,
       ThrowOnError
     >({
-      url: "/organizations/{organization}/databases/{database}/branches/{name}/safe-migrations",
+      url: "/organizations/{organization}/databases/{database}/branches/{branch}/safe-migrations",
       ...options,
     });
   }
@@ -1834,7 +2514,7 @@ export class PlanetScaleClient extends _HeyApiClient {
       GetBranchSchemaErrors,
       ThrowOnError
     >({
-      url: "/organizations/{organization}/databases/{database}/branches/{name}/schema",
+      url: "/organizations/{organization}/databases/{database}/branches/{branch}/schema",
       ...options,
     });
   }
@@ -1864,8 +2544,146 @@ export class PlanetScaleClient extends _HeyApiClient {
       LintBranchSchemaErrors,
       ThrowOnError
     >({
-      url: "/organizations/{organization}/databases/{database}/branches/{name}/schema/lint",
+      url: "/organizations/{organization}/databases/{database}/branches/{branch}/schema/lint",
       ...options,
+    });
+  }
+
+  /**
+   * List IP restriction entries
+   *
+   * ### Authorization
+   * A   OAuth token must have at least one of the following   scopes in order to use this API endpoint:
+   *
+   * **OAuth Scopes**
+   *
+   * | Resource | Scopes |
+   * | :------- | :---------- |
+   * | Organization | `read_databases` |
+   * | Database | `read_database` |
+   */
+  public listDatabasePostgresCidrs<ThrowOnError extends boolean = true>(
+    options: Options<ListDatabasePostgresCidrsData, ThrowOnError>,
+  ) {
+    return (options.client ?? this._client).get<
+      ListDatabasePostgresCidrsResponses,
+      ListDatabasePostgresCidrsErrors,
+      ThrowOnError
+    >({
+      url: "/organizations/{organization}/databases/{database}/cidrs",
+      ...options,
+    });
+  }
+
+  /**
+   * Create an IP restriction entry
+   *
+   * ### Authorization
+   * A   OAuth token must have at least one of the following   scopes in order to use this API endpoint:
+   *
+   * **OAuth Scopes**
+   *
+   * | Resource | Scopes |
+   * | :------- | :---------- |
+   * | Organization | `write_databases` |
+   * | Database | `write_database` |
+   */
+  public createDatabasePostgresCidr<ThrowOnError extends boolean = true>(
+    options: Options<CreateDatabasePostgresCidrData, ThrowOnError>,
+  ) {
+    return (options.client ?? this._client).post<
+      CreateDatabasePostgresCidrResponses,
+      CreateDatabasePostgresCidrErrors,
+      ThrowOnError
+    >({
+      url: "/organizations/{organization}/databases/{database}/cidrs",
+      ...options,
+      headers: {
+        "Content-Type": "application/json",
+        ...options.headers,
+      },
+    });
+  }
+
+  /**
+   * Delete an IP restriction entry
+   *
+   * ### Authorization
+   * A   OAuth token must have at least one of the following   scopes in order to use this API endpoint:
+   *
+   * **OAuth Scopes**
+   *
+   * | Resource | Scopes |
+   * | :------- | :---------- |
+   * | Organization | `write_databases` |
+   * | Database | `write_database` |
+   */
+  public deleteDatabasePostgresCidr<ThrowOnError extends boolean = true>(
+    options: Options<DeleteDatabasePostgresCidrData, ThrowOnError>,
+  ) {
+    return (options.client ?? this._client).delete<
+      DeleteDatabasePostgresCidrResponses,
+      DeleteDatabasePostgresCidrErrors,
+      ThrowOnError
+    >({
+      url: "/organizations/{organization}/databases/{database}/cidrs/{id}",
+      ...options,
+    });
+  }
+
+  /**
+   * Get an IP restriction entry
+   *
+   * ### Authorization
+   * A   OAuth token must have at least one of the following   scopes in order to use this API endpoint:
+   *
+   * **OAuth Scopes**
+   *
+   * | Resource | Scopes |
+   * | :------- | :---------- |
+   * | Organization | `read_databases` |
+   * | Database | `read_database` |
+   */
+  public getDatabasePostgresCidr<ThrowOnError extends boolean = true>(
+    options: Options<GetDatabasePostgresCidrData, ThrowOnError>,
+  ) {
+    return (options.client ?? this._client).get<
+      GetDatabasePostgresCidrResponses,
+      GetDatabasePostgresCidrErrors,
+      ThrowOnError
+    >({
+      url: "/organizations/{organization}/databases/{database}/cidrs/{id}",
+      ...options,
+    });
+  }
+
+  /**
+   * Update an IP restriction entry
+   *
+   * ### Authorization
+   * A   OAuth token must have at least one of the following   scopes in order to use this API endpoint:
+   *
+   * **OAuth Scopes**
+   *
+   * | Resource | Scopes |
+   * | :------- | :---------- |
+   * | Organization | `write_databases` |
+   * | Database | `write_database` |
+   */
+  public updateDatabasePostgresCidr<ThrowOnError extends boolean = true>(
+    options: Options<UpdateDatabasePostgresCidrData, ThrowOnError>,
+  ) {
+    return (options.client ?? this._client).put<
+      UpdateDatabasePostgresCidrResponses,
+      UpdateDatabasePostgresCidrErrors,
+      ThrowOnError
+    >({
+      url: "/organizations/{organization}/databases/{database}/cidrs/{id}",
+      ...options,
+      headers: {
+        "Content-Type": "application/json",
+        ...options.headers,
+      },
     });
   }
 
@@ -2065,6 +2883,39 @@ export class PlanetScaleClient extends _HeyApiClient {
       ThrowOnError
     >({
       url: "/organizations/{organization}/databases/{database}/deploy-requests/{number}/auto-apply",
+      ...options,
+      headers: {
+        "Content-Type": "application/json",
+        ...options.headers,
+      },
+    });
+  }
+
+  /**
+   * Update auto-delete branch for deploy request
+   * Enables or disabled the auto-delete branch setting for a deploy request
+   * ### Authorization
+   * A service token or OAuth token must have at least one of the following access or scopes in order to use this API endpoint:
+   *
+   * **Service Token Accesses**
+   * `read_deploy_request`, `create_deploy_request`
+   *
+   * **OAuth Scopes**
+   *
+   * | Resource | Scopes |
+   * | :------- | :---------- |
+   * | Organization | `deploy_deploy_requests` |
+   * | Database | `deploy_deploy_requests` |
+   */
+  public updateAutoDeleteBranch<ThrowOnError extends boolean = true>(
+    options: Options<UpdateAutoDeleteBranchData, ThrowOnError>,
+  ) {
+    return (options.client ?? this._client).put<
+      UpdateAutoDeleteBranchResponses,
+      UpdateAutoDeleteBranchErrors,
+      ThrowOnError
+    >({
+      url: "/organizations/{organization}/databases/{database}/deploy-requests/{number}/auto-delete-branch",
       ...options,
       headers: {
         "Content-Type": "application/json",
@@ -2396,6 +3247,155 @@ export class PlanetScaleClient extends _HeyApiClient {
       ThrowOnError
     >({
       url: "/organizations/{organization}/databases/{database}/deploy-requests/{number}/throttler",
+      ...options,
+      headers: {
+        "Content-Type": "application/json",
+        ...options.headers,
+      },
+    });
+  }
+
+  /**
+   * List read-only regions
+   * List read-only regions for the database's default branch
+   * ### Authorization
+   * A service token or OAuth token must have at least one of the following access or scopes in order to use this API endpoint:
+   *
+   * **Service Token Accesses**
+   * `read_database`, `delete_database`, `write_database`, `read_branch`, `delete_branch`, `create_branch`, `delete_production_branch`, `connect_branch`, `connect_production_branch`, `connect_production_read_only_branch`, `delete_branch_password`, `delete_production_branch_password`, `delete_production_read_only_branch_password`, `read_deploy_request`, `create_deploy_request`, `approve_deploy_request`, `read_comment`, `create_comment`, `restore_backup`, `restore_production_branch_backup`, `read_backups`, `write_backups`, `delete_backups`, `delete_production_branch_backups`, `write_branch_vschema`, `write_production_branch_vschema`
+   *
+   * **OAuth Scopes**
+   *
+   * | Resource | Scopes |
+   * | :------- | :---------- |
+   * | Organization | `read_branches` |
+   * | Database | `read_branches` |
+   */
+  public listReadOnlyRegions<ThrowOnError extends boolean = true>(
+    options: Options<ListReadOnlyRegionsData, ThrowOnError>,
+  ) {
+    return (options.client ?? this._client).get<
+      ListReadOnlyRegionsResponses,
+      ListReadOnlyRegionsErrors,
+      ThrowOnError
+    >({
+      url: "/organizations/{organization}/databases/{database}/read-only-regions",
+      ...options,
+    });
+  }
+
+  /**
+   * List database regions
+   *
+   * ### Authorization
+   * A service token or OAuth token must have at least one of the following access or scopes in order to use this API endpoint:
+   *
+   * **Service Token Accesses**
+   * `read_database`, `delete_database`, `write_database`, `read_branch`, `delete_branch`, `create_branch`, `delete_production_branch`, `connect_branch`, `connect_production_branch`, `connect_production_read_only_branch`, `delete_branch_password`, `delete_production_branch_password`, `delete_production_read_only_branch_password`, `read_deploy_request`, `create_deploy_request`, `approve_deploy_request`, `read_comment`, `create_comment`, `restore_backup`, `restore_production_branch_backup`, `read_backups`, `write_backups`, `delete_backups`, `delete_production_branch_backups`, `write_branch_vschema`, `write_production_branch_vschema`
+   *
+   * **OAuth Scopes**
+   *
+   * | Resource | Scopes |
+   * | :------- | :---------- |
+   * | Organization | `read_databases` |
+   * | Database | `read_database` |
+   */
+  public listDatabaseRegions<ThrowOnError extends boolean = true>(
+    options: Options<ListDatabaseRegionsData, ThrowOnError>,
+  ) {
+    return (options.client ?? this._client).get<
+      ListDatabaseRegionsResponses,
+      ListDatabaseRegionsErrors,
+      ThrowOnError
+    >({
+      url: "/organizations/{organization}/databases/{database}/regions",
+      ...options,
+    });
+  }
+
+  /**
+   * List schema recommendations
+   *
+   * ### Authorization
+   * A service token or OAuth token must have at least one of the following access or scopes in order to use this API endpoint:
+   *
+   * **Service Token Accesses**
+   * `read_database`
+   *
+   * **OAuth Scopes**
+   *
+   * | Resource | Scopes |
+   * | :------- | :---------- |
+   * | Organization | `read_databases` |
+   * | Database | `read_database` |
+   */
+  public listSchemaRecommendations<ThrowOnError extends boolean = true>(
+    options: Options<ListSchemaRecommendationsData, ThrowOnError>,
+  ) {
+    return (options.client ?? this._client).get<
+      ListSchemaRecommendationsResponses,
+      ListSchemaRecommendationsErrors,
+      ThrowOnError
+    >({
+      url: "/organizations/{organization}/databases/{database}/schema-recommendations",
+      ...options,
+    });
+  }
+
+  /**
+   * Get a schema recommendation
+   *
+   * ### Authorization
+   * A service token or OAuth token must have at least one of the following access or scopes in order to use this API endpoint:
+   *
+   * **Service Token Accesses**
+   * `read_database`
+   *
+   * **OAuth Scopes**
+   *
+   * | Resource | Scopes |
+   * | :------- | :---------- |
+   * | Organization | `read_databases` |
+   * | Database | `read_database` |
+   */
+  public getSchemaRecommendation<ThrowOnError extends boolean = true>(
+    options: Options<GetSchemaRecommendationData, ThrowOnError>,
+  ) {
+    return (options.client ?? this._client).get<
+      GetSchemaRecommendationResponses,
+      GetSchemaRecommendationErrors,
+      ThrowOnError
+    >({
+      url: "/organizations/{organization}/databases/{database}/schema-recommendations/{number}",
+      ...options,
+    });
+  }
+
+  /**
+   * Dismiss a schema recommendation
+   *
+   * ### Authorization
+   * A service token or OAuth token must have at least one of the following access or scopes in order to use this API endpoint:
+   *
+   * **Service Token Accesses**
+   * `write_database`
+   *
+   * **OAuth Scopes**
+   *
+   * | Resource | Scopes |
+   * | :------- | :---------- |
+   * | Organization | `write_databases` |
+   * | Database | `write_database` |
+   */
+  public dismissSchemaRecommendation<ThrowOnError extends boolean = true>(
+    options: Options<DismissSchemaRecommendationData, ThrowOnError>,
+  ) {
+    return (options.client ?? this._client).post<
+      DismissSchemaRecommendationResponses,
+      DismissSchemaRecommendationErrors,
+      ThrowOnError
+    >({
+      url: "/organizations/{organization}/databases/{database}/schema-recommendations/{number}/dismiss",
       ...options,
       headers: {
         "Content-Type": "application/json",
@@ -2869,155 +3869,6 @@ export class PlanetScaleClient extends _HeyApiClient {
   }
 
   /**
-   * Delete a database
-   *
-   * ### Authorization
-   * A service token or OAuth token must have at least one of the following access or scopes in order to use this API endpoint:
-   *
-   * **Service Token Accesses**
-   * `delete_database`
-   *
-   * **OAuth Scopes**
-   *
-   * | Resource | Scopes |
-   * | :------- | :---------- |
-   * | Organization | `delete_databases` |
-   * | Database | `delete_database` |
-   */
-  public deleteDatabase<ThrowOnError extends boolean = true>(
-    options: Options<DeleteDatabaseData, ThrowOnError>,
-  ) {
-    return (options.client ?? this._client).delete<
-      DeleteDatabaseResponses,
-      DeleteDatabaseErrors,
-      ThrowOnError
-    >({
-      url: "/organizations/{organization}/databases/{name}",
-      ...options,
-    });
-  }
-
-  /**
-   * Get a database
-   *
-   * ### Authorization
-   * A service token or OAuth token must have at least one of the following access or scopes in order to use this API endpoint:
-   *
-   * **Service Token Accesses**
-   * `read_database`, `delete_database`, `write_database`, `read_branch`, `delete_branch`, `create_branch`, `delete_production_branch`, `connect_branch`, `connect_production_branch`, `delete_branch_password`, `delete_production_branch_password`, `read_deploy_request`, `create_deploy_request`, `approve_deploy_request`, `read_schema_recommendations`, `close_schema_recommendations`, `read_comment`, `create_comment`, `restore_backup`, `restore_production_branch_backup`, `read_backups`, `write_backups`, `delete_backups`, `delete_production_branch_backups`, `write_branch_vschema`, `write_production_branch_vschema`
-   *
-   * **OAuth Scopes**
-   *
-   * | Resource | Scopes |
-   * | :------- | :---------- |
-   * | Organization | `read_databases` |
-   * | Database | `read_database` |
-   */
-  public getDatabase<ThrowOnError extends boolean = true>(
-    options: Options<GetDatabaseData, ThrowOnError>,
-  ) {
-    return (options.client ?? this._client).get<
-      GetDatabaseResponses,
-      GetDatabaseErrors,
-      ThrowOnError
-    >({
-      url: "/organizations/{organization}/databases/{name}",
-      ...options,
-    });
-  }
-
-  /**
-   * Update database settings
-   *
-   * ### Authorization
-   * A service token or OAuth token must have at least one of the following access or scopes in order to use this API endpoint:
-   *
-   * **Service Token Accesses**
-   * `write_database`
-   *
-   * **OAuth Scopes**
-   *
-   * | Resource | Scopes |
-   * | :------- | :---------- |
-   * | Organization | `write_databases` |
-   * | Database | `write_database` |
-   */
-  public updateDatabaseSettings<ThrowOnError extends boolean = true>(
-    options: Options<UpdateDatabaseSettingsData, ThrowOnError>,
-  ) {
-    return (options.client ?? this._client).patch<
-      UpdateDatabaseSettingsResponses,
-      UpdateDatabaseSettingsErrors,
-      ThrowOnError
-    >({
-      url: "/organizations/{organization}/databases/{name}",
-      ...options,
-      headers: {
-        "Content-Type": "application/json",
-        ...options.headers,
-      },
-    });
-  }
-
-  /**
-   * List read-only regions
-   * List read-only regions for the database's default branch
-   * ### Authorization
-   * A service token or OAuth token must have at least one of the following access or scopes in order to use this API endpoint:
-   *
-   * **Service Token Accesses**
-   * `read_database`, `delete_database`, `write_database`, `read_branch`, `delete_branch`, `create_branch`, `delete_production_branch`, `connect_branch`, `connect_production_branch`, `delete_branch_password`, `delete_production_branch_password`, `read_deploy_request`, `create_deploy_request`, `approve_deploy_request`, `read_schema_recommendations`, `close_schema_recommendations`, `read_comment`, `create_comment`, `restore_backup`, `restore_production_branch_backup`, `read_backups`, `write_backups`, `delete_backups`, `delete_production_branch_backups`, `write_branch_vschema`, `write_production_branch_vschema`
-   *
-   * **OAuth Scopes**
-   *
-   * | Resource | Scopes |
-   * | :------- | :---------- |
-   * | Organization | `read_branches` |
-   * | Database | `read_branches` |
-   */
-  public listReadOnlyRegions<ThrowOnError extends boolean = true>(
-    options: Options<ListReadOnlyRegionsData, ThrowOnError>,
-  ) {
-    return (options.client ?? this._client).get<
-      ListReadOnlyRegionsResponses,
-      ListReadOnlyRegionsErrors,
-      ThrowOnError
-    >({
-      url: "/organizations/{organization}/databases/{name}/read-only-regions",
-      ...options,
-    });
-  }
-
-  /**
-   * List database regions
-   *
-   * ### Authorization
-   * A service token or OAuth token must have at least one of the following access or scopes in order to use this API endpoint:
-   *
-   * **Service Token Accesses**
-   * `read_database`, `delete_database`, `write_database`, `read_branch`, `delete_branch`, `create_branch`, `delete_production_branch`, `connect_branch`, `connect_production_branch`, `delete_branch_password`, `delete_production_branch_password`, `read_deploy_request`, `create_deploy_request`, `approve_deploy_request`, `read_schema_recommendations`, `close_schema_recommendations`, `read_comment`, `create_comment`, `restore_backup`, `restore_production_branch_backup`, `read_backups`, `write_backups`, `delete_backups`, `delete_production_branch_backups`, `write_branch_vschema`, `write_production_branch_vschema`
-   *
-   * **OAuth Scopes**
-   *
-   * | Resource | Scopes |
-   * | :------- | :---------- |
-   * | Organization | `read_databases` |
-   * | Database | `read_database` |
-   */
-  public listDatabaseRegions<ThrowOnError extends boolean = true>(
-    options: Options<ListDatabaseRegionsData, ThrowOnError>,
-  ) {
-    return (options.client ?? this._client).get<
-      ListDatabaseRegionsResponses,
-      ListDatabaseRegionsErrors,
-      ThrowOnError
-    >({
-      url: "/organizations/{organization}/databases/{name}/regions",
-      ...options,
-    });
-  }
-
-  /**
    * Get invoices
    * Get the invoices for an organization
    * ### Authorization
@@ -3105,12 +3956,16 @@ export class PlanetScaleClient extends _HeyApiClient {
    * List organization members
    *
    * ### Authorization
-   * A service token   must have at least one of the following access   in order to use this API endpoint:
+   * A service token or OAuth token must have at least one of the following access or scopes in order to use this API endpoint:
    *
    * **Service Token Accesses**
    * `read_organization`
    *
+   * **OAuth Scopes**
    *
+   * | Resource | Scopes |
+   * | :------- | :---------- |
+   * | Organization | `read_organization` |
    */
   public listOrganizationMembers<ThrowOnError extends boolean = true>(
     options: Options<ListOrganizationMembersData, ThrowOnError>,
@@ -3122,6 +3977,98 @@ export class PlanetScaleClient extends _HeyApiClient {
     >({
       url: "/organizations/{organization}/members",
       ...options,
+    });
+  }
+
+  /**
+   * Remove a member from an organization
+   *
+   * ### Authorization
+   * A service token or OAuth token must have at least one of the following access or scopes in order to use this API endpoint:
+   *
+   * **Service Token Accesses**
+   * `write_organization`
+   *
+   * **OAuth Scopes**
+   *
+   * | Resource | Scopes |
+   * | :------- | :---------- |
+   * | Organization | `write_organization` |
+   */
+  public removeOrganizationMember<ThrowOnError extends boolean = true>(
+    options: Options<RemoveOrganizationMemberData, ThrowOnError>,
+  ) {
+    return (options.client ?? this._client).delete<
+      RemoveOrganizationMemberResponses,
+      RemoveOrganizationMemberErrors,
+      ThrowOnError
+    >({
+      url: "/organizations/{organization}/members/{id}",
+      ...options,
+      headers: {
+        "Content-Type": "application/json",
+        ...options.headers,
+      },
+    });
+  }
+
+  /**
+   * Get an organization member
+   *
+   * ### Authorization
+   * A service token or OAuth token must have at least one of the following access or scopes in order to use this API endpoint:
+   *
+   * **Service Token Accesses**
+   * `read_organization`
+   *
+   * **OAuth Scopes**
+   *
+   * | Resource | Scopes |
+   * | :------- | :---------- |
+   * | Organization | `read_organization` |
+   */
+  public getOrganizationMembership<ThrowOnError extends boolean = true>(
+    options: Options<GetOrganizationMembershipData, ThrowOnError>,
+  ) {
+    return (options.client ?? this._client).get<
+      GetOrganizationMembershipResponses,
+      GetOrganizationMembershipErrors,
+      ThrowOnError
+    >({
+      url: "/organizations/{organization}/members/{id}",
+      ...options,
+    });
+  }
+
+  /**
+   * Update organization member role
+   *
+   * ### Authorization
+   * A service token or OAuth token must have at least one of the following access or scopes in order to use this API endpoint:
+   *
+   * **Service Token Accesses**
+   * `write_organization`
+   *
+   * **OAuth Scopes**
+   *
+   * | Resource | Scopes |
+   * | :------- | :---------- |
+   * | Organization | `write_organization` |
+   */
+  public updateOrganizationMembership<ThrowOnError extends boolean = true>(
+    options: Options<UpdateOrganizationMembershipData, ThrowOnError>,
+  ) {
+    return (options.client ?? this._client).patch<
+      UpdateOrganizationMembershipResponses,
+      UpdateOrganizationMembershipErrors,
+      ThrowOnError
+    >({
+      url: "/organizations/{organization}/members/{id}",
+      ...options,
+      headers: {
+        "Content-Type": "application/json",
+        ...options.headers,
+      },
     });
   }
 
@@ -3270,6 +4217,403 @@ export class PlanetScaleClient extends _HeyApiClient {
         "Content-Type": "application/json",
         ...options.headers,
       },
+    });
+  }
+
+  /**
+   * List regions for an organization
+   *
+   * ### Authorization
+   * A service token or OAuth token must have at least one of the following access or scopes in order to use this API endpoint:
+   *
+   * **Service Token Accesses**
+   * `read_organization`
+   *
+   * **OAuth Scopes**
+   *
+   * | Resource | Scopes |
+   * | :------- | :---------- |
+   * | User | `read_organizations` |
+   * | Organization | `read_organization` |
+   */
+  public listRegionsForOrganization<ThrowOnError extends boolean = true>(
+    options: Options<ListRegionsForOrganizationData, ThrowOnError>,
+  ) {
+    return (options.client ?? this._client).get<
+      ListRegionsForOrganizationResponses,
+      ListRegionsForOrganizationErrors,
+      ThrowOnError
+    >({
+      url: "/organizations/{organization}/regions",
+      ...options,
+    });
+  }
+
+  /**
+   * List service tokens
+   * List service tokens for an organization.
+   * ### Authorization
+   * A service token   must have at least one of the following access   in order to use this API endpoint:
+   *
+   * **Service Token Accesses**
+   * `read_service_tokens`
+   *
+   *
+   */
+  public listServiceTokens<ThrowOnError extends boolean = true>(
+    options: Options<ListServiceTokensData, ThrowOnError>,
+  ) {
+    return (options.client ?? this._client).get<
+      ListServiceTokensResponses,
+      ListServiceTokensErrors,
+      ThrowOnError
+    >({
+      url: "/organizations/{organization}/service-tokens",
+      ...options,
+    });
+  }
+
+  /**
+   * Create a service token
+   * Create a new service token for the organization.
+   * ### Authorization
+   * A service token   must have at least one of the following access   in order to use this API endpoint:
+   *
+   * **Service Token Accesses**
+   * `write_service_tokens`
+   *
+   *
+   */
+  public createServiceToken<ThrowOnError extends boolean = true>(
+    options: Options<CreateServiceTokenData, ThrowOnError>,
+  ) {
+    return (options.client ?? this._client).post<
+      CreateServiceTokenResponses,
+      CreateServiceTokenErrors,
+      ThrowOnError
+    >({
+      url: "/organizations/{organization}/service-tokens",
+      ...options,
+      headers: {
+        "Content-Type": "application/json",
+        ...options.headers,
+      },
+    });
+  }
+
+  /**
+   * Delete a service token
+   * Delete a service token from the organization.
+   * ### Authorization
+   * A service token   must have at least one of the following access   in order to use this API endpoint:
+   *
+   * **Service Token Accesses**
+   * `delete_service_tokens`
+   *
+   *
+   */
+  public deleteServiceToken<ThrowOnError extends boolean = true>(
+    options: Options<DeleteServiceTokenData, ThrowOnError>,
+  ) {
+    return (options.client ?? this._client).delete<
+      DeleteServiceTokenResponses,
+      DeleteServiceTokenErrors,
+      ThrowOnError
+    >({
+      url: "/organizations/{organization}/service-tokens/{id}",
+      ...options,
+    });
+  }
+
+  /**
+   * Get a service token
+   * Get information about a service token.
+   * ### Authorization
+   * A service token   must have at least one of the following access   in order to use this API endpoint:
+   *
+   * **Service Token Accesses**
+   * `read_service_tokens`
+   *
+   *
+   */
+  public getServiceToken<ThrowOnError extends boolean = true>(
+    options: Options<GetServiceTokenData, ThrowOnError>,
+  ) {
+    return (options.client ?? this._client).get<
+      GetServiceTokenResponses,
+      GetServiceTokenErrors,
+      ThrowOnError
+    >({
+      url: "/organizations/{organization}/service-tokens/{id}",
+      ...options,
+    });
+  }
+
+  /**
+   * List teams in an organization
+   *
+   * ### Authorization
+   * A service token or OAuth token must have at least one of the following access or scopes in order to use this API endpoint:
+   *
+   * **Service Token Accesses**
+   * `read_organization`
+   *
+   * **OAuth Scopes**
+   *
+   * | Resource | Scopes |
+   * | :------- | :---------- |
+   * | Organization | `read_organization` |
+   */
+  public listOrganizationTeams<ThrowOnError extends boolean = true>(
+    options: Options<ListOrganizationTeamsData, ThrowOnError>,
+  ) {
+    return (options.client ?? this._client).get<
+      ListOrganizationTeamsResponses,
+      ListOrganizationTeamsErrors,
+      ThrowOnError
+    >({
+      url: "/organizations/{organization}/teams",
+      ...options,
+    });
+  }
+
+  /**
+   * Create an organization team
+   *
+   * ### Authorization
+   * A service token or OAuth token must have at least one of the following access or scopes in order to use this API endpoint:
+   *
+   * **Service Token Accesses**
+   * `write_teams`
+   *
+   * **OAuth Scopes**
+   *
+   * | Resource | Scopes |
+   * | :------- | :---------- |
+   * | Organization | `write_organization` |
+   */
+  public createOrganizationTeam<ThrowOnError extends boolean = true>(
+    options: Options<CreateOrganizationTeamData, ThrowOnError>,
+  ) {
+    return (options.client ?? this._client).post<
+      CreateOrganizationTeamResponses,
+      CreateOrganizationTeamErrors,
+      ThrowOnError
+    >({
+      url: "/organizations/{organization}/teams",
+      ...options,
+      headers: {
+        "Content-Type": "application/json",
+        ...options.headers,
+      },
+    });
+  }
+
+  /**
+   * Delete an organization team
+   *
+   * ### Authorization
+   * A service token or OAuth token must have at least one of the following access or scopes in order to use this API endpoint:
+   *
+   * **Service Token Accesses**
+   * `write_teams`
+   *
+   * **OAuth Scopes**
+   *
+   * | Resource | Scopes |
+   * | :------- | :---------- |
+   * | Organization | `write_organization` |
+   */
+  public deleteOrganizationTeam<ThrowOnError extends boolean = true>(
+    options: Options<DeleteOrganizationTeamData, ThrowOnError>,
+  ) {
+    return (options.client ?? this._client).delete<
+      DeleteOrganizationTeamResponses,
+      DeleteOrganizationTeamErrors,
+      ThrowOnError
+    >({
+      url: "/organizations/{organization}/teams/{team}",
+      ...options,
+    });
+  }
+
+  /**
+   * Get an organization team
+   *
+   * ### Authorization
+   * A service token or OAuth token must have at least one of the following access or scopes in order to use this API endpoint:
+   *
+   * **Service Token Accesses**
+   * `read_organization`
+   *
+   * **OAuth Scopes**
+   *
+   * | Resource | Scopes |
+   * | :------- | :---------- |
+   * | Organization | `read_organization` |
+   */
+  public getOrganizationTeam<ThrowOnError extends boolean = true>(
+    options: Options<GetOrganizationTeamData, ThrowOnError>,
+  ) {
+    return (options.client ?? this._client).get<
+      GetOrganizationTeamResponses,
+      GetOrganizationTeamErrors,
+      ThrowOnError
+    >({
+      url: "/organizations/{organization}/teams/{team}",
+      ...options,
+    });
+  }
+
+  /**
+   * Update an organization team
+   *
+   * ### Authorization
+   * A service token or OAuth token must have at least one of the following access or scopes in order to use this API endpoint:
+   *
+   * **Service Token Accesses**
+   * `write_teams`
+   *
+   * **OAuth Scopes**
+   *
+   * | Resource | Scopes |
+   * | :------- | :---------- |
+   * | Organization | `write_organization` |
+   */
+  public updateOrganizationTeam<ThrowOnError extends boolean = true>(
+    options: Options<UpdateOrganizationTeamData, ThrowOnError>,
+  ) {
+    return (options.client ?? this._client).patch<
+      UpdateOrganizationTeamResponses,
+      UpdateOrganizationTeamErrors,
+      ThrowOnError
+    >({
+      url: "/organizations/{organization}/teams/{team}",
+      ...options,
+      headers: {
+        "Content-Type": "application/json",
+        ...options.headers,
+      },
+    });
+  }
+
+  /**
+   * List team members
+   *
+   * ### Authorization
+   * A service token or OAuth token must have at least one of the following access or scopes in order to use this API endpoint:
+   *
+   * **Service Token Accesses**
+   * `read_organization`
+   *
+   * **OAuth Scopes**
+   *
+   * | Resource | Scopes |
+   * | :------- | :---------- |
+   * | Organization | `read_organization` |
+   */
+  public listOrganizationTeamMembers<ThrowOnError extends boolean = true>(
+    options: Options<ListOrganizationTeamMembersData, ThrowOnError>,
+  ) {
+    return (options.client ?? this._client).get<
+      ListOrganizationTeamMembersResponses,
+      ListOrganizationTeamMembersErrors,
+      ThrowOnError
+    >({
+      url: "/organizations/{organization}/teams/{team}/members",
+      ...options,
+    });
+  }
+
+  /**
+   * Add a member to a team
+   *
+   * ### Authorization
+   * A service token or OAuth token must have at least one of the following access or scopes in order to use this API endpoint:
+   *
+   * **Service Token Accesses**
+   * `write_teams`
+   *
+   * **OAuth Scopes**
+   *
+   * | Resource | Scopes |
+   * | :------- | :---------- |
+   * | Organization | `write_organization` |
+   */
+  public addOrganizationTeamMember<ThrowOnError extends boolean = true>(
+    options: Options<AddOrganizationTeamMemberData, ThrowOnError>,
+  ) {
+    return (options.client ?? this._client).post<
+      AddOrganizationTeamMemberResponses,
+      AddOrganizationTeamMemberErrors,
+      ThrowOnError
+    >({
+      url: "/organizations/{organization}/teams/{team}/members",
+      ...options,
+      headers: {
+        "Content-Type": "application/json",
+        ...options.headers,
+      },
+    });
+  }
+
+  /**
+   * Remove a member from a team
+   *
+   * ### Authorization
+   * A service token or OAuth token must have at least one of the following access or scopes in order to use this API endpoint:
+   *
+   * **Service Token Accesses**
+   * `write_teams`
+   *
+   * **OAuth Scopes**
+   *
+   * | Resource | Scopes |
+   * | :------- | :---------- |
+   * | Organization | `write_organization` |
+   */
+  public removeOrganizationTeamMember<ThrowOnError extends boolean = true>(
+    options: Options<RemoveOrganizationTeamMemberData, ThrowOnError>,
+  ) {
+    return (options.client ?? this._client).delete<
+      RemoveOrganizationTeamMemberResponses,
+      RemoveOrganizationTeamMemberErrors,
+      ThrowOnError
+    >({
+      url: "/organizations/{organization}/teams/{team}/members/{id}",
+      ...options,
+      headers: {
+        "Content-Type": "application/json",
+        ...options.headers,
+      },
+    });
+  }
+
+  /**
+   * Get a team member
+   *
+   * ### Authorization
+   * A service token or OAuth token must have at least one of the following access or scopes in order to use this API endpoint:
+   *
+   * **Service Token Accesses**
+   * `read_organization`
+   *
+   * **OAuth Scopes**
+   *
+   * | Resource | Scopes |
+   * | :------- | :---------- |
+   * | Organization | `read_organization` |
+   */
+  public getOrganizationTeamMember<ThrowOnError extends boolean = true>(
+    options: Options<GetOrganizationTeamMemberData, ThrowOnError>,
+  ) {
+    return (options.client ?? this._client).get<
+      GetOrganizationTeamMemberResponses,
+      GetOrganizationTeamMemberErrors,
+      ThrowOnError
+    >({
+      url: "/organizations/{organization}/teams/{team}/members/{id}",
+      ...options,
     });
   }
 

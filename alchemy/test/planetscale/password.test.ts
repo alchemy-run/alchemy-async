@@ -26,6 +26,7 @@ describe.skipIf(!process.env.PLANETSCALE_TEST)("Password Resource", () => {
     database = await Database("password-test-db", {
       organization: alchemy.env.PLANETSCALE_ORG_ID,
       clusterSize: "PS_10",
+      delete: true,
     });
     await waitForDatabaseReady(api, database.organization, database.name);
 

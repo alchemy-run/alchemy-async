@@ -4,6 +4,7 @@ import type { DatabaseBranch } from "./api/types.gen.ts";
 
 export type PlanetScaleClusterSize =
   | "PS_DEV"
+  | "PS_5"
   | "PS_10"
   | "PS_20"
   | "PS_40"
@@ -59,7 +60,7 @@ export async function waitForBranchReady(
     description: `branch "${branch}" ready`,
     fn: () =>
       api.getBranch({
-        path: { organization, database, name: branch },
+        path: { organization, database, branch },
       }),
     predicate: ({ data }) => data.ready,
   });
@@ -78,7 +79,7 @@ export async function waitForDatabaseReady(
     description: `database "${database}" ready`,
     fn: () =>
       api.getDatabase({
-        path: { organization, name: database },
+        path: { organization, database },
       }),
     predicate: ({ data }) => data.ready,
   });
@@ -134,7 +135,7 @@ export async function ensureProductionBranchClusterSize(
       break;
     }
     case "postgresql": {
-      // Postgres databases must be resized first before promoting, otherwise 500 error
+      // Postgres databases do not need to be promoted; PS_DEV is development and all others are production
       await ensurePostgresClusterSize(
         api,
         organization,
@@ -142,7 +143,6 @@ export async function ensureProductionBranchClusterSize(
         branch,
         expectedClusterSize,
       );
-      await ensureProductionBranch(api, organization, database, branch);
       break;
     }
   }
@@ -155,21 +155,21 @@ async function ensureProductionBranch(
   api: PlanetScaleClient,
   organization: string,
   database: string,
-  name: string,
+  branch: string,
 ): Promise<void> {
   const { data } = await api.getBranch({
     path: {
       organization,
       database,
-      name,
+      branch,
     },
   });
   if (!data.production) {
     if (!data.ready) {
-      await waitForBranchReady(api, organization, database, name);
+      await waitForBranchReady(api, organization, database, branch);
     }
     await api.promoteBranch({
-      path: { organization, database, name },
+      path: { organization, database, branch },
     });
   }
 }
@@ -213,7 +213,7 @@ async function ensureMySQLClusterSize(
       path: {
         organization,
         database,
-        name: branch,
+        branch,
       },
       body: { cluster_size: expectedClusterSize },
     });
@@ -243,7 +243,7 @@ async function ensurePostgresClusterSize(
     path: {
       organization,
       database,
-      name: branch,
+      branch,
     },
   });
   if (data.cluster_name === expectedClusterSize) {
