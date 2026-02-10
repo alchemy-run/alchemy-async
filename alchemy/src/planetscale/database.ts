@@ -351,6 +351,7 @@ export const Database = Resource(
           restrict_branch_region: props.restrictBranchRegion,
           insights_raw_queries: props.insightsRawQueries,
           production_branch_web_console: props.productionBranchWebConsole,
+          default_branch: props.defaultBranch,
         },
       });
 
