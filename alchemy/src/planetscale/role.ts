@@ -262,7 +262,7 @@ export const Role = Resource(
           path: {
             organization,
             database,
-            name: branch,
+            branch,
           },
         });
         if (kind !== "postgresql") {
