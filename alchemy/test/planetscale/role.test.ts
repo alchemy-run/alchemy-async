@@ -85,7 +85,10 @@ describe
           branch: "main",
           organization: database.organization,
         });
-        expect(third.id).not.toEqual(first!.id);
+        // the default role ID is the same, but the password is different
+        expect(third.password.unencrypted).not.toEqual(
+          first!.password.unencrypted,
+        );
       } finally {
         await destroy(scope);
       }
