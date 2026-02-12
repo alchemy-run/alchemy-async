@@ -164,6 +164,7 @@ export async function WranglerJson(
     limits: worker.limits
       ? {
           cpu_ms: worker.limits.cpu_ms ?? 30_000,
+          subrequests: worker.limits.subrequests,
         }
       : undefined,
     logpush: worker.logpush,

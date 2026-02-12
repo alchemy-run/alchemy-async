@@ -396,6 +396,15 @@ export interface BaseWorkerProps<
      * @default 30_000 (30 seconds)
      */
     cpu_ms?: number;
+    /**
+     * The maximum number of subrequests allowed per invocation.
+     * Defaults to 50 for free accounts and 10,000 for paid accounts.
+     * Paid accounts can increase up to 10,000,000.
+     *
+     * @see https://developers.cloudflare.com/workers/platform/limits/#subrequests
+     * @see https://developers.cloudflare.com/workers/wrangler/configuration/#limits
+     */
+    subrequests?: number;
   };
 
   /**

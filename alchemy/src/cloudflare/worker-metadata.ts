@@ -221,6 +221,7 @@ export interface WorkerMetadata {
   placement?: WorkerPlacement;
   limits?: {
     cpu_ms?: number;
+    subrequests?: number;
   };
   tail_consumers?: Array<Worker | { service: string }>;
 }
