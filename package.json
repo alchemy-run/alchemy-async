@@ -14,7 +14,7 @@
       "@cloudflare/vite-plugin": "^1.21.2",
       "vite": "^7.1.9",
       "typescript": "^5.8.3",
-      "wrangler": "^4.60.0"
+      "wrangler": "^4.65.0"
     },
     "packages": [
       "alchemy-web",
