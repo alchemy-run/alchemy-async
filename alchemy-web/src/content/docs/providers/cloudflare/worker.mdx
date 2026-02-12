@@ -75,7 +75,8 @@ export const worker = await Worker("api", {
   sourceMap: true,
   // Optional runtime limits — increase only when necessary after monitoring
   limits: {
-    cpu_ms: 50_000                        // Max CPU time in ms (default: 30_000)
+    cpu_ms: 50_000,                       // Max CPU time in ms (default: 30_000)
+    subrequests: 100_000,                 // Max subrequests per invocation (free: 50, paid: 10k default, up to 10M)
   },
   // Other Advanced 🧪 & commonly used options
   placement: { mode: "smart" },          // Placement to optimize network latency to back-end infrastructure
