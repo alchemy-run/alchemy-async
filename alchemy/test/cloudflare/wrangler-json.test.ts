@@ -757,6 +757,75 @@ describe("WranglerJson Resource", () => {
     }
   });
 
+  test("with subrequests limit", async (scope) => {
+    const name = `${BRANCH_PREFIX}-test-worker-subrequests-limit`;
+    const tempDir = path.join(".out", "alchemy-subrequests-limit-test");
+    const entrypoint = path.join(tempDir, "worker.ts");
+
+    try {
+      await fs.rm(tempDir, { recursive: true, force: true });
+      await fs.mkdir(tempDir, { recursive: true });
+      await fs.writeFile(entrypoint, esmWorkerScript);
+
+      const { spec } = await WranglerJson({
+        worker: {
+          name,
+          format: "esm",
+          entrypoint,
+          limits: {
+            subrequests: 50_000,
+          },
+        },
+      });
+
+      expect(spec).toMatchObject({
+        name,
+        limits: {
+          cpu_ms: 30_000,
+          subrequests: 50_000,
+        },
+      });
+    } finally {
+      await fs.rm(tempDir, { recursive: true, force: true });
+      await destroy(scope);
+    }
+  });
+
+  test("with cpu_ms and subrequests limits", async (scope) => {
+    const name = `${BRANCH_PREFIX}-test-worker-both-limits`;
+    const tempDir = path.join(".out", "alchemy-both-limits-test");
+    const entrypoint = path.join(tempDir, "worker.ts");
+
+    try {
+      await fs.rm(tempDir, { recursive: true, force: true });
+      await fs.mkdir(tempDir, { recursive: true });
+      await fs.writeFile(entrypoint, esmWorkerScript);
+
+      const { spec } = await WranglerJson({
+        worker: {
+          name,
+          format: "esm",
+          entrypoint,
+          limits: {
+            cpu_ms: 1_000,
+            subrequests: 10,
+          },
+        },
+      });
+
+      expect(spec).toMatchObject({
+        name,
+        limits: {
+          cpu_ms: 1_000,
+          subrequests: 10,
+        },
+      });
+    } finally {
+      await fs.rm(tempDir, { recursive: true, force: true });
+      await destroy(scope);
+    }
+  });
+
   test("with placement region hint (AWS)", async (scope) => {
     const name = `${BRANCH_PREFIX}-test-worker-placement-region`;
     const tempDir = path.join(".out", "alchemy-placement-region-test");

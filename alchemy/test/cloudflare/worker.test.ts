@@ -2496,6 +2496,49 @@ describe("Worker Resource", () => {
     }
   });
 
+  test("create worker with subrequests limit", async (scope) => {
+    const workerName = `${BRANCH_PREFIX}-test-worker-subrequests`;
+
+    let worker: Worker | undefined;
+    try {
+      worker = await Worker(workerName, {
+        name: workerName,
+        adopt: true,
+        script: `
+          export default {
+            async fetch(request, env, ctx) {
+              return new Response('Hello subrequests!', { status: 200 });
+            }
+          };
+        `,
+        limits: {
+          subrequests: 50_000,
+        },
+      });
+
+      expect(worker.limits).toEqual({
+        subrequests: 50_000,
+      });
+
+      worker = await Worker(workerName, {
+        name: workerName,
+        adopt: true,
+        script: `
+          export default {
+            async fetch(request, env, ctx) {
+              return new Response('Hello!', { status: 200 });
+            }
+          };
+        `,
+      });
+
+      expect(worker.limits).toBeUndefined();
+    } finally {
+      await destroy(scope);
+      await assertWorkerDoesNotExist(api, workerName);
+    }
+  });
+
   test("create worker with observability", async (scope) => {
     const workerName = `${BRANCH_PREFIX}-test-worker-observability`;
 
