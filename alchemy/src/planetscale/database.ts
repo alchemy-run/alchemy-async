@@ -258,6 +258,7 @@ export const Database = Resource(
         "PlanetScale organization is required. Please set the `organization` property or the `PLANETSCALE_ORGANIZATION` environment variable.",
       );
     }
+    const adopt = props.adopt ?? this.scope.adopt;
     const shouldDelete = props.delete ?? false;
 
     if (this.phase === "update" && this.output.name !== databaseName) {
@@ -297,7 +298,7 @@ export const Database = Resource(
       },
       throwOnError: false,
     });
-    if (this.phase === "update" || (props.adopt && getResponse.data)) {
+    if (this.phase === "update" || (adopt && getResponse.data)) {
       if (!getResponse.data) {
         throw new Error(`Database "${databaseName}" not found`, {
           cause: getResponse.error,
