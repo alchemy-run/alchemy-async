@@ -113,7 +113,7 @@ export const createCloudflareApi = memoize(
         baseUrl,
         profile,
         credentials,
-        accountId: provider.metadata.id,
+        accountId: accountId ?? provider.metadata.id,
       });
     } catch (error) {
       throw new Error(
