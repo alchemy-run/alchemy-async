@@ -540,10 +540,17 @@ export async function deleteDatabase(
   api: CloudflareApi,
   databaseId: string,
 ): Promise<void> {
-  await extractCloudflareResult(
-    `delete D1 database "${databaseId}"`,
-    api.delete(`/accounts/${api.accountId}/d1/database/${databaseId}`),
-  );
+  try {
+    await extractCloudflareResult(
+      `delete D1 database "${databaseId}"`,
+      api.delete(`/accounts/${api.accountId}/d1/database/${databaseId}`),
+    );
+  } catch (error) {
+    if (error instanceof CloudflareApiError && error.status === 404) {
+      return;
+    }
+    throw error;
+  }
 }
 
 /**
