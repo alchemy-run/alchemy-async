@@ -9,6 +9,9 @@ import {
 } from "./api.ts";
 import type { Tunnel } from "./tunnel.ts";
 
+/**
+ * Properties for creating or updating a VPC service.
+ */
 export interface VpcServiceProps extends CloudflareApiOptions {
   /**
    * The name of the VPC service to create.
@@ -59,6 +62,7 @@ export interface VpcServiceProps extends CloudflareApiOptions {
 }
 
 export declare namespace VpcService {
+  /** Host definition: hostname (with resolver network) or IPv4/IPv6/dual-stack with network. */
   export type Host = IPv4Host | IPv6Host | DualStackHost | HostnameHost;
 
   /**
@@ -87,12 +91,13 @@ export declare namespace VpcService {
   }
 
   /**
-   * Represents a network that the VPC service is accessible via. This can be a tunnel ID or a `Tunnel` resource.
+   * Network the VPC service is reached through. Use a `Tunnel` resource or an existing `tunnelId`.
    */
   export type Network = { tunnelId: string } | { tunnel: Tunnel };
 
   /**
-   * Represents a VPC service that is accessible via a hostname.
+   * Hostname-based host. DNS is resolved over the resolver network (tunnel).
+   * Optionally specify `resolverIps` for explicit DNS resolver IPs.
    */
   export interface HostnameHost {
     hostname: string;
@@ -100,14 +105,133 @@ export declare namespace VpcService {
   }
 }
 
+/**
+ * A VPC service instance. Bind to a Worker to allow the Worker to fetch from
+ * the private host (hostname or IP) over the configured tunnel.
+ */
 export type VpcService = Omit<VpcServiceProps, "name" | "adopt"> & {
+  /** Display name of the service. */
   name: string;
+  /** Cloudflare-assigned service ID. */
   serviceId: string;
+  /** Creation time (Unix ms). */
   createdAt: number;
+  /** Last update time (Unix ms). */
   updatedAt: number;
+  /** Resource kind for bindings. */
   type: "vpc_service";
 };
 
+/**
+ * Create or update a VPC service that routes Worker traffic to a private host
+ * (hostname or IP) through a Cloudflare Tunnel.
+ *
+ * [VPC Services](https://developers.cloudflare.com/workers-vpc/configuration/vpc-services/)
+ * enable Workers to securely access private network resources through Cloudflare Tunnel.
+ * Configure a host (hostname or IP) and optional ports, then bind the service to a Worker
+ * to reach private backends.
+ *
+ * @example
+ * // Minimal: hostname through a tunnel
+ * ```ts
+ * const tunnel = await Tunnel("my-tunnel", {
+ *   ingress: [{ service: "http://localhost:3000" }],
+ * });
+ * const vpcService = await VpcService("my-service", {
+ *   host: {
+ *     hostname: "localhost",
+ *     resolverNetwork: { tunnel, resolverIps: ["127.0.0.1"] },
+ *   },
+ * });
+ * ```
+ *
+ * @example
+ * // IPv4 address
+ * ```ts
+ * const vpcService = await VpcService("internal-api", {
+ *   host: {
+ *     ipv4: "192.168.1.100",
+ *     network: { tunnel },
+ *   },
+ * });
+ * ```
+ *
+ * @example
+ * // IPv6 address
+ * ```ts
+ * const vpcService = await VpcService("ipv6-service", {
+ *   host: { ipv6: "::1", network: { tunnel } },
+ * });
+ * ```
+ *
+ * @example
+ * // Dual stack (IPv4 + IPv6)
+ * ```ts
+ * const vpcService = await VpcService("dual-stack-service", {
+ *   host: {
+ *     ipv4: "192.168.1.100",
+ *     ipv6: "::1",
+ *     network: { tunnel },
+ *   },
+ * });
+ * ```
+ *
+ * @example
+ * // Custom HTTP/HTTPS ports
+ * ```ts
+ * const vpcService = await VpcService("dev-server", {
+ *   httpPort: 5173,
+ *   httpsPort: 5174,
+ *   host: {
+ *     hostname: "localhost",
+ *     resolverNetwork: { tunnel, resolverIps: ["127.0.0.1"] },
+ *   },
+ * });
+ * ```
+ *
+ * @example
+ * // Bind to a Worker
+ * ```ts
+ * const vpcService = await VpcService("private-api", {
+ *   httpPort: 8080,
+ *   host: {
+ *     hostname: "internal-api",
+ *     resolverNetwork: { tunnel, resolverIps: ["10.0.0.1"] },
+ *   },
+ * });
+ * const worker = await Worker("api-gateway", {
+ *   entrypoint: "./src/worker.ts",
+ *   bindings: { PRIVATE_API: vpcService },
+ * });
+ * ```
+ *
+ * @example
+ * // Existing tunnel by ID
+ * ```ts
+ * const vpcService = await VpcService("existing-tunnel-service", {
+ *   host: {
+ *     hostname: "internal.example.com",
+ *     resolverNetwork: {
+ *       tunnelId: "e6a0817c-79c5-40ca-9776-a1c019defe70",
+ *       resolverIps: ["10.0.0.53"],
+ *     },
+ *   },
+ * });
+ * ```
+ *
+ * @example
+ * // Adopt an existing VPC service
+ * ```ts
+ * const vpcService = await VpcService("adopted-service", {
+ *   name: "existing-service-name",
+ *   adopt: true,
+ *   host: {
+ *     hostname: "localhost",
+ *     resolverNetwork: { tunnel },
+ *   },
+ * });
+ * ```
+ */
 export const VpcService = Resource(
   "cloudflare::VpcService",
   async function (
@@ -206,6 +330,10 @@ export const VpcService = Resource(
   },
 );
 
+/**
+ * Create a connectivity (VPC) service via the Cloudflare API.
+ * @internal
+ */
 export async function createService(
   api: CloudflareApi,
   body: ConnectivityService.Input,
@@ -219,6 +347,10 @@ export async function createService(
   );
 }
 
+/**
+ * Delete a connectivity (VPC) service. No-op if the service is already gone (404).
+ * @internal
+ */
 export async function deleteService(
   api: CloudflareApi,
   serviceId: string,
@@ -235,6 +367,10 @@ export async function deleteService(
   });
 }
 
+/**
+ * Fetch a single connectivity (VPC) service by ID.
+ * @internal
+ */
 export async function getService(
   api: CloudflareApi,
   serviceId: string,
@@ -247,6 +383,10 @@ export async function getService(
   );
 }
 
+/**
+ * List connectivity (VPC) services for the account.
+ * @internal
+ */
 export async function listServices(
   api: CloudflareApi,
 ): Promise<ConnectivityService[]> {
@@ -258,6 +398,10 @@ export async function listServices(
   );
 }
 
+/**
+ * Update an existing connectivity (VPC) service.
+ * @internal
+ */
 export async function updateService(
   api: CloudflareApi,
   serviceId: string,
