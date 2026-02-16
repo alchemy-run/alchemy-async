@@ -43,23 +43,40 @@ describe("cloudflare-worker-simple", () => {
 
   describe("d1", () => {
     before(async () => {
-      const res = await api.d1.$get().then((res) => res.json());
-      for (const item of res) {
-        const res = await api.d1[":id"].$delete({
-          param: {
-            id: item.id,
-          },
-        });
-        assert.equal(res.status, 200);
-        await res.body?.cancel();
-      }
+      const res = await api.d1.$get();
+      const json = await res.json();
+      assert.equal(res.status, 200);
+      assert.equal(json.length, 40_000); // this is the number of users in the seed file
     });
 
     after(async () => {
       const res = await api.d1.$get();
       const json = await res.json();
       assert.equal(res.status, 200);
-      assert.deepEqual(json, []);
+      assert.equal(json.length, 40_000);
+    });
+
+    it("import", async () => {
+      const line = await fs
+        .readFile("imports/seed.sql", "utf-8")
+        .then(async (file) => file.split("\n")[0]);
+      const match = line.match(
+        /INSERT INTO users \(name, email\) VALUES \('([^']+)', '([^']+)'\);/,
+      );
+      const name = match?.[1];
+      const email = match?.[2];
+      assert.equal(typeof name, "string");
+      assert.equal(typeof email, "string");
+      const res = await api.d1[":id"].$get({
+        param: {
+          id: "1",
+        },
+      });
+      const json = await res.json();
+      assert.equal(res.status, 200);
+      assert.equal(json.name, name);
+      assert.equal(json.email, email);
+      assert.equal(typeof json.created_at, "string");
     });
 
     it("create, get, delete", async () => {

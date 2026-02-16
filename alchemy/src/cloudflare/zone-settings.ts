@@ -89,8 +89,7 @@ export interface AutomaticHTTPSRewritesSetting extends CloudflareSettingBase {
 /**
  * Automatic Platform Optimization setting
  */
-export interface AutomaticPlatformOptimizationSetting
-  extends CloudflareSettingBase {
+export interface AutomaticPlatformOptimizationSetting extends CloudflareSettingBase {
   id: "automatic_platform_optimization";
   value: {
     enabled: boolean;

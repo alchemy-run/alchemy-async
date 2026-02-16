@@ -2,16 +2,18 @@ import type { Context } from "../context.ts";
 import { Resource, ResourceKind } from "../resource.ts";
 import { Scope } from "../scope.ts";
 import { logger } from "../util/logger.ts";
-import { CloudflareApiError, handleApiError } from "./api-error.ts";
+import { CloudflareApiError } from "./api-error.ts";
+import { extractCloudflareResult } from "./api-response.ts";
 import {
   createCloudflareApi,
   type CloudflareApi,
   type CloudflareApiOptions,
 } from "./api.ts";
-import { withJurisdiction } from "./bucket.ts";
 import { cloneD1Database } from "./d1-clone.ts";
+import { importD1Database } from "./d1-import.ts";
 import { applyLocalD1Migrations } from "./d1-local-migrations.ts";
-import { applyMigrations, listMigrationsFiles } from "./d1-migrations.ts";
+import { applyMigrations } from "./d1-migrations.ts";
+import { listSqlFiles, readSqlFile, type D1SqlFile } from "./d1-sql-file.ts";
 import { deleteMiniflareBinding } from "./miniflare/delete.ts";
 
 const DEFAULT_MIGRATIONS_TABLE = "d1_migrations";
@@ -24,7 +26,7 @@ type PrimaryLocationHint =
   | "weur"
   | "eeur"
   | "apac"
-  | "auto"
+  | "oc"
   | (string & {});
 
 /**
@@ -85,11 +87,10 @@ export interface D1DatabaseProps extends CloudflareApiOptions {
   clone?: D1Database | { id: string } | { name: string };
 
   /**
-   * These files will be generated internally with the D1Database wrapper function when migrationsDir is specified
-   *
-   * @private
+   * The names of SQL files to import.
+   * After migrations are applied, these files will be run using [Cloudflare's D1 import API](https://developers.cloudflare.com/d1/best-practices/import-export-data/).
    */
-  migrationsFiles?: Array<{ id: string; sql: string }>;
+  importFiles?: string[];
 
   /**
    * Name of the table used to track migrations. Only used if migrationsDir is specified. Defaults to 'd1_migrations'
@@ -102,6 +103,7 @@ export interface D1DatabaseProps extends CloudflareApiOptions {
    * This is analogous to wrangler's `migrations_dir`.
    */
   migrationsDir?: string;
+
   /**
    * Whether to emulate the database locally when Alchemy is running in watch mode.
    */
@@ -139,6 +141,7 @@ export type D1Database = Pick<
   | "migrationsTable"
   | "primaryLocationHint"
   | "readReplication"
+  | "importFiles"
 > & {
   type: "d1";
   /**
@@ -253,13 +256,21 @@ export async function D1Database(
   id: string,
   props: Omit<D1DatabaseProps, "migrationsFiles"> = {},
 ): Promise<D1Database> {
-  const migrationsFiles = props.migrationsDir
-    ? await listMigrationsFiles(props.migrationsDir)
-    : [];
+  const [migrationsFiles, importFiles] = await Promise.all([
+    props.migrationsDir ? await listSqlFiles(props.migrationsDir) : [],
+    props.importFiles
+      ? await Promise.all(
+          props.importFiles.map((file) =>
+            readSqlFile(Scope.current.rootDir, file),
+          ),
+        )
+      : [],
+  ]);
 
   return _D1Database(id, {
     ...props,
     migrationsFiles,
+    importFiles,
     dev: {
       ...(props.dev ?? {}),
       // force local migrations to run even if the database was already deployed live
@@ -274,7 +285,10 @@ const _D1Database = Resource(
   async function (
     this: Context<D1Database>,
     id: string,
-    props: D1DatabaseProps,
+    props: Omit<D1DatabaseProps, "importFiles"> & {
+      migrationsFiles: D1SqlFile[] | undefined;
+      importFiles: D1SqlFile[] | undefined;
+    },
   ): Promise<D1Database> {
     const databaseName =
       props.name ?? this.output?.name ?? this.scope.createPhysicalName(id);
@@ -286,17 +300,18 @@ const _D1Database = Resource(
 
     const local = this.scope.local && !props.dev?.remote;
     const dev = {
-      id: this.output?.dev?.id ?? this.output?.id ?? id,
+      id: this.output?.dev?.id ?? this.output?.id ?? databaseName,
       remote: props.dev?.remote ?? false,
     };
     const adopt = props.adopt ?? this.scope.adopt;
 
     if (local) {
-      if (props.migrationsFiles && props.migrationsFiles.length > 0) {
+      if (props.migrationsFiles?.length || props.importFiles?.length) {
         await applyLocalD1Migrations({
           databaseId: dev.id,
           migrationsTable: props.migrationsTable ?? DEFAULT_MIGRATIONS_TABLE,
-          migrations: props.migrationsFiles,
+          migrations: props.migrationsFiles ?? [],
+          imports: props.importFiles ?? [],
           rootDir: this.scope.rootDir,
         });
       }
@@ -320,12 +335,12 @@ const _D1Database = Resource(
         await deleteMiniflareBinding(this.scope, "d1", this.output.dev.id);
       }
       if (props.delete !== false && this.output?.id) {
-        await deleteDatabase(api, this.output.id, props);
+        await deleteDatabase(api, this.output.id);
       }
       // Return void (a deleted database has no content)
       return this.destroy();
     }
-    let dbData: CloudflareD1Response;
+    let dbData: D1ResponseObject;
 
     if (
       this.phase === "create" ||
@@ -337,14 +352,9 @@ const _D1Database = Resource(
       try {
         dbData = await createDatabase(api, databaseName, props);
 
-        // Read replication cannot be set during creation, so update it after creation
-        if (props.readReplication && dbData.result.uuid) {
-          dbData = await updateDatabase(api, dbData.result.uuid, props);
-        }
-
         // If clone property is provided, perform cloning after database creation
-        if (props.clone && dbData.result.uuid) {
-          await cloneDb(api, props.clone, dbData.result.uuid, jurisdiction);
+        if (props.clone && dbData.uuid) {
+          await cloneDb(api, props.clone, dbData.uuid);
         }
       } catch (error) {
         // Check if this is a "database already exists" error and adopt is enabled
@@ -355,7 +365,7 @@ const _D1Database = Resource(
         ) {
           logger.log(`Database ${databaseName} already exists, adopting it`);
           // Find the existing database by name
-          const databases = await listDatabases(api, databaseName, props);
+          const databases = await listDatabases(api, databaseName);
           const existingDb = databases.find((db) => db.name === databaseName);
 
           if (!existingDb) {
@@ -365,11 +375,15 @@ const _D1Database = Resource(
           }
 
           // Get the database details using its ID
-          dbData = await getDatabase(api, existingDb.id, props);
+          dbData = await getDatabase(api, existingDb.uuid);
 
           // Update the database with the provided properties
           if (props.readReplication) {
-            dbData = await updateDatabase(api, existingDb.id, props);
+            dbData = await updateReadReplicationMode(
+              api,
+              existingDb.uuid,
+              props.readReplication?.mode,
+            );
           }
         } else {
           // Re-throw the error if adopt is false or it's not a "database already exists" error
@@ -386,13 +400,20 @@ const _D1Database = Resource(
           `Cannot update primaryLocationHint from '${this.output.primaryLocationHint}' to '${props.primaryLocationHint}' after database creation.`,
         );
       }
-      if (props.jurisdiction !== this.output?.jurisdiction) {
+      if (
+        (props.jurisdiction ?? "default") !==
+        (this.output?.jurisdiction ?? "default")
+      ) {
         throw new Error(
           `Cannot update jurisdiction from '${this.output.jurisdiction}' to '${props.jurisdiction}' after database creation.`,
         );
       }
       // Update the database with new properties
-      dbData = await updateDatabase(api, this.output.id, props);
+      dbData = await updateReadReplicationMode(
+        api,
+        this.output.id,
+        props.readReplication?.mode ?? "disabled", // disabled seems to be the default
+      );
     } else {
       // If no ID exists, fall back to creating a new database
       dbData = await createDatabase(api, databaseName, props);
@@ -403,17 +424,11 @@ const _D1Database = Resource(
       try {
         const migrationsTable =
           props.migrationsTable || DEFAULT_MIGRATIONS_TABLE;
-        const databaseId = dbData.result.uuid || this.output?.id;
-
-        if (!databaseId) {
-          throw new Error("Database ID not found for migrations");
-        }
-
         await applyMigrations({
           migrationsFiles: props.migrationsFiles,
           migrationsTable,
           accountId: api.accountId,
-          databaseId,
+          databaseId: dbData.uuid,
           api,
         });
       } catch (migrationErr) {
@@ -421,13 +436,20 @@ const _D1Database = Resource(
         throw migrationErr;
       }
     }
-    if (!dbData.result.uuid) {
-      // TODO(sam): why would this ever happen?
-      throw new Error("Database ID not found");
+    if (props.importFiles?.length) {
+      await Promise.all(
+        props.importFiles.map(async (file) => {
+          await importD1Database(api, {
+            databaseId: dbData.uuid,
+            sqlData: file.sql,
+            filename: file.id,
+          });
+        }),
+      );
     }
     return {
       type: "d1",
-      id: dbData.result.uuid!,
+      id: dbData.uuid,
       name: databaseName,
       readReplication: props.readReplication,
       primaryLocationHint: props.primaryLocationHint,
@@ -439,22 +461,16 @@ const _D1Database = Resource(
   },
 );
 
-interface CloudflareD1Response {
-  result: {
-    uuid?: string;
-    name: string;
-    file_size: number;
-    num_tables: number;
-    version: string;
-    primary_location_hint?: string;
-    read_replication?: {
-      mode: "auto" | "disabled";
-    };
-    jurisdiction?: string;
-  };
-  success: boolean;
-  errors: Array<{ code: number; message: string }>;
-  messages: string[];
+interface D1ResponseObject {
+  uuid: string;
+  name: string;
+  created_at: string;
+  version: string;
+  num_tables: number;
+  file_size: number;
+  running_in_region: "EEUR" | "APAC" | "WNAM" | "ENAM" | "WEUR" | "EEUR" | "OC";
+  read_replication: { mode: "auto" | "disabled" };
+  jurisdiction: "eu" | "fedramp" | null;
 }
 
 /**
@@ -463,36 +479,45 @@ interface CloudflareD1Response {
 export async function createDatabase(
   api: CloudflareApi,
   databaseName: string,
-  props: D1DatabaseProps,
-): Promise<CloudflareD1Response> {
+  props: Pick<
+    D1DatabaseProps,
+    "jurisdiction" | "primaryLocationHint" | "readReplication"
+  >,
+): Promise<D1ResponseObject> {
   // Create new D1 database
-  const createPayload: any = {
+  const createPayload: {
+    name: string;
+    jurisdiction?: "eu" | "fedramp";
+    primary_location_hint?:
+      | "wnam"
+      | "enam"
+      | "weur"
+      | "eeur"
+      | "apac"
+      | "oc"
+      | (string & {});
+  } = {
     name: databaseName,
-    jurisdiction: props.jurisdiction,
+    jurisdiction:
+      props.jurisdiction !== "default" ? props.jurisdiction : undefined,
+    primary_location_hint: props.primaryLocationHint,
   };
-
-  if (props.primaryLocationHint) {
-    createPayload.primary_location_hint = props.primaryLocationHint;
-  }
-
-  const createResponse = await api.post(
-    `/accounts/${api.accountId}/d1/database`,
-    createPayload,
-    {
-      headers: withJurisdiction(props),
-    },
+  const database = await extractCloudflareResult<D1ResponseObject>(
+    `create D1 database "${databaseName}"`,
+    api.post(`/accounts/${api.accountId}/d1/database`, createPayload),
   );
-
-  if (!createResponse.ok) {
-    return await handleApiError(
-      createResponse,
-      "creating",
-      "D1 database",
-      databaseName,
+  if (!database.uuid) {
+    // this is included in the spec as optional... why is it optional? we may never know...
+    throw new Error("Missing UUID for created database");
+  }
+  if (props.readReplication?.mode) {
+    return await updateReadReplicationMode(
+      api,
+      database.uuid,
+      props.readReplication?.mode,
     );
   }
-
-  return (await createResponse.json()) as CloudflareD1Response;
+  return database;
 }
 
 /**
@@ -500,25 +525,12 @@ export async function createDatabase(
  */
 export async function getDatabase(
   api: CloudflareApi,
-  databaseId?: string,
-  props: D1DatabaseProps = {},
-): Promise<CloudflareD1Response> {
-  if (!databaseId) {
-    throw new Error("Database ID is required");
-  }
-
-  const response = await api.get(
-    `/accounts/${api.accountId}/d1/database/${databaseId}`,
-    {
-      headers: withJurisdiction(props),
-    },
+  databaseId: string,
+): Promise<D1ResponseObject> {
+  return await extractCloudflareResult<D1ResponseObject>(
+    `get D1 database "${databaseId}"`,
+    api.get(`/accounts/${api.accountId}/d1/database/${databaseId}`),
   );
-
-  if (!response.ok) {
-    return await handleApiError(response, "getting", "D1 database", databaseId);
-  }
-
-  return (await response.json()) as CloudflareD1Response;
 }
 
 /**
@@ -526,31 +538,12 @@ export async function getDatabase(
  */
 export async function deleteDatabase(
   api: CloudflareApi,
-  databaseId?: string,
-  props: D1DatabaseProps = {},
+  databaseId: string,
 ): Promise<void> {
-  if (!databaseId) {
-    logger.log("No database ID provided, skipping delete");
-    return;
-  }
-
-  // Delete D1 database
-  const deleteResponse = await api.delete(
-    `/accounts/${api.accountId}/d1/database/${databaseId}`,
-    {
-      headers: withJurisdiction(props),
-    },
+  await extractCloudflareResult(
+    `delete D1 database "${databaseId}"`,
+    api.delete(`/accounts/${api.accountId}/d1/database/${databaseId}`),
   );
-
-  if (!deleteResponse.ok && deleteResponse.status !== 404) {
-    const errorData: any = await deleteResponse.json().catch(() => ({
-      errors: [{ message: deleteResponse.statusText }],
-    }));
-    throw new CloudflareApiError(
-      `Error deleting D1 database '${databaseId}': ${errorData.errors?.[0]?.message || deleteResponse.statusText}`,
-      deleteResponse,
-    );
-  }
 }
 
 /**
@@ -559,44 +552,15 @@ export async function deleteDatabase(
 export async function listDatabases(
   api: CloudflareApi,
   name?: string,
-  props: D1DatabaseProps = {},
-): Promise<{ name: string; id: string }[]> {
+): Promise<D1ResponseObject[]> {
   // Construct query string if name is provided
   const queryParams = name ? `?name=${encodeURIComponent(name)}` : "";
 
-  const response = await api.get(
-    `/accounts/${api.accountId}/d1/database${queryParams}`,
-    {
-      headers: withJurisdiction(props),
-    },
+  // TODO(john): handle pagination (wasn't handled originally)
+  return await extractCloudflareResult<D1ResponseObject[]>(
+    `list D1 databases${name ? ` with name "${name}"` : ""}`,
+    api.get(`/accounts/${api.accountId}/d1/database${queryParams}`),
   );
-
-  if (!response.ok) {
-    throw new CloudflareApiError(
-      `Failed to list databases: ${response.statusText}`,
-      response,
-    );
-  }
-
-  const data = (await response.json()) as {
-    success: boolean;
-    errors?: Array<{ code: number; message: string }>;
-    result?: Array<{
-      name: string;
-      uuid: string;
-    }>;
-  };
-
-  if (!data.success) {
-    const errorMessage = data.errors?.[0]?.message || "Unknown error";
-    throw new Error(`Failed to list databases: ${errorMessage}`);
-  }
-
-  // Transform API response
-  return (data.result || []).map((db) => ({
-    name: db.name,
-    id: db.uuid,
-  }));
 }
 
 /**
@@ -604,38 +568,19 @@ export async function listDatabases(
  *
  * Note: According to Cloudflare API, only read_replication.mode can be modified during updates.
  */
-export async function updateDatabase(
+export async function updateReadReplicationMode(
   api: CloudflareApi,
   databaseId: string,
-  props: D1DatabaseProps,
-): Promise<CloudflareD1Response> {
-  const updatePayload: any = {};
-
-  // Only include read_replication in update payload
-  if (props.readReplication) {
-    updatePayload.read_replication = {
-      mode: props.readReplication.mode,
-    };
-  }
-
-  const updateResponse = await api.patch(
-    `/accounts/${api.accountId}/d1/database/${databaseId}`,
-    updatePayload,
-    {
-      headers: withJurisdiction(props),
-    },
+  readReplicationMode: "auto" | "disabled",
+): Promise<D1ResponseObject> {
+  return await extractCloudflareResult<D1ResponseObject>(
+    `update read replication mode for D1 database "${databaseId}"`,
+    api.patch(`/accounts/${api.accountId}/d1/database/${databaseId}`, {
+      read_replication: {
+        mode: readReplicationMode,
+      },
+    }),
   );
-
-  if (!updateResponse.ok) {
-    return await handleApiError(
-      updateResponse,
-      "updating",
-      "D1 database",
-      databaseId,
-    );
-  }
-
-  return (await updateResponse.json()) as CloudflareD1Response;
 }
 
 /**
@@ -650,7 +595,6 @@ async function cloneDb(
   api: CloudflareApi,
   sourceDb: D1Database | { id: string } | { name: string },
   targetDbId: string,
-  jurisdiction: D1DatabaseJurisdiction,
 ): Promise<void> {
   let sourceId: string;
 
@@ -660,9 +604,7 @@ async function cloneDb(
     sourceId = sourceDb.id;
   } else if ("name" in sourceDb && sourceDb.name) {
     // Look up ID by name
-    const databases = await listDatabases(api, sourceDb.name, {
-      jurisdiction,
-    });
+    const databases = await listDatabases(api, sourceDb.name);
     const foundDb = databases.find((db) => db.name === sourceDb.name);
 
     if (!foundDb) {
@@ -671,7 +613,7 @@ async function cloneDb(
       );
     }
 
-    sourceId = foundDb.id;
+    sourceId = foundDb.uuid;
   } else if ("type" in sourceDb && sourceDb.type === "d1" && "id" in sourceDb) {
     // It's a D1Database object
     sourceId = sourceDb.id;

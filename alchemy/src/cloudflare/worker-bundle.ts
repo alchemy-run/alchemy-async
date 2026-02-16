@@ -242,7 +242,8 @@ export namespace WorkerBundleSource {
   }
 
   export interface ESBuildProps
-    extends WorkerBundleSource.BaseProps,
+    extends
+      WorkerBundleSource.BaseProps,
       Omit<
         esbuild.BuildOptions,
         "entryPoints" | "format" | "absWorkingDir" | "outdir"
@@ -351,6 +352,7 @@ export namespace WorkerBundleSource {
           ".js": "jsx",
           ".mjs": "jsx",
           ".cjs": "jsx",
+          ".sql": "text",
         },
         format,
         sourceRoot: this.props.outdir,

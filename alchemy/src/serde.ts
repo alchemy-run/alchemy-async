@@ -177,6 +177,10 @@ export async function deserialize(
   }
   if (value && typeof value === "object") {
     if (value["@secret"]) {
+      // If eraseSecrets is enabled, return undefined instead of decrypting
+      if (scope.eraseSecrets) {
+        return undefined;
+      }
       if (!scope.password) {
         throw new Error(
           "Cannot deserialize secret without password, did you forget to set password when initializing your alchemy app?\n" +

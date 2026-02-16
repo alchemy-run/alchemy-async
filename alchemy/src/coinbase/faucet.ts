@@ -141,7 +141,9 @@ for (const account of accounts) {
 
       // Skip if already processed in this run
       if (funded.has(key)) {
-        console.log(`  ⏭️  Skipping ${token} on ${network} (already requested)`);
+        console.log(
+          `  ⏭️  Skipping ${token} on ${network} (already requested)`,
+        );
         continue;
       }
 

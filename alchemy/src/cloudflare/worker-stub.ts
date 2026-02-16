@@ -9,7 +9,7 @@ import {
   type CloudflareApi,
   type CloudflareApiOptions,
 } from "./api.ts";
-import { WorkerSubdomain } from "./worker-subdomain.ts";
+import { createWorkerUrl, enableWorkerSubdomain } from "./worker-subdomain.ts";
 
 /**
  * Properties for creating a Worker stub
@@ -105,26 +105,24 @@ export const WorkerStub = Resource("cloudflare::WorkerStub", async function <
     return this.destroy();
   }
 
+  const scriptName = props.name;
+
   // If worker doesn't exist and we're in create phase, create an empty one
-  if (!(await exists(api, props.name)) && this.phase === "create") {
-    await createEmptyWorker(api, props.name);
+  if (!(await exists(api, scriptName)) && this.phase === "create") {
+    await createEmptyWorker(api, scriptName);
   }
 
   // Configure URL if requested (defaults to true)
-  const subdomain =
-    props.url !== false
-      ? await WorkerSubdomain("url", {
-          ...props,
-          scriptName: props.name,
-        })
-      : undefined;
+  if (props.url !== false) {
+    await enableWorkerSubdomain(api, scriptName);
+  }
 
   // Return the worker stub info
   return {
     type: "service",
     __rpc__: props.rpc as unknown as RPC,
     ...props,
-    url: subdomain?.url,
+    url: await createWorkerUrl(api, scriptName),
   } as WorkerStub<RPC>;
 });
 

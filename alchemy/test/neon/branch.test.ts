@@ -81,4 +81,63 @@ describe("NeonBranch Resource", () => {
       }
     }
   });
+
+  test("adopt existing branch", async (scope) => {
+    let originalBranch: NeonBranch | undefined;
+    let adoptedBranch: NeonBranch | undefined;
+
+    try {
+      const project = await NeonProject("project", {});
+
+      originalBranch = await NeonBranch("original-branch", {
+        project,
+        name: `${BRANCH_PREFIX}-adopt-test`,
+        endpoints: [{ type: "read_write" }],
+      });
+
+      adoptedBranch = await NeonBranch("adopted-branch", {
+        project,
+        name: originalBranch.name,
+        adopt: true,
+        endpoints: [], // endpoints should be fetched from the original branch
+      });
+
+      expect(adoptedBranch.id).toBe(originalBranch.id);
+      expect(adoptedBranch.name).toBe(originalBranch.name);
+      expect(adoptedBranch.projectId).toBe(originalBranch.projectId);
+      expect(adoptedBranch.endpoints).toEqual(
+        expect.arrayContaining(
+          originalBranch?.endpoints.map((endpoint) =>
+            expect.objectContaining({
+              id: endpoint.id,
+              autoscaling_limit_max_cu: endpoint.autoscaling_limit_max_cu,
+              autoscaling_limit_min_cu: endpoint.autoscaling_limit_min_cu,
+              pooler_enabled: endpoint.pooler_enabled,
+              pooler_mode: endpoint.pooler_mode,
+              disabled: endpoint.disabled,
+              passwordless_access: endpoint.passwordless_access,
+              suspend_timeout_seconds: endpoint.suspend_timeout_seconds,
+              region_id: endpoint.region_id,
+            }),
+          ),
+        ),
+      );
+      expect(adoptedBranch.databases).toEqual(originalBranch.databases);
+      expect(adoptedBranch.roles).toEqual(originalBranch.roles);
+    } finally {
+      await destroy(scope);
+
+      // Verify branch was deleted
+      if (originalBranch) {
+        const { response } = await api.getProjectBranch({
+          path: {
+            project_id: originalBranch.projectId,
+            branch_id: originalBranch.id,
+          },
+          throwOnError: false,
+        });
+        expect(response.status).toEqual(404);
+      }
+    }
+  });
 });

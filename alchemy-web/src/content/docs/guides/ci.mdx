@@ -5,7 +5,7 @@ sidebar:
   order: 0
 ---
 
-import { Steps, Tabs, TabItem, Code } from "@astrojs/starlight/components";
+import { Code, Steps, TabItem, Tabs } from "@astrojs/starlight/components";
 import yaml from "yaml";
 
 export function DeployWorkflow({ manager = "bun" }) {
@@ -98,7 +98,7 @@ export function DeployWorkflow({ manager = "bun" }) {
     },
     env: {
       STAGE:
-        "${{ github.ref == 'refs/heads/main' && 'prod' || format('pr-{0}', github.event.number) }}",
+        "${{ github.event_name == 'pull_request' && format('pr-{0}', github.event.number) || (github.ref == 'refs/heads/main' && 'prod' || github.ref_name) }}",
     },
     jobs: {
       deploy: {
@@ -150,12 +150,20 @@ export function DeployWorkflow({ manager = "bun" }) {
             run: cfg.install,
           },
           {
+            name: "Safety Check",
+            run: `if [ "\${{ env.STAGE }}" = "prod" ]; then
+  echo "ERROR: Cannot destroy prod environment in cleanup job"
+  exit 1
+fi`,
+          },
+          {
             name: "Destroy Preview Environment",
             run: `${cfg.destroy} destroy --stage \${{ env.STAGE }}`,
             env: {
               ALCHEMY_PASSWORD: "${{ secrets.ALCHEMY_PASSWORD }}",
               ALCHEMY_STATE_TOKEN: "${{ secrets.ALCHEMY_STATE_TOKEN }}",
               CLOUDFLARE_API_TOKEN: "${{ secrets.CLOUDFLARE_API_TOKEN }}",
+              CLOUDFLARE_ACCOUNT_ID: "${{ secrets.CLOUDFLARE_ACCOUNT_ID }}",
               CLOUDFLARE_EMAIL: "${{ secrets.CLOUDFLARE_EMAIL }}",
               PULL_REQUEST: "${{ github.event.number }}",
             },
@@ -185,12 +193,14 @@ As part of this guide, we'll:
    ALCHEMY_PASSWORD=your-encryption-password
    ALCHEMY_STATE_TOKEN=your-state-token
    CLOUDFLARE_API_TOKEN=your-cloudflare-api-token
+   CLOUDFLARE_ACCOUNT_ID=your-cloudflare-account-id
    CLOUDFLARE_EMAIL=your-cloudflare-email
    ```
 
    :::tip
    1. See the [Cloudflare Auth Guide](/guides/cloudflare#api-token) if you don't have a `CLOUDFLARE_API_TOKEN`. We reccomend using our cli to create a token matching your alchemy profile.
    2. See the [Cloudflare State Store Guide](/guides/cloudflare-state-store) if you don't have a `ALCHEMY_STATE_TOKEN`
+   3. See the [Cloudflare find account id](https://developers.cloudflare.com/fundamentals/account/find-account-and-zone-ids/) for getting account id if you dont know it.
    :::
 
 2. **Set up preview environments in your Alchemy script**
@@ -219,17 +229,16 @@ As part of this guide, we'll:
    +    owner: "your-username",
    +    repository: "your-repo",
    +    issueNumber: Number(process.env.PULL_REQUEST),
-   +    body: `
-   +     ## 🚀 Preview Deployed
+   +    body: `## 🚀 Preview Deployed
    +
-   +     Your changes have been deployed to a preview environment:
+   +Your changes have been deployed to a preview environment:
    +
-   +     **🌐 Website:** ${website.url}
+   +**🌐 Website:** ${website.url}
    +
-   +     Built from commit ${process.env.GITHUB_SHA?.slice(0, 7)}
+   +Built from commit ${process.env.GITHUB_SHA?.slice(0, 7)}
    +
-   +     ---
-   +     <sub>🤖 This comment updates automatically with each push.</sub>`,
+   +---
+   +<sub>🤖 This comment updates automatically with each push.</sub>`,
    +  });
    +}
    
@@ -255,4 +264,21 @@ As part of this guide, we'll:
      </TabItem>
    </Tabs>
 
+   :::note[Important: STAGE Variable Logic]
+   The workflow uses a specific `STAGE` environment variable logic to ensure preview environments are correctly identified:
+   
+   ```yaml
+   env:
+     STAGE: ${{ github.event_name == 'pull_request' && format('pr-{0}', github.event.number) || (github.ref == 'refs/heads/main' && 'prod' || github.ref_name) }}
+   ```
+   
+   This ensures that:
+   - All pull request events (including when merged/closed) use `pr-{number}` format
+   - Pushes to `main` branch use `prod`
+   - Other branches use the branch name
+   
+   Additionally, the cleanup job includes a safety check to prevent accidental destruction of the production environment.
+   :::
+
 </Steps>
+

@@ -21,7 +21,7 @@ See the [SQLiteStateStore documentation](/providers/sqlite/sqlite-state-store) f
 
    ```typescript
    import alchemy from "alchemy";
-   import { SQLiteStateStore } from "alchemy/sqlite";
+   import { SQLiteStateStore } from "alchemy/state";
 
    const app = await alchemy("my-app", {
      stateStore: (scope) => new SQLiteStateStore(scope)

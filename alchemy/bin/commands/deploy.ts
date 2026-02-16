@@ -2,6 +2,7 @@ import z from "zod";
 import {
   adopt,
   entrypoint,
+  eraseSecrets,
   execAlchemy,
   execArgs,
   force,
@@ -21,6 +22,7 @@ export const deploy = loggedProcedure
         force,
         watch,
         adopt,
+        eraseSecrets,
       }),
     ]),
   )

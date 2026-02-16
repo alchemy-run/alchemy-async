@@ -37,6 +37,7 @@ describe.skipIf(!process.env.PLANETSCALE_TEST).concurrent.each(kinds)(
           name,
           clusterSize: "PS_10",
           kind,
+          delete: true,
         });
 
         expect(database).toMatchObject({
@@ -60,7 +61,7 @@ describe.skipIf(!process.env.PLANETSCALE_TEST).concurrent.each(kinds)(
           path: {
             organization,
             database: name,
-            name: "main",
+            branch: "main",
           },
         });
 
@@ -83,37 +84,48 @@ describe.skipIf(!process.env.PLANETSCALE_TEST).concurrent.each(kinds)(
             slug: "us-east",
           },
           clusterSize: "PS_10",
-          allowDataBranching: true,
-          automaticMigrations: true,
-          requireApprovalForDeploy: false,
-          restrictBranchRegion: true,
-          insightsRawQueries: true,
-          productionBranchWebConsole: true,
-          defaultBranch: "main",
-          migrationFramework: "rails",
-          migrationTableName: "schema_migrations",
-          kind,
+          ...(kind === "mysql"
+            ? {
+                allowDataBranching: true,
+                automaticMigrations: true,
+                requireApprovalForDeploy: false,
+                restrictBranchRegion: true,
+                insightsRawQueries: true,
+                productionBranchWebConsole: true,
+                defaultBranch: "main",
+                migrationFramework: "rails",
+                migrationTableName: "schema_migrations",
+              }
+            : {
+                kind: "postgresql",
+              }),
+          delete: true,
         });
 
         expect(database).toMatchObject({
           id: expect.any(String),
           name,
           organization,
-          allowDataBranching: true,
-          automaticMigrations: true,
-          requireApprovalForDeploy: false,
-          restrictBranchRegion: true,
-          insightsRawQueries: true,
-          productionBranchWebConsole: true,
-          defaultBranch: "main",
-          migrationFramework: "rails",
-          migrationTableName: "schema_migrations",
+          ...(kind === "mysql"
+            ? {
+                allowDataBranching: true,
+                automaticMigrations: true,
+                requireApprovalForDeploy: false,
+                restrictBranchRegion: true,
+                insightsRawQueries: true,
+                productionBranchWebConsole: true,
+                defaultBranch: "main",
+                migrationFramework: "rails",
+                migrationTableName: "schema_migrations",
+              }
+            : {
+                kind: "postgresql",
+              }),
           state: expect.any(String),
           plan: expect.any(String),
           createdAt: expect.any(String),
           updatedAt: expect.any(String),
           htmlUrl: expect.any(String),
-          kind,
         });
 
         // Update database settings
@@ -121,37 +133,46 @@ describe.skipIf(!process.env.PLANETSCALE_TEST).concurrent.each(kinds)(
           name,
           organization,
           clusterSize: "PS_20", // Change cluster size
-          allowDataBranching: false,
-          automaticMigrations: false,
-          requireApprovalForDeploy: true,
-          restrictBranchRegion: false,
-          insightsRawQueries: false,
-          productionBranchWebConsole: false,
-          defaultBranch: "main",
-          migrationFramework: "django",
-          migrationTableName: "django_migrations",
-          kind,
+          ...(kind === "mysql"
+            ? {
+                allowDataBranching: false,
+                automaticMigrations: false,
+                requireApprovalForDeploy: true,
+                restrictBranchRegion: false,
+                insightsRawQueries: false,
+                productionBranchWebConsole: false,
+                defaultBranch: "main",
+                migrationFramework: "django",
+                migrationTableName: "django_migrations",
+              }
+            : { kind: "postgresql" }),
+          delete: true,
         });
 
-        expect(database).toMatchObject({
-          allowDataBranching: false,
-          automaticMigrations: false,
-          requireApprovalForDeploy: true,
-          restrictBranchRegion: false,
-          insightsRawQueries: false,
-          productionBranchWebConsole: false,
-          defaultBranch: "main",
-          migrationFramework: "django",
-          migrationTableName: "django_migrations",
-          kind,
-        });
+        expect(database).toMatchObject(
+          kind === "mysql"
+            ? {
+                allowDataBranching: false,
+                automaticMigrations: false,
+                requireApprovalForDeploy: true,
+                restrictBranchRegion: false,
+                insightsRawQueries: false,
+                productionBranchWebConsole: false,
+                defaultBranch: "main",
+                migrationFramework: "django",
+                migrationTableName: "django_migrations",
+              }
+            : {
+                kind: "postgresql",
+              },
+        );
 
         // Verify main branch cluster size was updated
         const { data: mainBranchData } = await api.getBranch({
           path: {
             organization,
             database: name,
-            name: "main",
+            branch: "main",
           },
         });
         expect(mainBranchData.cluster_name).toEqual(expectedClusterSizes.ps20);
@@ -177,6 +198,7 @@ describe.skipIf(!process.env.PLANETSCALE_TEST).concurrent.each(kinds)(
           clusterSize: "PS_10",
           defaultBranch,
           kind,
+          delete: true,
         });
 
         expect(database).toMatchObject({
@@ -193,7 +215,7 @@ describe.skipIf(!process.env.PLANETSCALE_TEST).concurrent.each(kinds)(
           path: {
             organization,
             database: name,
-            name: defaultBranch,
+            branch: defaultBranch,
           },
         });
         expect(branchData.parent_branch).toEqual("main");
@@ -206,6 +228,7 @@ describe.skipIf(!process.env.PLANETSCALE_TEST).concurrent.each(kinds)(
           clusterSize: "PS_20",
           defaultBranch,
           kind,
+          delete: true,
         });
 
         // Verify branch cluster size was updated
@@ -219,7 +242,7 @@ describe.skipIf(!process.env.PLANETSCALE_TEST).concurrent.each(kinds)(
           path: {
             organization,
             database: name,
-            name: defaultBranch,
+            branch: defaultBranch,
           },
         });
         expect(newBranchData.cluster_name).toEqual(expectedClusterSizes.ps20);
@@ -245,6 +268,7 @@ describe.skipIf(!process.env.PLANETSCALE_TEST).concurrent.each(kinds)(
             clusterSize: "PS_10",
             kind: "postgresql",
             arch: "arm",
+            delete: true,
           });
           expect(database).toMatchObject({
             id: expect.any(String),
@@ -257,7 +281,7 @@ describe.skipIf(!process.env.PLANETSCALE_TEST).concurrent.each(kinds)(
             path: {
               organization,
               database: name,
-              name: "main",
+              branch: "main",
             },
           });
           expect(branchData.cluster_name).toEqual("PS_10_AWS_ARM");
@@ -295,7 +319,7 @@ describe.skipIf(!process.env.PLANETSCALE_TEST).concurrent.each(kinds)(
         const { data } = await api.getDatabase({
           path: {
             organization,
-            name,
+            database: name,
           },
         });
         expect(data.name).toBe(name);
@@ -310,7 +334,7 @@ describe.skipIf(!process.env.PLANETSCALE_TEST).concurrent.each(kinds)(
         const { response } = await api.getDatabase({
           path: {
             organization,
-            name,
+            database: name,
           },
           throwOnError: false,
         });
@@ -320,7 +344,7 @@ describe.skipIf(!process.env.PLANETSCALE_TEST).concurrent.each(kinds)(
         await api.deleteDatabase({
           path: {
             organization,
-            name,
+            database: name,
           },
           throwOnError: false,
         });
@@ -348,7 +372,7 @@ async function assertDatabaseDeleted(
     const { response } = await api.getDatabase({
       path: {
         organization: organizationName,
-        name: databaseName,
+        database: databaseName,
       },
       throwOnError: false,
     });

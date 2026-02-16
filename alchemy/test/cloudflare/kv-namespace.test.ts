@@ -203,12 +203,38 @@ describe("KV Namespace Resource", () => {
   async function assertKvNamespaceNotExists(
     namespaceId: string,
   ): Promise<void> {
+    await new Promise((resolve) => setTimeout(resolve, 1000));
     const api = await createCloudflareApi();
-    const response = await api.get(
-      `/accounts/${api.accountId}/storage/kv/namespaces/${namespaceId}`,
-    );
+    const perPage = 100;
+    let page = 1;
 
-    expect(response.status).toEqual(404);
+    while (true) {
+      const response = await api.get(
+        `/accounts/${api.accountId}/storage/kv/namespaces?page=${page}&per_page=${perPage}`,
+      );
+      expect(response.ok).toBe(true);
+
+      const data = (await response.json()) as {
+        result: { id: string; title: string }[];
+        result_info: {
+          count: number;
+          page: number;
+          per_page: number;
+          total_count: number;
+        };
+      };
+
+      const match = data.result.find((ns) => ns.id === namespaceId);
+      expect(match).toBeUndefined();
+
+      if (
+        data.result_info.page * data.result_info.per_page >=
+        data.result_info.total_count
+      ) {
+        break;
+      }
+      page++;
+    }
   }
 
   async function verifyKVValue(

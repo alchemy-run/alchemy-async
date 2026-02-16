@@ -14,6 +14,11 @@ import { ExitSignal } from "../trpc.ts";
 import { CDPProxy } from "./cdp-manager/cdp-proxy.ts";
 import { CDPManager } from "./cdp-manager/server.ts";
 
+import { exec as _exec } from "child_process";
+import { promisify } from "node:util";
+
+const exec = promisify(_exec);
+
 export const entrypoint = z
   .string()
   .optional()
@@ -37,6 +42,14 @@ export const adopt = z
   .default(false)
   .describe(
     "Adopt resources if they already exist but are not yet managed by your Alchemy app",
+  );
+
+export const eraseSecrets = z
+  .boolean()
+  .optional()
+  .default(false)
+  .describe(
+    "Skip decrypting secrets and treat them as undefined (requires --force)",
   );
 
 export const execArgs = {
@@ -98,6 +111,7 @@ export async function execAlchemy(
     app,
     rootDir,
     profile,
+    eraseSecrets,
   }: {
     cwd?: string;
     quiet?: boolean;
@@ -115,6 +129,7 @@ export async function execAlchemy(
     app?: string;
     rootDir?: string;
     profile?: string;
+    eraseSecrets?: boolean;
   },
 ) {
   const args: string[] = [];
@@ -157,6 +172,7 @@ export async function execAlchemy(
   if (inspectWait) execArgs.push("--inspect-wait");
   if (inspectBrk) execArgs.push("--inspect-brk");
   if (adopt) args.push("--adopt");
+  if (eraseSecrets) args.push("--erase-secrets");
   if (profile) args.push(`--profile ${profile}`);
   if (app) args.push(`--app ${app}`);
   if (rootDir) {
@@ -213,41 +229,23 @@ export async function execAlchemy(
 
   const argsString = args.join(" ");
   const execArgsString = execArgs.join(" ");
-  // Determine the command to run based on package manager and file extension
-  let command: string;
-  const isTypeScript = main.endsWith("ts");
 
-  switch (packageManager) {
-    case "bun":
-      command = `bun ${execArgsString} ${main} ${argsString}`;
-      break;
-    case "deno":
-      command = `deno run -A ${execArgsString} ${main} ${argsString}`;
-      break;
-    case "pnpm":
-      command = isTypeScript
-        ? `pnpm dlx tsx ${execArgsString} ${main} ${argsString}`
-        : `pnpm node ${execArgsString} ${main} ${argsString}`;
-      break;
-    case "yarn":
-      command = isTypeScript
-        ? `yarn tsx ${execArgsString} ${main} ${argsString}`
-        : `yarn node ${execArgsString} ${main} ${argsString}`;
-      break;
-    default:
-      switch (runtime) {
-        case "bun":
-          command = `bun ${execArgsString} ${main} ${argsString}`;
-          break;
-        case "deno":
-          command = `deno run -A ${execArgsString} ${main} ${argsString}`;
-          break;
-        case "node":
-          command = isTypeScript
-            ? `npx tsx ${execArgsString} ${main} ${argsString}`
-            : `node ${execArgsString} ${main} ${argsString}`;
-          break;
-      }
+  const node = `node ${execArgsString} ${main} ${argsString}`;
+  const commands = {
+    bun: `bun ${execArgsString} ${main} ${argsString}`,
+    deno: `deno run -A ${execArgsString} ${main} ${argsString}`,
+  };
+  let command = commands[packageManager] ?? commands[runtime] ?? node;
+  if (command.startsWith("node")) {
+    const nodeVersion = (await exec(`node --version`)).stdout;
+    // example output: v24.10.0
+    const [major, minor] = nodeVersion.replace("v", "").split(".").map(Number);
+    if (major < 22 || (major === 22 && minor < 18)) {
+      // see: https://nodejs.org/en/learn/typescript/run-natively
+      command = `node --experimental-${
+        major === 22 && minor >= 7 ? "transform" : "strip"
+      }-types ${execArgsString} ${main} ${argsString}`;
+    }
   }
 
   const childRuntime = command.split(" ")[0];

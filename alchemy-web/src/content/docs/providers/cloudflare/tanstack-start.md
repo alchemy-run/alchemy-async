@@ -47,8 +47,6 @@ import { TanStackStart } from "alchemy/cloudflare";
 const app = await TanStackStart("my-app", {
   bindings: {
     API_KEY: alchemy.secret(process.env.API_KEY),
-  },
-  vars: {
     NODE_ENV: "production",
     APP_ENV: "staging",
   },

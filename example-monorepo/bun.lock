@@ -1,5 +1,6 @@
 {
   "lockfileVersion": 1,
+  "configVersion": 0,
   "workspaces": {
     "": {
       "name": "monorepo",
@@ -7,7 +8,7 @@
         "miniflare": "^4.20250906.0",
       },
       "devDependencies": {
-        "alchemy": "link:alchemy",
+        "alchemy": "catalog:",
         "turbo": "^2.5.6",
       },
     },

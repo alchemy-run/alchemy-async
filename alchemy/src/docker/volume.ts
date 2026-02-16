@@ -43,6 +43,12 @@ export interface VolumeProps {
    * Custom metadata labels for the volume
    */
   labels?: VolumeLabel[] | Record<string, string>;
+
+  /**
+   * Whether to adopt the volume if it already exists
+   * @default false
+   */
+  adopt?: boolean;
 }
 
 /**
@@ -133,33 +139,64 @@ export const Volume = Resource(
 
       // Return destroyed state
       return this.destroy();
-    } else {
-      // Set default driver if not provided
-      const driver = props.driver || "local";
-      const driverOpts = props.driverOpts || {};
-
-      // Create the volume
-      const volumeId = await api.createVolume(
-        volumeName,
-        driver,
-        driverOpts,
-        processedLabels,
-      );
-
-      // Get volume details to retrieve mountpoint
-      const volumeInfos = await api.inspectVolume(volumeId);
-      const mountpoint = volumeInfos[0].Mountpoint;
-
-      return {
-        ...props,
-        driver: driver,
-        id: volumeId,
-        name: volumeName,
-        mountpoint,
-        createdAt: Date.now(),
-        labels: Array.isArray(props.labels) ? props.labels : undefined,
-        driverOpts: props.driverOpts,
-      };
     }
+
+    // Check if volume already exists
+    const volumeExists = await api.volumeExists(volumeName);
+
+    if (volumeExists) {
+      if (this.phase === "update") {
+        this.replace();
+      } else {
+        // Create phase - check for adoption
+        if (!props.adopt) {
+          throw new Error(
+            `Volume "${volumeName}" already exists. Use adopt: true to adopt it.`,
+          );
+        }
+
+        // Adopt existing volume
+        const volumeInfos = await api.inspectVolume(volumeName);
+        const volumeInfo = volumeInfos[0];
+
+        return {
+          ...props,
+          id: volumeInfo.Name,
+          name: volumeInfo.Name,
+          driver: volumeInfo.Driver,
+          mountpoint: volumeInfo.Mountpoint,
+          createdAt: new Date(volumeInfo.CreatedAt).getTime(),
+          labels: Array.isArray(props.labels) ? props.labels : undefined,
+          driverOpts: volumeInfo.Options,
+        };
+      }
+    }
+
+    // Set default driver if not provided
+    const driver = props.driver || "local";
+    const driverOpts = props.driverOpts || {};
+
+    // Create the volume
+    const volumeId = await api.createVolume(
+      volumeName,
+      driver,
+      driverOpts,
+      processedLabels,
+    );
+
+    // Get volume details to retrieve mountpoint
+    const volumeInfos = await api.inspectVolume(volumeId);
+    const mountpoint = volumeInfos[0].Mountpoint;
+
+    return {
+      ...props,
+      driver: driver,
+      id: volumeId,
+      name: volumeName,
+      mountpoint,
+      createdAt: Date.now(),
+      labels: Array.isArray(props.labels) ? props.labels : undefined,
+      driverOpts: props.driverOpts,
+    };
   },
 );

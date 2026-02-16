@@ -78,3 +78,77 @@ try {
 It's recommended to use a `try-finally` so that you can assert the resource was actually deleted.
 ::: 
 
+## Integration Testing with Vitest Global Setup
+
+For integration tests where you want to deploy infrastructure once before all tests run and clean up after, use Vitest's global setup feature.
+
+### Configure Vitest
+
+Create a `vitest.config.ts` that references your global setup file:
+
+```typescript
+import { defineConfig } from "vitest/config";
+
+export default defineConfig({
+  test: {
+    include: ["test/**/*.test.ts"],
+    globalSetup: "./vitest.setup.ts",
+  },
+});
+```
+
+### Create Global Setup
+
+Create a `vitest.setup.ts` that deploys your infrastructure and provides context to tests:
+
+```typescript
+/// <reference types="vitest" />
+
+import type { TestProject } from "vitest/node";
+
+export async function setup({ provide }: TestProject) {
+  // Import and run your alchemy app
+  const { app, worker } = await import("./alchemy.run.ts");
+  
+  if (!worker.url) {
+    throw new Error("worker.url is not defined");
+  }
+  
+  // Provide values to your tests
+  provide("workerUrl", worker.url);
+  
+  // Return cleanup function
+  return async () => {
+    await app.cleanup();
+  };
+}
+
+// Declare the provided context for type safety
+declare module "vitest" {
+  export interface ProvidedContext {
+    workerUrl: string;
+  }
+}
+```
+
+### Write Tests
+
+Use `inject()` to access the provided context in your tests:
+
+```typescript
+import { describe, expect, inject, it } from "vitest";
+
+describe("worker", () => {
+  it("should return the correct response", async () => {
+    const workerUrl = inject("workerUrl");
+    const response = await fetch(workerUrl);
+    expect(response.status).toBe(200);
+    expect(await response.text()).toBe("Ok");
+  });
+});
+```
+
+:::tip
+This pattern is ideal for testing deployed Cloudflare Workers, APIs, or any infrastructure that needs to be live during tests. The infrastructure is deployed once, all tests run against it, and then it's cleaned up automatically.
+:::
+

@@ -52,7 +52,11 @@ export const PackageManager = {
 
 export async function installDependencies(
   context: ProjectContext,
-  { dependencies, devDependencies, cwd }: {
+  {
+    dependencies,
+    devDependencies,
+    cwd,
+  }: {
     dependencies?: string[];
     devDependencies?: string[];
     cwd?: string;

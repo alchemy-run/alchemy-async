@@ -14,7 +14,8 @@ import type { EventSource } from "./event-source.ts";
 import { isQueueEventSource } from "./event-source.ts";
 import { isQueue } from "./queue.ts";
 import { unencryptSecrets } from "./util/filter-env-bindings.ts";
-import { isWorker, type Worker, type WorkerProps } from "./worker.ts";
+import { getAccountSubdomain } from "./worker-subdomain.ts";
+import { isWorker, Worker, type WorkerProps } from "./worker.ts";
 
 /**
  * Properties for wrangler.json configuration file
@@ -163,6 +164,7 @@ export async function WranglerJson(
     limits: worker.limits
       ? {
           cpu_ms: worker.limits.cpu_ms ?? 30_000,
+          subrequests: worker.limits.subrequests,
         }
       : undefined,
     logpush: worker.logpush,
@@ -180,6 +182,7 @@ export async function WranglerJson(
       Scope.current.local && !props.worker.dev?.remote,
       async () =>
         worker.accountId ?? (await createCloudflareApi(worker)).accountId,
+      async () => await getAccountSubdomain(await createCloudflareApi(worker)),
     );
   }
 
@@ -253,6 +256,7 @@ async function processBindings(
   writeSecrets: boolean,
   local: boolean,
   getAccountId: () => Promise<string>,
+  getAccountSubdomain: () => Promise<string>,
 ): Promise<void> {
   // Arrays to collect different binding types
   const kvNamespaces: WranglerJsonConfig["kv_namespaces"] = [];
@@ -323,6 +327,16 @@ async function processBindings(
         service: workerName,
         entrypoint: binding.__entrypoint__,
       });
+    } else if (binding.type === "cloudflare::Worker::DevDomain") {
+      const subdomain = await getAccountSubdomain();
+      // Subdomain binding
+      (spec.vars ??= {})[bindingName] =
+        `${workerName}.${subdomain}.workers.dev`;
+    } else if (binding.type === "cloudflare::Worker::DevUrl") {
+      const subdomain = await getAccountSubdomain();
+      // Subdomain binding
+      (spec.vars ??= {})[bindingName] =
+        `https://${workerName}.${subdomain}.workers.dev`;
     } else if (binding.type === "service") {
       // Service binding
       services.push({

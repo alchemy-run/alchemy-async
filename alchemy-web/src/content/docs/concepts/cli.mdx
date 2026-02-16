@@ -36,6 +36,7 @@ Deploy an Alchemy project by running `alchemy deploy`.
 - `--watch` - Watch for changes to infrastructure and redeploy automatically (default: false)
 - `--force` - Apply updates to resources even if there are no changes (default: false)
 - `--adopt` - Adopt existing resources that are not yet managed by your Alchemy app (default: false)
+- `--erase-secrets` - Skip decrypting secrets and treat them as undefined. Requires `--force`. Useful for recovering from lost encryption passwords (default: false)
 - `--cwd` - Path to the project directory (defaults to current directory)
 - `--quiet` - Suppress Create/Update/Delete messages (default: `false`) 
 - `-h, --help` - Display help for command
@@ -68,6 +69,9 @@ alchemy deploy --watch
 
 # force update all resources even without changes
 alchemy deploy --force 
+
+# recover from lost encryption password by erasing secrets
+alchemy deploy --force --erase-secrets
 ```
 :::
 

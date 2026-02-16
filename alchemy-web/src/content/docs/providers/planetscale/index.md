@@ -13,6 +13,7 @@ PlanetScale is a serverless database platform that supports both MySQL and Postg
 - [Branch](/providers/planetscale/branch) - Create and manage database branches for development workflows
 - [Password](/providers/planetscale/password) - Create and manage database passwords with specific roles and permissions (MySQL only)
 - [Role](/providers/planetscale/role) - Create and manage database roles with inherited permissions (PostgreSQL only)
+- [DefaultRole](/providers/planetscale/default-role) - Create and manage the default role for a PostgreSQL database branch (PostgreSQL only)
 
 ## Authentication
 
@@ -74,7 +75,7 @@ const writerPassword = await Password("app-writer", {
 ## PostgreSQL Example
 
 ```ts
-import { Database, Branch, Role } from "alchemy/planetscale";
+import { Database, Branch, Role, DefaultRole } from "alchemy/planetscale";
 
 // Create a PostgreSQL database
 const pgDatabase = await Database("my-pg-db", {
@@ -108,4 +109,7 @@ const adminRole = await Role("app-admin", {
   inheritedRoles: ["postgres"],
   ttl: 3600, // 1 hour
 });
+
+// Or use the default role for the branch (one per database/branch)
+const defaultRole = await DefaultRole("default", { database: pgDatabase });
 ```

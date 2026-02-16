@@ -349,7 +349,7 @@ const _LogPushJob = Resource(
   "cloudflare::LogPushJob",
   async function (
     this: Context<LogPushJob>,
-    _id: string,
+    id: string,
     props: Omit<LogPushJobProps, "destination"> & {
       destination: Secret<string> | R2Bucket;
     },
@@ -424,15 +424,22 @@ const _LogPushJob = Resource(
           accessKeyId = apiToken.accessKeyId.unencrypted;
           secretAccessKey = apiToken.secretAccessKey.unencrypted;
         } catch (err) {
-          console.error(err);
-          console.warn(
-            "[Cloudflare Logpush Job] Warning: Cloudflare currently only allows the use of a Global API Key or an API Token with permission to create other API Tokens in order to generate new API Tokens programmatically.\n" +
-              "Please use your Global API Key, or create an API Token with the necessary permissions. For more information, see: https://alchemy.run/guides/cloudflare/#api-token",
+          const message = [
+            `Cannot create LogPushJob "${id}" because credentials for destination R2 bucket "${bucket.name}" could not be created. This may be because of an authentication error.`,
+          ];
+          if (api.credentials.type === "api-token") {
+            message.push(
+              "Please ensure that your API token has the correct permissions, or use a global API key and email instead.",
+            );
+          } else if (api.credentials.type === "oauth") {
+            message.push(
+              "Please use a global API key and email, or create an API token with the necessary permissions.",
+            );
+          }
+          message.push(
+            "See https://alchemy.run/guides/cloudflare/ for more details.",
           );
-          throw new Error(
-            "Unable to create an API Token: Cloudflare only allows Global API Key or an API Token with permission to create other API Tokens. " +
-              "See https://alchemy.run/guides/cloudflare/#api-token for more details.",
-          );
+          throw new Error(message.join("\n"), { cause: err });
         }
       }
 
@@ -523,10 +530,6 @@ const _LogPushJob = Resource(
       },
       // if we just recently created an api token for R2, we can retry on 1002 which are caused by token propagation
       (error: CloudflareApiError) => {
-        console.warn(
-          "Received error when creating LogPush job, there may be a propagation delay",
-          error.message,
-        );
         return error.errorData?.[0]?.code === 1002;
       },
       30,

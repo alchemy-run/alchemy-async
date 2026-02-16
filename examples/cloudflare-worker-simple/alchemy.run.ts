@@ -9,6 +9,7 @@ import {
 } from "alchemy/cloudflare";
 import assert from "node:assert";
 import { spawn } from "node:child_process";
+import fs from "node:fs/promises";
 import type { DO } from "./src/worker1.ts";
 
 const app = await alchemy("cloudflare-worker-simple");
@@ -16,11 +17,30 @@ const app = await alchemy("cloudflare-worker-simple");
 // to test with remote bindings, set to true
 const remote = false;
 
+// create a large seed file for the database to test large migrations
+if (
+  await fs
+    .stat("imports/seed.sql")
+    .then(() => false)
+    .catch(() => true)
+) {
+  await fs.mkdir("imports", { recursive: true });
+  await fs.writeFile(
+    "imports/seed.sql",
+    Array.from(
+      { length: 40_000 },
+      () =>
+        `INSERT INTO users (name, email) VALUES ('${crypto.randomUUID()}', '${crypto.randomUUID()}@example.com');\n`,
+    ).join(""),
+  );
+}
+
 const [d1, kv, r2] = await Promise.all([
   D1Database("d1", {
     name: `${app.name}-${app.stage}-d1`,
     adopt: true,
     migrationsDir: "migrations",
+    importFiles: ["imports/seed.sql"],
     dev: { remote },
   }),
   KVNamespace("kv", {

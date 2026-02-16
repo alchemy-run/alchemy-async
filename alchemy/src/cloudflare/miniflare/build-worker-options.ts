@@ -1,6 +1,7 @@
 import * as miniflare from "miniflare";
 import path from "pathe";
 import { assertNever } from "../../util/assert-never.ts";
+import { reservePort } from "../../util/find-open-port.ts";
 import type { HTTPServer } from "../../util/http.ts";
 import { logger } from "../../util/logger.ts";
 import type { CloudflareApi } from "../api.ts";
@@ -80,6 +81,7 @@ export const buildWorkerOptions = async (
     // This exposes the worker as a route that can be accessed by setting the MF-Route-Override header.
     routes: [input.name],
   };
+  const port = input.port ?? (await reservePort(input.name));
   for (const [key, binding] of Object.entries(input.bindings ?? {})) {
     if (typeof binding === "string") {
       (options.bindings ??= {})[key] = binding;
@@ -87,6 +89,14 @@ export const buildWorkerOptions = async (
     }
     if (binding.type === "cloudflare::Worker::Self") {
       (options.serviceBindings ??= {})[key] = miniflare.kCurrentWorker;
+      continue;
+    }
+    if (binding.type === "cloudflare::Worker::DevDomain") {
+      (options.bindings ??= {})[key] = `localhost:${port}`;
+      continue;
+    }
+    if (binding.type === "cloudflare::Worker::DevUrl") {
+      (options.bindings ??= {})[key] = `http://localhost:${port}`;
       continue;
     }
     switch (binding.type) {

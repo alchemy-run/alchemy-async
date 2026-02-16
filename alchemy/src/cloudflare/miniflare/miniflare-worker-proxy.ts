@@ -32,10 +32,12 @@ export async function createMiniflareWorkerProxy(options: {
 
   server.on("request", async (req, res) => {
     try {
-      const response = await handleFetch(req);
+      const response = await handleFetch(req, res);
       writeMiniflareResponseToNode(response, res);
     } catch (error) {
-      console.error(error);
+      if (!(error instanceof DOMException && error.name === "AbortError")) {
+        console.error(error);
+      }
       const response = MiniflareWorkerProxyError.fromUnknown(error).toResponse(
         options.mode,
       );
@@ -45,6 +47,7 @@ export async function createMiniflareWorkerProxy(options: {
 
   const handleFetch = async (
     req: http.IncomingMessage,
+    res: http.ServerResponse,
   ): Promise<miniflare.Response> => {
     const info = parseIncomingMessage(req);
     options.transformRequest?.(info);
@@ -60,12 +63,14 @@ export async function createMiniflareWorkerProxy(options: {
       info.url.pathname = "/cdn-cgi/handler/scheduled";
     }
 
+    const signal = getDisconnectSignal(req, res);
     const request = new miniflare.Request(info.url, {
       method: info.method,
       headers: info.headers,
       body: info.body,
       redirect: info.redirect,
       duplex: info.duplex,
+      signal,
     });
     return await options.miniflare.dispatchFetch(request);
   };
@@ -79,6 +84,16 @@ export async function createMiniflareWorkerProxy(options: {
     const protocols = req.headers["sec-websocket-protocol"]
       ?.split(",")
       .map((p) => p.trim());
+    const userHeaders = Object.fromEntries(
+      // filter headers that are set automatically by `ws` (if we set them manually, this causes errors)
+      Object.entries(req.headers).filter(
+        ([key]) =>
+          !key.startsWith("sec-websocket-") &&
+          key !== "host" &&
+          key !== "connection" &&
+          key !== "upgrade",
+      ),
+    );
 
     // Get worker name to set MF-Route-Override header
     const info = parseIncomingMessage(req);
@@ -88,6 +103,7 @@ export async function createMiniflareWorkerProxy(options: {
     return new WebSocket(url, protocols, {
       headers: {
         "MF-Route-Override": name,
+        ...userHeaders,
       },
     });
   };
@@ -101,6 +117,46 @@ export async function createMiniflareWorkerProxy(options: {
       server.close();
     },
   };
+}
+
+/**
+ * Creates an abort signal that is triggered when the downstream client
+ * disconnects before the response is fully written.
+ *
+ * This signal should be forwarded to Miniflare dispatch so Worker `req.signal`
+ * listeners can observe local client cancellation.
+ */
+function getDisconnectSignal(
+  req: http.IncomingMessage,
+  res: http.ServerResponse,
+): AbortSignal {
+  const controller = new AbortController();
+  const onAbort = () => {
+    if (!controller.signal.aborted) {
+      controller.abort();
+    }
+    cleanup();
+  };
+  const onClose = () => {
+    if (!res.writableEnded) {
+      onAbort();
+      return;
+    }
+    cleanup();
+  };
+  const cleanup = () => {
+    req.off("aborted", onAbort);
+    req.socket?.off("close", onClose);
+    res.off("close", onClose);
+    res.off("finish", cleanup);
+  };
+
+  req.on("aborted", onAbort);
+  req.socket?.on("close", onClose);
+  res.on("close", onClose);
+  res.on("finish", cleanup);
+
+  return controller.signal;
 }
 
 /**
@@ -186,7 +242,7 @@ const writeMiniflareResponseToNode = (
     // responding to traffic from cloudflared: net/http: HTTP/1.x transport connection broken: too many
     // transfer encodings: [\"chunked\" \"chunked\"]"
     if (key !== "transfer-encoding") {
-      out.setHeader(key, value);
+      out.appendHeader(key, value);
     }
   });
 

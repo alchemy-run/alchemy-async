@@ -39,8 +39,9 @@ export interface CloudflareApiResponse<T> {
 /**
  * Cloudflare API list response format
  */
-export interface CloudflareApiListResponse<T>
-  extends CloudflareApiResponse<T[]> {
+export interface CloudflareApiListResponse<T> extends CloudflareApiResponse<
+  T[]
+> {
   /**
    * List of results
    */

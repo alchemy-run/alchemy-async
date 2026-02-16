@@ -20,7 +20,7 @@ export interface QueueConsumerSettings {
 
   /**
    * Maximum number of concurrent consumer worker invocations
-   * @default 2
+   * @default undefined
    */
   maxConcurrency?: number;
 
@@ -32,7 +32,7 @@ export interface QueueConsumerSettings {
 
   /**
    * Maximum time in milliseconds to wait for batch to fill
-   * @default 500
+   * @default 5_000
    */
   maxWaitTimeMs?: number;
 

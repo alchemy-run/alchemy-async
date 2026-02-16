@@ -1,0 +1,12 @@
+{
+    "extends": "./tsconfig.json",
+    "include": [
+        "vitest.setup.ts",
+        "test/**/*.ts",
+        "alchemy.run.ts"
+    ],
+    "compilerOptions": {
+        "composite": true,
+        "allowImportingTsExtensions": true,
+    },
+}

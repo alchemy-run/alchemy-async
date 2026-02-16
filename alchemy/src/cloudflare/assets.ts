@@ -65,7 +65,7 @@ export namespace Assets {
    * @returns Metadata for all assets in the directory
    */
   export const read = async (root: string): Promise<FileMetadata[]> => {
-    const matcher = ignore().add(".assetsignore");
+    const matcher = ignore().add([".assetsignore", "_headers", "_redirects"]);
     const ignorePath = path.join(root, ".assetsignore");
     try {
       const content = await fs.readFile(ignorePath, "utf-8");

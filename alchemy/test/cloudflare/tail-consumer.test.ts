@@ -40,7 +40,7 @@ describe("Worker tail consumers", () => {
 
       const producerWorkerSettings = await getWorker(producerWorker.name);
       expect(producerWorkerSettings).toMatchObject({
-        tail_consumers: [{ service: consumerWorker.name }],
+        tail_consumers: [{ name: consumerWorker.name }],
       });
     } finally {
       await destroy(scope);
@@ -69,7 +69,7 @@ describe("Worker tail consumers", () => {
 
       const producerWorkerSettings = await getWorker(producerWorker.name);
       expect(producerWorkerSettings).toMatchObject({
-        tail_consumers: [{ service: consumerWorker.name }],
+        tail_consumers: [{ name: consumerWorker.name }],
       });
     } finally {
       await destroy(scope);
@@ -98,9 +98,7 @@ async function getWorker(name: string) {
         subdomain: { enabled?: boolean; previews_enabled?: boolean };
         tags: string[];
         tail_consumers: {
-          // API docs say "name" but it's "service"
-          // https://developers.cloudflare.com/api/resources/workers/subresources/beta/subresources/workers/models/worker/#(schema)
-          service: string;
+          name: string;
         }[];
         updated_on: string;
       }>(

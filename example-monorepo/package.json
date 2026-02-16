@@ -23,7 +23,7 @@
     }
   },
   "devDependencies": {
-    "alchemy": "link:alchemy",
+    "alchemy": "catalog:",
     "turbo": "^2.5.6"
   },
   "dependencies": {

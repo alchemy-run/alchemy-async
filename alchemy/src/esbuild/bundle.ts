@@ -73,8 +73,9 @@ export interface BundleProps extends Partial<esbuild.BuildOptions> {
 /**
  * Output returned after bundle creation/update
  */
-export interface Bundle<P extends BundleProps = BundleProps>
-  extends BundleProps {
+export interface Bundle<
+  P extends BundleProps = BundleProps,
+> extends BundleProps {
   /**
    * Path to the bundled file
    * Absolute or relative path to the generated bundle

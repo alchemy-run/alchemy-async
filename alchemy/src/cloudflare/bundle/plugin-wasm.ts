@@ -1,5 +1,6 @@
 import type esbuild from "esbuild";
 import assert from "node:assert";
+import crypto from "node:crypto";
 import fs from "node:fs/promises";
 import path from "pathe";
 import type { WorkerBundle } from "../worker-bundle.ts";
@@ -21,8 +22,9 @@ export function createWasmPlugin() {
           return { path: resolved.path, external: true };
         }
 
-        // Normalize path and remove the `?module` query param so we have the actual file name to copy
-        const name = path.normalize(args.path).replace(/\?.*$/, "");
+        // Resolve path to source file, excluding the `?module` suffix (uses path.resolve in case args.path is already absolute)
+        const normalizedPath = path.normalize(args.path).replace(/\?.*$/, "");
+        const copyFrom = path.resolve(args.resolveDir, normalizedPath);
 
         // Resolve path to outdir (required for monorepos if the workdir is not the same as process.cwd())
         assert(
@@ -34,19 +36,20 @@ export function createWasmPlugin() {
           build.initialOptions.outdir,
         );
 
+        // Use path hash as module specifier for portability (note: the `?module` suffix is not needed in workerd)
+        const hash = crypto.createHash("sha256").update(copyFrom).digest("hex");
+        const specifier = `${hash}.wasm`;
+
         // Copy to outdir so it's included in the upload
-        const copyFrom = path.join(args.resolveDir, name);
-        const copyTo = path.join(outdir, name);
+        const copyTo = path.join(outdir, specifier);
         await fs.mkdir(path.dirname(copyTo), { recursive: true });
         await fs.copyFile(copyFrom, copyTo);
-
         modules.set(args.path, {
           type: "wasm",
-          path: name,
+          path: specifier,
         });
 
-        // Resolve to the normalized file name (the `?module` query param is not needed in workerd)
-        return { path: name, external: true };
+        return { path: specifier, external: true };
       });
     },
   };

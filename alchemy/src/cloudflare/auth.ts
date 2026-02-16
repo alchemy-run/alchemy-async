@@ -18,88 +18,106 @@ export namespace CloudflareAuth {
     name: string;
   };
   export const ALL_SCOPES = {
-    // TODO: Verify descriptions marked with `//*`
-    "access:read": "Read Cloudflare Access", //*
-    "access:write": "Write Cloudflare Access", //*
+    "access:read":
+      "See Cloudflare Access data such as zones, applications, certificates, device postures, groups, identity providers, login counts, organizations, policies, service tokens, and users",
+    "access:write":
+      "See and change Cloudflare Access data such as zones, applications, certificates, device postures, groups, identity providers, login counts, organizations, policies, service tokens, and users",
     "account:read":
-      "See your account info such as account details, analytics, and memberships.",
-    "agw:read": "Read API Gateway", //*
-    "agw:run": "Run API Gateway", //*
-    "ai:read": "Read access to Workers AI catalog and assets",
-    "ai:write": "See and change Workers AI catalog and assets",
-    "aiaudit:read": "Read AI Audit", //*
-    "aiaudit:write": "Write AI Audit", //*
-    "aig:read": "Read AI Gateway", //*
-    "aig:write": "Write AI Gateway", //*
-    "auditlogs:read": "Read audit logs", //*
-    "browser:read": "Read Browser", //*
-    "browser:write": "Write Browser", //*
-    "cfone:read": "Read Cloudflare One", //*
-    "cfone:write": "Write Cloudflare One", //*
-    "cloudchamber:write": "Manage Cloudchamber",
-    "constellation:write": "Write Constellation", //*
-    "containers:write": "Manage Workers Containers",
-    "d1:write": "See and change D1 Databases.",
-    "dex:read": "Read DEX", //*
-    "dex:write": "Write DEX", //*
-    "dns_analytics:read": "Read DNS analytics",
-    "dns_records:edit": "Edit DNS records",
-    "dns_records:read": "Read DNS records",
-    "dns_settings:read": "Read DNS settings",
-    "firstpartytags:write": "Write First Party Tags", //*
-    "lb:edit": "Edit Load Balancer", //*
-    "lb:read": "Read Load Balancer", //*
-    "logpush:read": "Read Logpush", //*
-    "logpush:write": "Write Logpush", //*
-    "notification:read": "Read Notifications", //*
-    "notification:write": "Write Notifications", //*
-    "pages:read": "Read access to Pages projects, settings, and deployments.",
-    "pages:write": "See and change Pages projects, settings, and deployments.",
-    "pipelines:read": "Read access to Pipelines configurations and data",
-    "pipelines:setup": "Setup access to Pipelines configurations and data",
-    "pipelines:write": "See and change Pipelines configurations and data",
-    "query_cache:write": "Write Query Cache", //*
-    "queues:write": "See and change Queues settings and data",
-    "r2_catalog:write": "Write R2 Catalog", //*
-    "radar:read": "Read Radar", //*
-    "rag:read": "Read RAG", //*
-    "rag:write": "Write RAG", //*
-    "secrets_store:read":
-      "Read access to secrets + stores within the Secrets Store",
-    "secrets_store:write":
-      "See and change secrets + stores within the Secrets Store",
-    "sso-connector:read": "Read SSO Connector", //*
-    "sso-connector:write": "Write SSO Connector", //*
-    "ssl_certs:write": "See and manage mTLS certificates for your account",
-    "teams:pii": "Read Teams PII", //*
-    "teams:read": "Read Teams", //*
-    "teams:secure_location": "Read Secure Location", //*
-    "teams:write": "Write Teams", //*
-    "url_scanner:read": "Read URL Scanner", //*
-    "url_scanner:write": "Write URL Scanner", //*
+      "See your account info such as account details, analytics, and memberships",
+    "agw:read": "Grants read level access to Agents Gateway",
+    "agw:run": "Grants run level access to Agents Gateway",
+    "agw:write": "Grants read and write level access to Agents Gateway",
+    "ai:read": "Grants read level access to Workers AI",
+    "ai:write": "Grants write level access to Workers AI",
+    "aiaudit:read": "Grants read level access to AI Audit",
+    "aiaudit:write": "Grants write level access to AI Audit",
+    "aig:read": "Grants read level access to AI Gateway",
+    "aig:write": "Grants write level access to AI Gateway",
+    "auditlogs:read": "View Cloudflare Account Audit Logs",
+    "browser:read": "Grants read level access to Browser Rendering",
+    "browser:write": "Grants write level access to Browser Rendering",
+    "cfone:read": "Grants read level access to Cloudforce One data",
+    "cfone:write": "Grants write level access to Cloudforce One data",
+    "cloudchamber:write": "See and make changes to Cloudchamber",
+    "connectivity:admin":
+      "See, change, and bind to Connectivity Directory services, including creating services targeting Cloudflare Tunnel",
+    "connectivity:bind":
+      "read, list, and bind to Connectivity Directory services, as well as read and list Cloudflare Tunnels",
+    "connectivity:read":
+      "See Connectivity Directory services and Cloudflare Tunnels",
+    "constellation:write":
+      "Grants write access to Constellation configuration and models",
+    "containers:write": "See and make changes to Workers Containers",
+    "d1:write": "See and make changes to D1",
+    "dex:read": "Grants read level access to Cloudflare DEX",
+    "dex:write": "Grants write level access to Cloudflare DEX",
+    "dns_analytics:read":
+      "Grants read level access to Cloudflare DNS Analytics",
+    "dns_records:edit": "Grants edit level access to dns records",
+    "dns_records:read": "Grants read level access to dns records",
+    "dns_settings:read": "Grants read level access to Cloudflare DNS Settings",
+    "firstpartytags:write":
+      "Can see, edit and publish Google tag gateway configuration.",
+    "lb:edit": "Grants edit level access to lb and lb pools",
+    "lb:read": "Grants read level access to lb and lb pools",
+    "logpush:read": "See Cloudflare Logpush data",
+    "logpush:write": "See and change Cloudflare Logpush data",
+    "notification:read": "View Cloudflare Notifications",
+    "notification:write": "View and Modify Cloudflare Notifications",
+    "pages:read": "See Cloudflare Pages projects, settings and deployments",
+    "pages:write":
+      "See and change Cloudflare Pages projects, settings and deployments",
+    "pipelines:read": "Grants read level access to Cloudflare Pipelines",
+    "pipelines:setup":
+      "Grants permission to generate R2 tokens for Workers Pipelines",
+    "pipelines:write": "Grants write level access to Cloudflare Pipelines",
+    "query_cache:write": "See and make changes to Hyperdrive",
+    "queues:write": "See and change Cloudflare Queues settings and data",
+    "r2_catalog:write": "Grants write level access to R2 Data Catalog",
+    "radar:read": "Grants access to read Cloudflare Radar data",
+    "rag:read": "Grants read level access to Auto Rag",
+    "rag:write": "Grants write level access to Auto Rag",
+    "secrets_store:read": "Grants read level access to Secrets Store",
+    "secrets_store:write": "Grants write level access to Secrets Store",
+    "ssl_certs:write":
+      "Grants read and write access to SSL MTLS certificates or Certificate Store",
+    "sso-connector:read": "See Cloudflare SSO connectors",
+    "sso-connector:write":
+      "See Cloudflare SSO connectors to toggle activation and deactivation of SSO",
+    "teams:pii": "See personally identifiable Cloudflare Teams data",
+    "teams:read":
+      "See Cloudflare Teams data such as zones, gateway, and argo tunnel details",
+    "teams:secure_location":
+      "See all DNS Location data but can only change secure DNS Locations",
+    "teams:write":
+      "See and change Cloudflare Teams data such as zones, gateway, and argo tunnel details",
+    "url_scanner:read": "Grants read level access to URL Scanner",
+    "url_scanner:write": "Grants write level access to URL Scanner",
     "user:read":
-      "See your user info such as name, email address, and account memberships.",
-    "vectorize:write": "Write Vectorize", //*
+      "See your user info such as name, email address, and account memberships",
+    "vectorize:write": "See and make changes to Vectorize",
+    "workers:read":
+      "See Cloudflare Workers data such as zones, KV storage, R2 storage, scripts, and routes",
     "workers:write":
-      "See and change Cloudflare Workers data such as zones, KV storage, namespaces, scripts, and routes.",
-    "workers_builds:read": "Read Workers Builds", //*
-    "workers_builds:write": "Write Workers Builds", //*
+      "See and change Cloudflare Workers data such as zones, KV storage, R2 storage, scripts, and routes",
+    "workers_builds:read":
+      "See Cloudflare Workers Builds data such as builds, build configuration, and build logs",
+    "workers_builds:write":
+      "See and change Cloudflare Workers Builds data such as builds, build configuration, and build logs",
     "workers_kv:write":
-      "See and change Cloudflare Workers KV Storage data such as keys and namespaces.",
-    "workers_observability:read": "Read Workers Observability", //*
-    "workers_observability:write": "Write Workers Observability", //*
+      "See and change Cloudflare Workers KV Storage data such as keys and namespaces",
+    "workers_observability:read":
+      "Grants read access to Cloudflare Workers Observability",
     "workers_observability_telemetry:write":
-      "Write Workers Observability Telemetry", //*
+      "Grants write access to Cloudflare Workers Observability Telemetry API",
     "workers_routes:write":
-      "See and change Cloudflare Workers data such as filters and routes.",
+      "See and change Cloudflare Workers data such as filters and routes",
     "workers_scripts:write":
-      "See and change Cloudflare Workers scripts, durable objects, subdomains, triggers, and tail data.",
-    "workers_tail:read": "See Cloudflare Workers tail and script data.",
-    "zone:read": "Grants read level access to account zone.",
-    // Not granted yet
-    // "connectivity:admin":
-    //   "See, change, and bind to Connectivity Directory services, including creating services targeting Cloudflare Tunnel.",
-  };
+      "See and change Cloudflare Workers scripts, durable objects, subdomains, triggers, and tail data",
+    "workers_tail:read": "See Cloudflare Workers tail and script data",
+    "zone:read": "Grants read level access to account zone",
+  } as const;
+  export type Scope = keyof typeof ALL_SCOPES;
   export const DEFAULT_SCOPES = [
     "account:read",
     "user:read",
@@ -119,6 +137,7 @@ export namespace CloudflareAuth {
     "containers:write",
     "cloudchamber:write",
     "vectorize:write",
+    "connectivity:admin",
   ];
 
   /**

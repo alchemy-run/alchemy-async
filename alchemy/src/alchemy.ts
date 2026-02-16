@@ -140,6 +140,7 @@ async function _alchemy(
     })(),
     password: process.env.ALCHEMY_PASSWORD,
     adopt: cliArgs.includes("--adopt"),
+    eraseSecrets: cliArgs.includes("--erase-secrets"),
     rootDir: path.resolve(parseOption("--root-dir", ALCHEMY_ROOT)),
     profile: parseOption("--profile"),
   } satisfies Partial<AlchemyOptions>;
@@ -163,6 +164,10 @@ You can read more about State and State Stores here: https://alchemy.run/concept
 
 If this is a mistake, you can disable this check by setting the ALCHEMY_CI_STATE_STORE_CHECK=false.
 `);
+  }
+
+  if (mergedOptions.eraseSecrets && !mergedOptions.force) {
+    throw new Error("--erase-secrets requires --force");
   }
 
   const isRunningFromCLI = parseOption("--telemetry-ref")?.endsWith("cli");
@@ -221,7 +226,7 @@ If this is a mistake, you can disable this check by setting the ALCHEMY_CI_STATE
   const phase = mergedOptions?.phase ?? "up";
   const root = new Scope({
     ...mergedOptions,
-    parent: undefined,
+    parent: null,
     scopeName: appName,
     phase,
     password: mergedOptions?.password ?? process.env.ALCHEMY_PASSWORD,
@@ -360,6 +365,14 @@ export interface AlchemyOptions {
    * @default false
    */
   adopt?: boolean;
+  /**
+   * Skip decrypting secrets and treat them as undefined.
+   * Requires --force to be enabled.
+   * Useful for recovering from lost encryption passwords.
+   *
+   * @default false
+   */
+  eraseSecrets?: boolean;
   /**
    * The root directory of the project.
    *

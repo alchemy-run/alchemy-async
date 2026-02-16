@@ -37,6 +37,37 @@ const app = await Vite("my-vite-app", {
 });
 ```
 
+## Worker.DevUrl
+
+Use the `Worker.DevUrl` binding to inject the Worker's own dev domain URL into the compiled Vite SPA.
+
+```ts
+import { Vite, Worker } from "alchemy/cloudflare";
+
+const app = await Vite("my-vite-app", {
+  name: "my-vite-app",
+  bindings: {
+    VITE_PUBLIC_URL: Worker.DevUrl,
+  },
+});
+```
+
+:::note
+When running locally, the dev domain will be set to `localhost:{port}` where port is derived with the following algorithm:
+1. if `dev.command` contains `--port`, use the port from the argument
+2. if `vite.config.ts` contains `server.port`, use the port from the config, or else default to `5173`
+3. if we can't import `vite.config.ts`, then you will receive an error and will be required to set `dev.domain` manually
+
+```ts
+const app = await Vite("my-vite-app", {
+  // ..
+  dev: {
+    domain: "localhost:5006",
+  }
+});
+```
+:::
+
 ## With Custom Build Configuration
 
 Customize the build command and output paths.

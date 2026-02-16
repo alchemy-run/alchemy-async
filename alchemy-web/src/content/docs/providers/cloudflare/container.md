@@ -183,6 +183,47 @@ Error checking if container is ready: connect(): Connection refused: container p
 
 This warning can be safely ignored - the binding still works correctly and this is expected behavior during container startup.
 
+## Rollout Configuration
+
+You can configure rollout strategies for container updates using the `rollout` property. This controls how updates are deployed across instances.
+
+### Immediate Rollout
+
+For immediate updates that apply to all instances at once:
+
+```ts
+const container = await Container<MyContainer>("my-container", {
+  className: "MyContainer",
+  rollout: {
+    strategy: "immediate",
+  },
+});
+```
+
+### Rolling Rollout
+
+For gradual updates that reduce risk by updating instances incrementally:
+
+```ts
+const container = await Container<MyContainer>("my-container", {
+  className: "MyContainer",
+  rollout: {
+    strategy: "rolling",
+    stepPercentage: 25, // Update 25% of instances at a time
+  },
+});
+```
+
+### Rollout Options
+
+| Property | Type | Default | Description |
+|----------|------|---------|-------------|
+| `strategy` | `"rolling"` \| `"immediate"` | `"rolling"` | The rollout strategy - "immediate" updates all at once, "rolling" updates gradually |
+| `kind` | `"full_auto"` | `"full_auto"` | Automation level - proceeds without manual intervention |
+| `stepPercentage` | `number` | `25` | Percentage of instances to update in each step (1-100). Ignored when strategy is "immediate" |
+
+The target configuration (image, instance type, observability) is automatically derived from the container's own configuration - you don't need to specify it manually.
+
 ## Bind to Worker
 
 To deploy the `Container` to Cloudflare, you need to bind it to a `Worker`:

@@ -5,7 +5,7 @@
   "useTabs": false,
   "printWidth": 80,
   "endOfLine": "lf",
-  "experimentalTernaries": true,
+  "ternaries": true,
   "experimental_sort_imports": {
     "order": "asc"
   }

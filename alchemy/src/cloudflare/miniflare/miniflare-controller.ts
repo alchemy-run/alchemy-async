@@ -2,7 +2,7 @@ import * as miniflare from "miniflare";
 import assert from "node:assert";
 import path from "pathe";
 import { Scope } from "../../scope.ts";
-import { findOpenPort } from "../../util/find-open-port.ts";
+import { reservePort } from "../../util/find-open-port.ts";
 import type { HTTPServer } from "../../util/http.ts";
 import { logger } from "../../util/logger.ts";
 import { AsyncMutex } from "../../util/mutex.ts";
@@ -37,6 +37,7 @@ export class MiniflareController {
 
   async add(input: MiniflareWorkerInput) {
     const { watch, remoteProxy } = await buildWorkerOptions(input);
+
     if (remoteProxy) {
       this.remoteProxies.set(input.name, remoteProxy);
     }
@@ -54,7 +55,7 @@ export class MiniflareController {
       });
     } else {
       const proxy = await createMiniflareWorkerProxy({
-        port: input.port ?? (await findOpenPort()),
+        port: input.port ?? (await reservePort(input.name)),
         getWorkerName: () => input.name,
         miniflare,
         mode: "local",

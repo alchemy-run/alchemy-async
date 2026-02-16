@@ -1,3 +1,240 @@
+## v0.84.0
+
+### &nbsp;&nbsp;&nbsp;🐞 Bug Fixes
+
+- **cloudflare**: Disable preview urls for workers with durable objects &nbsp;-&nbsp; by **Michael K** and **Sam Goodwin** in https://github.com/alchemy-run/alchemy/issues/1321 [<samp>(6f26c)</samp>](https://github.com/alchemy-run/alchemy/commit/6f26c188)
+
+##### &nbsp;&nbsp;&nbsp;&nbsp;[View changes on GitHub](https://github.com/alchemy-run/alchemy/compare/v0.83.3...v0.84.0)
+
+---
+
+## v0.83.3
+
+### &nbsp;&nbsp;&nbsp;🐞 Bug Fixes
+
+- **cloudflare**: Update writeMiniflareResponseToNode() to handle multiple `set-cookie` headers &nbsp;-&nbsp; by **Samson** and **John Royal** in https://github.com/alchemy-run/alchemy/issues/1314 [<samp>(312bd)</samp>](https://github.com/alchemy-run/alchemy/commit/312bd0b8)
+
+##### &nbsp;&nbsp;&nbsp;&nbsp;[View changes on GitHub](https://github.com/alchemy-run/alchemy/compare/v0.83.2...v0.83.3)
+
+---
+
+## v0.83.2
+
+### &nbsp;&nbsp;&nbsp;🚀 Features
+
+- **cli**: Support --erase-secrets with --force to workaround encrhyption bugs &nbsp;-&nbsp; by **Sam Goodwin** in https://github.com/alchemy-run/alchemy/issues/1300 [<samp>(dc655)</samp>](https://github.com/alchemy-run/alchemy/commit/dc655423)
+- **cloudflare**: Add placement hints for Workers (region, host, hostname) &nbsp;-&nbsp; by **Jan Henning** and **John Royal** in https://github.com/alchemy-run/alchemy/issues/1310 [<samp>(1dbc1)</samp>](https://github.com/alchemy-run/alchemy/commit/1dbc149a)
+
+### &nbsp;&nbsp;&nbsp;🐞 Bug Fixes
+
+- **cli**:
+  - Correct destroy command description &nbsp;-&nbsp; by **Edwin Tantawi** in https://github.com/alchemy-run/alchemy/issues/1299 [<samp>(853fc)</samp>](https://github.com/alchemy-run/alchemy/commit/853fc0fc)
+- **cloudflare**:
+  - Improve error messages for LogPushJob &nbsp;-&nbsp; by **John Royal** in https://github.com/alchemy-run/alchemy/issues/1301 [<samp>(eca68)</samp>](https://github.com/alchemy-run/alchemy/commit/eca68eb3)
+  - Ignore .alchemy directory in astro integration &nbsp;-&nbsp; by **John Royal** in https://github.com/alchemy-run/alchemy/issues/1308 [<samp>(57d35)</samp>](https://github.com/alchemy-run/alchemy/commit/57d3501b)
+  - Reflect actual queue consumer defaults in jsdoc &nbsp;-&nbsp; by **Sergey Bekrin** in https://github.com/alchemy-run/alchemy/issues/1302 [<samp>(9027b)</samp>](https://github.com/alchemy-run/alchemy/commit/9027b9a8)
+  - Use hashed paths for wasm imports to fix next.js deploy &nbsp;-&nbsp; by **John Royal** in https://github.com/alchemy-run/alchemy/issues/1313 [<samp>(be6e7)</samp>](https://github.com/alchemy-run/alchemy/commit/be6e7047)
+
+##### &nbsp;&nbsp;&nbsp;&nbsp;[View changes on GitHub](https://github.com/alchemy-run/alchemy/compare/v0.83.1...v0.83.2)
+
+---
+
+## v0.83.1
+
+### &nbsp;&nbsp;&nbsp;🚀 Features
+
+- **cloudflare**: Add dev.remote option to Hyperdrive &nbsp;-&nbsp; by **Yanqi Zong** in https://github.com/alchemy-run/alchemy/issues/1291 [<samp>(dc335)</samp>](https://github.com/alchemy-run/alchemy/commit/dc33580e)
+
+### &nbsp;&nbsp;&nbsp;🐞 Bug Fixes
+
+- Upgrade to libsodium-wrappers@0.8.0 &nbsp;-&nbsp; by **Sam Goodwin** [<samp>(eb199)</samp>](https://github.com/alchemy-run/alchemy/commit/eb199e27)
+- **cloudflare**:
+  - Remove OAuth error interception in Cloudflare API error handling &nbsp;-&nbsp; by **John Royal** in https://github.com/alchemy-run/alchemy/issues/1296 [<samp>(46fe1)</samp>](https://github.com/alchemy-run/alchemy/commit/46fe17d6)
+  - Update detection of "durable object already has application" error &nbsp;-&nbsp; by **John Royal** in https://github.com/alchemy-run/alchemy/issues/1298 [<samp>(a8996)</samp>](https://github.com/alchemy-run/alchemy/commit/a8996eed)
+
+##### &nbsp;&nbsp;&nbsp;&nbsp;[View changes on GitHub](https://github.com/alchemy-run/alchemy/compare/v0.83.0...v0.83.1)
+
+---
+
+## v0.83.0
+
+### &nbsp;&nbsp;&nbsp;🚀 Features
+
+- **cloudflare**: Support rollout strategy in Container &nbsp;-&nbsp; by **Sam Goodwin** in https://github.com/alchemy-run/alchemy/issues/1290 [<samp>(47ba3)</samp>](https://github.com/alchemy-run/alchemy/commit/47ba3ea8)
+
+##### &nbsp;&nbsp;&nbsp;&nbsp;[View changes on GitHub](https://github.com/alchemy-run/alchemy/compare/v0.82.2...v0.83.0)
+
+---
+
+## v0.82.2
+
+### &nbsp;&nbsp;&nbsp;🐞 Bug Fixes
+
+- **state**: Add drizzle-orm as a dependency &nbsp;-&nbsp; by **Sam Goodwin** in https://github.com/alchemy-run/alchemy/issues/1283 [<samp>(aa274)</samp>](https://github.com/alchemy-run/alchemy/commit/aa274e42)
+
+##### &nbsp;&nbsp;&nbsp;&nbsp;[View changes on GitHub](https://github.com/alchemy-run/alchemy/compare/v0.82.1...v0.82.2)
+
+---
+
+## v0.82.1
+
+### &nbsp;&nbsp;&nbsp;🚀 Features
+
+- **cloudflare**: D1 import &nbsp;-&nbsp; by **John Royal** in https://github.com/alchemy-run/alchemy/issues/1254 [<samp>(7ba2b)</samp>](https://github.com/alchemy-run/alchemy/commit/7ba2b622)
+
+### &nbsp;&nbsp;&nbsp;🐞 Bug Fixes
+
+- **cloudflare**:
+  - D1 database create error due to malformed request &nbsp;-&nbsp; by **John Royal** in https://github.com/alchemy-run/alchemy/issues/1278 [<samp>(dc93d)</samp>](https://github.com/alchemy-run/alchemy/commit/dc93d6d8)
+  - D1 local migrations fail with "column already exists" &nbsp;-&nbsp; by **John Royal** in https://github.com/alchemy-run/alchemy/issues/1279 [<samp>(e6021)</samp>](https://github.com/alchemy-run/alchemy/commit/e6021096)
+
+##### &nbsp;&nbsp;&nbsp;&nbsp;[View changes on GitHub](https://github.com/alchemy-run/alchemy/compare/v0.82.0...v0.82.1)
+
+---
+
+## v0.82.0
+
+### &nbsp;&nbsp;&nbsp;🚀 Features
+
+- **neon**: Add support for 'adopt' prop in neon branches &nbsp;-&nbsp; by **utopy** in https://github.com/alchemy-run/alchemy/issues/1273 [<samp>(6c795)</samp>](https://github.com/alchemy-run/alchemy/commit/6c7957a1)
+
+##### &nbsp;&nbsp;&nbsp;&nbsp;[View changes on GitHub](https://github.com/alchemy-run/alchemy/compare/v0.81.4...v0.82.0)
+
+---
+
+## v0.81.4
+
+### &nbsp;&nbsp;&nbsp;🚀 Features
+
+- **cloudflare**: Add "delete: false" option to hyperdrive &nbsp;-&nbsp; by **John Royal** in https://github.com/alchemy-run/alchemy/issues/1276 [<samp>(a5f6a)</samp>](https://github.com/alchemy-run/alchemy/commit/a5f6ad47)
+
+### &nbsp;&nbsp;&nbsp;🐞 Bug Fixes
+
+- **cli**: Include hyperdrive in generated tokens with workers:* scope &nbsp;-&nbsp; by **John Royal** in https://github.com/alchemy-run/alchemy/issues/1275 [<samp>(f6753)</samp>](https://github.com/alchemy-run/alchemy/commit/f67534d5)
+
+##### &nbsp;&nbsp;&nbsp;&nbsp;[View changes on GitHub](https://github.com/alchemy-run/alchemy/compare/v0.81.3...v0.81.4)
+
+---
+
+## v0.81.3
+
+### &nbsp;&nbsp;&nbsp;🐞 Bug Fixes
+
+- **cloudflare**: Website resources properly lowercase worker names &nbsp;-&nbsp; by **Michael K** in https://github.com/alchemy-run/alchemy/issues/1268 [<samp>(82834)</samp>](https://github.com/alchemy-run/alchemy/commit/828345c1)
+- **core**: Add missing ".ts" extensions to hey api client &nbsp;-&nbsp; by **John Royal** in https://github.com/alchemy-run/alchemy/issues/1269 [<samp>(808c3)</samp>](https://github.com/alchemy-run/alchemy/commit/808c3687)
+
+##### &nbsp;&nbsp;&nbsp;&nbsp;[View changes on GitHub](https://github.com/alchemy-run/alchemy/compare/v0.81.2...v0.81.3)
+
+---
+
+## v0.81.2
+
+### &nbsp;&nbsp;&nbsp;🐞 Bug Fixes
+
+- **cloudflare**:
+  - Miniflare compatibility date warning &nbsp;-&nbsp; by **John Royal** in https://github.com/alchemy-run/alchemy/issues/1256 [<samp>(4992e)</samp>](https://github.com/alchemy-run/alchemy/commit/4992e56d)
+  - Support dev.domain in NextJS &nbsp;-&nbsp; by **Sam Goodwin** in https://github.com/alchemy-run/alchemy/issues/1264 [<samp>(d80a0)</samp>](https://github.com/alchemy-run/alchemy/commit/d80a0ce8)
+  - Handle next.js 16 absolute paths in wasm imports &nbsp;-&nbsp; by **John Royal** in https://github.com/alchemy-run/alchemy/issues/1259 [<samp>(5363d)</samp>](https://github.com/alchemy-run/alchemy/commit/5363d641)
+- **core**:
+  - Do not wait for consistent state when destroying &nbsp;-&nbsp; by **Sam Goodwin** in https://github.com/alchemy-run/alchemy/issues/1252 [<samp>(8eae9)</samp>](https://github.com/alchemy-run/alchemy/commit/8eae9c75)
+- **prisma-postgres**:
+  - Properly build `connectionString` &nbsp;-&nbsp; by **Yanqi Zong** in https://github.com/alchemy-run/alchemy/issues/1253 [<samp>(eb4a8)</samp>](https://github.com/alchemy-run/alchemy/commit/eb4a8600)
+
+##### &nbsp;&nbsp;&nbsp;&nbsp;[View changes on GitHub](https://github.com/alchemy-run/alchemy/compare/v0.81.1...v0.81.2)
+
+---
+
+## v0.81.1
+
+### &nbsp;&nbsp;&nbsp;🐞 Bug Fixes
+
+- **cloudflare**: Resolve zoneId in RedirectRule and use individual Rule apis &nbsp;-&nbsp; by **Sam Goodwin** in https://github.com/alchemy-run/alchemy/issues/1250 [<samp>(0978c)</samp>](https://github.com/alchemy-run/alchemy/commit/0978cc3e)
+
+##### &nbsp;&nbsp;&nbsp;&nbsp;[View changes on GitHub](https://github.com/alchemy-run/alchemy/compare/v0.81.0...v0.81.1)
+
+---
+
+## v0.81.0
+
+### &nbsp;&nbsp;&nbsp;🚀 Features
+
+- **cloudflare**:
+  - Add missing cache fields to hyperdrive &nbsp;-&nbsp; by **John Royal** in https://github.com/alchemy-run/alchemy/issues/1240 [<samp>(c1c8f)</samp>](https://github.com/alchemy-run/alchemy/commit/c1c8f3f5)
+  - Resources for warp device profiles and CIDR Routes for tunnels &nbsp;-&nbsp; by **Andrew Jefferson** in https://github.com/alchemy-run/alchemy/issues/1243 [<samp>(48731)</samp>](https://github.com/alchemy-run/alchemy/commit/487314aa)
+
+### &nbsp;&nbsp;&nbsp;🐞 Bug Fixes
+
+- **cloudflare**:
+  - Pass safe user headers to miniflare websocket &nbsp;-&nbsp; by **John Royal** in https://github.com/alchemy-run/alchemy/issues/1235 [<samp>(b533a)</samp>](https://github.com/alchemy-run/alchemy/commit/b533ac9a)
+  - Paginate Cloudflare queue lookup &nbsp;-&nbsp; by **Riley Tomasek** and **CharlieHelps** in https://github.com/alchemy-run/alchemy/issues/1245 [<samp>(52a3e)</samp>](https://github.com/alchemy-run/alchemy/commit/52a3e639)
+- **core**:
+  - Ensure root Scope is always root and monorepo improvements &nbsp;-&nbsp; by **Sam Goodwin** in https://github.com/alchemy-run/alchemy/issues/1249 [<samp>(88b73)</samp>](https://github.com/alchemy-run/alchemy/commit/88b738d3)
+
+##### &nbsp;&nbsp;&nbsp;&nbsp;[View changes on GitHub](https://github.com/alchemy-run/alchemy/compare/v0.80.1...v0.81.0)
+
+---
+
+## v0.80.1
+
+### &nbsp;&nbsp;&nbsp;🚀 Features
+
+- **cloudflare**: Infer local dev port command or vite.config.ts &nbsp;-&nbsp; by **Sam Goodwin** in https://github.com/alchemy-run/alchemy/issues/1237 [<samp>(2731d)</samp>](https://github.com/alchemy-run/alchemy/commit/2731db03)
+
+##### &nbsp;&nbsp;&nbsp;&nbsp;[View changes on GitHub](https://github.com/alchemy-run/alchemy/compare/v0.80.0...v0.80.1)
+
+---
+
+## v0.80.0
+
+### &nbsp;&nbsp;&nbsp;🚀 Features
+
+- **cloudflare**: Worker.DevDomain and Worker.DevUrl &nbsp;-&nbsp; by **Sam Goodwin** in https://github.com/alchemy-run/alchemy/issues/1236 [<samp>(28565)</samp>](https://github.com/alchemy-run/alchemy/commit/28565ac9)
+- **docker**: Support `adopt` for `Container` and `Volume` &nbsp;-&nbsp; by **David Mo** and **Sam Goodwin** in https://github.com/alchemy-run/alchemy/issues/1227 [<samp>(77b40)</samp>](https://github.com/alchemy-run/alchemy/commit/77b40fbf)
+- **neon**: NeonProject supports `adopt` &nbsp;-&nbsp; by **Eric Clemmons** and **John Royal** in https://github.com/alchemy-run/alchemy/issues/1224 [<samp>(0d3cf)</samp>](https://github.com/alchemy-run/alchemy/commit/0d3cf225)
+
+##### &nbsp;&nbsp;&nbsp;&nbsp;[View changes on GitHub](https://github.com/alchemy-run/alchemy/compare/v0.79.0...v0.80.0)
+
+---
+
+## v0.79.0
+
+### &nbsp;&nbsp;&nbsp;🐞 Bug Fixes
+
+- **cloudflare**:
+  - Delete workflows on worker delete &nbsp;-&nbsp; by **John Royal** in https://github.com/alchemy-run/alchemy/issues/1226 [<samp>(fba20)</samp>](https://github.com/alchemy-run/alchemy/commit/fba20b59)
+- **docker**:
+  - Retry 502 Bad Gateway &nbsp;-&nbsp; by **Sam Goodwin** in https://github.com/alchemy-run/alchemy/issues/1231 [<samp>(6dbce)</samp>](https://github.com/alchemy-run/alchemy/commit/6dbce478)
+- **util**:
+  - Preserve primitive arrays in `camelToSnakeObjectDeep` &nbsp;-&nbsp; by **Riley Tomasek** and **CharlieHelps** in https://github.com/alchemy-run/alchemy/issues/1232 [<samp>(f236a)</samp>](https://github.com/alchemy-run/alchemy/commit/f236a510)
+  - CamelToSnake return nested primitives and add tests &nbsp;-&nbsp; by **bjorntechCarl** and **Sam Goodwin** in https://github.com/alchemy-run/alchemy/issues/1229 [<samp>(b571f)</samp>](https://github.com/alchemy-run/alchemy/commit/b571f57b)
+
+##### &nbsp;&nbsp;&nbsp;&nbsp;[View changes on GitHub](https://github.com/alchemy-run/alchemy/compare/v0.78.0...v0.79.0)
+
+---
+
+## v0.78.0
+
+### &nbsp;&nbsp;&nbsp;🐞 Bug Fixes
+
+- **cli**:
+  - Use r2 instead of node:fs in cloudflare tanstack template &nbsp;-&nbsp; by **John Royal** in https://github.com/alchemy-run/alchemy/issues/1208 [<samp>(100e6)</samp>](https://github.com/alchemy-run/alchemy/commit/100e6a67)
+  - Env file handled incorrectly with pnpm &nbsp;-&nbsp; by **John Royal** and **Sam Goodwin** in https://github.com/alchemy-run/alchemy/issues/1204 [<samp>(adf98)</samp>](https://github.com/alchemy-run/alchemy/commit/adf98d11)
+- **cloudflare**:
+  - Include ".sql": "text" loader for workers by default &nbsp;-&nbsp; by **John Royal** in https://github.com/alchemy-run/alchemy/issues/1211 [<samp>(cc86a)</samp>](https://github.com/alchemy-run/alchemy/commit/cc86a2b0)
+  - Disable path validation during astro check &nbsp;-&nbsp; by **John Royal** in https://github.com/alchemy-run/alchemy/issues/1203 [<samp>(96e30)</samp>](https://github.com/alchemy-run/alchemy/commit/96e30eac)
+  - Add missing oauth scopes and correct descriptions &nbsp;-&nbsp; by **John Royal** in https://github.com/alchemy-run/alchemy/issues/1212 [<samp>(163bd)</samp>](https://github.com/alchemy-run/alchemy/commit/163bdb23)
+  - Allow setting "default" as jurisdiction on d1 &nbsp;-&nbsp; by **Michael K** in https://github.com/alchemy-run/alchemy/issues/1218 [<samp>(f4498)</samp>](https://github.com/alchemy-run/alchemy/commit/f4498823)
+  - Properly export types for worker-loader and workflow &nbsp;-&nbsp; by **Michael K** in https://github.com/alchemy-run/alchemy/issues/1219 [<samp>(af989)</samp>](https://github.com/alchemy-run/alchemy/commit/af989076)
+  - Remove incorrect `observability.logging` key &nbsp;-&nbsp; by **Eric Clemmons** in https://github.com/alchemy-run/alchemy/issues/1221 [<samp>(9b423)</samp>](https://github.com/alchemy-run/alchemy/commit/9b42360e)
+  - Default Container is ./Dockerfile &nbsp;-&nbsp; by **Sam Goodwin** in https://github.com/alchemy-run/alchemy/issues/1214 [<samp>(19138)</samp>](https://github.com/alchemy-run/alchemy/commit/19138f43)
+  - Honor _headers and _redirects files in worker assets &nbsp;-&nbsp; by **John Royal** in https://github.com/alchemy-run/alchemy/issues/1223 [<samp>(dc126)</samp>](https://github.com/alchemy-run/alchemy/commit/dc126511)
+- **test**:
+  - Export ./test/bun &nbsp;-&nbsp; by **Sam Goodwin** in https://github.com/alchemy-run/alchemy/issues/1222 [<samp>(102fb)</samp>](https://github.com/alchemy-run/alchemy/commit/102fb86c)
+
+##### &nbsp;&nbsp;&nbsp;&nbsp;[View changes on GitHub](https://github.com/alchemy-run/alchemy/compare/v0.77.5...v0.78.0)
+
+---
+
 ## v0.77.5
 
 ### &nbsp;&nbsp;&nbsp;🐞 Bug Fixes

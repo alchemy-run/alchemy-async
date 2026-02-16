@@ -14,10 +14,10 @@ describe
   .sequential("Clickhouse Service", async () => {
     const testId = "test-service";
 
-    const api = await createClickhouseApi();
-    const organization = await OrganizationRef(alchemy.env.CLICKHOUSE_ORG);
-
     test("create and delete service", async (scope) => {
+      const api = createClickhouseApi();
+      const organization = await OrganizationRef(alchemy.env.CLICKHOUSE_ORG);
+
       let service: Service | undefined;
 
       try {
@@ -47,6 +47,8 @@ describe
     }, 0);
 
     test("create and query service", async (scope) => {
+      const organization = await OrganizationRef(alchemy.env.CLICKHOUSE_ORG);
+
       try {
         const service = await Service(`${testId}-query`, {
           organization,

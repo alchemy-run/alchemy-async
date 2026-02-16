@@ -10,7 +10,7 @@ export async function OrganizationRef(
   const api = createPlanetScaleClient(options);
   const organization = await api.getOrganization({
     path: {
-      name: typeof name === "string" ? name : name.id,
+      organization: typeof name === "string" ? name : name.id,
     },
   });
   return organization.data;

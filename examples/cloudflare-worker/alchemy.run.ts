@@ -10,7 +10,11 @@ import fs from "node:fs/promises";
 import type { HelloWorldDO } from "./src/do.ts";
 import type MyRPC from "./src/rpc.ts";
 
-const app = await alchemy("cloudflare-worker");
+export const app = await alchemy("cloudflare-worker", {
+  // Set local: true when NODE_ENV is "test", indicating we are running in unit tests
+  // warning: must be true|undefiend, not true|false, otherwise defaults won't be appplied
+  local: process.env.NODE_ENV === "test" ? true : undefined,
+});
 
 export const bucket = await R2Bucket("bucket", {
   empty: true,

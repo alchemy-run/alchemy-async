@@ -13,17 +13,15 @@ const test = alchemy.test(import.meta, {
 });
 
 describe("Worker LogPush", () => {
-  const prefix = `${BRANCH_PREFIX}-lp`;
   let api: Awaited<ReturnType<typeof createCloudflareApi>>;
 
   beforeAll(async () => {
     api = await createCloudflareApi();
   });
 
-  const name = (s: string) => `${prefix}-${s}`;
-
   async function makeWorker(suffix: string, opts: { logpush?: boolean } = {}) {
-    return Worker(name(suffix), {
+    return Worker(`worker-logpush-${suffix}`, {
+      name: `${BRANCH_PREFIX}-worker-logpush-${suffix}`,
       entrypoint: "./alchemy/test/cloudflare/test-handlers/basic-fetch.ts",
       logpush: opts.logpush,
       url: false,

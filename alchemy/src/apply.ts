@@ -97,6 +97,7 @@ async function _apply<Out extends ResourceAttributes>(
 
       // -> poll until it does not (i.e. when the owner process applies the change and updates the state store)
       async function waitForConsistentState() {
+        const isDestroy = process.argv.includes("--destroy");
         let startTime = Date.now();
         while (true) {
           if (state === undefined) {
@@ -115,6 +116,9 @@ async function _apply<Out extends ResourceAttributes>(
             throw new Error("Resource is being deleted");
           } else if (await inputsAreEqual(state)) {
             // sweet, we've reached a stable state and read can progress
+            return state;
+          } else if (isDestroy) {
+            // this means the current app is being imported by an app being destroyed
             return state;
           } else {
             const elapsed = Date.now() - startTime;

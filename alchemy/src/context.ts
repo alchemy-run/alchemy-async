@@ -17,8 +17,9 @@ export type Context<
   Props extends ResourceProps = ResourceProps,
 > = CreateContext<Out> | UpdateContext<Out, Props> | DeleteContext<Out, Props>;
 
-export interface CreateContext<Out extends ResourceAttributes>
-  extends BaseContext<Out> {
+export interface CreateContext<
+  Out extends ResourceAttributes,
+> extends BaseContext<Out> {
   phase: "create";
   output?: undefined;
   props?: undefined;

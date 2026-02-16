@@ -9,11 +9,7 @@
     "check": "tsc --noEmit"
   },
   "exports": {
-    "./alchemy": {
-      "bun": "./alchemy.run.ts",
-      "import": "./lib/alchemy.run.js",
-      "types": "./alchemy.run.ts"
-    }
+    "./alchemy": "./alchemy.run.ts"
   },
   "dependencies": {
     "alchemy": "catalog:"

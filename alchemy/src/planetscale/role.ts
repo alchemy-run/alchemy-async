@@ -63,7 +63,7 @@ export interface RoleProps extends PlanetScaleProps {
  * Roles that can be inherited from.
  */
 export type InheritedRole =
-  | "postgres"
+  | "pscale_managed"
   | "pg_checkpoint"
   | "pg_create_subscription"
   | "pg_maintain"
@@ -75,6 +75,7 @@ export type InheritedRole =
   | "pg_stat_scan_tables"
   | "pg_use_reserved_connections"
   | "pg_write_all_data"
+  | "postgres"
   | (string & {});
 
 export interface Role extends Omit<RoleProps, "inheritedRoles"> {
@@ -261,7 +262,7 @@ export const Role = Resource(
           path: {
             organization,
             database,
-            name: branch,
+            branch,
           },
         });
         if (kind !== "postgresql") {

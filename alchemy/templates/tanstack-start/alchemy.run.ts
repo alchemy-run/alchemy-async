@@ -1,9 +1,15 @@
 import alchemy from "alchemy";
-import { TanStackStart } from "alchemy/cloudflare";
+import { R2Bucket, TanStackStart } from "alchemy/cloudflare";
 
 const app = await alchemy("{projectName}");
 
-export const website = await TanStackStart("website");
+const r2 = await R2Bucket("r2");
+
+export const website = await TanStackStart("website", {
+  bindings: {
+    R2: r2,
+  },
+});
 
 console.log({
   url: website.url,

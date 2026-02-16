@@ -43,7 +43,7 @@ export class RootScopeStateAttemptError extends Error {
 
 export interface ScopeOptions extends ProviderCredentials {
   stage?: string;
-  parent: Scope | undefined;
+  parent: Scope | undefined | null;
   scopeName: string;
   password?: string;
   stateStore?: StateStoreType;
@@ -101,6 +101,14 @@ export interface ScopeOptions extends ProviderCredentials {
    * @default false
    */
   adopt?: boolean;
+  /**
+   * Skip decrypting secrets and treat them as undefined.
+   * Requires --force to be enabled.
+   * Useful for recovering from lost encryption passwords.
+   *
+   * @default false
+   */
+  eraseSecrets?: boolean;
   /**
    * The path to the root directory of the project.
    *
@@ -176,8 +184,8 @@ export class Scope {
 
   public static readonly KIND = "alchemy::Scope" as const;
 
-  public static storage = globalThis.__ALCHEMY_STORAGE__ ??=
-    new AsyncLocalStorage<Scope>();
+  public static storage = (globalThis.__ALCHEMY_STORAGE__ ??=
+    new AsyncLocalStorage<Scope>());
 
   public static getScope(): Scope | undefined {
     return Scope.storage.getStore();
@@ -209,6 +217,7 @@ export class Scope {
   public readonly tunnel: boolean;
   public readonly force: boolean;
   public readonly adopt: boolean;
+  public readonly eraseSecrets: boolean;
   public readonly destroyStrategy: DestroyStrategy;
   public readonly logger: LoggerApi;
   public readonly noTrack: boolean;
@@ -252,6 +261,7 @@ export class Scope {
       destroyStrategy,
       logger,
       adopt,
+      eraseSecrets,
       dotAlchemy,
       rootDir,
       isSelected,
@@ -263,7 +273,7 @@ export class Scope {
 
     this.scopeName = scopeName;
     this.name = this.scopeName;
-    this.parent = parent ?? Scope.getScope();
+    this.parent = parent === null ? undefined : (parent ?? Scope.getScope());
     this.rootDir = rootDir ?? this.parent?.rootDir ?? ALCHEMY_ROOT;
     this.isSelected = isSelected ?? this.parent?.isSelected;
     this.startedAt = startedAt ?? this.parent?.startedAt ?? performance.now();
@@ -310,6 +320,7 @@ export class Scope {
     this.tunnel = tunnel ?? this.parent?.tunnel ?? false;
     this.force = force ?? this.parent?.force ?? false;
     this.adopt = adopt ?? this.parent?.adopt ?? false;
+    this.eraseSecrets = eraseSecrets ?? this.parent?.eraseSecrets ?? false;
     this.destroyStrategy =
       destroyStrategy ?? this.parent?.destroyStrategy ?? "sequential";
     if (this.local) {

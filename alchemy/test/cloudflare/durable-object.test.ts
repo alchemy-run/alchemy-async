@@ -2,12 +2,12 @@ import { describe, expect } from "vitest";
 import { alchemy } from "../../src/alchemy.ts";
 import { createCloudflareApi } from "../../src/cloudflare/api.ts";
 import { DurableObjectNamespace } from "../../src/cloudflare/durable-object-namespace.ts";
+import { getWorkerSubdomain } from "../../src/cloudflare/worker-subdomain.ts";
 import { Worker } from "../../src/cloudflare/worker.ts";
 import { destroy } from "../../src/destroy.ts";
-import { BRANCH_PREFIX } from "../util.ts";
-
 import "../../src/test/vitest.ts";
 import { fetchAndExpectOK } from "../../src/util/safe-fetch.ts";
+import { BRANCH_PREFIX } from "../util.ts";
 
 const test = alchemy.test(import.meta, {
   prefix: BRANCH_PREFIX,
@@ -113,6 +113,7 @@ describe("Durable Object Namespace", () => {
     try {
       // First create a worker with a Durable Object but no env vars
       worker = await Worker(workerName, {
+        adopt: true,
         name: workerName,
         script: durableObjectWorkerScript,
         format: "esm",
@@ -132,6 +133,7 @@ describe("Durable Object Namespace", () => {
 
       // Update the worker with the DO binding
       worker = await Worker(workerName, {
+        adopt: true,
         name: workerName,
         script: durableObjectWorkerScript,
         format: "esm",
@@ -146,6 +148,7 @@ describe("Durable Object Namespace", () => {
 
       // Now update the worker by adding environment variables
       worker = await Worker(workerName, {
+        adopt: true,
         name: workerName,
         script: durableObjectWorkerScript,
         format: "esm",
@@ -184,7 +187,7 @@ describe("Durable Object Namespace", () => {
 
         async fetch(request) {
           const url = new URL(request.url);
-          
+
           if (url.pathname === '/increment') {
             this.counter++;
             return new Response(JSON.stringify({
@@ -225,7 +228,7 @@ describe("Durable Object Namespace", () => {
       export default {
         async fetch(request, env, ctx) {
           const url = new URL(request.url);
-          
+
           if (url.pathname === '/increment') {
             try {
               // Get the durable object instance and increment
@@ -233,7 +236,7 @@ describe("Durable Object Namespace", () => {
               const stub = env.SHARED_COUNTER.get(id);
               const response = await stub.fetch(new Request('https://example.com/increment'));
               const data = await response.json();
-              
+
               return Response.json({
                 success: true,
                 clientWorker: '${clientWorkerName}',
@@ -256,7 +259,7 @@ describe("Durable Object Namespace", () => {
               const stub = env.SHARED_COUNTER.get(id);
               const response = await stub.fetch(new Request('https://example.com/get'));
               const data = await response.json();
-              
+
               return Response.json({
                 success: true,
                 clientWorker: '${clientWorkerName}',
@@ -284,6 +287,7 @@ describe("Durable Object Namespace", () => {
     try {
       // First create the worker that defines the durable object with its own binding
       doProviderWorker = await Worker(doWorkerName, {
+        adopt: true,
         name: doWorkerName,
         script: doProviderWorkerScript,
         format: "esm",
@@ -305,6 +309,7 @@ describe("Durable Object Namespace", () => {
 
       // Create the client worker with the cross-script durable object binding
       clientWorker = await Worker(clientWorkerName, {
+        adopt: true,
         name: clientWorkerName,
         script: clientWorkerScript,
         format: "esm",
@@ -480,6 +485,7 @@ export default {
 
       // Update worker with the original Counter binding
       worker = await Worker(workerName, {
+        adopt: true,
         name: workerName,
         script: doMigrationWorkerScriptV1,
         format: "esm",
@@ -532,7 +538,7 @@ export default {
 
         async fetch(request) {
           const url = new URL(request.url);
-          
+
           if (url.pathname === '/increment') {
             this.counter++;
             return new Response(JSON.stringify({
@@ -573,7 +579,7 @@ export default {
       export default {
         async fetch(request, env, ctx) {
           const url = new URL(request.url);
-          
+
           if (url.pathname === '/increment') {
             try {
               // Get the durable object instance and increment
@@ -581,7 +587,7 @@ export default {
               const stub = env.SHARED_COUNTER.get(id);
               const response = await stub.fetch(new Request('https://example.com/increment'));
               const data = await response.json();
-              
+
               return Response.json({
                 success: true,
                 clientWorker: '${clientWorkerName}',
@@ -604,7 +610,7 @@ export default {
               const stub = env.SHARED_COUNTER.get(id);
               const response = await stub.fetch(new Request('https://example.com/get'));
               const data = await response.json();
-              
+
               return Response.json({
                 success: true,
                 clientWorker: '${clientWorkerName}',
@@ -632,6 +638,7 @@ export default {
     try {
       // First create the worker that defines the durable object with its own binding
       doProviderWorker = await Worker(doWorkerName, {
+        adopt: true,
         name: doWorkerName,
         script: doProviderWorkerScript,
         format: "esm",
@@ -657,6 +664,7 @@ export default {
 
       // Create the client worker with the cross-script durable object binding
       clientWorker = await Worker(clientWorkerName, {
+        adopt: true,
         name: clientWorkerName,
         script: clientWorkerScript,
         format: "esm",
@@ -749,6 +757,7 @@ export default {
     try {
       const workerName = `${BRANCH_PREFIX}-test-worker-adoption-migrate`;
       await Worker("worker-1", {
+        adopt: true,
         name: workerName,
         script: `
           export class Counter {}
@@ -779,6 +788,212 @@ export default {
       });
     } finally {
       await destroy(scope);
+    }
+  });
+
+  test("worker with self-bound DO and url deploys without preview url", async (scope) => {
+    const workerName = `${BRANCH_PREFIX}-do-self-no-preview`;
+
+    // Worker script that exports a DO class and uses it
+    const workerScript = `
+        export class Counter {
+          constructor(state, env) {
+            this.state = state;
+            this.counter = 0;
+          }
+
+          async fetch(request) {
+            this.counter++;
+            return new Response('Counter: ' + this.counter, { status: 200 });
+          }
+        }
+
+        export default {
+          async fetch(request, env, ctx) {
+            const url = new URL(request.url);
+
+            if (url.pathname === '/counter') {
+              const id = env.COUNTER.idFromName('default');
+              const stub = env.COUNTER.get(id);
+              return stub.fetch(request);
+            }
+
+            return new Response('Worker with self-bound DO', { status: 200 });
+          }
+        };
+      `;
+
+    let worker: Worker | undefined;
+    try {
+      const counterNamespace = DurableObjectNamespace(
+        "test-counter-namespace",
+        {
+          className: "Counter",
+        },
+      );
+
+      worker = await Worker(workerName, {
+        name: workerName,
+        adopt: true,
+        script: durableObjectWorkerScript,
+        format: "esm",
+        bindings: {
+          COUNTER: counterNamespace,
+        },
+      });
+
+      // Worker should deploy and have a URL
+      expect(worker.id).toBeTruthy();
+      expect(worker.name).toEqual(workerName);
+      expect(worker.url).toBeTruthy();
+
+      // Verify that previews are disabled on the subdomain (because of self-bound DO)
+      const subdomain = await getWorkerSubdomain(api, workerName);
+      expect(subdomain.enabled).toEqual(true);
+      expect(subdomain.previews_enabled).toEqual(false);
+    } finally {
+      await destroy(scope);
+      await assertWorkerDoesNotExist(workerName);
+    }
+  });
+
+  test("worker with cross-script DO binding and url deploys with preview url enabled", async (scope) => {
+    const doWorkerName = `${BRANCH_PREFIX}-do-cross-provider`;
+    const clientWorkerName = `${BRANCH_PREFIX}-do-cross-client`;
+
+    // Worker that defines and self-binds a DO
+    const doProviderScript = `
+        export class SharedCounter {
+          constructor(state, env) {
+            this.state = state;
+            this.counter = 0;
+          }
+
+          async fetch(request) {
+            this.counter++;
+            return new Response(JSON.stringify({
+              counter: this.counter,
+              worker: '${doWorkerName}'
+            }), {
+              headers: { 'Content-Type': 'application/json' }
+            });
+          }
+        }
+
+        export default {
+          async fetch(request, env, ctx) {
+            return new Response('DO Provider', { status: 200 });
+          }
+        };
+      `;
+
+    // Client worker that references the DO on the provider via cross-script binding
+    const clientScript = `
+        export default {
+          async fetch(request, env, ctx) {
+            const url = new URL(request.url);
+
+            if (url.pathname === '/use-do') {
+              try {
+                const id = env.SHARED_COUNTER.idFromName('test');
+                const stub = env.SHARED_COUNTER.get(id);
+                const response = await stub.fetch(new Request('https://example.com/'));
+                const data = await response.json();
+
+                return Response.json({
+                  success: true,
+                  clientWorker: '${clientWorkerName}',
+                  result: data,
+                });
+              } catch (error) {
+                return Response.json({
+                  success: false,
+                  error: error.message,
+                }, { status: 500 });
+              }
+            }
+
+            return new Response('Client Worker with cross-script DO', { status: 200 });
+          }
+        };
+      `;
+
+    let doProvider: Worker | undefined;
+    let clientWorker: Worker | undefined;
+
+    try {
+      // Create the provider worker with a self-bound DO
+      doProvider = await Worker(doWorkerName, {
+        name: doWorkerName,
+        adopt: true,
+        script: doProviderScript,
+        format: "esm",
+        url: true,
+        bindings: {
+          SHARED_COUNTER: DurableObjectNamespace("cross-provider-counter", {
+            className: "SharedCounter",
+            // No scriptName — self-binding on the provider
+          }),
+        },
+      });
+
+      expect(doProvider.id).toBeTruthy();
+      expect(doProvider.url).toBeTruthy();
+
+      // Provider worker has a self-bound DO, so previews should be disabled
+      const providerSubdomain = await getWorkerSubdomain(api, doWorkerName);
+      expect(providerSubdomain.enabled).toEqual(true);
+      expect(providerSubdomain.previews_enabled).toEqual(false);
+
+      // Create the client worker with a cross-script DO binding
+      clientWorker = await Worker(clientWorkerName, {
+        name: clientWorkerName,
+        adopt: true,
+        script: clientScript,
+        format: "esm",
+        url: true,
+        bindings: {
+          SHARED_COUNTER: DurableObjectNamespace("cross-client-counter", {
+            className: "SharedCounter",
+            scriptName: doWorkerName, // Cross-script binding
+          }),
+        },
+      });
+
+      expect(clientWorker.id).toBeTruthy();
+      expect(clientWorker.url).toBeTruthy();
+
+      // Client worker only has cross-script DO binding (no self-bound DOs),
+      // so previews should be enabled
+      const clientSubdomain = await getWorkerSubdomain(api, clientWorkerName);
+      expect(clientSubdomain.enabled).toEqual(true);
+      expect(clientSubdomain.previews_enabled).toEqual(false);
+
+      // Verify both workers respond
+      const providerResponse = await fetchAndExpectOK(doProvider.url!);
+      expect(await providerResponse.text()).toEqual("DO Provider");
+
+      const clientResponse = await fetchAndExpectOK(clientWorker.url!);
+      expect(await clientResponse.text()).toEqual(
+        "Client Worker with cross-script DO",
+      );
+
+      // Verify cross-script DO binding works end-to-end
+      const doResponse = await fetchAndExpectOK(`${clientWorker.url}/use-do`);
+      const doData: any = await doResponse.json();
+
+      expect(doData).toMatchObject({
+        success: true,
+        clientWorker: clientWorkerName,
+        result: {
+          worker: doWorkerName,
+        },
+      });
+      expect(doData.result.counter).toBeGreaterThan(0);
+    } finally {
+      await destroy(scope);
+      await assertWorkerDoesNotExist(doWorkerName);
+      await assertWorkerDoesNotExist(clientWorkerName);
     }
   });
 });

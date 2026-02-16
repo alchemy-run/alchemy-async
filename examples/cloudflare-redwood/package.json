@@ -1,13 +1,13 @@
 {
   "name": "@redwoodjs/starter-drizzle",
   "version": "1.0.0",
-  "description": "A RedwoodSDK starter for projects with a database using Drizzle",
-  "main": "index.js",
-  "type": "module",
-  "keywords": [],
-  "author": "",
-  "license": "MIT",
   "private": true,
+  "description": "A RedwoodSDK starter for projects with a database using Drizzle",
+  "keywords": [],
+  "license": "MIT",
+  "author": "",
+  "type": "module",
+  "main": "index.js",
   "scripts": {
     "build": "tsc -b",
     "deploy": "alchemy deploy --env-file ../../.env",
@@ -26,7 +26,7 @@
     "alchemy": "workspace:*",
     "dotenv": "^16.5.0",
     "drizzle-orm": "^0.44.2",
-    "rwsdk": "^0.1.36"
+    "rwsdk": "^1.0.0-beta.51"
   },
   "devDependencies": {
     "@types/node": "^22.14.1",
@@ -35,6 +35,6 @@
     "drizzle-kit": "^0.31.4",
     "tsx": "^4.19.3",
     "vite": "catalog:",
-    "wrangler": "^4.12.1"
+    "wrangler": "catalog:"
   }
 }

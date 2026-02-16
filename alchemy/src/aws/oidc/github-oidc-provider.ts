@@ -12,8 +12,10 @@ const DEFAULT_GITHUB_THUMBPRINT = "6938fd4d98bab03faadb97b34396831e3780aea1";
  * Simplified version of OIDCProviderProps that omits the thumbprint
  * since it's automatically set to GitHub's known value
  */
-export interface GitHubOIDCProviderProps
-  extends Omit<OIDCProviderProps, "thumbprint"> {
+export interface GitHubOIDCProviderProps extends Omit<
+  OIDCProviderProps,
+  "thumbprint"
+> {
   /**
    * The GitHub organization or user that owns the repository
    * Example: "my-org" or "my-username"

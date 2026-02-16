@@ -75,15 +75,13 @@ const createDatabaseClient = memoize(async (options: D1StateStoreOptions) => {
 });
 
 const upsertDatabase = async (api: CloudflareApi, databaseName: string) => {
-  const { listDatabases, createDatabase } = await import(
-    "../cloudflare/d1-database.ts"
-  );
-  const { applyMigrations, listMigrationsFiles } = await import(
-    "../cloudflare/d1-migrations.ts"
-  );
+  const { listDatabases, createDatabase } =
+    await import("../cloudflare/d1-database.ts");
+  const { listSqlFiles } = await import("../cloudflare/d1-sql-file.ts");
+  const { applyMigrations } = await import("../cloudflare/d1-migrations.ts");
   const migrate = async (databaseId: string) => {
     await applyMigrations({
-      migrationsFiles: await listMigrationsFiles(MIGRATIONS_DIRECTORY),
+      migrationsFiles: await listSqlFiles(MIGRATIONS_DIRECTORY),
       migrationsTable: "migrations",
       accountId: api.accountId,
       databaseId,
@@ -93,17 +91,16 @@ const upsertDatabase = async (api: CloudflareApi, databaseName: string) => {
   };
   const databases = await listDatabases(api, databaseName);
   if (databases[0]) {
-    await migrate(databases[0].id);
+    await migrate(databases[0].uuid);
     return {
-      id: databases[0].id,
+      id: databases[0].uuid,
     };
   }
-  const res = await createDatabase(api, databaseName, {
+  const database = await createDatabase(api, databaseName, {
     readReplication: { mode: "disabled" },
   });
-  assert(res.result.uuid, "Missing UUID for database");
-  await migrate(res.result.uuid);
+  await migrate(database.uuid);
   return {
-    id: res.result.uuid,
+    id: database.uuid,
   };
 };

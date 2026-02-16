@@ -2,5 +2,5 @@
   "name": "website",
   "main": "dist/_worker.js/index.js",
   "compatibility_date": "2025-04-20",
-  "assets": { "binding": "ASSETS", "directory": "dist" }
+  "assets": { "binding": "ASSETS", "directory": "dist" },
 }

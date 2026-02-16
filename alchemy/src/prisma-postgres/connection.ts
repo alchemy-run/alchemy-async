@@ -143,7 +143,7 @@ export const Connection = Resource(
       createdAt: connection.createdAt,
       prismaConnectionString: secret(connection.connectionString),
       connectionString: secret(
-        `postgres://${connection.user}:${connection.pass}@${connection.host}/${connection.database}`,
+        `postgres://${connection.user}:${connection.pass}@${connection.host}/${connection.database.name}`,
       ),
       database: database,
       host: connection.host,

@@ -16,7 +16,8 @@ import {
  * for Cloudflare API authentication.
  */
 export interface ContainerProps
-  extends Omit<ImageProps, "registry" | "skipPush">,
+  extends
+    Omit<ImageProps, "registry" | "skipPush">,
     Partial<CloudflareApiOptions> {
   /**
    * The class name for the container binding.
@@ -83,6 +84,12 @@ export interface ContainerProps
      */
     remote?: boolean;
   };
+
+  /**
+   * Configuration for progressive rollout when updating the container application.
+   * Defines how updates are deployed across instances.
+   */
+  rollout?: ContainerApplicationRollout;
 }
 
 /**
@@ -183,6 +190,12 @@ export type Container<T = any> = {
   };
 
   /**
+   * Configuration for progressive rollout when updating the container application.
+   * Defines how updates are deployed across instances.
+   */
+  rollout?: ContainerApplicationRollout;
+
+  /**
    * @internal
    * Phantom type parameter for additional type safety
    */
@@ -213,6 +226,7 @@ export async function Container<T>(
     sqlite: true,
     dev: props.dev,
     adopt: props.adopt,
+    rollout: props.rollout,
   };
 
   const isDev = scope.local && !props.dev?.remote;
@@ -221,6 +235,11 @@ export async function Container<T>(
       ...props,
       name: `cloudflare-dev/${name}`, // prefix used by Miniflare
       tag,
+      build: props.build ?? {
+        dockerfile: "Dockerfile",
+        platform: "linux/amd64",
+        context: process.cwd(),
+      },
     } as ImageProps);
 
     return {
@@ -240,7 +259,11 @@ export async function Container<T>(
           platform: props.build?.platform ?? "linux/amd64",
           ...props.build,
         }
-      : undefined,
+      : {
+          dockerfile: "Dockerfile",
+          platform: "linux/amd64",
+          context: process.cwd(),
+        },
     image: props.image,
     registry: {
       server: "registry.cloudflare.com",
@@ -260,13 +283,19 @@ export async function Container<T>(
  *
  * Rollouts allow you to gradually deploy new container configurations, reducing
  * risk by updating instances incrementally rather than all at once.
+ *
+ * The target configuration (image, instance type, observability) is automatically
+ * derived from the container's own configuration.
  */
 export interface ContainerApplicationRollout {
   /**
    * The rollout strategy to use.
-   * Currently only "rolling" strategy is supported, which updates instances gradually.
+   * - "rolling": Updates instances gradually based on stepPercentage
+   * - "immediate": Updates all instances at once (equivalent to stepPercentage: 100)
+   *
+   * @default "rolling"
    */
-  strategy: "rolling";
+  strategy?: "rolling" | "immediate";
 
   /**
    * The rollout automation level.
@@ -279,32 +308,15 @@ export interface ContainerApplicationRollout {
   /**
    * Percentage of instances to update in each step of the rollout.
    * For example, 25 means 25% of instances are updated in each step.
+   * Use 100 for immediate rollout of all instances.
+   *
+   * Ignored when strategy is "immediate" (automatically set to 100).
    *
    * @minimum 1
    * @maximum 100
+   * @default 25
    */
-  stepPercentage: number;
-
-  /**
-   * The target configuration that instances will be updated to.
-   * This defines the final state after the rollout completes.
-   */
-  targetConfiguration: {
-    /** The container image to deploy */
-    image: string;
-
-    /** The instance type for the new deployment */
-    instance_type?: InstanceType;
-
-    /** Observability configuration for the new deployment */
-    observability: {
-      /** Logging configuration */
-      logs: {
-        /** Whether logging is enabled */
-        enabled: boolean;
-      };
-    };
-  };
+  stepPercentage?: number;
 }
 
 /**
@@ -562,9 +574,6 @@ export const ContainerApplication = Resource(
         logs: {
           enabled: true,
         },
-        logging: {
-          enabled: true,
-        },
       },
     };
     if (this.phase === "update" && this.output?.id) {
@@ -579,11 +588,18 @@ export const ContainerApplication = Resource(
         },
       );
       // TODO(sam): should we wait for the rollout to complete?
+      const stepPercentage =
+        props.rollout?.strategy === "immediate"
+          ? 100
+          : (props.rollout?.stepPercentage ?? 25);
       await createContainerApplicationRollout(api, application.id, {
-        description: "Progressive update",
+        description:
+          props.rollout?.strategy === "immediate"
+            ? "Immediate update"
+            : "Progressive update",
         strategy: "rolling",
         kind: props.rollout?.kind ?? "full_auto",
-        step_percentage: props.rollout?.stepPercentage ?? 25,
+        step_percentage: stepPercentage,
         target_configuration: configuration,
       });
       return {
@@ -651,11 +667,18 @@ export const ContainerApplication = Resource(
           );
 
           // Create a rollout for the updated configuration
+          const adoptStepPercentage =
+            props.rollout?.strategy === "immediate"
+              ? 100
+              : (props.rollout?.stepPercentage ?? 25);
           await createContainerApplicationRollout(api, application.id, {
-            description: "Update configuration on adoption",
+            description:
+              props.rollout?.strategy === "immediate"
+                ? "Immediate update on adoption"
+                : "Update configuration on adoption",
             strategy: "rolling",
             kind: props.rollout?.kind ?? "full_auto",
-            step_percentage: props.rollout?.stepPercentage ?? 25,
+            step_percentage: adoptStepPercentage,
             target_configuration: configuration,
           });
         } else {
@@ -868,7 +891,7 @@ export async function createContainerApplication(
     return result.result;
   }
 
-  const error = result.errors.find((e) => e.code === 1000);
+  const error = result.errors.find((e) => e.code === 1608);
   if (error) {
     // WEIRD: json-encoded error message - might change when they release an official API
     const errorMessage = JSON.parse(error.message) as {
@@ -916,7 +939,7 @@ export async function createContainerApplication(
   }
 
   throw Error(
-    `Failed to create container application: ${result.errors?.map((e: { message: string }) => e.message).join(", ") ?? "Unknown error"}`,
+    `Failed to create container application: ${result.errors?.map((e) => `[${e.code}] ${e.message}`).join(", ") ?? "Unknown error"}`,
   );
 }
 type Region =
@@ -1037,9 +1060,6 @@ interface CreateRolloutApplicationResponse {
     image: string;
     observability?: {
       logs?: {
-        enabled: boolean;
-      };
-      logging?: {
         enabled: boolean;
       };
     };
