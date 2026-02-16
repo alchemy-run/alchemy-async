@@ -2,6 +2,7 @@ import path from "pathe";
 import { getPackageManagerRunner } from "../../util/detect-package-manager.ts";
 import type { Assets } from "../assets.ts";
 import type { Bindings } from "../bindings.ts";
+import { withSkipPathValidation } from "../miniflare/paths.ts";
 import {
   spreadBuildProps,
   spreadDevProps,
@@ -34,8 +35,8 @@ export async function Vite<B extends Bindings>(
       port = args[index + 1];
     } else {
       try {
-        const config = await import(
-          path.resolve(props.cwd ?? process.cwd(), "vite.config.ts")
+        const config = await withSkipPathValidation(() =>
+          import(path.resolve(props.cwd ?? process.cwd(), "vite.config.ts")),
         );
         port = config.default?.server?.port ?? 5173;
       } catch {}

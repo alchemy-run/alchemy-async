@@ -1,6 +1,7 @@
 import adapter, { type AdapterOptions } from "@sveltejs/adapter-cloudflare";
 import type { Adapter } from "@sveltejs/kit";
 import { getPlatformProxyOptions } from "../cloudflare-env-proxy.ts";
+import { withSkipPathValidation } from "../miniflare/paths.ts";
 
 const isSvelteLanguageServer = !!process.argv.find((arg) =>
   arg.includes("svelte-language-server"),
@@ -16,7 +17,15 @@ export default (options?: AdapterOptions): Adapter => {
     };
   }
   const { platformProxy: proxyOptions, ...config } = options ?? {};
-  const platformProxy = getPlatformProxyOptions(proxyOptions);
+  const hasCustomConfigPath =
+    typeof proxyOptions === "object" &&
+    proxyOptions !== null &&
+    typeof proxyOptions.configPath === "string";
+
+  const platformProxy = hasCustomConfigPath
+    ? getPlatformProxyOptions(proxyOptions)
+    : withSkipPathValidation(() => getPlatformProxyOptions(proxyOptions));
+
   return adapter({
     platformProxy,
     config: platformProxy.configPath,
