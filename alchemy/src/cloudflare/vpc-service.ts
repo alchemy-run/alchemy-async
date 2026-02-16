@@ -117,7 +117,9 @@ export const VpcService = Resource(
   ): Promise<VpcService> {
     const api = await createCloudflareApi(props);
     if (this.phase === "delete") {
-      await deleteService(api, this.output.serviceId);
+      if (this.output?.serviceId) {
+        await deleteService(api, this.output.serviceId);
+      }
       return this.destroy();
     }
     const input: ConnectivityService.Input = {
