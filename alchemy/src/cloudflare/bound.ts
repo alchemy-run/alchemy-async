@@ -107,7 +107,7 @@ export type Bound<T extends Binding> =
                                                                   Rpc.DurableObjectBranded
                                                               >
                                                             : T extends _VpcService
-                                                              ? Service
+                                                              ? Fetcher
                                                               : T extends undefined
                                                                 ? undefined
                                                                 : Service;
