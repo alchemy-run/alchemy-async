@@ -70,6 +70,7 @@ export * from "./vectorize-index.ts";
 export * from "./vectorize-metadata-index.ts";
 export * from "./version-metadata.ts";
 export * from "./vite/vite.ts";
+export * from "./vpc-service.ts";
 export * from "./warp-default-profile.ts";
 export * from "./warp-device-profile.ts";
 export * from "./website.ts";

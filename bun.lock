@@ -723,6 +723,12 @@
         "vite": "catalog:",
       },
     },
+    "examples/cloudflare-vpc-service": {
+      "name": "cloudflare-vpc-service",
+      "dependencies": {
+        "alchemy": "workspace:*",
+      },
+    },
     "examples/cloudflare-worker": {
       "name": "cloudflare-worker",
       "dependencies": {
@@ -3003,6 +3009,8 @@
     "cloudflare-sveltekit": ["cloudflare-sveltekit@workspace:examples/cloudflare-sveltekit"],
 
     "cloudflare-vite-container": ["cloudflare-vite-container@workspace:examples/cloudflare-vite-container"],
+
+    "cloudflare-vpc-service": ["cloudflare-vpc-service@workspace:examples/cloudflare-vpc-service"],
 
     "cloudflare-worker": ["cloudflare-worker@workspace:examples/cloudflare-worker"],
 
