@@ -158,7 +158,7 @@ export const R2BucketCustomDomain = Resource(
       }
       case "update": {
         if (
-          this.output.enabled &&
+          this.output.zoneId !== "noop-zone" && // noop-zone is a dev mode placeholder that should not trigger replacement
           diff(this.output, payload).some(
             (property) => property === "domain" || property === "zoneId",
           )
