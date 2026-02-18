@@ -158,6 +158,7 @@ export const R2BucketCustomDomain = Resource(
       }
       case "update": {
         if (
+          this.output.enabled &&
           diff(this.output, payload).some(
             (property) => property === "domain" || property === "zoneId",
           )
