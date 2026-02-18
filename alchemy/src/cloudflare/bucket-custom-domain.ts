@@ -100,6 +100,8 @@ export type R2BucketCustomDomain = {
   minTLS?: "1.0" | "1.1" | "1.2" | "1.3" | (string & {});
 };
 
+const DEV_NOOP_ZONE = "noop-zone";
+
 export const R2BucketCustomDomain = Resource(
   "cloudflare::R2BucketCustomDomain",
   async function (
@@ -114,7 +116,7 @@ export const R2BucketCustomDomain = Resource(
         zoneId:
           typeof props.zone === "string"
             ? props.zone
-            : (props.zone?.id ?? "noop-zone"),
+            : (props.zone?.id ?? DEV_NOOP_ZONE),
         ciphers: props.ciphers,
         minTLS: props.minTLS,
       };
@@ -158,7 +160,7 @@ export const R2BucketCustomDomain = Resource(
       }
       case "update": {
         if (
-          this.output.zoneId !== "noop-zone" && // noop-zone is a dev mode placeholder that should not trigger replacement
+          this.output.zoneId !== DEV_NOOP_ZONE && // dev mode placeholder should not trigger replacement
           diff(this.output, payload).some(
             (property) => property === "domain" || property === "zoneId",
           )
