@@ -277,6 +277,7 @@ export interface Container extends ContainerProps {
  */
 export const Container = Resource(
   "docker::Container",
+  { alwaysUpdate: true },
   async function (
     this: Context<Container>,
     id: string,
