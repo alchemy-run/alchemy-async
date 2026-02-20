@@ -223,20 +223,6 @@ export class DockerApi {
     return this.exec(["pull", image]);
   }
 
-  async inspectImage(image: string): Promise<{
-    Id: string;
-    Config: {
-      Cmd: string[] | null;
-      Entrypoint: string[] | null;
-      Env: string[] | null;
-      ExposedPorts: Record<string, object> | null;
-    };
-  }> {
-    const { stdout } = await this.exec(["image", "inspect", image]);
-    const img = JSON.parse(stdout.trim());
-    return img[0];
-  }
-
   async tagImage(
     source: string,
     target: string,
@@ -271,36 +257,9 @@ export class DockerApi {
    *
    * @returns JSON string containing image list
    */
-  async listImages(): Promise<
-    Array<{
-      Containers: number;
-      CreatedAt: string;
-      CreatedSince: string;
-      Digest: string;
-      ID: string;
-      Repository: string;
-      SharedSize: string;
-      Size: string;
-      Tag: string;
-      UniqueSize: string;
-      VirtualSize: string;
-    }>
-  > {
+  async listImages(): Promise<string> {
     const { stdout } = await this.exec(["images", "--format", "{{json .}}"]);
-    return stdout.split("\n").flatMap((image) =>
-      image
-        ? JSON.parse(image, (key, value) => {
-            if (key === "Containers") {
-              return Number.parseInt(value);
-            }
-            return value;
-          })
-        : [],
-    );
-  }
-
-  async removeImage(imageId: string, force = false): Promise<void> {
-    await this.exec(["rmi", ...(force ? ["-f"] : []), imageId]);
+    return stdout;
   }
 
   /**
