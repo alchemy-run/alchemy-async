@@ -354,7 +354,7 @@ export const Container = Resource(
           });
         }
 
-        // Apply state changes
+        // Optionally start the container if requested
         if (props.start && containerInfo.State.Status !== "running") {
           await api.startContainer(containerInfo.Id);
           containerState = "running";
