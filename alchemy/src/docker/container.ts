@@ -294,6 +294,10 @@ export const Container = Resource(
     const containerName =
       props.name ?? this.output?.name ?? this.scope.createPhysicalName(id);
 
+    if (this.phase === "update" && this.output.name !== containerName) {
+      this.replace();
+    }
+
     // Handle delete phase
     if (this.phase === "delete") {
       if (this.output?.id) {
@@ -328,8 +332,8 @@ export const Container = Resource(
         // Need to recreate - remove existing container
         if (this.phase === "update") {
           // In update phase, we can replace the resource
-          // Force if the name is the same because we need to delete the old one first
-          return this.replace(this.output.name === containerName);
+          // Force because we need to delete the old one first if the name is the same
+          return this.replace(true);
         } else {
           // In create phase, we cannot replace the resource, so manually delete instead
           await api.removeContainer(containerName, true);
