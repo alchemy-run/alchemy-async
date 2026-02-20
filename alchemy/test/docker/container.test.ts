@@ -13,6 +13,8 @@ const test = alchemy.test(import.meta, {
 const ONE_SECOND_IN_NANOSECONDS = 1_000_000_000;
 
 describe("Container", () => {
+  const api = new DockerApi();
+
   test("should create a container without starting it", async (scope) => {
     try {
       // Create a container without starting it to avoid port conflicts
@@ -31,8 +33,6 @@ describe("Container", () => {
 
   test("should create a container with healthcheck configuration", async (scope) => {
     try {
-      const api = new DockerApi();
-
       // Create a container with healthcheck
       const container = await Container("test-healthcheck-container", {
         image: "nginx:latest",
@@ -87,8 +87,6 @@ describe("Container", () => {
 
   test("should create a container with shell-based healthcheck", async (scope) => {
     try {
-      const api = new DockerApi();
-
       // Create a container with shell-based healthcheck
       const container = await Container("test-shell-healthcheck-container", {
         image: "nginx:latest",
@@ -134,8 +132,6 @@ describe("Container", () => {
 
   test("should create a container with startInterval healthcheck option", async (scope) => {
     try {
-      const api = new DockerApi();
-
       // Create a container with healthcheck including startInterval
       const container = await Container(
         "test-startinterval-healthcheck-container",
@@ -186,8 +182,6 @@ describe("Container", () => {
 
   test("should create a container with string duration format healthcheck", async (scope) => {
     try {
-      const api = new DockerApi();
-
       // Create a container with healthcheck using string duration format
       const container = await Container(
         "test-string-duration-healthcheck-container",
@@ -243,8 +237,6 @@ describe("Container", () => {
 
   test("should create a container with mixed duration formats", async (scope) => {
     try {
-      const api = new DockerApi();
-
       // Create a container with healthcheck using mixed formats
       const container = await Container(
         "test-mixed-duration-healthcheck-container",
@@ -293,7 +285,6 @@ describe("Container", () => {
   });
 
   test("should fail to create a container when name already exists without adopt", async (scope) => {
-    const api = new DockerApi();
     const containerName = `${BRANCH_PREFIX}-adopt-test-no-adopt`;
 
     try {
@@ -318,7 +309,6 @@ describe("Container", () => {
   });
 
   test("should adopt an existing container when adopt is true", async (scope) => {
-    const api = new DockerApi();
     const containerName = `${BRANCH_PREFIX}-adopt-test-with-adopt`;
 
     try {
@@ -353,7 +343,6 @@ describe("Container", () => {
   });
 
   test("should adopt and start an existing stopped container", async (scope) => {
-    const api = new DockerApi();
     const containerName = `${BRANCH_PREFIX}-adopt-test-start`;
 
     try {
@@ -383,6 +372,38 @@ describe("Container", () => {
       const containerInfos = await api.inspectContainer(containerName);
       const containerInfo = containerInfos[0];
       expect(containerInfo.State.Status).toBe("running");
+    } finally {
+      await alchemy.destroy(scope);
+    }
+  });
+
+  test("should start a stopped container when start is true", async (scope) => {
+    const containerName = `${BRANCH_PREFIX}-start-stopped-container`;
+    const props = {
+      image: "nginx:latest",
+      name: containerName,
+      start: true,
+    };
+
+    try {
+      let container = await Container("start-stopped-container", props);
+      const containerId = container.id;
+
+      expect(container.state).toBe("running");
+
+      await api.stopContainer(containerId);
+
+      const containerInfosAfterStop = await api.inspectContainer(containerName);
+      expect(containerInfosAfterStop[0].State.Status).toBe("exited");
+
+      container = await Container("start-stopped-container", props);
+
+      expect(container.id).toBe(containerId); // should be the same container, not a new one
+      expect(container.state).toBe("running");
+
+      const containerInfosAfterStart =
+        await api.inspectContainer(containerName);
+      expect(containerInfosAfterStart[0].State.Status).toBe("running");
     } finally {
       await alchemy.destroy(scope);
     }

@@ -69,10 +69,44 @@ type VolumeInfo = {
   Scope: string;
 };
 
-type ContainerInfo = {
+export type ContainerInfo = {
   Id: string;
   State: { Status: "created" | "running" | "paused" | "stopped" | "exited" };
   Created: string;
+  Config: {
+    Image: string;
+    Cmd: string[] | null;
+    Env: string[] | null;
+    Healthcheck?: {
+      Test: string[] | null;
+      Interval?: number;
+      Timeout?: number;
+      Retries?: number;
+      StartPeriod?: number;
+      StartInterval?: number;
+    } | null;
+  };
+  HostConfig: {
+    PortBindings: Record<
+      string,
+      Array<{ HostIp: string; HostPort: string }> | null
+    > | null;
+    Binds: string[] | null;
+    RestartPolicy: {
+      Name: string;
+      MaximumRetryCount: number;
+    };
+    AutoRemove: boolean;
+  };
+  NetworkSettings: {
+    Networks: Record<
+      string,
+      {
+        NetworkID: string;
+        Aliases: string[] | null;
+      }
+    > | null;
+  };
 };
 
 /**
@@ -103,6 +137,7 @@ export class DockerApi {
   async exec(
     args: string[],
     remainingAttempts = 3,
+    quiet = false,
   ): Promise<{ stdout: string; stderr: string }> {
     // If a custom config directory is provided, ensure all commands use it by
     // setting the DOCKER_CONFIG env variable for the spawned process.
@@ -124,13 +159,17 @@ export class DockerApi {
 
     // Stream stdout in real-time
     subprocess.stdout?.on("data", (chunk: string) => {
-      process.stdout.write(chunk);
+      if (!quiet) {
+        process.stdout.write(chunk);
+      }
       stdout += chunk;
     });
 
     // Stream stderr in real-time
     subprocess.stderr?.on("data", (chunk: string) => {
-      process.stderr.write(chunk);
+      if (!quiet) {
+        process.stderr.write(chunk);
+      }
       stderr += chunk;
     });
 
@@ -184,6 +223,20 @@ export class DockerApi {
     return this.exec(["pull", image]);
   }
 
+  async inspectImage(image: string): Promise<{
+    Id: string;
+    Config: {
+      Cmd: string[] | null;
+      Entrypoint: string[] | null;
+      Env: string[] | null;
+      ExposedPorts: Record<string, object> | null;
+    };
+  }> {
+    const { stdout } = await this.exec(["image", "inspect", image]);
+    const img = JSON.parse(stdout.trim());
+    return img[0];
+  }
+
   async tagImage(
     source: string,
     target: string,
@@ -218,9 +271,36 @@ export class DockerApi {
    *
    * @returns JSON string containing image list
    */
-  async listImages(): Promise<string> {
+  async listImages(): Promise<
+    Array<{
+      Containers: number;
+      CreatedAt: string;
+      CreatedSince: string;
+      Digest: string;
+      ID: string;
+      Repository: string;
+      SharedSize: string;
+      Size: string;
+      Tag: string;
+      UniqueSize: string;
+      VirtualSize: string;
+    }>
+  > {
     const { stdout } = await this.exec(["images", "--format", "{{json .}}"]);
-    return stdout;
+    return stdout.split("\n").flatMap((image) =>
+      image
+        ? JSON.parse(image, (key, value) => {
+            if (key === "Containers") {
+              return Number.parseInt(value);
+            }
+            return value;
+          })
+        : [],
+    );
+  }
+
+  async removeImage(imageId: string, force = false): Promise<void> {
+    await this.exec(["rmi", ...(force ? ["-f"] : []), imageId]);
   }
 
   /**
@@ -364,7 +444,11 @@ export class DockerApi {
    * @returns Container details in JSON format
    */
   async inspectContainer(containerId: string): Promise<ContainerInfo[]> {
-    const { stdout } = await this.exec(["container", "inspect", containerId]);
+    const { stdout } = await this.exec(
+      ["container", "inspect", containerId],
+      undefined,
+      true,
+    );
     try {
       return JSON.parse(stdout.trim()) as ContainerInfo[];
     } catch (_error) {
