@@ -360,16 +360,12 @@ export const Container = Resource(
           containerState = "running";
         }
 
-        // Return updated container without recreation
-
-        const createdAt = new Date(containerInfo.Created).getTime();
-
         return {
           ...props,
           id: containerInfo.Id,
           name: containerName,
           state: containerState,
-          createdAt: createdAt,
+          createdAt: new Date(containerInfo.Created).getTime(),
         };
       }
     }
