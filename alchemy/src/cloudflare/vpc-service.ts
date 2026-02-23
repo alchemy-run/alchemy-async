@@ -258,21 +258,18 @@ export const VpcService = Resource(
     switch (this.phase) {
       case "create": {
         const adopt = props.adopt ?? this.scope.adopt;
-        const service = await createService(api, input).catch(async (err) => {
+        return await createService(api, input).catch(async (err) => {
           if (isCloudflareApiError(err, { code: 5101 }) && adopt) {
-            const services = await listServices(api);
-            const service = services.find((s) => s.name === input.name);
+            const service = await findVpcServiceByName(api, input.name);
             if (service) {
-              return await updateService(api, service.service_id, input);
+              return await updateService(api, service.serviceId, input);
             }
           }
           throw err;
         });
-        return formatOutput(service);
       }
       case "update": {
-        const service = await updateService(api, this.output.serviceId, input);
-        return formatOutput(service);
+        return await updateService(api, this.output.serviceId, input);
       }
     }
 
@@ -299,34 +296,6 @@ export const VpcService = Resource(
       const { tunnel, ...rest } = network;
       return { tunnel_id: tunnel.tunnelId, ...rest };
     }
-
-    function formatOutput(service: ConnectivityService): VpcService {
-      return {
-        name: service.name,
-        serviceId: service.service_id,
-        serviceType: service.type,
-        tcpPort: service.tcp_port,
-        appProtocol: service.app_protocol,
-        httpPort: service.http_port,
-        httpsPort: service.https_port,
-        host:
-          "hostname" in service.host
-            ? {
-                hostname: service.host.hostname,
-                resolverNetwork: {
-                  tunnelId: service.host.resolver_network.tunnel_id,
-                  resolverIps: service.host.resolver_network.resolver_ips,
-                },
-              }
-            : {
-                ...service.host,
-                network: { tunnelId: service.host.network.tunnel_id },
-              },
-        createdAt: new Date(service.created_at).getTime(),
-        updatedAt: new Date(service.updated_at).getTime(),
-        type: "vpc_service",
-      };
-    }
   },
 );
 
@@ -337,14 +306,15 @@ export const VpcService = Resource(
 export async function createService(
   api: CloudflareApi,
   body: ConnectivityService.Input,
-): Promise<ConnectivityService> {
-  return await extractCloudflareResult<ConnectivityService>(
-    `create connectivity service`,
+): Promise<VpcService> {
+  const service = await extractCloudflareResult<ConnectivityService>(
+    "create connectivity service",
     api.post(
       `/accounts/${api.accountId}/connectivity/directory/services`,
       body,
     ),
   );
+  return formatVpcService(service);
 }
 
 /**
@@ -374,28 +344,32 @@ export async function deleteService(
 export async function getService(
   api: CloudflareApi,
   serviceId: string,
-): Promise<ConnectivityService> {
-  return await extractCloudflareResult<ConnectivityService>(
+): Promise<VpcService> {
+  const service = await extractCloudflareResult<ConnectivityService>(
     `get connectivity service "${serviceId}"`,
     api.get(
       `/accounts/${api.accountId}/connectivity/directory/services/${serviceId}`,
     ),
   );
+  return formatVpcService(service);
 }
 
 /**
  * List connectivity (VPC) services for the account.
  * @internal
  */
-export async function listServices(
+export async function findVpcServiceByName(
   api: CloudflareApi,
-): Promise<ConnectivityService[]> {
-  return await extractCloudflareResult<ConnectivityService[]>(
-    `list connectivity services`,
+  name: string,
+): Promise<VpcService | undefined> {
+  const services = await extractCloudflareResult<ConnectivityService[]>(
+    "list connectivity services",
     api.get(
       `/accounts/${api.accountId}/connectivity/directory/services?per_page=1000`,
     ),
   );
+  const service = services.find((s) => s.name === name);
+  return service ? formatVpcService(service) : undefined;
 }
 
 /**
@@ -406,14 +380,47 @@ export async function updateService(
   api: CloudflareApi,
   serviceId: string,
   body: ConnectivityService.Input,
-): Promise<ConnectivityService> {
-  return await extractCloudflareResult<ConnectivityService>(
+): Promise<VpcService> {
+  const service = await extractCloudflareResult<ConnectivityService>(
     `update connectivity service "${serviceId}"`,
     api.put(
       `/accounts/${api.accountId}/connectivity/directory/services/${serviceId}`,
       body,
     ),
   );
+  return formatVpcService(service);
+}
+
+/**
+ * Format an API response into a VpcService resource.
+ * @internal
+ */
+function formatVpcService(service: ConnectivityService): VpcService {
+  return {
+    name: service.name,
+    serviceId: service.service_id,
+    serviceType: service.type,
+    tcpPort: service.tcp_port,
+    appProtocol: service.app_protocol,
+    httpPort: service.http_port,
+    httpsPort: service.https_port,
+    host:
+      "hostname" in service.host
+        ? {
+            hostname: service.host.hostname,
+            resolverNetwork: {
+              tunnelId: service.host.resolver_network.tunnel_id,
+              resolverIps: service.host.resolver_network.resolver_ips,
+            },
+          }
+        : {
+            ...service.host,
+            network: { tunnelId: service.host.network.tunnel_id },
+          },
+    createdAt: new Date(service.created_at).getTime(),
+    updatedAt: new Date(service.updated_at).getTime(),
+    type: "vpc_service",
+  };
 }
 
 interface ConnectivityService extends ConnectivityService.Input {

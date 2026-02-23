@@ -194,6 +194,36 @@ const vpcService = await VpcService("adopted-service", {
 });
 ```
 
+## Reference Existing VPC Service
+
+Use `VpcServiceRef` to reference an existing VPC service without managing its lifecycle.
+
+You can reference a VPC service by the Cloudflare-assigned ID or by name:
+
+```ts
+// Reference by Cloudflare-assigned ID
+
+import { VpcServiceRef } from "alchemy/cloudflare";
+
+const vpcService = await VpcServiceRef({
+  serviceId: "123e4567-e89b-12d3-a456-426614174000",
+});
+```
+
+```ts
+// Reference by name
+
+import { VpcServiceRef } from "alchemy/cloudflare";
+
+const vpcService = await VpcServiceRef({
+  name: "existing-vpc-service",
+});
+```
+
+:::tip
+`VpcServiceRef` is useful when you want to bind to a VPC service that was created outside of your current Alchemy deployment, or when you want to share a single VPC service across multiple deployments without coupling their lifecycles.
+:::
+
 ## Host Configuration Options
 
 ### Hostname Host

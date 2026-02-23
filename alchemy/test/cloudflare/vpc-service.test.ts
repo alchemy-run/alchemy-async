@@ -1,18 +1,18 @@
+import "../../src/test/vitest.ts";
+
+import assert from "node:assert";
 import { describe, expect } from "vitest";
 import { alchemy } from "../../src/alchemy.ts";
+import { isCloudflareApiError } from "../../src/cloudflare/api-error.ts";
 import {
   type CloudflareApi,
   createCloudflareApi,
 } from "../../src/cloudflare/api.ts";
 import { Tunnel } from "../../src/cloudflare/tunnel.ts";
-import {
-  VpcService,
-  getService,
-  listServices,
-} from "../../src/cloudflare/vpc-service.ts";
+import { VpcServiceRef } from "../../src/cloudflare/vpc-service-ref.ts";
+import { VpcService, getService } from "../../src/cloudflare/vpc-service.ts";
 import { destroy } from "../../src/destroy.ts";
 import { BRANCH_PREFIX } from "../util.ts";
-import "../../src/test/vitest.ts";
 
 const test = alchemy.test(import.meta, {
   prefix: BRANCH_PREFIX,
@@ -68,9 +68,9 @@ describe("VpcService Resource", () => {
       const fetchedService = await getService(api, vpcService.serviceId);
       expect(fetchedService).toMatchObject({
         name: `${testId}-initial`,
-        service_id: vpcService.serviceId,
-        type: "http",
-        http_port: 8080,
+        serviceId: vpcService.serviceId,
+        serviceType: "http",
+        httpPort: 8080,
       });
 
       // Update the VPC service with new port
@@ -98,8 +98,8 @@ describe("VpcService Resource", () => {
       const updatedService = await getService(api, vpcService.serviceId);
       expect(updatedService).toMatchObject({
         name: `${testId}-updated`,
-        http_port: 3000,
-        https_port: 3001,
+        httpPort: 3000,
+        httpsPort: 3001,
       });
     } catch (err) {
       console.error("Test error:", err);
@@ -111,9 +111,60 @@ describe("VpcService Resource", () => {
   });
 });
 
+describe("VpcServiceRef", async () => {
+  const testId = `${BRANCH_PREFIX}-vpc-ref`;
+
+  test("reference vpc service by name and id", async (scope) => {
+    const api = await createCloudflareApi();
+    let tunnel: Tunnel | undefined;
+    let vpcService: VpcService | undefined;
+
+    try {
+      // Create a minimal tunnel for the VPC service
+      tunnel = await Tunnel(`${testId}-tunnel`, {
+        name: `${testId}-tunnel`,
+        ingress: [{ service: "http://localhost:8080" }],
+        adopt: true,
+      });
+
+      // Create VPC service with hostname host
+      vpcService = await VpcService(testId, {
+        name: testId,
+        httpPort: 8080,
+        host: {
+          hostname: "localhost",
+          resolverNetwork: {
+            tunnel,
+          },
+        },
+        adopt: true,
+      });
+
+      const refByName = await VpcServiceRef({
+        name: testId,
+      });
+      expect(refByName).toMatchObject(vpcService);
+
+      const refById = await VpcServiceRef({
+        serviceId: vpcService.serviceId,
+      });
+      expect(refById).toMatchObject(vpcService);
+    } finally {
+      await destroy(scope);
+      await assertVpcServiceDeleted(api, vpcService?.serviceId);
+    }
+  });
+});
+
 async function assertVpcServiceDeleted(api: CloudflareApi, serviceId?: string) {
-  if (serviceId) {
-    const services = await listServices(api);
-    expect(services.find((s) => s.service_id === serviceId)).toBeUndefined();
+  assert(serviceId, "Service ID is required");
+  try {
+    await getService(api, serviceId);
+    throw new Error(`VPC service "${serviceId}" was not deleted`);
+  } catch (err) {
+    if (isCloudflareApiError(err, { status: 404 })) {
+      return;
+    }
+    throw err;
   }
 }
