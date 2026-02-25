@@ -6,6 +6,7 @@ import type {
 } from "../dns/record.ts";
 import { Resource } from "../resource.ts";
 import { logger } from "../util/logger.ts";
+import { extractCloudflareResult } from "./api-response.ts";
 import {
   type CloudflareApi,
   type CloudflareApiOptions,
@@ -162,17 +163,16 @@ export const DnsRecords = Resource(
 
     if (this.phase === "update" && this.output?.records) {
       // Get current records to compare with desired state
-      const currentRecords = this.output.records;
-      const desiredRecords = props.records;
+      const currentRecords = deduplicateRecords(this.output.records);
+      const desiredRecords = deduplicateRecords(props.records);
 
       // Find records to delete (exist in current but not in desired)
-      const recordsToDelete = currentRecords.filter(
-        (current) =>
-          !desiredRecords.some(
-            (desired) =>
-              desired.name === current.name && desired.type === current.type,
-          ),
-      );
+      const recordsToDelete: DnsRecord[] = [];
+      for (const [key, record] of currentRecords.entries()) {
+        if (!desiredRecords.has(key)) {
+          recordsToDelete.push(record);
+        }
+      }
 
       // Delete orphaned records
       await Promise.all(
@@ -194,12 +194,9 @@ export const DnsRecords = Resource(
 
       // Update or create records
       const updatedRecords = await Promise.all(
-        desiredRecords.map(async (desired) => {
+        desiredRecords.entries().map(async ([key, desired]) => {
           // Find matching existing record
-          const existing = currentRecords.find(
-            (current) =>
-              current.name === desired.name && current.type === desired.type,
-          );
+          const existing = currentRecords.get(key);
 
           if (existing) {
             // Update if content or other properties changed
@@ -226,46 +223,17 @@ export const DnsRecords = Resource(
     }
 
     // Create new records
-    const uniqueRecords = props.records.reduce(
-      (acc, record) => {
-        // For record types that can have multiple entries with the same name (MX, TXT, NS, etc.),
-        // include content and/or priority in the key to avoid deduplication
-        let key = `${record.name}-${record.type}`;
-
-        // If it's a record type that can have multiple entries with the same name, make the key unique
-        if (["MX", "TXT", "NS", "SRV", "CAA"].includes(record.type)) {
-          // For MX, include priority in the key
-          if (record.type === "MX" || record.type === "SRV") {
-            key = `${key}-${record.priority}-${record.content}`;
-          } else {
-            // For other multi-record types, content is the differentiator
-            key = `${key}-${record.content}`;
-          }
-        }
-
-        acc[key] = record;
-        return acc;
-      },
-      {} as Record<string, DnsRecordProps>,
-    );
+    const uniqueRecords = deduplicateRecords(props.records);
 
     const createdRecords = await Promise.all(
-      Object.values(uniqueRecords).map(async (record) => {
-        // First check if record exists
-        const listResponse = await api.get(
-          `/zones/${zoneId}/dns_records?type=${record.type}&name=${record.name}`,
+      uniqueRecords.entries().map(async ([key, record]) => {
+        const existingRecords = await listRecords(api, zoneId, {
+          name: record.name,
+          type: record.type,
+        });
+        const existingRecord = existingRecords.find(
+          (r) => makeRecordKey(r) === key,
         );
-        if (!listResponse.ok) {
-          throw new Error(
-            `Failed to check existing DNS records: ${listResponse.statusText}`,
-          );
-        }
-
-        const listResult = (await listResponse.json()) as CloudflareResponse<
-          CloudflareDnsRecord[]
-        >;
-        const existingRecord = listResult.result[0];
-
         return createOrUpdateRecord(api, zoneId, record, existingRecord?.id);
       }),
     );
@@ -276,6 +244,35 @@ export const DnsRecords = Resource(
     };
   },
 );
+
+function deduplicateRecords<T extends DnsRecordProps>(
+  records: T[],
+): Map<string, T> {
+  const map = new Map<string, T>();
+  for (const record of records) {
+    map.set(makeRecordKey(record), record);
+  }
+  return map;
+}
+
+function makeRecordKey<T extends DnsRecordProps>(record: T) {
+  // For record types that can have multiple entries with the same name (MX, TXT, NS, etc.),
+  // include content and/or priority in the key to avoid deduplication
+  let key = `${record.name}-${record.type}`;
+
+  // If it's a record type that can have multiple entries with the same name, make the key unique
+  if (["MX", "TXT", "NS", "SRV", "CAA"].includes(record.type)) {
+    // For MX, include priority in the key
+    if (record.type === "MX" || record.type === "SRV") {
+      key = `${key}-${record.priority}-${record.content}`;
+    } else {
+      // For other multi-record types, content is the differentiator
+      key = `${key}-${record.content}`;
+    }
+  }
+
+  return key;
+}
 
 /**
  * Create or update a DNS record
@@ -323,6 +320,29 @@ async function createOrUpdateRecord(
   const result =
     (await response.json()) as CloudflareResponse<CloudflareDnsRecord>;
   return convertCloudflareRecord(result.result, zoneId);
+}
+
+export async function listRecords(
+  api: CloudflareApi,
+  zoneId: string,
+  filter: {
+    type?: DnsRecordType;
+    name?: string;
+  } = {},
+): Promise<DnsRecord[]> {
+  const queryParams = new URLSearchParams();
+  if (filter.type) {
+    queryParams.set("type", filter.type);
+  }
+  if (filter.name) {
+    queryParams.set("name", filter.name);
+  }
+  const queryString = queryParams.size > 0 ? `?${queryParams.toString()}` : "";
+  const result = await extractCloudflareResult<CloudflareDnsRecord[]>(
+    `list DNS records for zone ${zoneId}`,
+    api.get(`/zones/${zoneId}/dns_records${queryString}`),
+  );
+  return result.map((record) => convertCloudflareRecord(record, zoneId));
 }
 
 /**

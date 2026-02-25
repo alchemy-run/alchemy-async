@@ -1,7 +1,7 @@
-import { afterAll, describe, expect } from "vitest";
+import { afterAll, assert, describe, expect } from "vitest";
 import { alchemy } from "../../src/alchemy.ts";
 import { createCloudflareApi } from "../../src/cloudflare/api.ts";
-import { DnsRecords } from "../../src/cloudflare/dns-records.ts";
+import { DnsRecords, listRecords } from "../../src/cloudflare/dns-records.ts";
 import { Zone } from "../../src/cloudflare/zone.ts";
 import { destroy } from "../../src/destroy.ts";
 import { BRANCH_PREFIX } from "../util.ts";
@@ -15,13 +15,11 @@ const test = alchemy.test(import.meta, {
 
 const testDomain = `${BRANCH_PREFIX}-test-2.com`;
 
-const isEnabled = process.env.ALL_TESTS;
-
+const api = await createCloudflareApi();
 let zone: Zone;
-
 let scope: Scope | undefined;
+
 test.beforeAll(async (_scope) => {
-  if (!isEnabled) return;
   zone = await Zone(`${BRANCH_PREFIX}-zone`, {
     name: testDomain,
   });
@@ -34,9 +32,8 @@ afterAll(async () => {
   }
 });
 
-describe.skipIf(!isEnabled)("DnsRecords Resource", async () => {
+describe.sequential("DnsRecords Resource", async () => {
   // Use BRANCH_PREFIX for deterministic, non-colliding resource names
-  const api = await createCloudflareApi();
 
   test("create, update, and delete DNS records", async (scope) => {
     let dnsRecords;
@@ -73,39 +70,7 @@ describe.skipIf(!isEnabled)("DnsRecords Resource", async () => {
       expect(dnsRecords.records).toHaveLength(3);
 
       // Verify records were created by querying the API directly
-      for (const record of dnsRecords.records) {
-        let response;
-        const start = Date.now();
-        const timeout = 120_000; // 120 seconds
-        const interval = 500; // 0.5 seconds
-        while (true) {
-          response = await api.get(
-            `/zones/${dnsRecords.zoneId}/dns_records/${record.id}`,
-          );
-          if (response.ok) {
-            try {
-              const data: any = await response.json();
-              expect(data.result.name).toBe(record.name);
-              expect(data.result.type).toBe(record.type);
-              expect(data.result.content).toBe(record.content);
-              expect(data.result.proxied).toBe(record.proxied);
-              expect(data.result.comment).toBe(record.comment);
-              if (record.priority) {
-                expect(data.result.priority).toBe(record.priority);
-              }
-              break;
-            } catch (err) {
-              console.error("Error parsing response:", err);
-            }
-          }
-          if (Date.now() - start > timeout) {
-            throw new Error(
-              `DNS record ${record.id} did not become available within 10s`,
-            );
-          }
-          await new Promise((resolve) => setTimeout(resolve, interval));
-        }
-      }
+      await assertRecordsMatch(dnsRecords);
 
       // Update records - modify one record, add one record, remove one record
       dnsRecords = await DnsRecords(`${testDomain}-dns`, {
@@ -162,34 +127,13 @@ describe.skipIf(!isEnabled)("DnsRecords Resource", async () => {
       expect(mailRecord).toBeUndefined();
 
       // Verify directly with API
-      const listResponse = await api.get(
-        `/zones/${dnsRecords.zoneId}/dns_records`,
-      );
-      expect(listResponse.ok).toBe(true);
-
-      const listData: any = await listResponse.json();
-      const apiRecords = listData.result;
-
-      // Should find our 3 records
-      const testRecords = apiRecords.filter((r: any) =>
-        r.name.includes(testDomain),
-      );
-      expect(testRecords).toHaveLength(3);
+      await assertRecordsMatch(dnsRecords);
     } catch (err) {
       console.error("Test failed:", err);
       throw err;
     } finally {
-      // Clean up all resources
       await destroy(scope);
-      // Verify records were deleted
-      if (dnsRecords?.records) {
-        for (const record of dnsRecords.records) {
-          const response = await api.get(
-            `/zones/${dnsRecords.zoneId}/dns_records/${record.id}`,
-          );
-          expect(response.status).toBe(404);
-        }
-      }
+      await assertRecordsDeleted(zone.id);
     }
   });
 
@@ -230,6 +174,78 @@ describe.skipIf(!isEnabled)("DnsRecords Resource", async () => {
       expect(dnsRecords.records[0].content).toBe("192.0.2.2");
     } finally {
       await destroy(scope);
+      await assertRecordsDeleted(zone.id);
+    }
+  });
+
+  test("handles multiple TXT records", async (scope) => {
+    try {
+      let dnsRecords = await DnsRecords(`${testDomain}-txt-dns`, {
+        zoneId: zone.id,
+        records: [
+          {
+            name: `www.${testDomain}`,
+            type: "TXT",
+            content: "v=spf1 include:_spf.google.com ~all",
+          },
+          {
+            name: `www.${testDomain}`,
+            type: "TXT",
+            content: "google-site-verification=1234567890",
+          },
+          {
+            name: `www.${testDomain}`,
+            type: "A",
+            content: "192.0.2.1",
+          },
+        ],
+      });
+      await assertRecordsMatch(dnsRecords);
+
+      dnsRecords = await DnsRecords(`${testDomain}-txt-dns`, {
+        zoneId: zone.id,
+        records: [
+          {
+            name: `www.${testDomain}`,
+            type: "TXT",
+            content: "v=spf1 include:_spf.google.com ~all",
+          },
+          {
+            name: `www.${testDomain}`,
+            type: "TXT",
+            content: "google-site-verification=1234567890",
+          },
+          {
+            name: `www.${testDomain}`,
+            type: "A",
+            content: "192.0.2.2",
+          },
+        ],
+      });
+
+      await assertRecordsMatch(dnsRecords);
+    } finally {
+      await destroy(scope);
+      await assertRecordsDeleted(zone.id);
     }
   });
 });
+
+async function assertRecordsMatch(dnsRecords: DnsRecords) {
+  const apiRecords = await listRecords(api, dnsRecords.zoneId);
+  expect(apiRecords).toHaveLength(dnsRecords.records.length);
+  for (const record of dnsRecords.records) {
+    const apiRecord = apiRecords.find((r) => r.id === record.id);
+    assert(apiRecord, `Record ${record.name} (${record.id}) not found in API`);
+    expect(apiRecord.name).toBe(record.name);
+    expect(apiRecord.type).toBe(record.type);
+    expect(apiRecord.content).toBe(record.content);
+    expect(apiRecord.proxied).toBe(record.proxied);
+    expect(apiRecord.comment).toBe(record.comment);
+  }
+}
+
+async function assertRecordsDeleted(zoneId: string) {
+  const apiRecords = await listRecords(api, zoneId);
+  expect(apiRecords).toHaveLength(0);
+}
