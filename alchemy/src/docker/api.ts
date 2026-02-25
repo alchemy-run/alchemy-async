@@ -106,7 +106,19 @@ export type ContainerInfo = {
         Aliases: string[] | null;
       }
     > | null;
+    Ports?: Record<
+      string,
+      Array<{ HostIp: string; HostPort: string }> | null
+    > | null;
   };
+};
+
+export type ContainerRuntimeInfo = {
+  /**
+   * Map of internal container ports to their bound host ports.
+   * Format: "internalPort/protocol" -> hostPort (number)
+   */
+  ports: Record<string, number>;
 };
 
 /**

@@ -408,4 +408,43 @@ describe("Container", () => {
       await alchemy.destroy(scope);
     }
   });
+
+  test("inspect returns no ports when container is stopped", async (scope) => {
+    try {
+      const container = await Container("inspect-ports-test", {
+        image: "nginx:latest",
+        name: `${BRANCH_PREFIX}-inspect-ports-test-stopped`,
+        ports: [
+          { external: 80, internal: 80 },
+          { external: 443, internal: 443 },
+        ],
+        start: false,
+      });
+      const info = await container.inspect();
+      expect(info.ports).toMatchObject({});
+    } finally {
+      await alchemy.destroy(scope);
+    }
+  });
+
+  test("inspect returns available ports when container is running", async (scope) => {
+    try {
+      const container = await Container("inspect-ports-test", {
+        image: "nginx:latest",
+        name: `${BRANCH_PREFIX}-inspect-ports-test`,
+        ports: [
+          { external: 80, internal: 80 },
+          { external: 443, internal: 443 },
+        ],
+        start: true,
+      });
+      const info = await container.inspect();
+      expect(info.ports).toMatchObject({
+        "80/tcp": 80,
+        "443/tcp": 443,
+      });
+    } finally {
+      await alchemy.destroy(scope);
+    }
+  });
 });
