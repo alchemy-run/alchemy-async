@@ -356,129 +356,120 @@ describe.skipIf(!process.env.PLANETSCALE_TEST).concurrent.each(kinds)(
   },
 );
 
-describe.skipIf(false)(
-  "Database Extensions (postgresql)",
-  () => {
-    const api = createPlanetScaleClient();
-    const organization = alchemy.env.PLANETSCALE_ORG_ID;
+describe.skipIf(false)("Database Extensions (postgresql)", () => {
+  const api = createPlanetScaleClient();
+  const organization = alchemy.env.PLANETSCALE_ORG_ID;
 
-    test(
-      "create database with extensions, update extensions, then remove them",
-      async (scope) => {
-        const name = `${BRANCH_PREFIX}-pg-ext`;
-        const branch = "main";
+  test("create database with extensions, update extensions, then remove them", async (scope) => {
+    const name = `${BRANCH_PREFIX}-pg-ext`;
+    const branch = "main";
 
-        try {
-          // Create a PostgreSQL database with pgvector and pg_stat_statements enabled
-          const database = await Database("pg-ext", {
-            name,
-            kind: "postgresql",
-            clusterSize: "PS_10",
-            delete: true,
-            extensions: {
-              vector: { hnswEfSearch: 100 },
-              pgStatStatements: {},
-            },
-          });
+    try {
+      // Create a PostgreSQL database with pgvector and pg_stat_statements enabled
+      const database = await Database("pg-ext", {
+        name,
+        kind: "postgresql",
+        clusterSize: "PS_10",
+        delete: true,
+        extensions: {
+          vector: { hnswEfSearch: 100 },
+          pgStatStatements: {},
+        },
+      });
 
-          expect(database).toMatchObject({
-            id: expect.any(String),
-            name,
-            kind: "postgresql",
-            extensions: {
-              vector: { hnswEfSearch: 100 },
-              pgStatStatements: {},
-            },
-          });
+      expect(database).toMatchObject({
+        id: expect.any(String),
+        name,
+        kind: "postgresql",
+        extensions: {
+          vector: { hnswEfSearch: 100 },
+          pgStatStatements: {},
+        },
+      });
 
-          // Verify extensions are enabled via the parameters API
-          await waitForBranchReady(api, organization, name, branch);
-          const { data: params } = await api.listParameters({
-            path: { organization, database: name, branch },
-          });
+      // Verify extensions are enabled via the parameters API
+      await waitForBranchReady(api, organization, name, branch);
+      const { data: params } = await api.listParameters({
+        path: { organization, database: name, branch },
+      });
 
-          const enabledNames = getEnabledExtensionNames(params);
-          expect(enabledNames).toContain("vector");
-          expect(enabledNames).toContain("pg_stat_statements");
-          expect(enabledNames).not.toContain("pg_cron");
+      const enabledNames = getEnabledExtensionNames(params);
+      expect(enabledNames).toContain("vector");
+      expect(enabledNames).toContain("pg_stat_statements");
+      expect(enabledNames).not.toContain("pg_cron");
 
-          // Verify pgvector param was set
-          const hnswEfSearch = params.find(
-            (p) => p.name === "hnsw.ef_search",
-          );
-          expect(hnswEfSearch?.value).toBe("100");
+      // Verify pgvector param was set
+      const hnswEfSearch = params.find((p) => p.name === "hnsw.ef_search");
+      expect(hnswEfSearch?.value).toBe("100");
 
-          // Update: remove pgStatStatements, add pgCron, change pgvector config
-          const updated = await Database("pg-ext", {
-            name,
-            kind: "postgresql",
-            organization,
-            clusterSize: "PS_10",
-            delete: true,
-            extensions: {
-              vector: { hnswEfSearch: 200 },
-              pgCron: { maxRunningJobs: 3 },
-            },
-          });
+      // Update: remove pgStatStatements, add pgCron, change pgvector config
+      const updated = await Database("pg-ext", {
+        name,
+        kind: "postgresql",
+        organization,
+        clusterSize: "PS_10",
+        delete: true,
+        extensions: {
+          vector: { hnswEfSearch: 200 },
+          pgCron: { maxRunningJobs: 3 },
+        },
+      });
 
-          expect(updated.kind === "postgresql" && updated.extensions).toEqual({
-            vector: { hnswEfSearch: 200 },
-            pgCron: { maxRunningJobs: 3 },
-          });
+      expect(updated.kind === "postgresql" && updated.extensions).toEqual({
+        vector: { hnswEfSearch: 200 },
+        pgCron: { maxRunningJobs: 3 },
+      });
 
-          // Verify the changes via API
-          await waitForBranchReady(api, organization, name, branch);
-          const { data: updatedParams } = await api.listParameters({
-            path: { organization, database: name, branch },
-          });
+      // Verify the changes via API
+      await waitForBranchReady(api, organization, name, branch);
+      const { data: updatedParams } = await api.listParameters({
+        path: { organization, database: name, branch },
+      });
 
-          const updatedNames = getEnabledExtensionNames(updatedParams);
-          expect(updatedNames).toContain("vector");
-          expect(updatedNames).toContain("pg_cron");
-          expect(updatedNames).not.toContain("pg_stat_statements");
+      const updatedNames = getEnabledExtensionNames(updatedParams);
+      expect(updatedNames).toContain("vector");
+      expect(updatedNames).toContain("pg_cron");
+      expect(updatedNames).not.toContain("pg_stat_statements");
 
-          // Verify updated params
-          const updatedHnsw = updatedParams.find(
-            (p) => p.name === "hnsw.ef_search",
-          );
-          expect(updatedHnsw?.value).toBe("200");
-          const cronMax = updatedParams.find(
-            (p) => p.name === "cron.max_running_jobs",
-          );
-          expect(cronMax?.value).toBe("3");
+      // Verify updated params
+      const updatedHnsw = updatedParams.find(
+        (p) => p.name === "hnsw.ef_search",
+      );
+      expect(updatedHnsw?.value).toBe("200");
+      const cronMax = updatedParams.find(
+        (p) => p.name === "cron.max_running_jobs",
+      );
+      expect(cronMax?.value).toBe("3");
 
-          // Update: remove all user extensions
-          await Database("pg-ext", {
-            name,
-            kind: "postgresql",
-            organization,
-            clusterSize: "PS_10",
-            delete: true,
-            extensions: {},
-          });
+      // Update: remove all user extensions
+      await Database("pg-ext", {
+        name,
+        kind: "postgresql",
+        organization,
+        clusterSize: "PS_10",
+        delete: true,
+        extensions: {},
+      });
 
-          // Verify all user extensions are removed
-          await waitForBranchReady(api, organization, name, branch);
-          const { data: finalParams } = await api.listParameters({
-            path: { organization, database: name, branch },
-          });
+      // Verify all user extensions are removed
+      await waitForBranchReady(api, organization, name, branch);
+      const { data: finalParams } = await api.listParameters({
+        path: { organization, database: name, branch },
+      });
 
-          const finalNames = getEnabledExtensionNames(finalParams);
-          expect(finalNames).not.toContain("vector");
-          expect(finalNames).not.toContain("pg_cron");
-          expect(finalNames).not.toContain("pg_stat_statements");
-        } catch (err) {
-          console.error("Test error:", err);
-          throw err;
-        } finally {
-          await destroy(scope);
-          await assertDatabaseDeleted(api, organization, name);
-        }
-      },
-      5_000_000,
-    );
-  },
-);
+      const finalNames = getEnabledExtensionNames(finalParams);
+      expect(finalNames).not.toContain("vector");
+      expect(finalNames).not.toContain("pg_cron");
+      expect(finalNames).not.toContain("pg_stat_statements");
+    } catch (err) {
+      console.error("Test error:", err);
+      throw err;
+    } finally {
+      await destroy(scope);
+      await assertDatabaseDeleted(api, organization, name);
+    }
+  }, 5_000_000);
+});
 
 /**
  * Get the names of extensions currently enabled in shared_preload_libraries.

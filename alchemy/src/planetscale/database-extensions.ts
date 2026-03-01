@@ -29,13 +29,7 @@ export interface PgCronConfig {
    * Minimum message level for pg_cron log messages.
    * @default "warning"
    */
-  logMinMessages?:
-    | "error"
-    | "warning"
-    | "notice"
-    | "info"
-    | "log"
-    | "debug";
+  logMinMessages?: "error" | "warning" | "notice" | "info" | "log" | "debug";
   /**
    * Whether to log each job run into the job_run_details table.
    * @default "on"
@@ -89,13 +83,7 @@ export interface PgHintPlanConfig {
    * Message level for hint parsing messages.
    * @default "info"
    */
-  parseMessages?:
-    | "error"
-    | "warning"
-    | "notice"
-    | "info"
-    | "log"
-    | "debug";
+  parseMessages?: "error" | "warning" | "notice" | "info" | "log" | "debug";
   /**
    * Controls debug output of query plans.
    * @default "off"
@@ -105,13 +93,7 @@ export interface PgHintPlanConfig {
    * Message level for debug output.
    * @default "info"
    */
-  messageLevel?:
-  | "error"
-  | "warning"
-  | "notice"
-  | "info"
-  | "log"
-  | "debug";
+  messageLevel?: "error" | "warning" | "notice" | "info" | "log" | "debug";
 }
 
 /**
@@ -209,13 +191,7 @@ export interface TimescaledbConfig {
    * Log level for the background worker.
    * @default "warning"
    */
-  bgwLogLevel?:
-    | "error"
-    | "warning"
-    | "notice"
-    | "info"
-    | "log"
-    | "debug";
+  bgwLogLevel?: "error" | "warning" | "notice" | "info" | "log" | "debug";
   /**
    * Enable chunk append optimization.
    * @default "on"
@@ -834,10 +810,7 @@ function buildExtensionFormData(
     // pginsights is always loaded; if user didn't explicitly configure it, include with defaults off
     form.append("parameters[pgconf][shared_preload_libraries][]", "pginsights");
     form.append("parameters[pgconf][pginsights.raw_queries]", "off");
-    form.append(
-      "parameters[pgconf][pginsights.normalize_schema_names]",
-      "off",
-    );
+    form.append("parameters[pgconf][pginsights.normalize_schema_names]", "off");
   }
 
   // Add user-requested extensions
