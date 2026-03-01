@@ -421,7 +421,7 @@ describe.skipIf(false)(
             },
           });
 
-          expect(updated.extensions).toEqual({
+          expect(updated.kind === "postgresql" && updated.extensions).toEqual({
             vector: { hnswEfSearch: 200 },
             pgCron: { maxRunningJobs: 3 },
           });
