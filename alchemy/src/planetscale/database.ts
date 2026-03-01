@@ -3,9 +3,15 @@ import { Resource } from "../resource.ts";
 import type { PlanetScaleProps } from "./api.ts";
 import { createPlanetScaleClient } from "./api.ts";
 import {
+  type DatabaseExtensions,
+  diffExtensions,
+  updateExtensions,
+} from "./database-extensions.ts";
+import {
   ensureProductionBranchClusterSize,
   type PlanetScaleClusterSize,
   sanitizeClusterSize,
+  waitForBranchReady,
   waitForDatabaseReady,
 } from "./utils.ts";
 
@@ -135,6 +141,27 @@ interface PostgreSQLDatabaseProps extends BaseDatabaseProps {
    * The CPU architecture for the database (PostgreSQL only)
    */
   arch?: "x86" | "arm";
+
+  /**
+   * PostgreSQL extensions to enable on the default branch.
+   * Each key represents an extension — if present (even as `{}`), it is enabled with the given config or defaults.
+   * If absent, the extension is disabled. (PostgreSQL only)
+   *
+   * @example
+   * ```ts
+   * const db = await Database("my-pg-db", {
+   *   kind: "postgresql",
+   *   organization: "my-org",
+   *   clusterSize: "PS_10",
+   *   extensions: {
+   *     vector: { hnswEfSearch: 100 },
+   *     pgCron: {},
+   *     pgStatStatements: { max: 10000 },
+   *   },
+   * });
+   * ```
+   */
+  extensions?: DatabaseExtensions;
 }
 
 /**
@@ -365,6 +392,26 @@ export const Database = Resource(
         clusterSize,
       );
 
+      // Sync PostgreSQL extensions on update
+      if (props.kind === "postgresql") {
+        const previousExtensions =
+          this.output?.kind === "postgresql"
+            ? this.output.extensions
+            : undefined;
+        const desiredExtensions = props.extensions;
+        const diff = diffExtensions(previousExtensions, desiredExtensions);
+        if (diff.hasChanges) {
+          const branch = props.defaultBranch || "main";
+          await waitForBranchReady(api, organization, databaseName, branch);
+          await updateExtensions(desiredExtensions ?? {}, {
+            ...props,
+            organization,
+            database: databaseName,
+            branch,
+          });
+        }
+      }
+
       return {
         ...props,
         id: data.id,
@@ -472,6 +519,22 @@ export const Database = Resource(
           },
         });
 
+        // Enable PostgreSQL extensions on the new default branch
+        if (props.kind === "postgresql" && props.extensions) {
+          await waitForBranchReady(
+            api,
+            organization,
+            databaseName,
+            props.defaultBranch,
+          );
+          await updateExtensions(props.extensions, {
+            ...props,
+            organization,
+            database: databaseName,
+            branch: props.defaultBranch,
+          });
+        }
+
         return {
           ...props,
           id: data.id,
@@ -485,6 +548,18 @@ export const Database = Resource(
           organization,
         };
       }
+    }
+
+    // Enable PostgreSQL extensions on the default branch (main)
+    if (props.kind === "postgresql" && props.extensions) {
+      const branch = props.defaultBranch || "main";
+      await waitForBranchReady(api, organization, databaseName, branch);
+      await updateExtensions(props.extensions, {
+        ...props,
+        organization,
+        database: databaseName,
+        branch,
+      });
     }
 
     return {

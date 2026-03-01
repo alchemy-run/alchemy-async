@@ -78,7 +78,7 @@ export function createPlanetScaleClient(
   });
 }
 
-const extractToken = (props: PlanetScaleProps) => {
+export const extractToken = (props: PlanetScaleProps) => {
   if (props.apiKey) {
     return props.apiKey.unencrypted;
   } else if (props.serviceTokenId && props.serviceToken) {
