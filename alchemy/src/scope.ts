@@ -19,7 +19,6 @@ import {
 } from "./resource.ts";
 import type { State, StateStore, StateStoreType } from "./state.ts";
 import { FileSystemStateStore } from "./state/file-system-state-store.ts";
-import { InstrumentedStateStore } from "./state/instrumented-state-store.ts";
 import {
   createDummyLogger,
   createLoggerInstance,
@@ -333,7 +332,7 @@ export class Scope {
       stateStore ??
       this.parent?.stateStore ??
       ((scope) => new FileSystemStateStore(scope));
-    this.state = new InstrumentedStateStore(this.stateStore(this));
+    this.state = this.stateStore(this);
     this.dataMutex = new AsyncMutex();
   }
 

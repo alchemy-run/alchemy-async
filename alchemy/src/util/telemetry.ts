@@ -261,21 +261,6 @@ export type ResourceTelemetryData = {
   replaced: boolean;
 };
 
-export type StateStoreTelemetryData = {
-  event:
-    | "statestore.init"
-    | "statestore.deinit"
-    | "statestore.list"
-    | "statestore.count"
-    | "statestore.get"
-    | "statestore.getBatch"
-    | "statestore.all"
-    | "statestore.set"
-    | "statestore.delete";
-  stateStore: string;
-  duration: number;
-};
-
 export type AlchemyTelemetryData = {
   event: "alchemy.start" | "alchemy.success" | "alchemy.error";
   duration: number;
@@ -290,11 +275,7 @@ async function isTelemetryDisabled() {
 }
 
 export async function createAndSendEvent(
-  data:
-    | CliTelemetryData
-    | ResourceTelemetryData
-    | StateStoreTelemetryData
-    | AlchemyTelemetryData,
+  data: CliTelemetryData | ResourceTelemetryData | AlchemyTelemetryData,
   error?: Error,
 ) {
   if (await isTelemetryDisabled()) {
