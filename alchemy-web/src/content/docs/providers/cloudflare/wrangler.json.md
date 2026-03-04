@@ -75,6 +75,33 @@ const worker = await Worker("cron", {
 await WranglerJson({ worker });
 ```
 
+## With Workflow Step Limits
+
+If the Worker binds to a Workflow with `limits.steps`, that value is written to
+the `workflows[].limits.steps` field in `wrangler.json`.
+
+```ts
+import { Worker, Workflow, WranglerJson } from "alchemy/cloudflare";
+
+const workflow = Workflow("order-processing", {
+  workflowName: "order-processing",
+  className: "OrderProcessingWorkflow",
+  limits: {
+    steps: 25_000,
+  },
+});
+
+const worker = await Worker("orders", {
+  name: "orders-worker",
+  entrypoint: "./src/worker.ts",
+  bindings: {
+    ORDER_WORKFLOW: workflow,
+  },
+});
+
+await WranglerJson({ worker });
+```
+
 ## With Transform Hook
 
 The transform hook allows you to customize the wrangler.json configuration. For example, adding a custom environment variable:

@@ -53,6 +53,22 @@ await Worker("my-worker", {
 });
 ```
 
+## Workflow Step Limits
+
+Set the maximum number of steps per workflow instance with `limits.steps`.
+
+```ts
+import { Workflow } from "alchemy/cloudflare";
+
+const workflow = Workflow("order-processing", {
+  workflowName: "order-processing",
+  className: "OrderProcessingWorkflow",
+  limits: {
+    steps: 25_000,
+  },
+});
+```
+
 ## Rename Class Name
 
 Alchemy takes care of migrations automatically when you rename the class name.
