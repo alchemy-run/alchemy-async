@@ -382,6 +382,51 @@ describe("WranglerJson Resource", () => {
       }
     });
 
+    test("with workflow step limits", async (scope) => {
+      const name = `${BRANCH_PREFIX}-test-worker-wf-limits`;
+      const tempDir = path.join(".out", "alchemy-wf-limits-test");
+      const entrypoint = path.join(tempDir, "worker.ts");
+
+      try {
+        await fs.rm(tempDir, { recursive: true, force: true });
+        await fs.mkdir(tempDir, { recursive: true });
+        await fs.writeFile(entrypoint, wfWorkerScript);
+
+        const workflow = Workflow("test-workflow-limits", {
+          className: "TestWorkflow",
+          workflowName: "test-workflow-limits",
+          limits: {
+            steps: 25000,
+          },
+        });
+
+        const worker = await Worker(name, {
+          name,
+          format: "esm",
+          entrypoint,
+          bindings: {
+            WF: workflow,
+          },
+          adopt: true,
+        });
+
+        const { spec } = await WranglerJson({ worker });
+
+        expect(spec.workflows).toHaveLength(1);
+        expect(spec.workflows?.[0]).toMatchObject({
+          name: "test-workflow-limits",
+          binding: "WF",
+          class_name: "TestWorkflow",
+          limits: {
+            steps: 25000,
+          },
+        });
+      } finally {
+        await fs.rm(tempDir, { recursive: true, force: true });
+        await destroy(scope);
+      }
+    });
+
     test("with cron triggers", async (scope) => {
       const name = `${BRANCH_PREFIX}-test-worker-cron-json`;
       const tempDir = path.join(".out", "alchemy-cron-json-test");

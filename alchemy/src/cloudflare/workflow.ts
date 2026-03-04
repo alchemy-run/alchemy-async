@@ -25,6 +25,20 @@ export interface WorkflowProps {
    * @default - bound worker script
    */
   scriptName?: string;
+  /**
+   * Limits for the workflow instance
+   */
+  limits?: {
+    /**
+     * Maximum number of steps per workflow instance.
+     *
+     * Workers Free: 1,024 (not configurable)
+     * Workers Paid: 10,000 default, configurable up to 25,000
+     *
+     * @see https://developers.cloudflare.com/workflows/reference/limits/
+     */
+    steps?: number;
+  };
   dev?: {
     /**
      * Whether to run the workflow remotely instead of locally
@@ -45,6 +59,9 @@ export type Workflow<PARAMS = unknown> = {
   workflowName: string;
   className: string;
   scriptName?: string;
+  limits?: {
+    steps?: number;
+  };
 };
 
 export function isWorkflow(binding: Binding): binding is Workflow {
@@ -77,6 +94,7 @@ export function Workflow<PARAMS = unknown>(
     workflowName,
     className,
     scriptName: props.scriptName,
+    limits: props.limits,
   };
 }
 

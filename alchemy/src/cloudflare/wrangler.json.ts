@@ -403,6 +403,7 @@ async function processBindings(
         binding: bindingName,
         class_name: binding.className,
         script_name: binding.scriptName,
+        ...(binding.limits ? { limits: binding.limits } : {}),
       });
     } else if (binding.type === "d1") {
       const id =
