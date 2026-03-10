@@ -222,6 +222,71 @@ describe("R2BucketNotification Resource", () => {
     }
   });
 
+  test("update notification event types by reconciliation", async (scope) => {
+    let bucket: R2Bucket | undefined;
+    let queue: Queue | undefined;
+    let notification: R2BucketNotification | undefined;
+
+    try {
+      bucket = await R2Bucket(`${testId}-update-events-bucket`, {
+        name: `${testId}-update-events-bucket`,
+        adopt: true,
+      });
+
+      queue = await Queue<R2BucketNotificationMessage>(
+        `${testId}-update-events-queue`,
+        {
+          name: `${testId}-update-events-queue`,
+          adopt: true,
+        },
+      );
+
+      notification = await R2BucketNotification(
+        `${testId}-update-events-notification`,
+        {
+          bucket,
+          queue,
+          eventTypes: ["object-create"],
+          adopt: true,
+        },
+      );
+
+      expect(notification.ruleId).toBeTruthy();
+      expect(notification.eventTypes).toContain("object-create");
+      expect(notification.eventTypes).not.toContain("object-delete");
+      const originalRuleId = notification.ruleId;
+
+      notification = await R2BucketNotification(
+        `${testId}-update-events-notification`,
+        {
+          bucket,
+          queue,
+          eventTypes: ["object-create", "object-delete"],
+          adopt: true,
+        },
+      );
+
+      expect(notification.ruleId).toBeTruthy();
+      expect(notification.ruleId).not.toEqual(originalRuleId);
+      expect(notification.eventTypes).toContain("object-create");
+      expect(notification.eventTypes).toContain("object-delete");
+
+      const rules = await listR2BucketNotifications(api, bucket.name);
+      const oldRule = rules.find((r) => r.ruleId === originalRuleId);
+      expect(oldRule).toBeUndefined();
+
+      const newRule = rules.find((r) => r.ruleId === notification!.ruleId);
+      expect(newRule).toBeTruthy();
+      expect(newRule?.actions).toContain("PutObject");
+      expect(newRule?.actions).toContain("DeleteObject");
+    } catch (err) {
+      console.error("Update event types notification test error:", err);
+      throw err;
+    } finally {
+      await destroy(scope);
+    }
+  });
+
   test("adopt existing notification rule", async (scope) => {
     let bucket: R2Bucket | undefined;
     let queue: Queue | undefined;
