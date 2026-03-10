@@ -1,5 +1,6 @@
 import type { Context } from "../context.ts";
 import { Resource, ResourceKind } from "../resource.ts";
+import { withExponentialBackoff } from "../util/retry.ts";
 import { CloudflareApiError, handleApiError } from "./api-error.ts";
 import {
   createCloudflareApi,
@@ -232,6 +233,30 @@ export function isR2BucketNotification(
   return resource?.[ResourceKind] === "cloudflare::R2BucketNotification";
 }
 
+async function resolveQueueId(
+  api: CloudflareApi,
+  queue: string | Queue,
+): Promise<string> {
+  if (typeof queue !== "string" && queue.id) {
+    return queue.id;
+  }
+
+  const queueName = typeof queue === "string" ? queue : queue.name;
+
+  return await withExponentialBackoff(
+    async () => {
+      const queueId = (await findQueueByName(api, queueName))?.result?.queue_id;
+      if (!queueId) {
+        throw new Error(`Queue "${queueName}" not found`);
+      }
+      return queueId;
+    },
+    (error) => error instanceof Error && error.message.includes("not found"),
+    5,
+    1000,
+  );
+}
+
 /**
  * Creates an event notification rule for an R2 bucket that sends messages to a Queue.
  *
@@ -369,14 +394,7 @@ export const R2BucketNotification = Resource(
 
     const api = await createCloudflareApi(props);
 
-    const queueId =
-      typeof props.queue === "string"
-        ? (await findQueueByName(api, props.queue))?.result?.queue_id
-        : props.queue.id;
-
-    if (!queueId) {
-      throw new Error(`Queue "${queueName}" not found`);
-    }
+    const queueId = await resolveQueueId(api, props.queue);
 
     const ruleConfigs: Array<{ prefix?: string; suffix?: string }> = [];
 
