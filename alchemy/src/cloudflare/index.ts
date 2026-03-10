@@ -53,6 +53,7 @@ export * from "./pipeline.ts";
 export * from "./queue-consumer.ts";
 export * from "./queue.ts";
 export * from "./quick-tunnel.ts";
+export * from "./r2-bucket-notification.ts";
 export * from "./rate-limit.ts";
 export * from "./react-router/react-router.ts";
 export * from "./redirect-rule.ts";

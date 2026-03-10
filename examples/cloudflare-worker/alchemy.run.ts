@@ -4,9 +4,11 @@ import {
   DurableObjectNamespace,
   Queue,
   R2Bucket,
+  R2BucketNotification,
   Worker,
   Workflow,
 } from "alchemy/cloudflare";
+import type { R2BucketNotificationMessage } from "alchemy/cloudflare";
 import fs from "node:fs/promises";
 import type { HelloWorldDO } from "./src/do.ts";
 import type MyRPC from "./src/rpc.ts";
@@ -30,6 +32,19 @@ export const queue = await Queue<{
   email: string;
 }>("queue", {
   name: `${app.name}-${app.stage}-queue`,
+});
+
+export const bucketEventsQueue = await Queue<R2BucketNotificationMessage>(
+  "bucket-events-queue",
+  {
+    name: `${app.name}-${app.stage}-bucket-events`,
+  },
+);
+
+await R2BucketNotification("bucket-notifications", {
+  bucket,
+  queue: bucketEventsQueue,
+  eventTypes: ["object-create", "object-delete"],
 });
 
 export const rpc = await Worker("rpc", {
@@ -63,6 +78,7 @@ export const worker = await Worker("worker", {
         batchSize: 10,
       },
     },
+    bucketEventsQueue,
   ],
   bundle: {
     metafile: true,

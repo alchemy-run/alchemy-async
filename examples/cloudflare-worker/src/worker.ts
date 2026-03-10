@@ -1,5 +1,5 @@
 import { env } from "cloudflare:workers";
-import type { queue, worker } from "../alchemy.run.ts";
+import type { bucketEventsQueue, queue, worker } from "../alchemy.run.ts";
 export * from "./do.js";
 export * from "./workflow.js";
 
@@ -22,11 +22,18 @@ export default {
 
     return new Response("Ok");
   },
-  async queue(batch: typeof queue.Batch, _env: typeof worker.Env) {
+  async queue(
+    batch: typeof queue.Batch | typeof bucketEventsQueue.Batch,
+    _env: typeof worker.Env,
+  ) {
     for (const message of batch.messages) {
-      console.log(message);
+      if ("action" in message.body) {
+        const event = message.body;
+        console.log(`Bucket event: ${event.action} on ${event.object.key}`);
+      } else {
+        console.log(`Queue message: ${message.body.name}`);
+      }
       message.ack();
     }
-    batch.ackAll();
   },
 };
