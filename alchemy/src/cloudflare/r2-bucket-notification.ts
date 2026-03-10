@@ -378,27 +378,27 @@ export const R2BucketNotification = Resource(
       throw new Error(`Queue "${queueName}" not found`);
     }
 
-    const ruleConfigs: Array<{ prefix: string; suffix: string }> = [];
+    const ruleConfigs: Array<{ prefix?: string; suffix?: string }> = [];
 
     if (prefixIsArray) {
       const prefixArray = props.prefix as string[];
       const singleSuffix =
-        typeof props.suffix === "string" ? props.suffix : "";
+        typeof props.suffix === "string" ? props.suffix : undefined;
       for (const prefix of prefixArray) {
         ruleConfigs.push({ prefix, suffix: singleSuffix });
       }
     } else if (suffixIsArray) {
       const suffixArray = props.suffix as string[];
       const singlePrefix =
-        typeof props.prefix === "string" ? props.prefix : "";
+        typeof props.prefix === "string" ? props.prefix : undefined;
       for (const suffix of suffixArray) {
         ruleConfigs.push({ prefix: singlePrefix, suffix });
       }
     } else {
       const singlePrefix =
-        typeof props.prefix === "string" ? props.prefix : "";
+        typeof props.prefix === "string" ? props.prefix : undefined;
       const singleSuffix =
-        typeof props.suffix === "string" ? props.suffix : "";
+        typeof props.suffix === "string" ? props.suffix : undefined;
       ruleConfigs.push({ prefix: singlePrefix, suffix: singleSuffix });
     }
 

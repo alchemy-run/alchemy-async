@@ -105,7 +105,37 @@ This is a step-by-step guide to set up R2 bucket notifications. For a complete A
    });
    ```
 
-6. **(Optional) Handle Multiple Event Types**
+6. **(Optional) Handle Multiple File Types**
+
+   Need to process multiple file formats? Use an array of suffixes to create rules for each:
+
+   ```ts
+   await R2BucketNotification("audio-uploads", {
+     bucket,
+     queue,
+     eventTypes: ["object-create"],
+     prefix: "audio/",
+     suffix: [".mp3", ".wav", ".flac", ".aac"],
+   });
+   ```
+
+   This creates separate notification rules for each suffix under the hood. You can also use an array of prefixes:
+
+   ```ts
+   await R2BucketNotification("multi-folder-uploads", {
+     bucket,
+     queue,
+     eventTypes: ["object-create"],
+     prefix: ["uploads/", "imports/", "inbox/"],
+     suffix: ".json",
+   });
+   ```
+
+   :::note
+   Either `prefix` OR `suffix` can be an array, but not both at the same time.
+   :::
+
+7. **(Optional) Handle Multiple Event Types**
 
    Listen for both create and delete events:
 
