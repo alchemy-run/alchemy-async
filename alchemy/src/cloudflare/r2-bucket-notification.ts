@@ -78,9 +78,9 @@ export interface R2BucketNotificationMessage {
 }
 
 /**
- * Properties for creating or updating an R2 Bucket Notification rule
+ * Base properties shared by all R2 Bucket Notification configurations
  */
-export interface R2BucketNotificationProps extends CloudflareApiOptions {
+interface R2BucketNotificationBaseProps extends CloudflareApiOptions {
   /**
    * The R2 bucket to attach the notification rule to.
    * Can be either a bucket name (string) or an R2Bucket resource.
@@ -99,18 +99,6 @@ export interface R2BucketNotificationProps extends CloudflareApiOptions {
    * - "object-delete": Triggered when objects are deleted (DeleteObject, CopyObject, LifecycleDeletion)
    */
   eventTypes: R2BucketNotificationEventType[];
-
-  /**
-   * Optional prefix filter - only objects with keys starting with this prefix will trigger notifications.
-   * Regular expressions are not supported.
-   */
-  prefix?: string;
-
-  /**
-   * Optional suffix filter - only objects with keys ending with this suffix will trigger notifications.
-   * Regular expressions are not supported.
-   */
-  suffix?: string;
 
   /**
    * Optional description for the notification rule to help identify it.
@@ -137,10 +125,65 @@ export interface R2BucketNotificationProps extends CloudflareApiOptions {
 }
 
 /**
+ * Props with single prefix and suffix (creates one rule)
+ */
+interface R2BucketNotificationSingleProps extends R2BucketNotificationBaseProps {
+  /**
+   * Optional prefix filter - only objects with keys starting with this prefix will trigger notifications.
+   */
+  prefix?: string;
+
+  /**
+   * Optional suffix filter - only objects with keys ending with this suffix will trigger notifications.
+   */
+  suffix?: string;
+}
+
+/**
+ * Props with multiple prefixes (creates one rule per prefix)
+ */
+interface R2BucketNotificationMultiplePrefixProps extends R2BucketNotificationBaseProps {
+  /**
+   * Array of prefix filters - creates one notification rule per prefix.
+   */
+  prefix: string[];
+
+  /**
+   * Optional suffix filter applied to all rules.
+   */
+  suffix?: string;
+}
+
+/**
+ * Props with multiple suffixes (creates one rule per suffix)
+ */
+interface R2BucketNotificationMultipleSuffixProps extends R2BucketNotificationBaseProps {
+  /**
+   * Optional prefix filter applied to all rules.
+   */
+  prefix?: string;
+
+  /**
+   * Array of suffix filters - creates one notification rule per suffix.
+   */
+  suffix: string[];
+}
+
+/**
+ * Properties for creating or updating R2 Bucket Notification rules.
+ *
+ * Either prefix OR suffix can be an array (creating multiple rules), but not both.
+ */
+export type R2BucketNotificationProps =
+  | R2BucketNotificationSingleProps
+  | R2BucketNotificationMultiplePrefixProps
+  | R2BucketNotificationMultipleSuffixProps;
+
+/**
  * Output returned after R2 Bucket Notification rule creation/update
  */
 export type R2BucketNotification = Omit<
-  R2BucketNotificationProps,
+  R2BucketNotificationBaseProps,
   "bucket" | "queue" | "delete" | "adopt"
 > & {
   /**
@@ -149,9 +192,10 @@ export type R2BucketNotification = Omit<
   type: "r2_bucket_notification";
 
   /**
-   * The Cloudflare-assigned rule ID for this notification
+   * The Cloudflare-assigned rule ID(s) for this notification.
+   * When prefix or suffix is an array, this contains multiple rule IDs.
    */
-  ruleId: string;
+  ruleId: string | string[];
 
   /**
    * The name of the bucket this notification is attached to
@@ -162,6 +206,16 @@ export type R2BucketNotification = Omit<
    * The name of the queue that receives notification messages
    */
   queueName: string;
+
+  /**
+   * Prefix filter(s) - normalized to always be a string or array matching input
+   */
+  prefix?: string | string[];
+
+  /**
+   * Suffix filter(s) - normalized to always be a string or array matching input
+   */
+  suffix?: string | string[];
 
   /**
    * Time when the notification rule was created
@@ -225,6 +279,26 @@ export function isR2BucketNotification(
  * ```
  *
  * @example
+ * ## Multiple suffixes for different file types
+ *
+ * Create rules for multiple file extensions at once:
+ *
+ * ```ts
+ * import { R2Bucket, Queue, R2BucketNotification } from "alchemy/cloudflare";
+ *
+ * const bucket = await R2Bucket("media");
+ * const queue = await Queue("audio-processing");
+ *
+ * await R2BucketNotification("audio-uploads", {
+ *   bucket,
+ *   queue,
+ *   eventTypes: ["object-create"],
+ *   prefix: "audio/",
+ *   suffix: [".mp3", ".wav", ".flac"],
+ * });
+ * ```
+ *
+ * @example
  * ## Multiple event types with typed queue
  *
  * Listen for both create and delete events with type-safe message handling:
@@ -274,6 +348,15 @@ export const R2BucketNotification = Resource(
     _id: string,
     props: R2BucketNotificationProps,
   ): Promise<R2BucketNotification> {
+    const prefixIsArray = Array.isArray(props.prefix);
+    const suffixIsArray = Array.isArray(props.suffix);
+
+    if (prefixIsArray && suffixIsArray) {
+      throw new Error(
+        "Cannot specify both prefix and suffix as arrays. Only one can be an array at a time.",
+      );
+    }
+
     const bucketName =
       typeof props.bucket === "string" ? props.bucket : props.bucket.name;
     const queueName =
@@ -295,10 +378,39 @@ export const R2BucketNotification = Resource(
       throw new Error(`Queue "${queueName}" not found`);
     }
 
+    const ruleConfigs: Array<{ prefix: string; suffix: string }> = [];
+
+    if (prefixIsArray) {
+      const prefixArray = props.prefix as string[];
+      const singleSuffix =
+        typeof props.suffix === "string" ? props.suffix : "";
+      for (const prefix of prefixArray) {
+        ruleConfigs.push({ prefix, suffix: singleSuffix });
+      }
+    } else if (suffixIsArray) {
+      const suffixArray = props.suffix as string[];
+      const singlePrefix =
+        typeof props.prefix === "string" ? props.prefix : "";
+      for (const suffix of suffixArray) {
+        ruleConfigs.push({ prefix: singlePrefix, suffix });
+      }
+    } else {
+      const singlePrefix =
+        typeof props.prefix === "string" ? props.prefix : "";
+      const singleSuffix =
+        typeof props.suffix === "string" ? props.suffix : "";
+      ruleConfigs.push({ prefix: singlePrefix, suffix: singleSuffix });
+    }
+
     if (this.scope.local) {
+      const mockRuleIds = ruleConfigs.map((_, i) =>
+        Array.isArray(this.output?.ruleId)
+          ? (this.output.ruleId[i] ?? "")
+          : (this.output?.ruleId ?? ""),
+      );
       return {
         type: "r2_bucket_notification",
-        ruleId: this.output?.ruleId ?? "",
+        ruleId: ruleConfigs.length === 1 ? mockRuleIds[0] : mockRuleIds,
         bucketName,
         queueName,
         eventTypes: props.eventTypes,
@@ -312,66 +424,61 @@ export const R2BucketNotification = Resource(
 
     if (this.phase === "delete") {
       if (props.delete !== false && this.output?.ruleId) {
-        await deleteNotificationRule(
-          api,
-          bucketName,
-          queueId,
-          this.output.ruleId,
-          {
-            jurisdiction,
-          },
+        const ruleIds = Array.isArray(this.output.ruleId)
+          ? this.output.ruleId
+          : [this.output.ruleId];
+        await Promise.all(
+          ruleIds.map((ruleId) =>
+            deleteNotificationRule(api, bucketName, queueId, ruleId, {
+              jurisdiction,
+            }),
+          ),
         );
       }
       return this.destroy();
     }
 
-    let ruleId = this.output?.ruleId;
+    const existingRuleIds: string[] = Array.isArray(this.output?.ruleId)
+      ? this.output.ruleId
+      : this.output?.ruleId
+        ? [this.output.ruleId]
+        : [];
 
-    if (this.phase === "update" && ruleId) {
+    if (this.phase === "update" && existingRuleIds.length > 0) {
       const existingRules = await listNotificationRules(api, bucketName, {
         jurisdiction,
       });
-      const existingRule = existingRules.find((r) => r.ruleId === ruleId);
 
-      if (existingRule) {
-        const needsUpdate =
-          !arraysEqual(
-            existingRule.actions,
-            mapEventTypesToActions(props.eventTypes),
-          ) ||
-          existingRule.prefix !== (props.prefix ?? "") ||
-          existingRule.suffix !== (props.suffix ?? "") ||
-          existingRule.queueName !== queueName;
-
-        if (needsUpdate) {
+      for (const existingRuleId of existingRuleIds) {
+        const existingRule = existingRules.find(
+          (r) => r.ruleId === existingRuleId,
+        );
+        if (existingRule) {
           await deleteNotificationRule(
             api,
             bucketName,
             existingRule.queueId,
-            ruleId,
-            {
-              jurisdiction,
-            },
+            existingRuleId,
+            { jurisdiction },
           );
-          ruleId = undefined;
         }
-      } else {
-        ruleId = undefined;
       }
     }
 
-    if (!ruleId) {
+    const createdRuleIds: string[] = [];
+
+    for (const config of ruleConfigs) {
       try {
         const result = await createNotificationRule(api, bucketName, {
           queueId,
           queueName,
           eventTypes: props.eventTypes,
-          prefix: props.prefix,
-          suffix: props.suffix,
+          prefix: config.prefix,
+          suffix: config.suffix,
           description: props.description,
           jurisdiction,
         });
-        ruleId = result.ruleId;
+        createdRuleIds.push(result.ruleId);
       } catch (err) {
         const isConflictError =
           err instanceof CloudflareApiError &&
@@ -392,11 +499,11 @@ export const R2BucketNotification = Resource(
                 r.actions,
                 mapEventTypesToActions(props.eventTypes),
               ) &&
-              r.prefix === (props.prefix ?? "") &&
-              r.suffix === (props.suffix ?? ""),
+              r.prefix === config.prefix &&
+              r.suffix === config.suffix,
           );
           if (matchingRule) {
-            ruleId = matchingRule.ruleId;
+            createdRuleIds.push(matchingRule.ruleId);
           } else {
             throw err;
           }
@@ -408,7 +515,7 @@ export const R2BucketNotification = Resource(
 
     return {
       type: "r2_bucket_notification",
-      ruleId: ruleId!,
+      ruleId: createdRuleIds.length === 1 ? createdRuleIds[0] : createdRuleIds,
       bucketName,
       queueName,
       eventTypes: props.eventTypes,

@@ -64,6 +64,46 @@ await R2BucketNotification("pdf-uploads", {
 });
 ```
 
+## Multiple Suffixes
+
+Create rules for multiple file extensions at once. This creates separate notification rules for each suffix.
+
+```ts
+import { R2Bucket, Queue, R2BucketNotification } from "alchemy/cloudflare";
+
+const bucket = await R2Bucket("media");
+const queue = await Queue("audio-processing");
+
+await R2BucketNotification("audio-uploads", {
+  bucket,
+  queue,
+  eventTypes: ["object-create"],
+  prefix: "audio/",
+  suffix: [".mp3", ".wav", ".flac", ".aac"],
+});
+```
+
+## Multiple Prefixes
+
+Create rules for multiple directory paths at once. This creates separate notification rules for each prefix.
+
+```ts
+import { R2Bucket, Queue, R2BucketNotification } from "alchemy/cloudflare";
+
+const bucket = await R2Bucket("uploads");
+const queue = await Queue("file-processing");
+
+await R2BucketNotification("multi-path-uploads", {
+  bucket,
+  queue,
+  eventTypes: ["object-create"],
+  prefix: ["uploads/", "imports/", "temp/"],
+  suffix: ".json",
+});
+```
+
+> **Note:** Either `prefix` OR `suffix` can be an array, but not both at the same time.
+
 ## Multiple Event Types
 
 Listen for both create and delete events.

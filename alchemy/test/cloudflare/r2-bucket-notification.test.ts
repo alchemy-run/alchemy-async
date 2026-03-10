@@ -426,4 +426,124 @@ describe("R2BucketNotification Resource", () => {
       await destroy(scope);
     }
   });
+
+  test("notification with multiple suffixes creates multiple rules", async (scope) => {
+    let bucket: R2Bucket | undefined;
+    let queue: Queue | undefined;
+    let notification: R2BucketNotification | undefined;
+
+    try {
+      bucket = await R2Bucket(`${testId}-multi-suffix-bucket`, {
+        name: `${testId}-multi-suffix-bucket`,
+        adopt: true,
+      });
+
+      queue = await Queue<R2BucketNotificationMessage>(
+        `${testId}-multi-suffix-queue`,
+        {
+          name: `${testId}-multi-suffix-queue`,
+          adopt: true,
+        },
+      );
+
+      notification = await R2BucketNotification(
+        `${testId}-multi-suffix-notification`,
+        {
+          bucket,
+          queue,
+          eventTypes: ["object-create"],
+          prefix: "audio/",
+          suffix: [".mp3", ".wav", ".flac"],
+          adopt: true,
+        },
+      );
+
+      expect(notification.ruleId).toBeTruthy();
+      expect(Array.isArray(notification.ruleId)).toBe(true);
+      expect((notification.ruleId as string[]).length).toBe(3);
+      expect(notification.suffix).toEqual([".mp3", ".wav", ".flac"]);
+
+      const rules = await listR2BucketNotifications(api, bucket.name);
+      const ruleIds = notification.ruleId as string[];
+
+      const ourRules = rules.filter((r) => ruleIds.includes(r.ruleId));
+      expect(ourRules.length).toBe(3);
+
+      for (const ruleId of ruleIds) {
+        const foundRule = rules.find((r) => r.ruleId === ruleId);
+        expect(foundRule).toBeTruthy();
+        expect(foundRule?.prefix).toEqual("audio/");
+      }
+
+      const suffixes = ourRules.map((r) => r.suffix);
+      expect(suffixes).toContain(".mp3");
+      expect(suffixes).toContain(".wav");
+      expect(suffixes).toContain(".flac");
+    } catch (err) {
+      console.error("Multi suffix notification test error:", err);
+      throw err;
+    } finally {
+      await destroy(scope);
+    }
+  });
+
+  test("notification with multiple prefixes creates multiple rules", async (scope) => {
+    let bucket: R2Bucket | undefined;
+    let queue: Queue | undefined;
+    let notification: R2BucketNotification | undefined;
+
+    try {
+      bucket = await R2Bucket(`${testId}-multi-prefix-bucket`, {
+        name: `${testId}-multi-prefix-bucket`,
+        adopt: true,
+      });
+
+      queue = await Queue<R2BucketNotificationMessage>(
+        `${testId}-multi-prefix-queue`,
+        {
+          name: `${testId}-multi-prefix-queue`,
+          adopt: true,
+        },
+      );
+
+      notification = await R2BucketNotification(
+        `${testId}-multi-prefix-notification`,
+        {
+          bucket,
+          queue,
+          eventTypes: ["object-create"],
+          prefix: ["uploads/", "imports/", "temp/"],
+          suffix: ".json",
+          adopt: true,
+        },
+      );
+
+      expect(notification.ruleId).toBeTruthy();
+      expect(Array.isArray(notification.ruleId)).toBe(true);
+      expect((notification.ruleId as string[]).length).toBe(3);
+      expect(notification.prefix).toEqual(["uploads/", "imports/", "temp/"]);
+
+      const rules = await listR2BucketNotifications(api, bucket.name);
+      const ruleIds = notification.ruleId as string[];
+
+      const ourRules = rules.filter((r) => ruleIds.includes(r.ruleId));
+      expect(ourRules.length).toBe(3);
+
+      for (const ruleId of ruleIds) {
+        const foundRule = rules.find((r) => r.ruleId === ruleId);
+        expect(foundRule).toBeTruthy();
+        expect(foundRule?.suffix).toEqual(".json");
+      }
+
+      const prefixes = ourRules.map((r) => r.prefix);
+      expect(prefixes).toContain("uploads/");
+      expect(prefixes).toContain("imports/");
+      expect(prefixes).toContain("temp/");
+    } catch (err) {
+      console.error("Multi prefix notification test error:", err);
+      throw err;
+    } finally {
+      await destroy(scope);
+    }
+  });
 });
