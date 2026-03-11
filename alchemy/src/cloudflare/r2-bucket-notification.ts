@@ -509,9 +509,13 @@ export const R2BucketNotification = Resource(
         if (isConflictError && adopt) {
           const matchingRule = await withExponentialBackoff(
             async () => {
-              const existingRules = await listNotificationRules(api, bucketName, {
-                jurisdiction,
-              });
+              const existingRules = await listNotificationRules(
+                api,
+                bucketName,
+                {
+                  jurisdiction,
+                },
+              );
               const match = existingRules.find((r) =>
                 matchesNotificationRule(r, {
                   queueId,
@@ -530,7 +534,9 @@ export const R2BucketNotification = Resource(
             },
             (error) =>
               error instanceof Error &&
-              error.message.includes("Failed to find existing notification rule"),
+              error.message.includes(
+                "Failed to find existing notification rule",
+              ),
             5,
             1000,
           );
@@ -623,7 +629,8 @@ function matchesNotificationRule(
 ): boolean {
   return (
     (normalizeQueueId(rule.queueId) === normalizeQueueId(options.queueId) ||
-      (options.queueName !== undefined && rule.queueName === options.queueName)) &&
+      (options.queueName !== undefined &&
+        rule.queueName === options.queueName)) &&
     arraysEqual(rule.actions, mapEventTypesToActions(options.eventTypes)) &&
     rule.prefix === normalizeRuleFilter(options.prefix) &&
     rule.suffix === normalizeRuleFilter(options.suffix)
@@ -685,7 +692,8 @@ async function createNotificationRule(
       }
       return match;
     },
-    (error) => error instanceof Error && error.message.includes("Failed to find"),
+    (error) =>
+      error instanceof Error && error.message.includes("Failed to find"),
     5,
     1000,
   );
