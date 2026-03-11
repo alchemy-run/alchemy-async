@@ -507,18 +507,32 @@ export const R2BucketNotification = Resource(
               )));
 
         if (isConflictError && adopt) {
-          const existingRules = await listNotificationRules(api, bucketName, {
-            jurisdiction,
-          });
-          const matchingRule = existingRules.find(
-            (r) =>
-              r.queueName === queueName &&
-              arraysEqual(
-                r.actions,
-                mapEventTypesToActions(props.eventTypes),
-              ) &&
-              r.prefix === config.prefix &&
-              r.suffix === config.suffix,
+          const matchingRule = await withExponentialBackoff(
+            async () => {
+              const existingRules = await listNotificationRules(api, bucketName, {
+                jurisdiction,
+              });
+              const match = existingRules.find((r) =>
+                matchesNotificationRule(r, {
+                  queueId,
+                  queueName,
+                  eventTypes: props.eventTypes,
+                  prefix: config.prefix,
+                  suffix: config.suffix,
+                }),
+              );
+              if (!match) {
+                throw new Error(
+                  `Failed to find existing notification rule for bucket ${bucketName} and queue ${queueName}`,
+                );
+              }
+              return match;
+            },
+            (error) =>
+              error instanceof Error &&
+              error.message.includes("Failed to find existing notification rule"),
+            5,
+            1000,
           );
           if (matchingRule) {
             createdRuleIds.push(matchingRule.ruleId);
@@ -589,6 +603,33 @@ function arraysEqual(a: string[], b: string[]): boolean {
   );
 }
 
+function normalizeRuleFilter(value?: string): string {
+  return value ?? "";
+}
+
+function normalizeQueueId(queueId: string): string {
+  return queueId.replaceAll("-", "");
+}
+
+function matchesNotificationRule(
+  rule: NotificationRuleInfo,
+  options: {
+    queueId: string;
+    queueName?: string;
+    eventTypes: R2BucketNotificationEventType[];
+    prefix?: string;
+    suffix?: string;
+  },
+): boolean {
+  return (
+    (normalizeQueueId(rule.queueId) === normalizeQueueId(options.queueId) ||
+      (options.queueName !== undefined && rule.queueName === options.queueName)) &&
+    arraysEqual(rule.actions, mapEventTypesToActions(options.eventTypes)) &&
+    rule.prefix === normalizeRuleFilter(options.prefix) &&
+    rule.suffix === normalizeRuleFilter(options.suffix)
+  );
+}
+
 async function createNotificationRule(
   api: CloudflareApi,
   bucketName: string,
@@ -627,15 +668,26 @@ async function createNotificationRule(
     errors?: Array<{ code: number; message: string }>;
   };
 
-  const rules = await listNotificationRules(api, bucketName, {
-    jurisdiction: options.jurisdiction,
-  });
+  if (data.result?.event_notification_detail_id) {
+    return { ruleId: data.result.event_notification_detail_id };
+  }
 
-  const createdRule = rules.find(
-    (r) =>
-      r.queueName === options.queueName &&
-      r.prefix === (options.prefix ?? "") &&
-      r.suffix === (options.suffix ?? ""),
+  const createdRule = await withExponentialBackoff(
+    async () => {
+      const rules = await listNotificationRules(api, bucketName, {
+        jurisdiction: options.jurisdiction,
+      });
+      const match = rules.find((r) => matchesNotificationRule(r, options));
+      if (!match) {
+        throw new Error(
+          `Failed to find created notification rule for bucket ${bucketName} and queue ${options.queueName}`,
+        );
+      }
+      return match;
+    },
+    (error) => error instanceof Error && error.message.includes("Failed to find"),
+    5,
+    1000,
   );
 
   if (!createdRule) {
