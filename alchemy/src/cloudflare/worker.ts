@@ -1563,7 +1563,14 @@ async function provisionResources<B extends Bindings>(
     input.eventSources
       ? Promise.all(
           input.eventSources.map(async (eventSource) => {
-            return await QueueConsumer(`${eventSource.queue.id}-consumer`, {
+            // In local dev mode, queue.id is "" (no Cloudflare API call).
+            // Use queue.dev.id (resource ID, e.g. "email-queue") to avoid
+            // all consumers colliding on the same "-consumer" resource ID.
+            // See: https://github.com/alchemy-run/alchemy/issues/1363
+            const queueConsumerId = options.local
+              ? eventSource.queue.dev?.id || eventSource.queue.id
+              : eventSource.queue.id;
+            return await QueueConsumer(`${queueConsumerId}-consumer`, {
               queue: eventSource.queue,
               scriptName: options.name,
               settings: eventSource.settings,
