@@ -125,6 +125,7 @@ export async function libsodiumEncrypt(
   const cryptoKey = sodium.crypto_generichash(
     sodium.crypto_secretbox_KEYBYTES,
     sodium.from_string(key),
+    null,
   );
 
   // Generate a random nonce
@@ -165,6 +166,7 @@ export async function libsodiumDecrypt(
   const cryptoKey = sodium.crypto_generichash(
     sodium.crypto_secretbox_KEYBYTES,
     sodium.from_string(key),
+    null,
   );
 
   // Decode the base64 combined value
