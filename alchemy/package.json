@@ -195,7 +195,7 @@
     "glob": "^10.0.0",
     "jszip": "^3.0.0",
     "libsodium-wrappers": "^0.8.0",
-    "miniflare": "^4.20260120.0",
+    "miniflare": "4.20260310.0",
     "neverthrow": "^8.2.0",
     "open": "^10.1.2",
     "openapi-types": "^12.1.3",
