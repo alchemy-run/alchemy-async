@@ -24,6 +24,7 @@ import type { RateLimit } from "./rate-limit.ts";
 import type { SecretKey } from "./secret-key.ts";
 import type { SecretRef as CloudflareSecretRef } from "./secret-ref.ts";
 import type { Secret as CloudflareSecret } from "./secret.ts";
+import type { SendEmail } from "./send-email.ts";
 import type { VectorizeIndex } from "./vectorize-index.ts";
 import type { VersionMetadata } from "./version-metadata.ts";
 import type { VpcService } from "./vpc-service.ts";
@@ -70,6 +71,7 @@ export type Binding =
     }
   | Secret
   | SecretKey
+  | SendEmail
   | string
   | VectorizeIndex
   | Worker
@@ -138,6 +140,7 @@ export type WorkerBindingSpec =
   | WorkerBindingSecretText
   | WorkerBindingSecretsStore
   | WorkerBindingSecretsStoreSecret
+  | WorkerBindingSendEmail
   | WorkerBindingService
   | WorkerBindingStaticContent
   | WorkerBindingTailConsumer
@@ -408,6 +411,19 @@ export interface WorkerBindingSecretsStoreSecret {
   store_id: string;
   /** Secret name */
   secret_name: string;
+}
+
+export interface WorkerBindingSendEmail {
+  /* The kind of resource that the binding provides. */
+  type: "send_email";
+  /* A JavaScript variable name for the binding. */
+  name: string;
+  /* List of allowed destination addresses. */
+  allowed_destination_addresses?: Array<string>;
+  /* List of allowed sender addresses. */
+  allowed_sender_addresses?: Array<string>;
+  /* Destination address for the email. */
+  destination_address?: string;
 }
 
 /**

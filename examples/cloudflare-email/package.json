@@ -1,0 +1,19 @@
+{
+  "name": "cloudflare-email",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "tsc -b",
+    "deploy": "alchemy deploy --env-file ../../.env",
+    "destroy": "alchemy destroy --env-file ../../.env",
+    "dev": "alchemy dev --env-file ../../.env"
+  },
+  "dependencies": {
+    "mimetext": "^3.0.28"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "catalog:",
+    "alchemy": "workspace:*"
+  }
+}

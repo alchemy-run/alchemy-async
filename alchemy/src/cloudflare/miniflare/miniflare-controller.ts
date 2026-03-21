@@ -101,7 +101,7 @@ export class MiniflareController {
         unsafeDevRegistryPath: miniflare.getDefaultDevRegistryPath(),
         log: process.env.DEBUG
           ? new miniflare.Log(miniflare.LogLevel.DEBUG)
-          : undefined,
+          : new DefaultLogger(),
         // This is required to allow websites and other separate processes
         // to detect Alchemy-managed Durable Objects via the Wrangler dev registry.
         unsafeDevRegistryDurableObjectProxy: true,
@@ -168,5 +168,24 @@ export class MiniflareController {
       ...this.localProxies.values().map((proxy) => proxy.close()),
       ...this.remoteProxies.values().map((proxy) => proxy.close()),
     ]);
+  }
+}
+
+class DefaultLogger extends miniflare.Log {
+  constructor() {
+    // The "info" level is used to log outgoing messages from the `send_email` binding:
+    // https://github.com/cloudflare/workers-sdk/blob/9dd447b8ba8f7c317ddf98d0c52d67352022896b/packages/miniflare/src/workers/email/send_email.worker.ts#L64
+    super(miniflare.LogLevel.INFO);
+  }
+
+  override info(message: string) {
+    // Alchemy does its own logging and the port is different from the one
+    // used by Miniflare, so suppress those messages to avoid confusion.
+    if (
+      message.startsWith("Ready on") ||
+      message.startsWith("Updated and ready on")
+    )
+      return;
+    super.info(message);
   }
 }

@@ -18,6 +18,7 @@ import type { RateLimit as _RateLimit } from "./rate-limit.ts";
 import type { SecretKey } from "./secret-key.ts";
 import type { SecretRef as CloudflareSecretRef } from "./secret-ref.ts";
 import type { Secret as CloudflareSecret } from "./secret.ts";
+import type { SendEmail as _SendEmail } from "./send-email.ts";
 import type { VectorizeIndex as _VectorizeIndex } from "./vectorize-index.ts";
 import type { VersionMetadata as _VersionMetadata } from "./version-metadata.ts";
 import type { VpcService as _VpcService } from "./vpc-service.ts";
@@ -106,8 +107,10 @@ export type Bound<T extends Binding> =
                                                                 Obj &
                                                                   Rpc.DurableObjectBranded
                                                               >
-                                                            : T extends _VpcService
-                                                              ? Fetcher
-                                                              : T extends undefined
-                                                                ? undefined
-                                                                : Service;
+                                                            : T extends _SendEmail
+                                                              ? SendEmail
+                                                              : T extends _VpcService
+                                                                ? Fetcher
+                                                                : T extends undefined
+                                                                  ? undefined
+                                                                  : Service;

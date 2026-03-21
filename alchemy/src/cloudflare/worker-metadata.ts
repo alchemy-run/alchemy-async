@@ -626,6 +626,20 @@ export async function prepareWorkerMetadata(
         namespace_id: binding.namespace_id.toString(),
         simple: binding.simple,
       });
+    } else if (binding.type === "send_email") {
+      meta.bindings.push({
+        type: "send_email",
+        name: bindingName,
+        allowed_destination_addresses:
+          "allowedDestinationAddresses" in binding
+            ? binding.allowedDestinationAddresses
+            : undefined,
+        allowed_sender_addresses: binding.allowedSenderAddresses,
+        destination_address:
+          "destinationAddress" in binding
+            ? binding.destinationAddress
+            : undefined,
+      });
     } else if (binding.type === "vpc_service") {
       meta.bindings.push({
         type: "vpc_service",

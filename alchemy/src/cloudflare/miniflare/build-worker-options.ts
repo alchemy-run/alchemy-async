@@ -50,7 +50,10 @@ type RemoteBinding =
       }
     > & { raw: true })
   // Fetcher type bindings do not require the `raw` flag and will throw an error if it is present.
-  | Extract<WorkerBindingSpec, { type: "service" | "vpc_service" }>;
+  | Extract<
+      WorkerBindingSpec,
+      { type: "send_email" | "service" | "vpc_service" }
+    >;
 
 type BaseWorkerOptions = {
   [K in keyof miniflare.WorkerOptions]: K extends
@@ -271,6 +274,35 @@ export const buildWorkerOptions = async (
         };
         break;
       }
+      case "send_email": {
+        const properties = {
+          name: key,
+          ...("allowedSenderAddresses" in binding
+            ? {
+                allowed_sender_addresses: binding.allowedSenderAddresses,
+              }
+            : {}),
+          ...("allowedDestinationAddresses" in binding
+            ? {
+                allowed_destination_addresses:
+                  binding.allowedDestinationAddresses,
+              }
+            : "destinationAddress" in binding
+              ? {
+                  destination_address: binding.destinationAddress,
+                }
+              : {}),
+        };
+        if (isRemoteBinding(binding)) {
+          remoteBindings.push({
+            type: "send_email",
+            ...properties,
+          });
+        } else {
+          (options.email ??= { send_email: [] }).send_email!.push(properties);
+        }
+        break;
+      }
       case "r2_bucket": {
         if (isRemoteBinding(binding)) {
           remoteBindings.push({
@@ -440,6 +472,23 @@ export const buildWorkerOptions = async (
             id: binding.bucket_name,
             remoteProxyConnectionString: remoteProxy.connectionString,
           };
+          break;
+        case "send_email":
+          (options.email ??= { send_email: [] }).send_email!.push({
+            name: binding.name,
+            allowed_sender_addresses: binding.allowed_sender_addresses,
+            ...("allowed_destination_addresses" in binding
+              ? {
+                  allowed_destination_addresses:
+                    binding.allowed_destination_addresses,
+                }
+              : "destination_address" in binding
+                ? {
+                    destination_address: binding.destination_address,
+                  }
+                : {}),
+            remoteProxyConnectionString: remoteProxy.connectionString,
+          });
           break;
         case "service":
           (options.serviceBindings ??= {})[binding.name] = {

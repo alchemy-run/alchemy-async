@@ -284,6 +284,7 @@ async function processBindings(
   const pipelines: WranglerJsonConfig["pipelines"] = [];
   const secretsStoreSecrets: WranglerJsonConfig["secrets_store_secrets"] = [];
   const dispatchNamespaces: WranglerJsonConfig["dispatch_namespaces"] = [];
+  const sendEmails: WranglerJsonConfig["send_email"] = [];
   const ratelimits: WranglerJsonConfig["ratelimits"] = [];
   const containers: WranglerJsonConfig["containers"] = [];
   const workerLoaders: WranglerJsonConfig["worker_loaders"] = [];
@@ -510,6 +511,22 @@ async function processBindings(
       });
     } else if (binding.type === "secret_key") {
       // no-op
+    } else if (binding.type === "send_email") {
+      sendEmails.push({
+        name: bindingName,
+        allowed_sender_addresses: binding.allowedSenderAddresses,
+        ...("allowedDestinationAddresses" in binding
+          ? {
+              allowed_destination_addresses:
+                binding.allowedDestinationAddresses,
+            }
+          : "destinationAddress" in binding
+            ? {
+                destination_address: binding.destinationAddress,
+              }
+            : {}),
+        ...(binding.dev?.remote ? { remote: true } : {}),
+      });
     } else if (binding.type === "container") {
       durableObjects.push({
         name: bindingName,
@@ -620,6 +637,10 @@ async function processBindings(
 
   if (containers.length > 0) {
     spec.containers = containers;
+  }
+
+  if (sendEmails.length > 0) {
+    spec.send_email = sendEmails;
   }
 
   if (ratelimits.length > 0) {
