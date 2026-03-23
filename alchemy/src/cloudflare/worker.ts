@@ -208,6 +208,14 @@ export interface BaseWorkerProps<
   logpush?: boolean;
 
   /**
+   * Whether to delete the worker when removed from Alchemy.
+   * If set to false, the worker will remain but the resource will be removed from state.
+   *
+   * @default true
+   */
+  delete?: boolean;
+
+  /**
    * Whether to adopt the Worker if it already exists when creating
    */
   adopt?: boolean;
@@ -939,6 +947,14 @@ export type Worker<
  * // The worker will have a preview URL for testing:
  * console.log(`Preview URL: ${previewWorker.url}`);
  * // Output: Preview URL: https://pr-123-my-worker.subdomain.workers.dev
+ *
+ * @example
+ * // Prevent deletion of the worker when removed from Alchemy:
+ * const worker = await Worker("critical-api", {
+ *   name: "critical-api",
+ *   entrypoint: "./src/api.ts",
+ *   delete: false
+ * });
  */
 export function Worker<
   const B extends Bindings,
@@ -1104,7 +1120,7 @@ const _Worker = Resource(
         durableObjects: options.durableObjects,
         workflows: options.workflows,
       });
-      if (this.output?.dev?.hasRemote !== false) {
+      if (props.delete !== false && this.output?.dev?.hasRemote !== false) {
         const api = await createCloudflareApi(props);
         if (props.version) {
           //* if the worker exists we deploy an empty version so we can destroy

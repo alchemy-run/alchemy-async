@@ -1055,6 +1055,22 @@ export default {
 **Preview URL Limitations:** Use routes/domains for Durable Objects and production traffic. See [Cloudflare Docs - Previews Limitations](https://developers.cloudflare.com/workers/configuration/previews/#limitations) for details.
 **Performance Issues:** Enable smart placement, increase CPU limits, use global scope initialization, cache data in KV, minimize cold starts.
 
+## Prevent Deletion
+
+By default, destroying an Alchemy scope deletes the Worker from Cloudflare. Set `delete: false` to remove the resource from Alchemy state without deleting the actual Worker:
+
+```ts
+import { Worker } from "alchemy/cloudflare";
+
+const worker = await Worker("api", {
+  name: "api-worker",
+  entrypoint: "./src/api.ts",
+  delete: false,
+});
+```
+
+This is useful when you want to hand off management of a Worker to another tool or process, or to prevent accidental deletion of critical infrastructure.
+
 ## Next steps
 
 - Static Assets: See [Assets](/providers/cloudflare/assets)

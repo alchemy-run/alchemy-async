@@ -2688,6 +2688,45 @@ describe("Worker Resource", () => {
     }
   });
 
+  test("delete false preserves worker on destroy", async (scope) => {
+    const workerName = `${BRANCH_PREFIX}-test-worker-delete-false`;
+
+    try {
+      // Create a worker with delete: false inside a nested scope
+      await alchemy.run("nested-delete-false", async (nestedScope) => {
+        const worker = await Worker(workerName, {
+          name: workerName,
+          adopt: true,
+          delete: false,
+          script: `
+            export default {
+              async fetch(request, env, ctx) {
+                return new Response('Hello from preserved worker!', { status: 200 });
+              }
+            };
+          `,
+          format: "esm",
+        });
+
+        expect(worker.id).toBeTruthy();
+        expect(worker.name).toEqual(workerName);
+
+        // Destroy the nested scope - should NOT delete the worker from Cloudflare
+        await alchemy.destroy(nestedScope);
+
+        // Verify the worker still exists via API after destroy
+        const response = await api.get(
+          `/accounts/${api.accountId}/workers/scripts/${workerName}`,
+        );
+        expect(response.status).toEqual(200);
+      });
+    } finally {
+      // Manual cleanup since delete: false preserved the worker
+      await deleteWorker(api, { scriptName: workerName });
+      await destroy(scope);
+    }
+  });
+
   test("create worker with subdomain binding", async (scope) => {
     const workerName = `${BRANCH_PREFIX}-test-worker-subdomain`;
 
