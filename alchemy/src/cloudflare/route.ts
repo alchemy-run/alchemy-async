@@ -50,6 +50,14 @@ export interface RouteProps extends CloudflareApiOptions {
   adopt?: boolean;
 
   /**
+   * Whether to delete the route when removed from Alchemy.
+   * If set to false, the route will remain but the resource will be removed from state.
+   *
+   * @default true
+   */
+  delete?: boolean;
+
+  /**
    * If true, the route will not be created, but will be retained if it already exists.
    * This is used for local development.
    *
@@ -151,7 +159,7 @@ export const Route = Resource(
 
       // Only delete if we have complete output data (both ID and zoneId)
       // If creation failed, we won't have proper output, so just skip deletion
-      if (this.output?.id && this.output?.zoneId) {
+      if (props.delete !== false && this.output?.id && this.output?.zoneId) {
         await deleteRoute(api, this.output.zoneId, this.output.id);
       }
 

@@ -411,6 +411,14 @@ export interface ContainerApplicationProps extends CloudflareApiOptions {
   adopt?: boolean;
 
   /**
+   * Whether to delete the container application when removed from Alchemy.
+   * If set to false, the container application will remain but the resource will be removed from state.
+   *
+   * @default true
+   */
+  delete?: boolean;
+
+  /**
    * If true, the container application will not be created, but will be retained if it already exists.
    * This is used for local development.
    *
@@ -557,7 +565,7 @@ export const ContainerApplication = Resource(
 
     const api = await createCloudflareApi(props);
     if (this.phase === "delete") {
-      if (this.output?.id) {
+      if (props.delete !== false && this.output?.id) {
         // Delete the container application
         await deleteContainerApplication(api, this.output.id);
       }

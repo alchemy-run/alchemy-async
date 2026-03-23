@@ -45,6 +45,14 @@ export interface CustomDomainProps extends CloudflareApiOptions {
   adopt?: boolean;
 
   /**
+   * Whether to delete the custom domain when removed from Alchemy.
+   * If set to false, the custom domain will remain but the resource will be removed from state.
+   *
+   * @default true
+   */
+  delete?: boolean;
+
+  /**
    * If true, the custom domain will not be created, but will be retained if it already exists.
    * This is used for local development.
    *
@@ -137,7 +145,9 @@ export const CustomDomain = Resource(
     const api = await createCloudflareApi(props);
 
     if (this.phase === "delete") {
-      await deleteCustomDomain(this, api, logicalId, props);
+      if (props.delete !== false) {
+        await deleteCustomDomain(this, api, logicalId, props);
+      }
       return this.destroy();
     }
 

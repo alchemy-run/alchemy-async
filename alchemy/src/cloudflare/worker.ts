@@ -1556,6 +1556,7 @@ async function provisionResources<B extends Bindings>(
               durableObjects: {
                 namespaceId: await getContainerNamespaceId(container),
               },
+              delete: props.delete,
               dev: options.local,
               ...input.api,
             });
@@ -1569,6 +1570,7 @@ async function provisionResources<B extends Bindings>(
               name: domain.name,
               zoneId: domain.zoneId,
               adopt: domain.adopt,
+              delete: props.delete,
               workerName: options.name,
               dev: options.local,
               ...input.api,
@@ -1591,6 +1593,7 @@ async function provisionResources<B extends Bindings>(
               scriptName: options.name,
               settings: eventSource.settings,
               adopt: props.adopt,
+              delete: props.delete,
               dev: options.local,
               ...input.api,
             });
@@ -1605,6 +1608,7 @@ async function provisionResources<B extends Bindings>(
               script: options.name,
               zoneId: route.zoneId,
               adopt: route.adopt,
+              delete: props.delete,
               dev: options.local,
               ...input.api,
             });

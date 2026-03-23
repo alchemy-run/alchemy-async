@@ -28,6 +28,10 @@ import { assertWorkerDoesNotExist } from "./test-helpers.ts";
 import { Container } from "../../src/cloudflare/container.ts";
 import { listWorkersInNamespace } from "../../src/cloudflare/dispatch-namespace.ts";
 import { DispatchNamespace, Queue } from "../../src/cloudflare/index.ts";
+import {
+  deleteQueueConsumer,
+  listQueueConsumersForWorker,
+} from "../../src/cloudflare/queue-consumer.ts";
 import "../../src/test/vitest.ts";
 
 const ENABLE_WFP_TESTS = process.env.CLOUDFLARE_ACCOUNT_ENABLE_WFP !== "false";
@@ -2688,10 +2692,20 @@ describe("Worker Resource", () => {
     }
   });
 
-  test("delete false preserves worker on destroy", async (scope) => {
+  test("delete false preserves worker and queue consumer on destroy", async (scope) => {
     const workerName = `${BRANCH_PREFIX}-test-worker-delete-false`;
+    const queueName = `${BRANCH_PREFIX}-delete-false-queue`;
+    let queue: Queue | undefined;
 
     try {
+      // Create a queue first (outside the nested scope so we can verify after destroy)
+      queue = await Queue("delete-false-queue", {
+        name: queueName,
+        adopt: true,
+      });
+
+      expect(queue.id).toBeTruthy();
+
       // Create a worker with delete: false inside a nested scope
       await alchemy.run("nested-delete-false", async (nestedScope) => {
         const worker = await Worker(workerName, {
@@ -2702,27 +2716,56 @@ describe("Worker Resource", () => {
             export default {
               async fetch(request, env, ctx) {
                 return new Response('Hello from preserved worker!', { status: 200 });
+              },
+              async queue(batch, env, ctx) {
+                for (const message of batch.messages) {
+                  message.ack();
+                }
               }
             };
           `,
           format: "esm",
+          bindings: {
+            QUEUE: queue!,
+          },
+          eventSources: [queue!],
         });
 
         expect(worker.id).toBeTruthy();
         expect(worker.name).toEqual(workerName);
 
-        // Destroy the nested scope - should NOT delete the worker from Cloudflare
+        // Destroy the nested scope - should NOT delete the worker or its queue consumer from Cloudflare
         await alchemy.destroy(nestedScope);
 
         // Verify the worker still exists via API after destroy
-        const response = await api.get(
+        const workerResponse = await api.get(
           `/accounts/${api.accountId}/workers/scripts/${workerName}`,
         );
-        expect(response.status).toEqual(200);
+        expect(workerResponse.status).toEqual(200);
+
+        // Verify the queue consumer still exists after destroy
+        const consumers = await listQueueConsumersForWorker(api, workerName);
+        const ourConsumer = consumers.find((c) => c.queueId === queue!.id);
+        expect(ourConsumer).toBeTruthy();
       });
     } finally {
-      // Manual cleanup since delete: false preserved the worker
-      await deleteWorker(api, { scriptName: workerName });
+      // Manual cleanup since delete: false preserved everything
+      try {
+        // Delete queue consumers first (Cloudflare requires this before worker deletion)
+        const consumers = await listQueueConsumersForWorker(api, workerName);
+        await Promise.all(
+          consumers.map((c) =>
+            deleteQueueConsumer(api, c.queueId, c.consumerId),
+          ),
+        );
+      } catch {
+        // ignore if already cleaned up
+      }
+      try {
+        await deleteWorker(api, { scriptName: workerName });
+      } catch {
+        // ignore if already cleaned up
+      }
       await destroy(scope);
     }
   });
