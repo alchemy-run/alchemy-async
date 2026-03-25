@@ -25,6 +25,11 @@ jobs:
         with:
           bun-version: latest
 
+      - name: Install dependencies
+        shell: bash
+        run: |
+          bun install
+
       - name: Cache Astro cache
         uses: actions/cache@v4
         with:
