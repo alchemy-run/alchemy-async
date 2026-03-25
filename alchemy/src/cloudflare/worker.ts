@@ -1250,45 +1250,49 @@ const _Worker = Resource(
 
     let result: PutWorkerResult;
 
+    // cloudflare has awkward sequencing requirements for modifying subdomains
+    // because conflicts with Durable Objects and preview_enabled is stateful
+    // to solve this, we try and do both in parallel and push them through
+    const bruteForce = <T>(operation: () => Promise<T>) =>
+      withExponentialBackoff(
+        operation,
+        (error) => {
+          operation;
+          return (
+            error instanceof CloudflareApiError &&
+            error.status === 400 &&
+            error.message.includes(
+              "Cannot use Durable Objects with Preview URLs",
+            )
+          );
+        },
+        10,
+        100,
+        1000,
+      );
+
     if (this.scope.watch) {
       const controller = new AbortController();
-      result = await watchWorker(api, props, {
-        id,
-        name: options.name,
-        dispatchNamespace: options.dispatchNamespace,
-        bundle,
-        compatibilityDate: options.compatibilityDate,
-        compatibilityFlags: options.compatibilityFlags,
-        version: props.version,
-        assets,
-        controller,
-      });
+      [result] = await Promise.all([
+        watchWorker(api, props, {
+          id,
+          name: options.name,
+          dispatchNamespace: options.dispatchNamespace,
+          bundle,
+          compatibilityDate: options.compatibilityDate,
+          compatibilityFlags: options.compatibilityFlags,
+          version: props.version,
+          assets,
+          controller,
+        }),
+        bruteForce(updateSubdomain),
+      ]);
       this.onCleanup(() => controller.abort());
       const tail = await createTail(api, id, options.name).catch((error) => {
         logger.error(`Failed to create tail for ${options.name}`, error);
       });
       this.onCleanup(() => tail?.close());
     } else {
-      // cloudflare has awkward sequencing requirements for modifying subdomains
-      // because conflicts with Durable Objects and preview_enabled is stateful
-      // to solve this, we try and do both in parallel and push them through
-      const bruteForce = <T>(operation: () => Promise<T>) =>
-        withExponentialBackoff(
-          operation,
-          (error) => {
-            operation;
-            return (
-              error instanceof CloudflareApiError &&
-              error.status === 400 &&
-              error.message.includes(
-                "Cannot use Durable Objects with Preview URLs",
-              )
-            );
-          },
-          10,
-          100,
-          1000,
-        );
       const scriptBundle = await bundle.create();
       const [_, _result] = await Promise.all([
         bruteForce(updateSubdomain),
