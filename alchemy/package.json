@@ -1,6 +1,6 @@
 {
   "name": "alchemy",
-  "version": "0.89.0",
+  "version": "0.90.0",
   "license": "Apache-2.0",
   "author": "Sam Goodwin <sam@alchemy.run>",
   "homepage": "https://alchemy.run",
@@ -195,7 +195,7 @@
     "glob": "^10.0.0",
     "jszip": "^3.0.0",
     "libsodium-wrappers": "^0.8.0",
-    "miniflare": "^4.20260120.0",
+    "miniflare": "4.20260310.0",
     "neverthrow": "^8.2.0",
     "open": "^10.1.2",
     "openapi-types": "^12.1.3",

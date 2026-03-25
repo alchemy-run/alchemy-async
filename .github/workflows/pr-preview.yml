@@ -20,12 +20,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Setup Alchemy Environment
-        uses: ./.github/actions/setup-alchemy
-        with:
-          aws-role-arn: ${{ secrets.AWS_ROLE_ARN }}
-          aws-region: us-west-2
-
       - name: Cache Astro cache
         uses: actions/cache@v4
         with:
@@ -62,12 +56,6 @@ jobs:
       pull-requests: write
     steps:
       - uses: actions/checkout@v4
-
-      - name: Setup Alchemy Environment
-        uses: ./.github/actions/setup-alchemy
-        with:
-          aws-role-arn: ${{ secrets.AWS_ROLE_ARN }}
-          aws-region: us-west-2
 
       - name: Cleanup Website Preview
         run: |

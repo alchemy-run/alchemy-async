@@ -1,3 +1,19 @@
+## v0.90.0
+
+### &nbsp;&nbsp;&nbsp;🚀 Features
+
+- Add delete: false support to DnsRecords resource &nbsp;-&nbsp; by **Gareth Andrew** in https://github.com/alchemy-run/alchemy/issues/1360 [<samp>(822a8)</samp>](https://github.com/alchemy-run/alchemy/commit/822a883b)
+
+### &nbsp;&nbsp;&nbsp;🐞 Bug Fixes
+
+- **cloudflare**:
+  - Use queue dev.id for consumer resource ID in local dev mode &nbsp;-&nbsp; by **Yanqi Zong** in https://github.com/alchemy-run/alchemy/issues/1364 [<samp>(7879a)</samp>](https://github.com/alchemy-run/alchemy/commit/7879aff8)
+  - Pin miniflare version to fix container issue &nbsp;-&nbsp; by **John Royal** in https://github.com/alchemy-run/alchemy/issues/1366 [<samp>(9a824)</samp>](https://github.com/alchemy-run/alchemy/commit/9a82410e)
+
+##### &nbsp;&nbsp;&nbsp;&nbsp;[View changes on GitHub](https://github.com/alchemy-run/alchemy/compare/v0.89.0...v0.90.0)
+
+---
+
 ## v0.89.0
 
 *No significant changes*

@@ -9,8 +9,8 @@
   },
   "workspaces": {
     "catalog": {
-      "@cloudflare/containers": "^0.0.30",
-      "@cloudflare/workers-types": "^4.20260124.0",
+      "@cloudflare/containers": "^0.1.1",
+      "@cloudflare/workers-types": "^4.20260317.1",
       "@cloudflare/vite-plugin": "^1.21.2",
       "vite": "^7.1.9",
       "typescript": "^5.8.3",

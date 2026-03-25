@@ -19,18 +19,22 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v1
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        shell: bash
+        run: |
+          bun install
+
       - name: Cache Astro resources
         uses: actions/cache@v4
         with:
           path: |
             alchemy-web/.astro
           key: ${{ runner.os }}-astro-cache
-
-      - name: Setup Alchemy Environment
-        uses: ./.github/actions/setup-alchemy
-        with:
-          aws-role-arn: ${{ secrets.AWS_ROLE_ARN }}
-          aws-region: us-west-2
 
       - name: Get Astro version
         id: astro-version
