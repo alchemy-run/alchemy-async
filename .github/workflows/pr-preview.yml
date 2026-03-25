@@ -20,11 +20,15 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Setup Alchemy Environment
-        uses: ./.github/actions/setup-alchemy
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v1
         with:
-          aws-role-arn: ${{ secrets.AWS_ROLE_ARN }}
-          aws-region: us-west-2
+          bun-version: latest
+
+      - name: Install dependencies
+        shell: bash
+        run: |
+          bun install
 
       - name: Cache Astro cache
         uses: actions/cache@v4
@@ -52,6 +56,7 @@ jobs:
           GITHUB_SHA: ${{ github.event.pull_request.head.sha }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           PULL_REQUEST: ${{ github.event.pull_request.number }}
+          DO_NOT_TRACK: 1
 
   cleanup-preview:
     if: (github.event.action == 'closed' && github.event.pull_request.head.repo.full_name == github.repository)
@@ -62,12 +67,6 @@ jobs:
       pull-requests: write
     steps:
       - uses: actions/checkout@v4
-
-      - name: Setup Alchemy Environment
-        uses: ./.github/actions/setup-alchemy
-        with:
-          aws-role-arn: ${{ secrets.AWS_ROLE_ARN }}
-          aws-region: us-west-2
 
       - name: Cleanup Website Preview
         run: |
@@ -86,3 +85,4 @@ jobs:
           GITHUB_SHA: ${{ github.event.pull_request.head.sha }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           PULL_REQUEST: ${{ github.event.pull_request.number }}
+          DO_NOT_TRACK: 1
