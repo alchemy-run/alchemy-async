@@ -4,12 +4,16 @@ import type { Bindings } from "../bindings.ts";
 import { Vite, type ViteProps } from "../vite/vite.ts";
 import type { Worker } from "../worker.ts";
 
-export interface SvelteKitProps<B extends Bindings> extends ViteProps<B> {}
+export interface SvelteKitProps<
+  B extends Bindings,
+  RPC extends Rpc.WorkerEntrypointBranded = Rpc.WorkerEntrypointBranded,
+> extends ViteProps<B, RPC> {}
 
 // don't allow the ASSETS to be overriden
-export type SvelteKit<B extends Bindings> = B extends { ASSETS: any }
-  ? never
-  : Worker<B & { ASSETS: Assets }>;
+export type SvelteKit<
+  B extends Bindings,
+  RPC extends Rpc.WorkerEntrypointBranded = Rpc.WorkerEntrypointBranded,
+> = B extends { ASSETS: any } ? never : Worker<B & { ASSETS: Assets }, RPC>;
 
 /**
  * Deploy a SvelteKit application to Cloudflare Workers with automatically configured defaults.
@@ -47,10 +51,13 @@ export type SvelteKit<B extends Bindings> = B extends { ASSETS: any }
  * @param props - Configuration properties for the SvelteKit deployment
  * @returns A Cloudflare Worker resource representing the deployed SvelteKit application
  */
-export async function SvelteKit<B extends Bindings>(
+export async function SvelteKit<
+  B extends Bindings,
+  RPC extends Rpc.WorkerEntrypointBranded = Rpc.WorkerEntrypointBranded,
+>(
   id: string,
-  props?: Partial<SvelteKitProps<B>>,
-): Promise<SvelteKit<B>> {
+  props?: Partial<SvelteKitProps<B, RPC>>,
+): Promise<SvelteKit<B, RPC>> {
   if (props?.compatibilityDate) {
     const providedDate = new Date(props.compatibilityDate);
     const minDate = new Date("2024-09-23");

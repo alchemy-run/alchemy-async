@@ -4,12 +4,16 @@ import type { Bindings } from "../bindings.ts";
 import { Vite, type ViteProps } from "../vite/vite.ts";
 import type { Worker } from "../worker.ts";
 
-export interface RedwoodProps<B extends Bindings> extends ViteProps<B> {}
+export interface RedwoodProps<
+  B extends Bindings,
+  RPC extends Rpc.WorkerEntrypointBranded = Rpc.WorkerEntrypointBranded,
+> extends ViteProps<B, RPC> {}
 
 // don't allow the ASSETS to be overridden
-export type Redwood<B extends Bindings> = B extends { ASSETS: any }
-  ? never
-  : Worker<B & { ASSETS: Assets }>;
+export type Redwood<
+  B extends Bindings,
+  RPC extends Rpc.WorkerEntrypointBranded = Rpc.WorkerEntrypointBranded,
+> = B extends { ASSETS: any } ? never : Worker<B & { ASSETS: Assets }, RPC>;
 
 /**
  * Deploy a RedwoodJS application to Cloudflare Workers with automatically configured defaults.
@@ -37,10 +41,10 @@ export type Redwood<B extends Bindings> = B extends { ASSETS: any }
  * @param props - Configuration properties for the RedwoodJS deployment
  * @returns A Cloudflare Worker resource representing the deployed RedwoodJS application
  */
-export async function Redwood<B extends Bindings>(
-  id: string,
-  props?: Partial<RedwoodProps<B>>,
-): Promise<Redwood<B>> {
+export async function Redwood<
+  B extends Bindings,
+  RPC extends Rpc.WorkerEntrypointBranded = Rpc.WorkerEntrypointBranded,
+>(id: string, props?: Partial<RedwoodProps<B, RPC>>): Promise<Redwood<B, RPC>> {
   return await Vite(id, {
     ...props,
     build: props?.build ?? {

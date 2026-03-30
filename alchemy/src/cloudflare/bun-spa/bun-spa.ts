@@ -14,7 +14,10 @@ import {
   type WebsiteProps,
 } from "../website.ts";
 
-export interface BunSPAProps<B extends Bindings> extends WebsiteProps<B> {
+export interface BunSPAProps<
+  B extends Bindings,
+  RPC extends Rpc.WorkerEntrypointBranded = Rpc.WorkerEntrypointBranded,
+> extends WebsiteProps<B, RPC> {
   /**
    * The path to the frontend entrypoints that bun should bundle for deployment & serve in dev mode.
    * These are usually html files. Glob patterns are supported.
@@ -24,12 +27,18 @@ export interface BunSPAProps<B extends Bindings> extends WebsiteProps<B> {
   outDir?: string;
 }
 
-export type BunSPA<B extends Bindings> = Website<B> & { apiUrl: string };
+export type BunSPA<
+  B extends Bindings,
+  RPC extends Rpc.WorkerEntrypointBranded = Rpc.WorkerEntrypointBranded,
+> = Website<B, RPC> & { apiUrl: string };
 
-export async function BunSPA<B extends Bindings>(
+export async function BunSPA<
+  B extends Bindings,
+  RPC extends Rpc.WorkerEntrypointBranded = Rpc.WorkerEntrypointBranded,
+>(
   id: string,
-  props: BunSPAProps<B>,
-): Promise<BunSPA<B> & { apiUrl: string }> {
+  props: BunSPAProps<B, RPC>,
+): Promise<BunSPA<B, RPC> & { apiUrl: string }> {
   const frontendPaths = Array.isArray(props.frontend)
     ? props.frontend.map((p) => path.resolve(p))
     : [path.resolve(props.frontend)];
@@ -132,7 +141,7 @@ export async function BunSPA<B extends Bindings>(
       },
     });
   }
-  return { ...website, apiUrl } as BunSPA<B>;
+  return { ...website, apiUrl } as BunSPA<B, RPC>;
 }
 
 async function validateBunfigToml(cwd: string): Promise<void> {

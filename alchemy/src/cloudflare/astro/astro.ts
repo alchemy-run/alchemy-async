@@ -15,10 +15,10 @@ import type { Worker } from "../worker.ts";
  * Properties for creating an Astro resource.
  * Extends WebsiteProps, allowing customization of the underlying Website.
  */
-export interface AstroProps<B extends Bindings> extends Omit<
-  WebsiteProps<B>,
-  "spa"
-> {
+export interface AstroProps<
+  B extends Bindings,
+  RPC extends Rpc.WorkerEntrypointBranded = Rpc.WorkerEntrypointBranded,
+> extends Omit<WebsiteProps<B, RPC>, "spa"> {
   output?: "server" | "static";
 }
 
@@ -27,9 +27,10 @@ export interface AstroProps<B extends Bindings> extends Omit<
  * It resolves to the underlying Cloudflare Worker type, ensuring type safety.
  * Prevents overriding the internal ASSETS binding.
  */
-export type Astro<B extends Bindings> = B extends { ASSETS: any }
-  ? never
-  : Worker<B & { ASSETS: Assets }>;
+export type Astro<
+  B extends Bindings,
+  RPC extends Rpc.WorkerEntrypointBranded = Rpc.WorkerEntrypointBranded,
+> = B extends { ASSETS: any } ? never : Worker<B & { ASSETS: Assets }, RPC>;
 
 /**
  * Creates and deploys an Astro application using the Cloudflare adapter.
@@ -72,14 +73,14 @@ export type Astro<B extends Bindings> = B extends { ASSETS: any }
  * });
  * ```
  */
-export async function Astro<B extends Bindings>(
-  id: string,
-  props: AstroProps<B> = {},
-): Promise<Astro<B>> {
+export async function Astro<
+  B extends Bindings,
+  RPC extends Rpc.WorkerEntrypointBranded = Rpc.WorkerEntrypointBranded,
+>(id: string, props: AstroProps<B, RPC> = {}): Promise<Astro<B, RPC>> {
   const cwd = resolve(props.cwd ?? process.cwd());
   const output = props.output ?? (await resolveOutputType(cwd));
   const runner = await getPackageManagerRunner();
-  return await Website(id, {
+  return (await Website(id, {
     ...props,
     noBundle: props.noBundle ?? true,
     build: spreadBuildProps(props, `${runner} astro build`),
@@ -89,7 +90,7 @@ export async function Astro<B extends Bindings>(
       (output === "server" ? "dist/_worker.js/index.js" : undefined),
     assets: props.assets ?? "dist",
     spa: false,
-  });
+  })) as Astro<B, RPC>;
 }
 
 async function resolveOutputType(cwd: string): Promise<"server" | "static"> {

@@ -18,10 +18,10 @@ import { computeWorkerDevDomain } from "./worker-subdomain.ts";
 import { type AssetsConfig, Worker, type WorkerProps } from "./worker.ts";
 import { WranglerJson, type WranglerJsonSpec } from "./wrangler.json.ts";
 
-export interface WebsiteProps<B extends Bindings> extends Omit<
-  WorkerProps<B>,
-  "assets" | "dev"
-> {
+export interface WebsiteProps<
+  B extends Bindings,
+  RPC extends Rpc.WorkerEntrypointBranded = Rpc.WorkerEntrypointBranded,
+> extends Omit<WorkerProps<B, RPC>, "assets" | "dev"> {
   /**
    * Configuration for the build command
    *
@@ -149,14 +149,15 @@ export interface WebsiteProps<B extends Bindings> extends Omit<
   memoize?: boolean | { patterns: string[] };
 }
 
-export type Website<B extends Bindings> = B extends { ASSETS: any }
-  ? never
-  : Worker<B & { ASSETS: Assets }>;
+export type Website<
+  B extends Bindings,
+  RPC extends Rpc.WorkerEntrypointBranded = Rpc.WorkerEntrypointBranded,
+> = B extends { ASSETS: any } ? never : Worker<B & { ASSETS: Assets }, RPC>;
 
-export async function Website<B extends Bindings>(
-  id: string,
-  props: WebsiteProps<B>,
-) {
+export async function Website<
+  B extends Bindings,
+  RPC extends Rpc.WorkerEntrypointBranded = Rpc.WorkerEntrypointBranded,
+>(id: string, props: WebsiteProps<B, RPC>) {
   const {
     name = Scope.current.createPhysicalName(id).toLowerCase(),
     build: buildProps,
@@ -377,7 +378,7 @@ export async function Website<B extends Bindings>(
         : {}),
     },
     dev: url ? { url } : undefined,
-  })) as Website<B>;
+  })) as Website<B, RPC>;
 }
 
 export const spreadBuildProps = (

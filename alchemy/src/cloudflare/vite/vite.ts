@@ -11,16 +11,20 @@ import {
 } from "../website.ts";
 import type { Worker } from "../worker.ts";
 
-export interface ViteProps<B extends Bindings> extends WebsiteProps<B> {}
+export interface ViteProps<
+  B extends Bindings,
+  RPC extends Rpc.WorkerEntrypointBranded = Rpc.WorkerEntrypointBranded,
+> extends WebsiteProps<B, RPC> {}
 
-export type Vite<B extends Bindings> = B extends { ASSETS: any }
-  ? never
-  : Worker<B & { ASSETS: Assets }>;
+export type Vite<
+  B extends Bindings,
+  RPC extends Rpc.WorkerEntrypointBranded = Rpc.WorkerEntrypointBranded,
+> = B extends { ASSETS: any } ? never : Worker<B & { ASSETS: Assets }, RPC>;
 
-export async function Vite<B extends Bindings>(
-  id: string,
-  props: ViteProps<B>,
-): Promise<Vite<B>> {
+export async function Vite<
+  B extends Bindings,
+  RPC extends Rpc.WorkerEntrypointBranded = Rpc.WorkerEntrypointBranded,
+>(id: string, props: ViteProps<B, RPC>): Promise<Vite<B, RPC>> {
   const runner = await getPackageManagerRunner();
   let dev = spreadDevProps(props, `${runner} vite dev`);
   let domain = typeof dev === "object" ? dev.domain : undefined;

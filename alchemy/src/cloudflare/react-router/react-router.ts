@@ -5,7 +5,10 @@ import type { Bindings } from "../bindings.ts";
 import { Vite, type ViteProps } from "../vite/vite.ts";
 import type { Worker } from "../worker.ts";
 
-export interface ReactRouterProps<B extends Bindings> extends ViteProps<B> {
+export interface ReactRouterProps<
+  B extends Bindings,
+  RPC extends Rpc.WorkerEntrypointBranded = Rpc.WorkerEntrypointBranded,
+> extends ViteProps<B, RPC> {
   /**
    * @default workers/app.ts
    */
@@ -13,14 +16,18 @@ export interface ReactRouterProps<B extends Bindings> extends ViteProps<B> {
 }
 
 // don't allow the ASSETS to be overriden
-export type ReactRouter<B extends Bindings> = B extends { ASSETS: any }
-  ? never
-  : Worker<B & { ASSETS: Assets }>;
+export type ReactRouter<
+  B extends Bindings,
+  RPC extends Rpc.WorkerEntrypointBranded = Rpc.WorkerEntrypointBranded,
+> = B extends { ASSETS: any } ? never : Worker<B & { ASSETS: Assets }, RPC>;
 
-export async function ReactRouter<B extends Bindings>(
+export async function ReactRouter<
+  B extends Bindings,
+  RPC extends Rpc.WorkerEntrypointBranded = Rpc.WorkerEntrypointBranded,
+>(
   id: string,
-  props: ReactRouterProps<B> = {},
-): Promise<ReactRouter<B>> {
+  props: ReactRouterProps<B, RPC> = {},
+): Promise<ReactRouter<B, RPC>> {
   const runner = await getPackageManagerRunner();
   const cwd = path.resolve(props.cwd ?? process.cwd());
   const ssr = await detectSSREnabled(cwd);

@@ -14,16 +14,20 @@ import type { Worker } from "../worker.ts";
  * Properties for creating a Nuxt resource.
  * Extends WebsiteProps, allowing customization of the underlying Website.
  */
-export interface NuxtProps<B extends Bindings> extends WebsiteProps<B> {}
+export interface NuxtProps<
+  B extends Bindings,
+  RPC extends Rpc.WorkerEntrypointBranded = Rpc.WorkerEntrypointBranded,
+> extends WebsiteProps<B, RPC> {}
 
 /**
  * Represents the output of a Nuxt resource deployment.
  * It resolves to the underlying Cloudflare Worker type, ensuring type safety.
  * Prevents overriding the internal ASSETS binding.
  */
-export type Nuxt<B extends Bindings> = B extends { ASSETS: any }
-  ? never
-  : Worker<B & { ASSETS: Assets }>;
+export type Nuxt<
+  B extends Bindings,
+  RPC extends Rpc.WorkerEntrypointBranded = Rpc.WorkerEntrypointBranded,
+> = B extends { ASSETS: any } ? never : Worker<B & { ASSETS: Assets }, RPC>;
 
 /**
  * Creates and deploys a Nuxt application using the Cloudflare Workers preset.
@@ -52,10 +56,10 @@ export type Nuxt<B extends Bindings> = B extends { ASSETS: any }
  *   },
  * });
  */
-export async function Nuxt<B extends Bindings>(
-  id: string,
-  props?: Partial<NuxtProps<B>>,
-): Promise<Nuxt<B>> {
+export async function Nuxt<
+  B extends Bindings,
+  RPC extends Rpc.WorkerEntrypointBranded = Rpc.WorkerEntrypointBranded,
+>(id: string, props?: Partial<NuxtProps<B, RPC>>): Promise<Nuxt<B, RPC>> {
   const runner = await getPackageManagerRunner();
   return await Website(id, {
     ...props,
