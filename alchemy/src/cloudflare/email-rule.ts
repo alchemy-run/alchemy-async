@@ -3,7 +3,7 @@ import { Resource } from "../resource.ts";
 import { handleApiError } from "./api-error.ts";
 import { type CloudflareApiOptions, createCloudflareApi } from "./api.ts";
 import type { CloudflareResponse } from "./response.ts";
-import type { Zone } from "./zone.ts";
+import { getZoneByDomain, type Zone } from "./zone.ts";
 
 /**
  * Email routing matcher - defines what emails to match
@@ -235,7 +235,15 @@ export const EmailRule = Resource(
     props: EmailRuleProps,
   ): Promise<EmailRule> {
     const api = await createCloudflareApi(props);
-    const zoneId = typeof props.zone === "string" ? props.zone : props.zone.id;
+    const zoneId =
+      typeof props.zone === "string"
+        ? props.zone.includes(".")
+          ? (await getZoneByDomain(api, props.zone))?.id
+          : props.zone
+        : props.zone.id;
+    if (!zoneId) {
+      throw new Error(`Zone ${props.zone} not found`);
+    }
 
     if (this.phase === "delete") {
       if (this.output?.ruleId) {
