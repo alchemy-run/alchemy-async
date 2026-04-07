@@ -8,7 +8,7 @@ export interface WorkflowProps {
    *
    * @maxLength 64
    * @minLength 1
-   * @default - className if provided, otherwise id
+   * @default - ${app}-${id}-${stage}
    */
   workflowName?: string;
   /**
@@ -62,6 +62,12 @@ export type Workflow<PARAMS = unknown> = {
   limits?: {
     steps?: number;
   };
+  /**
+   * Whether the workflow name was explicitly provided by the user.
+   * When false, the Worker resource will generate a scoped name.
+   * @internal
+   */
+  _nameExplicit?: boolean;
 };
 
 export function isWorkflow(binding: Binding): binding is Workflow {
@@ -95,6 +101,7 @@ export function Workflow<PARAMS = unknown>(
     className,
     scriptName: props.scriptName,
     limits: props.limits,
+    _nameExplicit: props.workflowName !== undefined,
   };
 }
 
