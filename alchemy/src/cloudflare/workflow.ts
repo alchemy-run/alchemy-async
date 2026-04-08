@@ -56,18 +56,12 @@ export type Workflow<PARAMS = unknown> = {
    */
   _PARAMS: PARAMS;
   id: string;
-  workflowName: string;
+  workflowName?: string;
   className: string;
   scriptName?: string;
   limits?: {
     steps?: number;
   };
-  /**
-   * Whether the workflow name was explicitly provided by the user.
-   * When false, the Worker resource will generate a scoped name.
-   * @internal
-   */
-  _nameExplicit?: boolean;
 };
 
 export function isWorkflow(binding: Binding): binding is Workflow {
@@ -90,18 +84,16 @@ export function Workflow<PARAMS = unknown>(
   id: string,
   props: WorkflowProps = {},
 ): Workflow<PARAMS> {
-  const workflowName = props.workflowName ?? props.className ?? id;
-  const className = props.className ?? workflowName;
+  const className = props.className ?? props.workflowName ?? id;
 
   return {
     type: "workflow",
     _PARAMS: undefined!,
     id,
-    workflowName,
+    workflowName: props.workflowName,
     className,
     scriptName: props.scriptName,
     limits: props.limits,
-    _nameExplicit: props.workflowName !== undefined,
   };
 }
 

@@ -1077,7 +1077,7 @@ const _Worker = Resource(
           binding.type === "workflow" &&
           (!binding.scriptName || binding.scriptName === workerName)
         ) {
-          if (!binding._nameExplicit) {
+          if (!binding.workflowName) {
             binding.workflowName = this.scope
               .createPhysicalName(binding.id, "-", 64);
           }
