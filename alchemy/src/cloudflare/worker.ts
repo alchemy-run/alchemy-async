@@ -6,7 +6,11 @@ import type { type } from "../type.ts";
 import { DeferredPromise } from "../util/deferred-promise.ts";
 import { logger } from "../util/logger.ts";
 import { withExponentialBackoff } from "../util/retry.ts";
-import { CloudflareApiError, handleApiError } from "./api-error.ts";
+import {
+  CloudflareApiError,
+  handleApiError,
+  isCloudflareApiError,
+} from "./api-error.ts";
 import {
   type CloudflareApi,
   type CloudflareApiOptions,
@@ -1862,6 +1866,16 @@ export async function putWorker(
               migrationTag: newTag,
             });
           }
+        }
+        if (
+          isCloudflareApiError(error, { code: 11001 }) &&
+          !props.eventSources?.length
+        ) {
+          // Error code 11001 means that the worker has event sources, but no `queue` handler is defined.
+          // Normally, queue consumers are removed automatically since we're using the `QueueConsumer` resource,
+          // but if no `queue` handler is defined, we need to remove them for Cloudflare to let us deploy.
+          await deleteQueueConsumers(api, workerName);
+          return await putWorker(api, props);
         }
         throw error;
       }
