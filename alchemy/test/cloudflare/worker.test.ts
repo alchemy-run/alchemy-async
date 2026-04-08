@@ -2692,6 +2692,86 @@ describe("Worker Resource", () => {
     }
   });
 
+  test("removes queue consumers when queue handler and eventSources are removed", async (scope) => {
+    const workerName = `${BRANCH_PREFIX}-remove-queue-handler`;
+    const queueName = `${BRANCH_PREFIX}-remove-queue-handler-q`;
+
+    let queue: Queue | undefined;
+    let worker: Worker | undefined;
+    try {
+      queue = await Queue("remove-queue-handler-queue", {
+        name: queueName,
+        adopt: true,
+      });
+
+      worker = await Worker(workerName, {
+        name: workerName,
+        adopt: true,
+        format: "esm",
+        url: true,
+        script: `
+          export default {
+            fetch() {
+              return new Response("Hello with queue!");
+            },
+            queue(batch) {
+              batch.ackAll();
+            }
+          };
+        `,
+        eventSources: [queue],
+      });
+
+      expect(worker.url).toBeTruthy();
+
+      const consumersBeforeUpdate = await listQueueConsumersForWorker(
+        api,
+        workerName,
+      );
+      expect(
+        consumersBeforeUpdate.some((consumer) => consumer.queueId === queue!.id),
+      ).toBe(true);
+
+      worker = await Worker(workerName, {
+        name: workerName,
+        adopt: true,
+        format: "esm",
+        url: true,
+        script: `
+          export default {
+            fetch() {
+              return new Response("Hello without queue!");
+            }
+          };
+        `,
+      });
+
+      expect(worker.url).toBeTruthy();
+
+      const consumersAfterUpdate = await listQueueConsumersForWorker(
+        api,
+        workerName,
+      );
+      expect(
+        consumersAfterUpdate.some((consumer) => consumer.queueId === queue!.id),
+      ).toBe(false);
+
+      const body = await waitFor(
+        async () => {
+          const response = await fetchAndExpectOK(worker!.url!);
+          return response.text();
+        },
+        (text) => text === "Hello without queue!",
+        { timeoutMs: 10_000, intervalMs: 250 },
+      );
+
+      expect(body).toEqual("Hello without queue!");
+    } finally {
+      await destroy(scope);
+      await assertWorkerDoesNotExist(api, workerName);
+    }
+  });
+
   test("delete false preserves worker and queue consumer on destroy", async (scope) => {
     const workerName = `${BRANCH_PREFIX}-test-worker-delete-false`;
     const queueName = `${BRANCH_PREFIX}-delete-false-queue`;
