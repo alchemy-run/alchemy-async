@@ -5,6 +5,14 @@ import {
   validateConfigPath,
 } from "./miniflare/paths.ts";
 
+export type PlatformProxyOptions = Omit<
+  GetPlatformProxyOptions,
+  "configPath" | "persist"
+> & {
+  configPath: string;
+  persist: false | { path: string };
+};
+
 export const getCloudflareEnvProxy = async <E>(
   options: GetPlatformProxyOptions = {},
 ) => {
@@ -17,7 +25,7 @@ export const getCloudflareEnvProxy = async <E>(
 export const getPlatformProxyOptions = (
   input: GetPlatformProxyOptions = {},
   throws: boolean = true,
-): GetPlatformProxyOptions => {
+): PlatformProxyOptions => {
   const persist =
     input.persist === false
       ? false

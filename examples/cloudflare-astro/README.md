@@ -7,8 +7,6 @@ This example demonstrates how to deploy an Astro application to Cloudflare Worke
 - 🚀 **Astro** - Modern web framework with component islands
 - ☁️ **Cloudflare Workers** - Edge runtime with global deployment
 - 🔮 **Alchemy** - TypeScript Infrastructure-as-Code
-- 📦 **R2 Storage** - Object storage integration
-- 🗄️ **KV Cache** - Key-value caching
 
 ## Getting Started
 
@@ -40,7 +38,7 @@ bun run dev
 
 ## Project Structure
 
-```
+```bash
 src/
 ├── layouts/
 │   └── Layout.astro       # Base layout component
@@ -53,16 +51,11 @@ src/
 
 ## Cloudflare Bindings
 
-This example includes:
+This example uses the standard Astro Cloudflare adapter bindings and runtime context.
 
-- **STORAGE** - R2 bucket for file storage
-- **CACHE** - KV namespace for caching
-
-Access these in your Astro API routes via the runtime context.
+Access these in your Astro API routes via the request context.
 
 ## Cleanup
-
-To tear down the deployed resources:
 
 ```bash
 bun run destroy

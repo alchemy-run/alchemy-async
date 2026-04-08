@@ -19,7 +19,7 @@ export const dependencyVersionMap = {
   wrangler: "^4.20.5",
 
   // astro
-  "@astrojs/cloudflare": "^12.6.0",
+  "@astrojs/cloudflare": "^13.0.1",
 
   // nuxt
   "nitro-cloudflare-dev": "^0.2.2",

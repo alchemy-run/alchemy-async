@@ -208,7 +208,7 @@
     "yaml": "^2.0.0"
   },
   "peerDependencies": {
-    "@astrojs/cloudflare": "^12.6.4",
+    "@astrojs/cloudflare": "^13.0.0",
     "@aws-sdk/client-dynamodb": "^3.0.0",
     "@aws-sdk/client-iam": "^3.0.0",
     "@aws-sdk/client-lambda": "^3.0.0",
@@ -221,7 +221,7 @@
     "@coinbase/cdp-sdk": "^0.10.0",
     "@libsql/client": "^0.15.12",
     "@opennextjs/cloudflare": "^1.6.5",
-    "astro": "^5.13.2",
+    "astro": "^6.0.0",
     "rwsdk": "^1.0.0-beta.51",
     "stripe": "^18.5.0",
     "vite": ">=6.0.0",
@@ -281,7 +281,7 @@
     }
   },
   "devDependencies": {
-    "@astrojs/cloudflare": "^12.6.4",
+    "@astrojs/cloudflare": "^13.0.1",
     "@aws-sdk/client-dynamodb": "^3.0.0",
     "@aws-sdk/client-ec2": "^3.868.0",
     "@aws-sdk/client-iam": "^3.864.0",
@@ -309,7 +309,7 @@
     "@types/ws": "^8.18.1",
     "@workos-inc/node": "^7.69.1",
     "arktype": "^2.1.16",
-    "astro": "^5.13.2",
+    "astro": "^6.0.1",
     "braintrust": "^0.0.201",
     "capnweb": "^0.4.0",
     "cojson-core-wasm": "^0.18.16",
