@@ -2729,7 +2729,9 @@ describe("Worker Resource", () => {
         workerName,
       );
       expect(
-        consumersBeforeUpdate.some((consumer) => consumer.queueId === queue!.id),
+        consumersBeforeUpdate.some(
+          (consumer) => consumer.queueId === queue!.id,
+        ),
       ).toBe(true);
 
       worker = await Worker(workerName, {
