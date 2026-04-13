@@ -329,6 +329,12 @@ export interface BaseWorkerProps<
          * @default false
          */
         adopt?: boolean;
+        /**
+         * Forcibly transfer the hostname when it is currently bound to a
+         * different Worker service. See {@link CustomDomainProps.overrideExistingOrigin}.
+         * @default false
+         */
+        overrideExistingOrigin?: boolean;
       }
   )[];
 
@@ -1497,6 +1503,7 @@ async function provisionResources<B extends Bindings>(
           name: domain,
           zoneId: undefined,
           adopt: props.adopt,
+          overrideExistingOrigin: undefined,
         };
       }
       if (domain.domainName === "") {
@@ -1506,6 +1513,7 @@ async function provisionResources<B extends Bindings>(
         name: domain.domainName,
         zoneId: domain.zoneId,
         adopt: domain.adopt ?? props.adopt,
+        overrideExistingOrigin: domain.overrideExistingOrigin,
       };
     }),
     eventSources: props.eventSources?.map((eventSource) => {
@@ -1578,6 +1586,7 @@ async function provisionResources<B extends Bindings>(
               name: domain.name,
               zoneId: domain.zoneId,
               adopt: domain.adopt,
+              overrideExistingOrigin: domain.overrideExistingOrigin,
               delete: props.delete,
               workerName: options.name,
               dev: options.local,

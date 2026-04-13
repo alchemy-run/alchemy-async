@@ -45,6 +45,21 @@ export interface CustomDomainProps extends CloudflareApiOptions {
   adopt?: boolean;
 
   /**
+   * If true, forcibly transfer the hostname when it is currently bound to a
+   * different Worker service. Without this flag, Cloudflare rejects the
+   * upsert with HTTP 409 / error code 100116 "Hostname '<host>' already in
+   * use by other custom domain".
+   *
+   * This is destructive to the previously bound Worker (its traffic on this
+   * hostname stops immediately), so it is opt-in. Only relevant when the
+   * existing binding points at a different `workerName` or `environment`.
+   *
+   * @see https://developers.cloudflare.com/api/resources/workers/subresources/domains/methods/update/
+   * @default false
+   */
+  overrideExistingOrigin?: boolean;
+
+  /**
    * Whether to delete the custom domain when removed from Alchemy.
    * If set to false, the custom domain will remain but the resource will be removed from state.
    *
@@ -269,12 +284,21 @@ async function ensureCustomDomain(
   if (!bindingExists || needsUpdate) {
     operationPerformed = bindingExists ? "update" : "create";
 
-    const putPayload = {
+    const putPayload: {
+      zone_id: string;
+      hostname: string;
+      service: string;
+      environment: string;
+      override_existing_origin?: boolean;
+    } = {
       zone_id: props.zoneId,
       hostname: domainHostname,
       service: props.workerName,
       environment: environment,
     };
+    if (props.overrideExistingOrigin !== undefined) {
+      putPayload.override_existing_origin = props.overrideExistingOrigin;
+    }
 
     const putResponse = await api.put(
       `/accounts/${api.accountId}/workers/domains`,
