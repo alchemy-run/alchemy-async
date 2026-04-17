@@ -24,9 +24,6 @@ export namespace CloudflareAuth {
       "See and change Cloudflare Access data such as zones, applications, certificates, device postures, groups, identity providers, login counts, organizations, policies, service tokens, and users",
     "account:read":
       "See your account info such as account details, analytics, and memberships",
-    "agw:read": "Grants read level access to Agents Gateway",
-    "agw:run": "Grants run level access to Agents Gateway",
-    "agw:write": "Grants read and write level access to Agents Gateway",
     "ai:read": "Grants read level access to Workers AI",
     "ai:write": "Grants write level access to Workers AI",
     "aiaudit:read": "Grants read level access to AI Audit",
