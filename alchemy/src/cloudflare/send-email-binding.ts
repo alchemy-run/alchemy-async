@@ -1,16 +1,29 @@
-/**
- * Type representing a Cloudflare Email Service send binding.
- * @see https://developers.cloudflare.com/email-service/api/send-emails/workers-api/
- */
-export interface SendEmailBinding {
-  type: "send_email";
-  destinationAddress?: string;
-  allowedDestinationAddresses?: string[];
+export interface BaseSendEmailBindingProps {
   allowedSenderAddresses?: string[];
   dev?: {
     remote?: boolean;
   };
 }
+
+export type SendEmailBindingProps = BaseSendEmailBindingProps &
+  (
+    | {
+        destinationAddress?: string;
+        allowedDestinationAddresses?: never;
+      }
+    | {
+        destinationAddress?: never;
+        allowedDestinationAddresses?: string[];
+      }
+  );
+
+/**
+ * Type representing a Cloudflare Email Service send binding.
+ * @see https://developers.cloudflare.com/email-service/api/send-emails/workers-api/
+ */
+export type SendEmailBinding = SendEmailBindingProps & {
+  type: "send_email";
+};
 
 /**
  * Creates a Cloudflare Email Service binding for sending emails from Workers.
@@ -29,14 +42,8 @@ export interface SendEmailBinding {
  * @see https://developers.cloudflare.com/email-service/api/send-emails/workers-api/
  */
 export function SendEmailBinding(
-  props: Omit<SendEmailBinding, "type"> = {},
+  props: SendEmailBindingProps = {},
 ): SendEmailBinding {
-  if (props.destinationAddress && props.allowedDestinationAddresses?.length) {
-    throw new Error(
-      "SendEmailBinding cannot define both destinationAddress and allowedDestinationAddresses",
-    );
-  }
-
   return {
     type: "send_email",
     ...props,

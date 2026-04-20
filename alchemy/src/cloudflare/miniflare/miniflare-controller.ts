@@ -101,7 +101,7 @@ export class MiniflareController {
         unsafeDevRegistryPath: miniflare.getDefaultDevRegistryPath(),
         log: process.env.DEBUG
           ? new miniflare.Log(miniflare.LogLevel.DEBUG)
-          : undefined,
+          : new DefaultLogger(),
         // This is required to allow websites and other separate processes
         // to detect Alchemy-managed Durable Objects via the Wrangler dev registry.
         unsafeDevRegistryDurableObjectProxy: true,
@@ -168,5 +168,22 @@ export class MiniflareController {
       ...this.localProxies.values().map((proxy) => proxy.close()),
       ...this.remoteProxies.values().map((proxy) => proxy.close()),
     ]);
+  }
+}
+
+class DefaultLogger extends miniflare.Log {
+  constructor() {
+    // Miniflare emits send_email activity at info level.
+    super(miniflare.LogLevel.INFO);
+  }
+
+  override info(message: string) {
+    if (
+      message.startsWith("Ready on") ||
+      message.startsWith("Updated and ready on")
+    ) {
+      return;
+    }
+    super.info(message);
   }
 }
