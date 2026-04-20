@@ -49,9 +49,11 @@ type RemoteBinding =
           | "r2_bucket";
       }
     > & { raw: true })
-  | Extract<WorkerBindingSpec, { type: "send_email" }>
   // Fetcher type bindings do not require the `raw` flag and will throw an error if it is present.
-  | Extract<WorkerBindingSpec, { type: "service" | "vpc_service" }>;
+  | Extract<
+      WorkerBindingSpec,
+      { type: "send_email" | "service" | "vpc_service" }
+    >;
 
 type BaseWorkerOptions = {
   [K in keyof miniflare.WorkerOptions]: K extends

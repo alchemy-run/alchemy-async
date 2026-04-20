@@ -263,13 +263,7 @@ async function processBindings(
   const durableObjects: WranglerJsonConfig["durable_objects"]["bindings"] = [];
   const r2Buckets: WranglerJsonConfig["r2_buckets"] = [];
   const services: WranglerJsonConfig["services"] = [];
-  const sendEmailBindings: Array<{
-    name: string;
-    destination_address?: string;
-    allowed_destination_addresses?: string[];
-    allowed_sender_addresses?: string[];
-    remote?: boolean;
-  }> = [];
+  const sendEmailBindings: WranglerJsonConfig["send_email"] = [];
   const secrets: string[] = [];
   const workflows: WranglerJsonConfig["workflows"] = [];
   const d1Databases: WranglerJsonConfig["d1_databases"] = [];
