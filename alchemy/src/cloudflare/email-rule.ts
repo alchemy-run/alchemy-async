@@ -1,7 +1,8 @@
 import type { Context } from "../context.ts";
-import { Resource } from "../resource.ts";
+import { Resource, ResourceKind } from "../resource.ts";
 import { handleApiError } from "./api-error.ts";
 import { type CloudflareApiOptions, createCloudflareApi } from "./api.ts";
+import { resolveEmailZoneId } from "./email-common.ts";
 import type { CloudflareResponse } from "./response.ts";
 import type { Zone } from "./zone.ts";
 
@@ -19,7 +20,7 @@ export interface EmailMatcher {
   /**
    * Field to match against (required for literal matchers)
    */
-  field?: "to" | "from" | "subject";
+  field?: "to";
 
   /**
    * Value to match (required for literal matchers)
@@ -141,9 +142,42 @@ export interface EmailRule {
   actions: EmailAction[];
 
   /**
-   * Rule tag
+   * Deprecated rule tag returned by the Cloudflare API.
    */
-  tag: string;
+  tag?: string;
+}
+
+export function isEmailRule(resource: any): resource is EmailRule {
+  return resource?.[ResourceKind] === "cloudflare::EmailRule";
+}
+
+function validateMatchers(matchers: EmailMatcher[]) {
+  for (const matcher of matchers) {
+    if (matcher.type === "all") {
+      continue;
+    }
+    if (matcher.field !== "to") {
+      throw new Error(
+        'EmailRule literal matchers currently only support field: "to".',
+      );
+    }
+    if (!matcher.value) {
+      throw new Error("EmailRule literal matchers require a value.");
+    }
+  }
+}
+
+function validateActions(actions: EmailAction[]) {
+  for (const action of actions) {
+    if (action.type === "drop") {
+      continue;
+    }
+    if (!action.value?.length) {
+      throw new Error(
+        `EmailRule action "${action.type}" requires at least one value.`,
+      );
+    }
+  }
 }
 
 /**
@@ -235,7 +269,9 @@ export const EmailRule = Resource(
     props: EmailRuleProps,
   ): Promise<EmailRule> {
     const api = await createCloudflareApi(props);
-    const zoneId = typeof props.zone === "string" ? props.zone : props.zone.id;
+    const zoneId = await resolveEmailZoneId(api, props.zone);
+    validateMatchers(props.matchers);
+    validateActions(props.actions);
 
     if (this.phase === "delete") {
       if (this.output?.ruleId) {
@@ -282,7 +318,7 @@ export const EmailRule = Resource(
           priority: result.result.priority,
           matchers: result.result.matchers,
           actions: result.result.actions,
-          tag: result.result.tag,
+          tag: result.result.tag || undefined,
         };
       }
     }
@@ -316,7 +352,7 @@ export const EmailRule = Resource(
       priority: result.result.priority,
       matchers: result.result.matchers,
       actions: result.result.actions,
-      tag: result.result.tag,
+      tag: result.result.tag || undefined,
     };
   },
 );

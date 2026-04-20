@@ -1,17 +1,23 @@
 import type { Context } from "../context.ts";
-import { Resource } from "../resource.ts";
+import { Resource, ResourceKind } from "../resource.ts";
 import { type CloudflareApiOptions, createCloudflareApi } from "./api.ts";
-import type { EmailAction, EmailMatcher } from "./email-rule.ts";
+import { resolveEmailZoneId } from "./email-common.ts";
+import type { EmailAction } from "./email-rule.ts";
 import type { CloudflareResponse } from "./response.ts";
 import type { Zone } from "./zone.ts";
+
+export interface EmailCatchAllMatcher {
+  type: "all";
+}
 
 /**
  * Cloudflare Email Catch All response format
  */
 interface CloudflareEmailCatchAll {
+  id: string;
   enabled: boolean;
   name: string;
-  matchers: EmailMatcher[];
+  matchers: EmailCatchAllMatcher[];
   actions: EmailAction[];
   tag: string;
 }
@@ -43,7 +49,7 @@ export interface EmailCatchAllProps extends CloudflareApiOptions {
    * Matchers for the catch-all rule (typically matches all emails)
    * If not provided, defaults to matching all emails
    */
-  matchers?: EmailMatcher[];
+  matchers?: EmailCatchAllMatcher[];
 
   /**
    * Actions to take for emails that don't match other rules
@@ -61,6 +67,11 @@ export interface EmailCatchAll {
   zoneId: string;
 
   /**
+   * Routing rule identifier.
+   */
+  ruleId: string;
+
+  /**
    * Whether the catch-all rule is enabled
    */
   enabled: boolean;
@@ -73,7 +84,7 @@ export interface EmailCatchAll {
   /**
    * Matchers for the catch-all rule
    */
-  matchers: EmailMatcher[];
+  matchers: EmailCatchAllMatcher[];
 
   /**
    * Actions for the catch-all rule
@@ -81,9 +92,26 @@ export interface EmailCatchAll {
   actions: EmailAction[];
 
   /**
-   * Rule tag
+   * Deprecated rule tag returned by the Cloudflare API.
    */
-  tag: string;
+  tag?: string;
+}
+
+export function isEmailCatchAll(resource: any): resource is EmailCatchAll {
+  return resource?.[ResourceKind] === "cloudflare::EmailCatchAll";
+}
+
+function validateCatchAllActions(actions: EmailAction[]) {
+  for (const action of actions) {
+    if (action.type === "drop") {
+      continue;
+    }
+    if (!action.value?.length) {
+      throw new Error(
+        `EmailCatchAll action "${action.type}" requires at least one value.`,
+      );
+    }
+  }
 }
 
 /**
@@ -151,7 +179,8 @@ export const EmailCatchAll = Resource(
     props: EmailCatchAllProps,
   ): Promise<EmailCatchAll> {
     const api = await createCloudflareApi(props);
-    const zoneId = typeof props.zone === "string" ? props.zone : props.zone.id;
+    const zoneId = await resolveEmailZoneId(api, props.zone);
+    validateCatchAllActions(props.actions);
 
     if (this.phase === "delete") {
       // Disable the catch-all rule by setting enabled to false
@@ -205,11 +234,12 @@ export const EmailCatchAll = Resource(
 
       return {
         zoneId,
+        ruleId: result.result.id,
         enabled: result.result.enabled,
         name: result.result.name,
         matchers: result.result.matchers,
         actions: result.result.actions,
-        tag: result.result.tag,
+        tag: result.result.tag || undefined,
       };
     }
 
@@ -238,11 +268,12 @@ export const EmailCatchAll = Resource(
 
     return {
       zoneId,
+      ruleId: result.result.id,
       enabled: result.result.enabled,
       name: result.result.name,
       matchers: result.result.matchers,
       actions: result.result.actions,
-      tag: result.result.tag,
+      tag: result.result.tag || undefined,
     };
   },
 );

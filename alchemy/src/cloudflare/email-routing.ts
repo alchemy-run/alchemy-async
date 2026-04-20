@@ -1,7 +1,8 @@
 import type { Context } from "../context.ts";
-import { Resource } from "../resource.ts";
+import { Resource, ResourceKind } from "../resource.ts";
 import { handleApiError } from "./api-error.ts";
 import { type CloudflareApiOptions, createCloudflareApi } from "./api.ts";
+import { resolveEmailZoneId } from "./email-common.ts";
 import type { CloudflareResponse } from "./response.ts";
 import type { Zone } from "./zone.ts";
 
@@ -75,6 +76,10 @@ export interface EmailRouting {
   tag: string;
 }
 
+export function isEmailRouting(resource: any): resource is EmailRouting {
+  return resource?.[ResourceKind] === "cloudflare::EmailRouting";
+}
+
 /**
  * Configures email routing for a Cloudflare zone, allowing emails sent to the zone's domain
  * to be routed according to defined rules.
@@ -116,7 +121,7 @@ export const EmailRouting = Resource(
     props: EmailRoutingProps,
   ): Promise<EmailRouting> {
     const api = await createCloudflareApi(props);
-    const zoneId = typeof props.zone === "string" ? props.zone : props.zone.id;
+    const zoneId = await resolveEmailZoneId(api, props.zone);
 
     if (this.phase === "delete") {
       // Disable email routing DNS

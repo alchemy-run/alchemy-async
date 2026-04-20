@@ -1,5 +1,5 @@
 import type { Context } from "../context.ts";
-import { Resource } from "../resource.ts";
+import { Resource, ResourceKind } from "../resource.ts";
 import { handleApiError } from "./api-error.ts";
 import { type CloudflareApiOptions, createCloudflareApi } from "./api.ts";
 import type { CloudflareResponse } from "./response.ts";
@@ -8,11 +8,12 @@ import type { CloudflareResponse } from "./response.ts";
  * Cloudflare Email Address response format
  */
 interface CloudflareEmailAddress {
+  id: string;
   email: string;
-  verified: boolean;
+  verified: string | null;
   created: string;
   modified: string;
-  tag: string;
+  tag?: string;
 }
 
 /**
@@ -38,6 +39,11 @@ export interface EmailAddressProps extends CloudflareApiOptions {
  */
 export interface EmailAddress {
   /**
+   * Destination address identifier.
+   */
+  addressId: string;
+
+  /**
    * The email address
    */
   email: string;
@@ -46,6 +52,11 @@ export interface EmailAddress {
    * Whether the email address has been verified
    */
   verified: boolean;
+
+  /**
+   * When the email address was verified.
+   */
+  verifiedAt?: string;
 
   /**
    * When the email address was created
@@ -58,9 +69,19 @@ export interface EmailAddress {
   modified: string;
 
   /**
-   * Email address tag
+   * Deprecated destination address tag returned by the Cloudflare API.
    */
-  tag: string;
+  tag?: string;
+}
+
+export function isEmailAddress(resource: any): resource is EmailAddress {
+  return resource?.[ResourceKind] === "cloudflare::EmailAddress";
+}
+
+function getAddressIdentifier(
+  address: Pick<EmailAddress, "addressId" | "email">,
+) {
+  return address.addressId || encodeURIComponent(address.email);
 }
 
 /**
@@ -106,9 +127,9 @@ export const EmailAddress = Resource(
     const api = await createCloudflareApi(props);
 
     if (this.phase === "delete") {
-      if (this.output?.email) {
+      if (this.output?.addressId || this.output?.email) {
         const response = await api.delete(
-          `/accounts/${api.accountId}/email/routing/addresses/${encodeURIComponent(this.output.email)}`,
+          `/accounts/${api.accountId}/email/routing/addresses/${getAddressIdentifier(this.output)}`,
         );
         if (!response.ok && response.status !== 404) {
           await handleApiError(response, "delete", "email address");
@@ -123,7 +144,7 @@ export const EmailAddress = Resource(
       if (this.output.email !== props.email) {
         // Delete the old email address
         const deleteResponse = await api.delete(
-          `/accounts/${api.accountId}/email/routing/addresses/${encodeURIComponent(this.output.email)}`,
+          `/accounts/${api.accountId}/email/routing/addresses/${getAddressIdentifier(this.output)}`,
         );
         if (!deleteResponse.ok && deleteResponse.status !== 404) {
           await handleApiError(deleteResponse, "delete", "old email address");
@@ -133,7 +154,7 @@ export const EmailAddress = Resource(
       } else {
         // Get current state
         const getResponse = await api.get(
-          `/accounts/${api.accountId}/email/routing/addresses/${encodeURIComponent(props.email)}`,
+          `/accounts/${api.accountId}/email/routing/addresses/${getAddressIdentifier(this.output)}`,
         );
         if (!getResponse.ok) {
           if (getResponse.status === 404) {
@@ -146,8 +167,10 @@ export const EmailAddress = Resource(
             (await getResponse.json()) as CloudflareResponse<CloudflareEmailAddress>;
 
           return {
+            addressId: result.result.id,
             email: result.result.email,
-            verified: result.result.verified,
+            verified: Boolean(result.result.verified),
+            verifiedAt: result.result.verified ?? undefined,
             created: result.result.created,
             modified: result.result.modified,
             tag: result.result.tag,
@@ -167,8 +190,10 @@ export const EmailAddress = Resource(
         (await getResponse.json()) as CloudflareResponse<CloudflareEmailAddress>;
 
       return {
+        addressId: result.result.id,
         email: result.result.email,
-        verified: result.result.verified,
+        verified: Boolean(result.result.verified),
+        verifiedAt: result.result.verified ?? undefined,
         created: result.result.created,
         modified: result.result.modified,
         tag: result.result.tag,
@@ -193,8 +218,10 @@ export const EmailAddress = Resource(
       (await createResponse.json()) as CloudflareResponse<CloudflareEmailAddress>;
 
     return {
+      addressId: result.result.id,
       email: result.result.email,
-      verified: result.result.verified,
+      verified: Boolean(result.result.verified),
+      verifiedAt: result.result.verified ?? undefined,
       created: result.result.created,
       modified: result.result.modified,
       tag: result.result.tag,
