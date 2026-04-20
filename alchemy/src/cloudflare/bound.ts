@@ -18,7 +18,7 @@ import type { RateLimit as _RateLimit } from "./rate-limit.ts";
 import type { SecretKey } from "./secret-key.ts";
 import type { SecretRef as CloudflareSecretRef } from "./secret-ref.ts";
 import type { Secret as CloudflareSecret } from "./secret.ts";
-import type { SendEmailBinding as _SendEmailBinding } from "./send-email-binding.ts";
+import type { EmailSender as _EmailSender } from "./email-sender.ts";
 import type { VectorizeIndex as _VectorizeIndex } from "./vectorize-index.ts";
 import type { VersionMetadata as _VersionMetadata } from "./version-metadata.ts";
 import type { VpcService as _VpcService } from "./vpc-service.ts";
@@ -58,7 +58,7 @@ export type Bound<T extends Binding> =
                   ? string
                   : T extends CloudflareSecret | CloudflareSecretRef
                     ? SecretsStoreSecret
-                    : T extends _SendEmailBinding
+                    : T extends _EmailSender
                       ? SendEmail
                       : T extends SecretKey
                         ? CryptoKey

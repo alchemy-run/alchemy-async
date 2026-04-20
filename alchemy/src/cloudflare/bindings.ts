@@ -24,7 +24,7 @@ import type { RateLimit } from "./rate-limit.ts";
 import type { SecretKey } from "./secret-key.ts";
 import type { SecretRef as CloudflareSecretRef } from "./secret-ref.ts";
 import type { Secret as CloudflareSecret } from "./secret.ts";
-import type { SendEmailBinding } from "./send-email-binding.ts";
+import type { EmailSender } from "./email-sender.ts";
 import type { VectorizeIndex } from "./vectorize-index.ts";
 import type { VersionMetadata } from "./version-metadata.ts";
 import type { VpcService } from "./vpc-service.ts";
@@ -65,7 +65,7 @@ export type Binding =
   | Queue
   | RateLimit
   | R2Bucket
-  | SendEmailBinding
+  | EmailSender
   | {
       type: "kv_namespace";
       id: string;
