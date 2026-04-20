@@ -9,6 +9,7 @@
     { "path": "./examples/cloudflare-astro/tsconfig.json" },
     { "path": "./examples/cloudflare-container/tsconfig.json" },
     { "path": "./examples/cloudflare-durable-object-websocket/tsconfig.json" },
+    { "path": "./examples/cloudflare-email/tsconfig.json" },
     { "path": "./examples/cloudflare-livestore/tsconfig.json" },
     { "path": "./examples/cloudflare-nuxt-pipeline/tsconfig.json" },
     { "path": "./examples/cloudflare-react-router/tsconfig.json" },
