@@ -17,6 +17,7 @@ import { BrowserRendering } from "../../src/cloudflare/browser-rendering.ts";
 import { DispatchNamespace } from "../../src/cloudflare/dispatch-namespace.ts";
 import { Images } from "../../src/cloudflare/images.ts";
 import { Queue } from "../../src/cloudflare/queue.ts";
+import { SendEmailBinding } from "../../src/cloudflare/send-email-binding.ts";
 import { VectorizeIndex } from "../../src/cloudflare/vectorize-index.ts";
 import { Workflow } from "../../src/cloudflare/workflow.ts";
 import "../../src/test/vitest.ts";
@@ -249,6 +250,47 @@ describe("WranglerJson Resource", () => {
             binding: "AI",
             remote: true,
           },
+        });
+      } finally {
+        await fs.rm(tempDir, { recursive: true, force: true });
+        await destroy(scope);
+      }
+    });
+
+    test("with send email binding", async (scope) => {
+      const name = `${BRANCH_PREFIX}-test-worker-send-email`;
+      const tempDir = path.join(".out", "alchemy-send-email-test");
+      const entrypoint = path.join(tempDir, "worker.ts");
+
+      try {
+        await fs.rm(tempDir, { recursive: true, force: true });
+        await fs.mkdir(tempDir, { recursive: true });
+        await fs.writeFile(entrypoint, esmWorkerScript);
+
+        const worker = await Worker(name, {
+          name,
+          format: "esm",
+          entrypoint,
+          bindings: {
+            EMAIL: SendEmailBinding({
+              allowedSenderAddresses: ["noreply@example.com"],
+              dev: { remote: true },
+            }),
+          },
+          adopt: true,
+        });
+
+        const { spec } = await WranglerJson({ worker });
+
+        expect(spec).toMatchObject({
+          name,
+          send_email: [
+            {
+              name: "EMAIL",
+              allowed_sender_addresses: ["noreply@example.com"],
+              remote: true,
+            },
+          ],
         });
       } finally {
         await fs.rm(tempDir, { recursive: true, force: true });

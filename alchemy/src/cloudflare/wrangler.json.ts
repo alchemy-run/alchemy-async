@@ -263,6 +263,13 @@ async function processBindings(
   const durableObjects: WranglerJsonConfig["durable_objects"]["bindings"] = [];
   const r2Buckets: WranglerJsonConfig["r2_buckets"] = [];
   const services: WranglerJsonConfig["services"] = [];
+  const sendEmailBindings: Array<{
+    name: string;
+    destination_address?: string;
+    allowed_destination_addresses?: string[];
+    allowed_sender_addresses?: string[];
+    remote?: boolean;
+  }> = [];
   const secrets: string[] = [];
   const workflows: WranglerJsonConfig["workflows"] = [];
   const d1Databases: WranglerJsonConfig["d1_databases"] = [];
@@ -387,6 +394,14 @@ async function processBindings(
         preview_bucket_name: name,
         jurisdiction:
           binding.jurisdiction === "default" ? undefined : binding.jurisdiction,
+        ...(binding.dev?.remote ? { remote: true } : {}),
+      });
+    } else if (binding.type === "send_email") {
+      sendEmailBindings.push({
+        name: bindingName,
+        destination_address: binding.destinationAddress,
+        allowed_destination_addresses: binding.allowedDestinationAddresses,
+        allowed_sender_addresses: binding.allowedSenderAddresses,
         ...(binding.dev?.remote ? { remote: true } : {}),
       });
     } else if (binding.type === "secret") {
@@ -567,6 +582,14 @@ async function processBindings(
 
   if (services.length > 0) {
     spec.services = services;
+  }
+
+  if (sendEmailBindings.length > 0) {
+    (
+      spec as WranglerJsonSpec & {
+        send_email?: typeof sendEmailBindings;
+      }
+    ).send_email = sendEmailBindings;
   }
 
   if (d1Databases.length > 0) {

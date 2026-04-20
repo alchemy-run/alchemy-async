@@ -49,6 +49,7 @@ type RemoteBinding =
           | "r2_bucket";
       }
     > & { raw: true })
+  | Extract<WorkerBindingSpec, { type: "send_email" }>
   // Fetcher type bindings do not require the `raw` flag and will throw an error if it is present.
   | Extract<WorkerBindingSpec, { type: "service" | "vpc_service" }>;
 
@@ -261,6 +262,36 @@ export const buildWorkerOptions = async (
         (options.bindings ??= {})[key] = binding.unencrypted;
         break;
       }
+      case "send_email": {
+        const config = {
+          name: key,
+          destination_address: binding.destinationAddress,
+          allowed_destination_addresses: binding.allowedDestinationAddresses,
+          allowed_sender_addresses: binding.allowedSenderAddresses,
+        };
+        if (isRemoteBinding(binding)) {
+          remoteBindings.push({
+            type: "send_email",
+            ...config,
+          });
+        } else {
+          ((
+            options as BaseWorkerOptions & {
+              email?: {
+                send_email?: Array<typeof config>;
+              };
+            }
+          ).email ??= {}).send_email ??= [];
+          (
+            options as BaseWorkerOptions & {
+              email: {
+                send_email: Array<typeof config>;
+              };
+            }
+          ).email.send_email.push(config);
+        }
+        break;
+      }
       case "secret_key": {
         throw new Error("Secret keys are not supported in local mode");
       }
@@ -440,6 +471,41 @@ export const buildWorkerOptions = async (
             id: binding.bucket_name,
             remoteProxyConnectionString: remoteProxy.connectionString,
           };
+          break;
+        case "send_email":
+          ((
+            options as BaseWorkerOptions & {
+              email?: {
+                send_email?: Array<{
+                  name: string;
+                  destination_address?: string;
+                  allowed_destination_addresses?: string[];
+                  allowed_sender_addresses?: string[];
+                  remoteProxyConnectionString: typeof remoteProxy.connectionString;
+                }>;
+              };
+            }
+          ).email ??= {}).send_email ??= [];
+          (
+            options as BaseWorkerOptions & {
+              email: {
+                send_email: Array<{
+                  name: string;
+                  destination_address?: string;
+                  allowed_destination_addresses?: string[];
+                  allowed_sender_addresses?: string[];
+                  remoteProxyConnectionString: typeof remoteProxy.connectionString;
+                }>;
+              };
+            }
+          ).email.send_email.push({
+            name: binding.name,
+            destination_address: binding.destination_address,
+            allowed_destination_addresses:
+              binding.allowed_destination_addresses,
+            allowed_sender_addresses: binding.allowed_sender_addresses,
+            remoteProxyConnectionString: remoteProxy.connectionString,
+          });
           break;
         case "service":
           (options.serviceBindings ??= {})[binding.name] = {

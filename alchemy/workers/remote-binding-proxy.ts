@@ -46,9 +46,26 @@ function getExposedJSRPCBinding(request: Request, env: Env) {
 
   if (targetBinding.constructor.name === "SendEmail") {
     return {
-      async send(e: ForwardableEmailMessage) {
-        const message = new EmailMessage(e.from, e.to, e["EmailMessage::raw"]);
-        return (targetBinding as SendEmail).send(message);
+      async send(
+        value: ForwardableEmailMessage | Parameters<SendEmail["send"]>[0],
+      ) {
+        const raw =
+          value && typeof value === "object" && "EmailMessage::raw" in value
+            ? value["EmailMessage::raw"]
+            : undefined;
+        if (
+          value &&
+          typeof value === "object" &&
+          "from" in value &&
+          "to" in value &&
+          (typeof raw === "string" || raw instanceof ReadableStream)
+        ) {
+          const message = new EmailMessage(value.from, value.to, raw);
+          return (targetBinding as SendEmail).send(message);
+        }
+        return (targetBinding as SendEmail).send(
+          value as Parameters<SendEmail["send"]>[0],
+        );
       },
     };
   }

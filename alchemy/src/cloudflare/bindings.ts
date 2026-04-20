@@ -24,6 +24,7 @@ import type { RateLimit } from "./rate-limit.ts";
 import type { SecretKey } from "./secret-key.ts";
 import type { SecretRef as CloudflareSecretRef } from "./secret-ref.ts";
 import type { Secret as CloudflareSecret } from "./secret.ts";
+import type { SendEmailBinding } from "./send-email-binding.ts";
 import type { VectorizeIndex } from "./vectorize-index.ts";
 import type { VersionMetadata } from "./version-metadata.ts";
 import type { VpcService } from "./vpc-service.ts";
@@ -64,6 +65,7 @@ export type Binding =
   | Queue
   | RateLimit
   | R2Bucket
+  | SendEmailBinding
   | {
       type: "kv_namespace";
       id: string;
@@ -134,6 +136,7 @@ export type WorkerBindingSpec =
   | WorkerBindingQueue
   | WorkerBindingRateLimit
   | WorkerBindingR2Bucket
+  | WorkerBindingSendEmail
   | WorkerBindingSecretKey
   | WorkerBindingSecretText
   | WorkerBindingSecretsStore
@@ -342,6 +345,14 @@ export interface WorkerBindingR2Bucket {
   bucket_name: string;
   /** Jurisdiction */
   jurisdiction?: R2BucketJurisdiction;
+}
+
+export interface WorkerBindingSendEmail {
+  name: string;
+  type: "send_email";
+  destination_address?: string;
+  allowed_destination_addresses?: string[];
+  allowed_sender_addresses?: string[];
 }
 
 /**

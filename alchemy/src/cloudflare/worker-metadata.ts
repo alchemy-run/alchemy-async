@@ -492,6 +492,14 @@ export async function prepareWorkerMetadata(
         jurisdiction:
           binding.jurisdiction === "default" ? undefined : binding.jurisdiction,
       });
+    } else if (binding.type === "send_email") {
+      meta.bindings.push({
+        type: "send_email",
+        name: bindingName,
+        destination_address: binding.destinationAddress,
+        allowed_destination_addresses: binding.allowedDestinationAddresses,
+        allowed_sender_addresses: binding.allowedSenderAddresses,
+      });
     } else if (binding.type === "secrets_store_secret") {
       meta.bindings.push({
         type: "secrets_store_secret",
