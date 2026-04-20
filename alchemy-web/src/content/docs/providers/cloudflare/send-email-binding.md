@@ -7,6 +7,10 @@ The [Cloudflare Email Service Workers API](https://developers.cloudflare.com/ema
 
 Use `SendEmailBinding()` inside a Worker's `bindings` block when you want first-class, type-safe email sending from `env`.
 
+:::note
+Cloudflare Email Service is currently in beta and is available on the Workers Paid plan. Expect APIs and limits to evolve while the product is in beta.
+:::
+
 ## Minimal Example
 
 Create a Worker with an email binding:
@@ -25,7 +29,7 @@ const worker = await Worker("mailer", {
 
 ## Worker Runtime Usage
 
-Send an email from your Worker:
+Send a plain-text email from your Worker:
 
 ```ts
 interface Env {
@@ -39,6 +43,30 @@ export default {
       to: "hello@example.com",
       subject: "Hello",
       text: "Sent from Cloudflare Email Service.",
+    });
+
+    return new Response("sent");
+  },
+};
+```
+
+## HTML Email
+
+Send an HTML email with a plain-text fallback:
+
+```ts
+interface Env {
+  EMAIL: SendEmail;
+}
+
+export default {
+  async fetch(_request: Request, env: Env) {
+    await env.EMAIL.send({
+      from: "noreply@example.com",
+      to: "hello@example.com",
+      subject: "Welcome",
+      html: "<h1>Welcome</h1><p>Your account is ready.</p>",
+      text: "Welcome. Your account is ready.",
     });
 
     return new Response("sent");
@@ -119,3 +147,4 @@ const worker = await Worker("mailer", {
 
 - [Cloudflare Email Service Workers API](https://developers.cloudflare.com/email-service/api/send-emails/workers-api/)
 - [Cloudflare local development for Email Service](https://developers.cloudflare.com/email-service/local-development/sending/)
+- [Cloudflare Email Service send emails guide](https://developers.cloudflare.com/email-service/get-started/send-emails/)

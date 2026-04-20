@@ -3,7 +3,7 @@ title: EmailCatchAll
 description: Learn how to configure catch-all email routing rules that handle emails not matched by other rules.
 ---
 
-Configure a catch-all email routing rule that handles emails not matched by other routing rules. This rule is processed last and typically matches all unhandled emails.
+Configure a catch-all email routing rule that handles emails not matched by other routing rules. This rule is processed last and matches all unhandled emails.
 
 :::caution
 Email Routing resources do not work with `wrangler login` (OAuth tokens) due to permission limitations. You must use an API token instead with the following scopes:
@@ -115,33 +115,6 @@ await EmailCatchAll("multi-action-catchall", {
 });
 ```
 
-## Custom Matchers
-
-Use custom matchers instead of the default "all" matcher:
-
-```ts
-import { EmailCatchAll } from "alchemy/cloudflare";
-
-await EmailCatchAll("custom-catchall", {
-  zone: "example.com",
-  enabled: true,
-  name: "Custom catch-all",
-  matchers: [
-    {
-      type: "literal",
-      field: "to",
-      value: "*@example.com",
-    },
-  ],
-  actions: [
-    {
-      type: "forward",
-      value: ["admin@company.com"],
-    },
-  ],
-});
-```
-
 ## Disable Catch-All
 
 Disable the catch-all rule when not needed:
@@ -187,20 +160,21 @@ await EmailCatchAll("zone-ref-catchall", {
 
 ### Input Properties
 
-- `zone` (string | Zone): Zone ID or Zone resource where the catch-all rule will be configured
+- `zone` (string | Zone): Zone hostname, zone ID, or Zone resource where the catch-all rule will be configured
 - `enabled` (boolean, optional): Whether the catch-all rule is enabled. Defaults to `true`
 - `name` (string, optional): Name for the catch-all rule. Defaults to "Catch All"
-- `matchers` (EmailMatcher[], optional): Matchers for the catch-all rule. Defaults to `[{ type: "all" }]`
+- `matchers` ({ type: "all" }[], optional): Matchers for the catch-all rule. Defaults to `[{ type: "all" }]`
 - `actions` (EmailAction[]): Actions to take for emails that don't match other rules
 
 ### Output Properties
 
 - `zoneId` (string): Zone ID where the catch-all rule is configured
+- `ruleId` (string): Catch-all rule identifier
 - `enabled` (boolean): Whether the catch-all rule is enabled
 - `name` (string): Rule name
-- `matchers` (EmailMatcher[]): Matchers for the catch-all rule
+- `matchers` ({ type: "all" }[]): Matchers for the catch-all rule
 - `actions` (EmailAction[]): Actions for the catch-all rule
-- `tag` (string): Rule tag
+- `tag` (string, optional): Deprecated Cloudflare tag field when present
 
 ## How Catch-All Works
 
@@ -349,6 +323,5 @@ Drop/reject unmatched emails:
 
 ## Learn More
 
-- [Cloudflare Email Routing Documentation](https://developers.cloudflare.com/email-routing/)
-- [Catch-All Rule Configuration](https://developers.cloudflare.com/email-routing/setup/email-routing-addresses/#catch-all-address)
-- [Email Routing API Reference](https://developers.cloudflare.com/api/resources/email_routing/)
+- [Cloudflare Email Service route emails guide](https://developers.cloudflare.com/email-service/get-started/route-emails/)
+- [Cloudflare Email Service email routing rules and addresses](https://developers.cloudflare.com/email-service/configuration/email-routing-addresses/)

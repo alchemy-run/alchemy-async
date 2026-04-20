@@ -107,45 +107,13 @@ await EmailRule("spam-filter", {
   matchers: [
     {
       type: "literal",
-      field: "subject",
-      value: "SPAM",
+      field: "to",
+      value: "spam@example.com",
     },
   ],
   actions: [
     {
       type: "drop",
-    },
-  ],
-});
-```
-
-## Multiple Matchers
-
-Create rules with multiple matching conditions:
-
-```ts
-import { EmailRule } from "alchemy/cloudflare";
-
-await EmailRule("vip-routing", {
-  zone: "example.com",
-  name: "VIP customer routing",
-  priority: 1,
-  matchers: [
-    {
-      type: "literal",
-      field: "to",
-      value: "sales@example.com",
-    },
-    {
-      type: "literal",
-      field: "from",
-      value: "important@partner.com",
-    },
-  ],
-  actions: [
-    {
-      type: "forward",
-      value: ["vip-sales@company.com"],
     },
   ],
 });
@@ -196,8 +164,8 @@ await EmailRule("urgent-rule", {
   matchers: [
     {
       type: "literal",
-      field: "subject",
-      value: "URGENT",
+      field: "to",
+      value: "urgent@example.com",
     },
   ],
   actions: [
@@ -238,7 +206,7 @@ Match exact string values in specific fields:
 ```ts
 {
   type: "literal",
-  field: "to",           // "to", "from", or "subject"
+  field: "to",
   value: "sales@example.com"
 }
 ```
@@ -293,11 +261,11 @@ Drop/reject emails:
 
 ### Input Properties
 
-- `zone` (string | Zone): Zone ID or Zone resource where the rule will be created
+- `zone` (string | Zone): Zone hostname, zone ID, or Zone resource where the rule will be created
 - `name` (string, optional): Name for the email routing rule. Defaults to "Email routing rule"
 - `enabled` (boolean, optional): Whether the rule is enabled. Defaults to `true`
 - `priority` (number, optional): Rule priority - lower numbers have higher priority. Defaults to `0`
-- `matchers` (EmailMatcher[]): Array of matchers that define which emails this rule applies to
+- `matchers` (EmailMatcher[]): Array of matchers that define which emails this rule applies to. Literal matchers currently support only `field: "to"`
 - `actions` (EmailAction[]): Array of actions to take when emails match this rule
 
 ### Output Properties
@@ -309,7 +277,7 @@ Drop/reject emails:
 - `priority` (number): Rule priority
 - `matchers` (EmailMatcher[]): Matchers for this rule
 - `actions` (EmailAction[]): Actions for this rule
-- `tag` (string): Rule tag
+- `tag` (string, optional): Deprecated Cloudflare tag field when present
 
 ## Best Practices
 
@@ -362,5 +330,5 @@ Rules are processed in the following order:
 
 ## Learn More
 
-- [Cloudflare Email Routing Rules](https://developers.cloudflare.com/email-routing/setup/email-routing-addresses/#routing-rules)
-- [Email Routing API Reference](https://developers.cloudflare.com/api/resources/email_routing/)
+- [Cloudflare Email Service route emails guide](https://developers.cloudflare.com/email-service/get-started/route-emails/)
+- [Cloudflare Email Service email routing rules and addresses](https://developers.cloudflare.com/email-service/configuration/email-routing-addresses/)

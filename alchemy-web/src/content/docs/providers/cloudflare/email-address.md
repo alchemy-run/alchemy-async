@@ -3,7 +3,7 @@ title: EmailAddress
 description: Learn how to manage destination email addresses for Cloudflare email routing using Alchemy.
 ---
 
-Manage destination email addresses that can receive emails forwarded by Cloudflare email routing rules.
+Manage destination email addresses that can receive emails forwarded by Cloudflare Email Service routing rules.
 
 :::caution
 Email Routing resources do not work with `wrangler login` (OAuth tokens) due to permission limitations. You must use an API token instead with the following scopes:
@@ -59,6 +59,7 @@ const emailAddress = await EmailAddress("my-email", {
 
 // Check verification status
 console.log(`Verified: ${emailAddress.verified}`);
+console.log(`Verified at: ${emailAddress.verifiedAt}`);
 ```
 
 ## Special Characters in Email
@@ -82,15 +83,16 @@ await EmailAddress("subdomain-email", {
 ### Input Properties
 
 - `email` (string): Destination email address for routing
-- `verified` (boolean, optional): Whether to automatically verify the email address if possible. Note: Verification typically requires email confirmation by the recipient. Defaults to `false`
 
 ### Output Properties
 
+- `addressId` (string): Stable Cloudflare identifier for the destination address
 - `email` (string): The email address
 - `verified` (boolean): Whether the email address has been verified
+- `verifiedAt` (string, optional): Timestamp returned by Cloudflare once the address is verified
 - `created` (string): When the email address was created
 - `modified` (string): When the email address was last modified
-- `tag` (string): Email address tag
+- `tag` (string, optional): Deprecated Cloudflare tag field when present
 
 ## Email Verification Process
 
@@ -165,5 +167,5 @@ await EmailRule("admin-forwarding", {
 
 ## Learn More
 
-- [Cloudflare Email Routing Documentation](https://developers.cloudflare.com/email-routing/)
-- [Email Address Verification](https://developers.cloudflare.com/email-routing/get-started/enable-email-routing/#2-add-destination-addresses)
+- [Cloudflare Email Service route emails guide](https://developers.cloudflare.com/email-service/get-started/route-emails/)
+- [Cloudflare Email Service email routing rules and addresses](https://developers.cloudflare.com/email-service/configuration/email-routing-addresses/)

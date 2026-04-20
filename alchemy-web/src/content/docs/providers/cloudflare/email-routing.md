@@ -5,6 +5,10 @@ description: Learn how to enable and configure email routing for your Cloudflare
 
 Enable and configure email routing for your Cloudflare zone to start receiving and routing emails sent to your domain.
 
+:::note
+Cloudflare Email Service is currently in beta. The routing APIs used by these resources may still change before general availability.
+:::
+
 :::caution
 Email Routing resources do not work with `wrangler login` (OAuth tokens) due to permission limitations. You must use an API token instead with the following scopes:
 
@@ -76,7 +80,7 @@ await EmailRouting("my-email-routing", {
 
 ### Input Properties
 
-- `zone` (string | Zone): Zone ID or Zone resource where email routing will be configured
+- `zone` (string | Zone): Zone hostname, zone ID, or Zone resource where email routing will be configured
 - `enabled` (boolean, optional): Whether email routing should be enabled. Defaults to `true`
 - `skipWizard` (boolean, optional): Skip the DNS setup wizard when enabling email routing. Defaults to `false`
 
@@ -111,5 +115,5 @@ After enabling email routing:
 
 ## Learn More
 
-- [Cloudflare Email Routing Documentation](https://developers.cloudflare.com/email-routing/)
-- [Email Routing API Reference](https://developers.cloudflare.com/api/resources/email_routing/)
+- [Cloudflare Email Service route emails guide](https://developers.cloudflare.com/email-service/get-started/route-emails/)
+- [Cloudflare Email Service domain configuration](https://developers.cloudflare.com/email-service/configuration/domains/)
