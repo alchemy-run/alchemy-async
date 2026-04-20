@@ -17,7 +17,7 @@ import { BrowserRendering } from "../../src/cloudflare/browser-rendering.ts";
 import { DispatchNamespace } from "../../src/cloudflare/dispatch-namespace.ts";
 import { Images } from "../../src/cloudflare/images.ts";
 import { Queue } from "../../src/cloudflare/queue.ts";
-import { SendEmailBinding } from "../../src/cloudflare/send-email-binding.ts";
+import { EmailSender } from "../../src/cloudflare/email-sender.ts";
 import { VectorizeIndex } from "../../src/cloudflare/vectorize-index.ts";
 import { Workflow } from "../../src/cloudflare/workflow.ts";
 import "../../src/test/vitest.ts";
@@ -301,7 +301,7 @@ describe("WranglerJson Resource", () => {
           format: "esm",
           entrypoint,
           bindings: {
-            EMAIL: SendEmailBinding({
+            EMAIL: EmailSender({
               allowedSenderAddresses: ["noreply@example.com"],
               dev: { remote: true },
             }),
@@ -354,7 +354,7 @@ describe("WranglerJson Resource", () => {
             format: "esm",
             entrypoint,
             bindings: {
-              EMAIL: SendEmailBinding({
+              EMAIL: EmailSender({
                 allowedSenderAddresses: ["noreply@example.com"],
                 dev: { remote: true },
               }),

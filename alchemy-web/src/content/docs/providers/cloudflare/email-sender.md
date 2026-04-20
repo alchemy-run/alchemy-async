@@ -1,11 +1,11 @@
 ---
-title: SendEmailBinding
+title: EmailSender
 description: Learn how to configure Cloudflare Email Service send_email bindings for Workers using Alchemy.
 ---
 
 The [Cloudflare Email Service Workers API](https://developers.cloudflare.com/email-service/api/send-emails/workers-api/) lets your Worker send outbound email through a native `send_email` binding.
 
-Use `SendEmailBinding()` inside a Worker's `bindings` block when you want first-class, type-safe email sending from `env`.
+Use `EmailSender()` inside a Worker's `bindings` block when you want first-class, type-safe email sending from `env`.
 
 :::note
 Cloudflare Email Service is currently in beta and is available on the Workers Paid plan. Expect APIs and limits to evolve while the product is in beta.
@@ -16,13 +16,13 @@ Cloudflare Email Service is currently in beta and is available on the Workers Pa
 Create a Worker with an email binding:
 
 ```ts
-import { SendEmailBinding, Worker } from "alchemy/cloudflare";
+import { EmailSender, Worker } from "alchemy/cloudflare";
 
 const worker = await Worker("mailer", {
   name: "mailer",
   entrypoint: "./src/worker.ts",
   bindings: {
-    EMAIL: SendEmailBinding(),
+    EMAIL: EmailSender(),
   },
 });
 ```
@@ -79,13 +79,13 @@ export default {
 Lock the binding down to one or more sender addresses:
 
 ```ts
-import { SendEmailBinding, Worker } from "alchemy/cloudflare";
+import { EmailSender, Worker } from "alchemy/cloudflare";
 
 const worker = await Worker("mailer", {
   name: "mailer",
   entrypoint: "./src/worker.ts",
   bindings: {
-    EMAIL: SendEmailBinding({
+    EMAIL: EmailSender({
       allowedSenderAddresses: ["noreply@example.com"],
     }),
   },
@@ -97,13 +97,13 @@ const worker = await Worker("mailer", {
 Use `destinationAddress` to pin delivery to a single address, or `allowedDestinationAddresses` to allow a list of addresses:
 
 ```ts
-import { SendEmailBinding, Worker } from "alchemy/cloudflare";
+import { EmailSender, Worker } from "alchemy/cloudflare";
 
 const worker = await Worker("mailer", {
   name: "mailer",
   entrypoint: "./src/worker.ts",
   bindings: {
-    EMAIL: SendEmailBinding({
+    EMAIL: EmailSender({
       allowedDestinationAddresses: [
         "ops@example.com",
         "support@example.com",
@@ -120,13 +120,13 @@ const worker = await Worker("mailer", {
 Set `dev.remote` to `true` to keep the Worker running locally while the email binding sends through Cloudflare:
 
 ```ts
-import { SendEmailBinding, Worker } from "alchemy/cloudflare";
+import { EmailSender, Worker } from "alchemy/cloudflare";
 
 const worker = await Worker("mailer", {
   name: "mailer",
   entrypoint: "./src/worker.ts",
   bindings: {
-    EMAIL: SendEmailBinding({
+    EMAIL: EmailSender({
       allowedSenderAddresses: ["noreply@example.com"],
       dev: { remote: true },
     }),
@@ -142,6 +142,7 @@ const worker = await Worker("mailer", {
 - `allowedDestinationAddresses` (string[], optional): Restrict sends to a fixed allowlist of destination addresses
 - `allowedSenderAddresses` (string[], optional): Restrict sends to a fixed allowlist of sender addresses
 - `dev.remote` (boolean, optional): Use Cloudflare's remote binding while developing locally
+
 
 ## Learn More
 

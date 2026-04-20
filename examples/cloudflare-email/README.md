@@ -5,7 +5,7 @@ This example shows how to bind Cloudflare Email Service to a Worker with Alchemy
 ## What it does
 
 - Creates a Cloudflare Worker
-- Attaches a `send_email` binding with `SendEmailBinding()`
+- Attaches a `send_email` binding with `EmailSender()`
 - Sends a plain-text email from `/`
 - Sends an HTML email from `/html`
 
