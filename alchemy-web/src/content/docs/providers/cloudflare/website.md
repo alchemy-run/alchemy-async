@@ -20,6 +20,21 @@ const site = await Website("my-site", {
 });
 ```
 
+## With Dev Tunnel
+
+Expose your local dev server through a temporary Cloudflare Quick Tunnel:
+
+```ts
+const site = await Website("my-site", {
+  name: "my-site",
+  dev: {
+    command: "npm run dev",
+    tunnel: true,
+  },
+  assets: "./dist",
+});
+```
+
 ## With Custom Worker
 
 Add server-side functionality with a Worker:

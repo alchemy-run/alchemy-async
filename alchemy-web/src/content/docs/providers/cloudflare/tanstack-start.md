@@ -23,6 +23,21 @@ const app = await TanStackStart("my-app", {
 });
 ```
 
+## With Dev Tunnel
+
+Expose the local TanStack Start dev server through a temporary Cloudflare Quick Tunnel:
+
+```ts
+import { TanStackStart } from "alchemy/cloudflare";
+
+const app = await TanStackStart("my-app", {
+  dev: {
+    command: "vite dev",
+    tunnel: true,
+  },
+});
+```
+
 ## With Database Binding
 
 ```ts

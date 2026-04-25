@@ -14,6 +14,7 @@ import {
   extractStringAndSecretBindings,
   unencryptSecrets,
 } from "./util/filter-env-bindings.ts";
+import { quickTunnel } from "./quick-tunnel.ts";
 import { computeWorkerDevDomain } from "./worker-subdomain.ts";
 import { type AssetsConfig, Worker, type WorkerProps } from "./worker.ts";
 import { WranglerJson, type WranglerJsonSpec } from "./wrangler.json.ts";
@@ -78,6 +79,12 @@ export interface WebsiteProps<
          * The local domain to use for the dev server
          */
         domain?: string;
+        /**
+         * Whether to expose the local dev server via a Cloudflare Quick Tunnel.
+         *
+         * @default false
+         */
+        tunnel?: boolean;
         /**
          * Additional environment variables to set when running the dev command
          */
@@ -363,6 +370,10 @@ export async function Website<
         ALCHEMY_ROOT: Scope.current.rootDir,
       },
     });
+    if ((typeof dev === "object" && dev.tunnel) || scope.tunnel) {
+      const tunnel = await quickTunnel(scope, url, `${id}-tunnel`);
+      url = tunnel.tunnelUrl;
+    }
   }
 
   return (await Worker(id, {

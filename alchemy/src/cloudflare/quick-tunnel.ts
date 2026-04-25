@@ -8,6 +8,7 @@ import type { Scope } from "../scope.ts";
 export const quickTunnel = async (
   scope: Scope,
   localUrl = "http://localhost:8080",
+  id = "tunnel",
 ) => ({
   /**
    * The URL of the local server.
@@ -16,7 +17,7 @@ export const quickTunnel = async (
   /**
    * The URL of the publicly accessible Quick Tunnel.
    */
-  tunnelUrl: await scope.spawn("tunnel", {
+  tunnelUrl: await scope.spawn(id, {
     cmd: `cloudflared tunnel --url ${localUrl}`,
     // used to check if a PID is a cloudflared process when the parent exits, for resumability
     processName: "cloudflared",
