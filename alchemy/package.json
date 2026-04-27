@@ -1,25 +1,16 @@
 {
   "name": "alchemy",
   "version": "0.93.2",
+  "homepage": "https://alchemy.run",
   "license": "Apache-2.0",
   "author": "Sam Goodwin <sam@alchemy.run>",
-  "homepage": "https://alchemy.run",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/alchemy-run/alchemy.git",
     "directory": "alchemy"
   },
-  "type": "module",
-  "module": "./lib/index.js",
   "bin": {
     "alchemy": "bin/alchemy.js"
-  },
-  "scripts": {
-    "build": "rm -rf ./*.tsbuildinfo && rm -rf ./lib && tsc -b && tsdown",
-    "dev": "tsdown --watch",
-    "drizzle:generate": "bun run scripts/drizzle-generate.ts",
-    "postbuild": "(cpy '**/*.d.ts' ../lib --cwd=src || true) && (cpy '**/*.txt' ../lib --cwd=src || true)",
-    "publish:npm": "cp ../README.md . && bun run build && tsdown && bun publish && rm README.md"
   },
   "files": [
     "bin",
@@ -29,6 +20,8 @@
     "templates",
     "workers"
   ],
+  "type": "module",
+  "module": "./lib/index.js",
   "exports": {
     ".": {
       "bun": "./src/index.ts",
@@ -176,6 +169,13 @@
       "import": "./lib/vercel/index.js"
     }
   },
+  "scripts": {
+    "build": "rm -rf ./*.tsbuildinfo && rm -rf ./lib && tsc -b && tsdown",
+    "dev": "tsdown --watch",
+    "drizzle:generate": "bun run scripts/drizzle-generate.ts",
+    "postbuild": "(cpy '**/*.d.ts' ../lib --cwd=src || true) && (cpy '**/*.txt' ../lib --cwd=src || true)",
+    "publish:npm": "cp ../README.md . && bun run build && tsdown && bun publish && rm README.md"
+  },
   "dependencies": {
     "@aws-sdk/credential-providers": "^3.0.0",
     "@cloudflare/unenv-preset": "2.7.7",
@@ -195,7 +195,7 @@
     "glob": "^10.0.0",
     "jszip": "^3.0.0",
     "libsodium-wrappers": "^0.8.0",
-    "miniflare": "4.20260329.0",
+    "miniflare": "4.20260424.0",
     "neverthrow": "^8.2.0",
     "open": "^10.1.2",
     "openapi-types": "^12.1.3",
@@ -204,81 +204,9 @@
     "proper-lockfile": "^4.1.2",
     "signal-exit": "^4.1.0",
     "unenv": "2.0.0-rc.21",
+    "wrangler": "catalog:",
     "ws": "^8.18.3",
     "yaml": "^2.0.0"
-  },
-  "peerDependencies": {
-    "@astrojs/cloudflare": "^12.6.4",
-    "@aws-sdk/client-dynamodb": "^3.0.0",
-    "@aws-sdk/client-iam": "^3.0.0",
-    "@aws-sdk/client-lambda": "^3.0.0",
-    "@aws-sdk/client-s3": "^3.0.0",
-    "@aws-sdk/client-sesv2": "^3.0.0",
-    "@aws-sdk/client-sqs": "^3.0.0",
-    "@aws-sdk/client-ssm": "^3.0.0",
-    "@aws-sdk/client-sts": "^3.0.0",
-    "@cloudflare/vite-plugin": "catalog:",
-    "@coinbase/cdp-sdk": "^0.10.0",
-    "@libsql/client": "^0.15.12",
-    "@opennextjs/cloudflare": "^1.6.5",
-    "astro": "^5.13.2",
-    "rwsdk": "^1.0.0-beta.51",
-    "stripe": "^18.5.0",
-    "vite": ">=6.0.0",
-    "wrangler": "catalog:"
-  },
-  "peerDependenciesMeta": {
-    "@astrojs/cloudflare": {
-      "optional": true
-    },
-    "@coinbase/cdp-sdk": {
-      "optional": true
-    },
-    "@aws-sdk/client-dynamodb": {
-      "optional": true
-    },
-    "@aws-sdk/client-iam": {
-      "optional": true
-    },
-    "@aws-sdk/client-lambda": {
-      "optional": true
-    },
-    "@aws-sdk/client-s3": {
-      "optional": true
-    },
-    "@aws-sdk/client-sesv2": {
-      "optional": true
-    },
-    "@aws-sdk/client-sqs": {
-      "optional": true
-    },
-    "@aws-sdk/client-ssm": {
-      "optional": true
-    },
-    "@aws-sdk/client-sts": {
-      "optional": true
-    },
-    "@cloudflare/vite-plugin": {
-      "optional": true
-    },
-    "@opennextjs/cloudflare": {
-      "optional": true
-    },
-    "@libsql/client": {
-      "optional": true
-    },
-    "astro": {
-      "optional": true
-    },
-    "rwsdk": {
-      "optional": true
-    },
-    "stripe": {
-      "optional": true
-    },
-    "vite": {
-      "optional": true
-    }
   },
   "devDependencies": {
     "@astrojs/cloudflare": "^12.6.4",
@@ -333,5 +261,77 @@
     "undici": "^7.14.0",
     "wrangler": "^4.84.0",
     "zod": "^4.0.10"
+  },
+  "peerDependencies": {
+    "@astrojs/cloudflare": "^12.6.4",
+    "@aws-sdk/client-dynamodb": "^3.0.0",
+    "@aws-sdk/client-iam": "^3.0.0",
+    "@aws-sdk/client-lambda": "^3.0.0",
+    "@aws-sdk/client-s3": "^3.0.0",
+    "@aws-sdk/client-sesv2": "^3.0.0",
+    "@aws-sdk/client-sqs": "^3.0.0",
+    "@aws-sdk/client-ssm": "^3.0.0",
+    "@aws-sdk/client-sts": "^3.0.0",
+    "@cloudflare/vite-plugin": "catalog:",
+    "@coinbase/cdp-sdk": "^0.10.0",
+    "@libsql/client": "^0.15.12",
+    "@opennextjs/cloudflare": "^1.6.5",
+    "astro": "^5.13.2",
+    "rwsdk": "^1.0.0-beta.51",
+    "stripe": "^18.5.0",
+    "vite": ">=6.0.0"
+  },
+  "peerDependenciesMeta": {
+    "@astrojs/cloudflare": {
+      "optional": true
+    },
+    "@coinbase/cdp-sdk": {
+      "optional": true
+    },
+    "@aws-sdk/client-dynamodb": {
+      "optional": true
+    },
+    "@aws-sdk/client-iam": {
+      "optional": true
+    },
+    "@aws-sdk/client-lambda": {
+      "optional": true
+    },
+    "@aws-sdk/client-s3": {
+      "optional": true
+    },
+    "@aws-sdk/client-sesv2": {
+      "optional": true
+    },
+    "@aws-sdk/client-sqs": {
+      "optional": true
+    },
+    "@aws-sdk/client-ssm": {
+      "optional": true
+    },
+    "@aws-sdk/client-sts": {
+      "optional": true
+    },
+    "@cloudflare/vite-plugin": {
+      "optional": true
+    },
+    "@opennextjs/cloudflare": {
+      "optional": true
+    },
+    "@libsql/client": {
+      "optional": true
+    },
+    "astro": {
+      "optional": true
+    },
+    "rwsdk": {
+      "optional": true
+    },
+    "stripe": {
+      "optional": true
+    },
+    "vite": {
+      "optional": true
+    }
   }
 }

@@ -12,9 +12,10 @@
       "@cloudflare/containers": "^0.1.1",
       "@cloudflare/workers-types": "^4.20260420.1",
       "@cloudflare/vite-plugin": "^1.21.2",
+      "miniflare": "4.20260329.0",
       "vite": "^7.1.9",
       "typescript": "^5.8.3",
-      "wrangler": "^4.83.0"
+      "wrangler": "^4.85.0"
     },
     "packages": [
       "alchemy-web",
