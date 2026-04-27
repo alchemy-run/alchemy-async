@@ -16,7 +16,7 @@ export async function createMiniflareWorkerProxy(options: {
   port: number;
   transformRequest?: (request: RequestInfo) => void;
   getWorkerName: (request: RequestInfo) => string;
-  miniflare: miniflare.Miniflare;
+  getMiniflare: () => Promise<miniflare.Miniflare>;
   mode: "local" | "remote";
 }) {
   const server = http.createServer();
@@ -72,12 +72,14 @@ export async function createMiniflareWorkerProxy(options: {
       duplex: info.duplex,
       signal,
     });
-    return await options.miniflare.dispatchFetch(request);
+    const mf = await options.getMiniflare();
+    return await mf.dispatchFetch(request);
   };
 
   const createServerWebSocket = async (req: http.IncomingMessage) => {
     // Rewrite to Miniflare entry URL
-    const target = await options.miniflare.ready;
+    const mf = await options.getMiniflare();
+    const target = await mf.ready;
     const url = new URL(req.url ?? "/", target);
     url.protocol = url.protocol.replace("http", "ws");
 

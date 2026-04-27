@@ -30,12 +30,12 @@ export interface Tunnel {
 }
 
 export async function createTunnel(
-  miniflare: miniflare.Miniflare,
+  getMiniflare: () => Promise<miniflare.Miniflare>,
 ): Promise<Tunnel> {
   const workers = new Set<string>(); // used to avoid exposing workers that are not running with tunneling enabled
   const proxy = await createMiniflareWorkerProxy({
     port: await findOpenPort(9977), // alchemy auth uses 9976, so one above that
-    miniflare,
+    getMiniflare,
     mode: "remote",
     transformRequest: (request) => {
       if (request.url.origin === remote.origin) {

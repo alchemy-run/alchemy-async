@@ -24,6 +24,7 @@ declare global {
 export class MiniflareController {
   abort = new AbortController();
   miniflare: miniflare.Miniflare | undefined;
+  miniflarePromise: PromiseWithResolvers<miniflare.Miniflare> | undefined;
   options = new Map<string, miniflare.WorkerOptions>();
   tunnel: Tunnel | undefined;
   localProxies = new Map<string, MiniflareWorkerProxy>();
@@ -45,10 +46,10 @@ export class MiniflareController {
     const first = await watcher.next();
     assert(first.value, "First value is undefined");
     this.options.set(input.name, first.value);
-    const miniflare = await this.update();
+    await this.update();
     let url: URL;
     if (input.tunnel) {
-      this.tunnel ??= await createTunnel(miniflare);
+      this.tunnel ??= await createTunnel(this.getMiniflare.bind(this));
       url = await this.tunnel.configureWorker({
         api: input.api,
         name: input.name,
@@ -57,7 +58,7 @@ export class MiniflareController {
       const proxy = await createMiniflareWorkerProxy({
         port: input.port ?? (await reservePort(input.name)),
         getWorkerName: () => input.name,
-        miniflare,
+        getMiniflare: this.getMiniflare.bind(this),
         mode: "local",
       });
       this.localProxies.set(input.name, proxy);
@@ -137,16 +138,31 @@ export class MiniflareController {
     });
   }
 
+  private async getMiniflare() {
+    if (this.miniflare) {
+      return this.miniflare;
+    }
+    this.miniflarePromise ??= Promise.withResolvers<miniflare.Miniflare>();
+    return await this.miniflarePromise.promise;
+  }
+
   private async setMiniflareOptions(options: miniflare.MiniflareOptions) {
+    this.miniflarePromise ??= Promise.withResolvers<miniflare.Miniflare>();
     try {
-      if (this.miniflare) {
-        await this.miniflare.setOptions(options);
-      } else {
-        this.miniflare = new miniflare.Miniflare(options);
-        await this.miniflare.ready;
+      // We used to call miniflare.setOptions(), but in the current version, this fails with
+      // TypeError: this.#runtimeDispatcher?.close is not a function. (In 'this.#runtimeDispatcher?.close()', 'this.#runtimeDispatcher?.close' is undefined)
+      // So instead, we dispose of the old instance and create a new one.
+      const instance = this.miniflare;
+      if (instance) {
+        this.miniflare = undefined;
+        await instance.dispose();
       }
+      this.miniflare = new miniflare.Miniflare(options);
+      await this.miniflare.ready;
+      this.miniflarePromise.resolve(this.miniflare);
       return this.miniflare;
     } catch (error) {
+      this.miniflarePromise.reject(error);
       if (
         error instanceof miniflare.MiniflareCoreError &&
         error.code === "ERR_MODULE_STRING_SCRIPT"
@@ -157,6 +173,8 @@ export class MiniflareController {
       } else {
         throw error;
       }
+    } finally {
+      this.miniflarePromise = undefined;
     }
   }
 
