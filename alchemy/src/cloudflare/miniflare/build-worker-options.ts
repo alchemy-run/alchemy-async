@@ -20,6 +20,8 @@ import type { WorkerBundle, WorkerBundleSource } from "../worker-bundle.ts";
 import type { AssetsConfig } from "../worker.ts";
 import { createRemoteProxyWorker } from "./remote-binding-proxy.ts";
 
+// Copied from @cloudflare/containers-shared:
+// https://github.com/cloudflare/workers-sdk/blob/fc2d8838b3c5395d5d248e8073a393f7dbb9536d/packages/containers-shared/src/images.ts#L20
 const CONTAINER_EGRESS_INTERCEPTOR_IMAGE =
   "cloudflare/proxy-everything:3cb1195@sha256:0ef6716c52430096900b150d84a3302057d6cd2319dae7987128c85d0733e3c8";
 
