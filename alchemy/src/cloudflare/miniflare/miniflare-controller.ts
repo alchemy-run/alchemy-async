@@ -108,6 +108,8 @@ export class MiniflareController {
         unsafeDevRegistryDurableObjectProxy: true,
         // This exposes other handlers like `scheduled` and `email` via HTTP.
         unsafeTriggerHandlers: true,
+        // Enable the Local Explorer (/cdn-cgi/explorer)
+        unsafeLocalExplorer: true,
       };
       for (const worker of this.options.values()) {
         options.workers.push(worker);
