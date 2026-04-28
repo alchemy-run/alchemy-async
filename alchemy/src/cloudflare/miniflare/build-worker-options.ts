@@ -1,9 +1,11 @@
 import * as miniflare from "miniflare";
 import path from "pathe";
+import { DockerApi } from "../../docker/api.ts";
 import { assertNever } from "../../util/assert-never.ts";
 import { reservePort } from "../../util/find-open-port.ts";
 import type { HTTPServer } from "../../util/http.ts";
 import { logger } from "../../util/logger.ts";
+import { memoize } from "../../util/memoize.ts";
 import { isAiSearchNamespace } from "../ai-search-namespace.ts";
 import { isAiSearch } from "../ai-search.ts";
 import type { CloudflareApi } from "../api.ts";
@@ -17,6 +19,9 @@ import { isQueueEventSource, type EventSource } from "../event-source.ts";
 import type { WorkerBundle, WorkerBundleSource } from "../worker-bundle.ts";
 import type { AssetsConfig } from "../worker.ts";
 import { createRemoteProxyWorker } from "./remote-binding-proxy.ts";
+
+const CONTAINER_EGRESS_INTERCEPTOR_IMAGE =
+  "cloudflare/proxy-everything:3cb1195@sha256:0ef6716c52430096900b150d84a3302057d6cd2319dae7987128c85d0733e3c8";
 
 export interface MiniflareWorkerInput {
   api: CloudflareApi;
@@ -189,9 +194,7 @@ export const buildWorkerOptions = async (
           },
         };
         options.containerEngine = {
-          localDocker: {
-            socketPath: await getDockerSocketPath(),
-          },
+          localDocker: await getLocalDocker(),
         };
         break;
       }
@@ -631,6 +634,18 @@ const isRemoteBinding = (binding: Binding) => {
     !!binding.dev.remote
   );
 };
+
+const getLocalDocker = memoize(async () => {
+  const docker = new DockerApi();
+  const [socketPath] = await Promise.all([
+    getDockerSocketPath(),
+    docker.pullImage(CONTAINER_EGRESS_INTERCEPTOR_IMAGE),
+  ]);
+  return {
+    socketPath,
+    containerEgressInterceptorImage: CONTAINER_EGRESS_INTERCEPTOR_IMAGE,
+  };
+});
 
 /**
  * DOCKER_HOST env is standardized
