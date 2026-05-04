@@ -112,6 +112,8 @@ export async function execAlchemy(
     rootDir,
     profile,
     eraseSecrets,
+    stateCmd,
+    stateArg,
   }: {
     cwd?: string;
     quiet?: boolean;
@@ -130,6 +132,8 @@ export async function execAlchemy(
     rootDir?: string;
     profile?: string;
     eraseSecrets?: boolean;
+    stateCmd?: "tree" | "list" | "get";
+    stateArg?: string;
   },
 ) {
   const args: string[] = [];
@@ -146,7 +150,7 @@ export async function execAlchemy(
     }`,
   );
 
-  if (quiet) args.push("--quiet");
+  if (quiet || stateCmd) args.push("--quiet");
   if (read) args.push("--read");
   if (force) args.push("--force");
   if (stage) args.push(`--stage ${stage}`);
@@ -175,6 +179,10 @@ export async function execAlchemy(
   if (eraseSecrets) args.push("--erase-secrets");
   if (profile) args.push(`--profile ${profile}`);
   if (app) args.push(`--app ${app}`);
+  if (stateCmd) {
+    args.push(`--state-cmd ${stateCmd}`);
+    if (stateArg) args.push(`--state-arg ${stateArg}`);
+  }
   if (rootDir) {
     args.push(`--root-dir ${rootDir}`);
   } else if (app) {

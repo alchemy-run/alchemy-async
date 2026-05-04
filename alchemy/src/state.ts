@@ -40,4 +40,6 @@ export interface StateStore {
   all(): Promise<Record<string, State>>;
   set(key: string, value: State): Promise<void>;
   delete(key: string): Promise<void>;
+  /** List names of nested scopes within this scope, if supported. */
+  listScopes?(): Promise<string[]>;
 }

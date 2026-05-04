@@ -30,6 +30,8 @@ export class SQLiteStateStoreOperations implements StateStore {
         return;
       case "list":
         return this.list();
+      case "listScopes":
+        return this.listScopes();
       case "count":
         return this.count();
       case "get": {
@@ -61,6 +63,26 @@ export class SQLiteStateStoreOperations implements StateStore {
       .from(schema.resources)
       .where(eq(schema.resources.scope, this.context.chain));
     return result.map((r) => r.id);
+  }
+  async listScopes() {
+    const rows = await this.db
+      .selectDistinct({ scope: schema.resources.scope })
+      .from(schema.resources);
+    const prefix = this.context.chain;
+    const names = new Set<string>();
+    for (const row of rows) {
+      const scope = row.scope as string[];
+      if (scope.length !== prefix.length + 1) continue;
+      let matches = true;
+      for (let i = 0; i < prefix.length; i++) {
+        if (scope[i] !== prefix[i]) {
+          matches = false;
+          break;
+        }
+      }
+      if (matches) names.add(scope[prefix.length]!);
+    }
+    return [...names];
   }
   async count() {
     const result = await this.db.$count(

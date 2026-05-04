@@ -106,6 +106,22 @@ export class FileSystemStateStore implements StateStore {
     }
   }
 
+  async listScopes(): Promise<string[]> {
+    try {
+      const entries = await fs.promises.readdir(this.dir, {
+        withFileTypes: true,
+      });
+      return entries
+        .filter((dirent) => dirent.isDirectory())
+        .map((dirent) => dirent.name);
+    } catch (error: any) {
+      if (error.code === "ENOENT") {
+        return [];
+      }
+      throw error;
+    }
+  }
+
   async all(): Promise<Record<string, State>> {
     return this.getBatch(await this.list());
   }

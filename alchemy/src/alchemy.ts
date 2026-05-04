@@ -3,6 +3,7 @@ import path from "pathe";
 import { onExit } from "signal-exit";
 import { isReplacedSignal } from "./apply.ts";
 import { DestroyStrategy, destroy, isDestroyedSignal } from "./destroy.ts";
+import { runStateCommand, type StateCommand } from "./state-cli.ts";
 import { env } from "./env.ts";
 import {
   type PendingResource,
@@ -250,6 +251,14 @@ If this is a mistake, you can disable this check by setting the ALCHEMY_CI_STATE
   });
   Scope.storage.enterWith(root);
   Scope.storage.enterWith(stage);
+
+  const stateCmd = parseOption("--state-cmd") as StateCommand | undefined;
+  if (stateCmd) {
+    const stateArg = parseOption("--state-arg");
+    await runStateCommand(stage, stateCmd, stateArg);
+    return process.exit(0);
+  }
+
   if (mergedOptions?.phase === "destroy") {
     const err = await destroy(stage).catch((e) => e);
     if (!options?.noTrack) {

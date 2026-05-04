@@ -39,6 +39,10 @@ export abstract class StateStoreProxy implements StateStore {
     return this.run("list", []);
   }
 
+  listScopes(): Promise<string[]> {
+    return this.run("listScopes", []);
+  }
+
   count(): Promise<number> {
     return this.run("count", []);
   }
