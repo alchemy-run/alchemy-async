@@ -62,6 +62,16 @@ export type PriceRecurring =
 type TaxBehavior = Stripe.PriceCreateParams.TaxBehavior;
 type BillingScheme = Stripe.PriceCreateParams.BillingScheme;
 
+// Stripe SDK >=19 returns `*_decimal` fields as a `Stripe.Decimal` class
+// instance (which holds a BigInt internally) rather than a plain string.
+// Resource state must remain JSON-serialisable, so coerce to string here.
+// Older SDKs that already return strings flow through unchanged.
+const toDecimalString = (value: unknown): string | undefined => {
+  if (value == null) return undefined;
+  const str = typeof value === "string" ? value : String(value);
+  return str || undefined;
+};
+
 /**
  * Properties for price tier configuration
  */
@@ -529,9 +539,9 @@ export const Price = Resource(
       const tiers = price.tiers
         ? price.tiers.map((tier) => ({
             flatAmount: tier.flat_amount || undefined,
-            flatAmountDecimal: tier.flat_amount_decimal || undefined,
+            flatAmountDecimal: toDecimalString(tier.flat_amount_decimal),
             unitAmount: tier.unit_amount || undefined,
-            unitAmountDecimal: tier.unit_amount_decimal || undefined,
+            unitAmountDecimal: toDecimalString(tier.unit_amount_decimal),
             upTo: tier.up_to === null ? ("inf" as const) : tier.up_to!,
           }))
         : undefined;
@@ -551,7 +561,7 @@ export const Price = Resource(
           typeof price.product === "string" ? price.product : price.product.id,
         currency: price.currency,
         unitAmount: price.unit_amount || undefined,
-        unitAmountDecimal: price.unit_amount_decimal || undefined,
+        unitAmountDecimal: toDecimalString(price.unit_amount_decimal),
         active: price.active,
         billingScheme: price.billing_scheme as BillingScheme,
         nickname: price.nickname || undefined,
