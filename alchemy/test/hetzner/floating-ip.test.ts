@@ -93,7 +93,7 @@ describe.skipIf(!process.env.HCLOUD_TOKEN)("Hetzner FloatingIP", () => {
     }
   }, 180_000);
 
-  test("delete: false preserves floating IP after destroy", async (scope) => {
+  test("delete=false preserves floating IP after destroy", async (scope) => {
     const retainId = `${testId}-retain`;
     let fip: FloatingIP | undefined;
 

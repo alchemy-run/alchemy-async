@@ -160,7 +160,7 @@ describe("Hetzner Bucket Resource", () => {
     }
   });
 
-  test("delete: false retains bucket on destroy", async (scope) => {
+  test("delete=false retains bucket on destroy", async (scope) => {
     const retainId = `${testId}-retain`;
     let bucket: Bucket | undefined;
     const s3Client = createHetznerS3Client("hel1");

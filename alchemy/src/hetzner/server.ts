@@ -181,7 +181,7 @@ export const Server = Resource(
 
     // create
     const body: Record<string, unknown> = {
-      name: props.name ?? this.scope.createPhysicalName(id),
+      name: props.name ?? this.scope.createPhysicalName(id, "-", 63),
       server_type: props.serverType,
       image: props.image,
       labels: props.labels ?? {},

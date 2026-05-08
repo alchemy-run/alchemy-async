@@ -47,7 +47,8 @@ describe("Hetzner DNSRecord", () => {
 
       // Verify via API
       const api = createHetznerDnsApi();
-      const fetched: any = await api.get(`/records/${record.id}`);
+      const fetchedRes = await api.get(`/records/${record.id}`);
+      const fetched: any = await fetchedRes.json();
       expect(fetched.record.id).toBe(record.id);
       expect(fetched.record.value).toBe("203.0.113.1");
 
@@ -62,7 +63,8 @@ describe("Hetzner DNSRecord", () => {
 
       expect(record.value).toBe("203.0.113.2");
 
-      const updated: any = await api.get(`/records/${record.id}`);
+      const updatedRes = await api.get(`/records/${record.id}`);
+      const updated: any = await updatedRes.json();
       expect(updated.record.value).toBe("203.0.113.2");
     } finally {
       await destroy(scope);

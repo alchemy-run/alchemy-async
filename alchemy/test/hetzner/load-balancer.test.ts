@@ -83,7 +83,7 @@ describe.skipIf(!process.env.HCLOUD_TOKEN)("Hetzner LoadBalancer", () => {
       });
 
       expect(lb.services).toHaveLength(2);
-      const ports = lb.services.map((s) => s.listenPort).sort();
+      const ports = lb.services.map((s) => s.listenPort).sort((a, b) => a - b);
       expect(ports).toEqual([80, 443]);
 
       // Update: remove the port-80 service (service diffing — delete_service)
