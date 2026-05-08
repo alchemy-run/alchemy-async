@@ -187,7 +187,7 @@ export const FloatingIP = Resource(
 
     if (this.phase === "update" && this.output) {
       if (this.output.type !== props.type) {
-        return this.replace();
+        return this.replace(true);
       }
 
       await api.put(`/floating_ips/${this.output.id}`, {

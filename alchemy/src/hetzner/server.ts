@@ -169,7 +169,7 @@ export const Server = Resource(
         props.userData !== this.props?.userData;
 
       if (immutableChanged) {
-        this.replace();
+        this.replace(true);
       }
 
       const { server: raw } = await api.put<HetznerServerResponse>(

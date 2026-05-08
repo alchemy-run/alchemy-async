@@ -216,7 +216,7 @@ export const LoadBalancer = Resource(
     if (this.phase === "update" && this.output?.id) {
       // Check immutable location field
       if (props.location && props.location !== this.output.location) {
-        this.replace();
+        this.replace(true);
       }
 
       const lbId = this.output.id;

@@ -6,11 +6,19 @@ import { SSHKey } from "../../src/hetzner/ssh-key.ts";
 import { BRANCH_PREFIX } from "../util.ts";
 import "../../src/test/vitest.ts";
 
-// Two distinct throwaway public keys used as test fixtures
+// Distinct throwaway public keys — one unique pair per test to avoid
+// Hetzner's uniqueness constraint when tests run concurrently.
 const PUBLIC_KEY_1 =
   "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIJdi4GzEMcAuxbzIYFTqedkc8rmYRk920D/PPrxrZRtV test1@alchemy";
 const PUBLIC_KEY_2 =
   "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAICfu4Nc0ywsp4i/DPHW2ikdDIe9OkrY1gG0WoywClAhP test2@alchemy";
+// Keys 3-5 are used by individual tests to avoid fingerprint conflicts
+const PUBLIC_KEY_3 =
+  "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIMKQSZhYcf7O3MZp4uEFc5j14Bh/5Ky9r9gVamwJPVT0 test3@alchemy";
+const PUBLIC_KEY_4 =
+  "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIJv5Czhph6vk6HgxjZmN9AAaVlQpW+MpuEXZ+z2jqnAH test4@alchemy";
+const PUBLIC_KEY_5 =
+  "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIK4+intxP3VUMPmpwP8xgEKZskZtdBKqrW5usYmZBDqM test5@alchemy";
 
 const test = alchemy.test(import.meta, { prefix: BRANCH_PREFIX });
 
@@ -20,14 +28,14 @@ describe("Hetzner SSHKey", () => {
     let key: SSHKey | undefined;
     try {
       key = await SSHKey(id, {
-        publicKey: PUBLIC_KEY_1,
+        publicKey: PUBLIC_KEY_3,
         labels: { env: "test" },
       });
 
       expect(key.id).toBeTruthy();
       expect(key.fingerprint).toBeTruthy();
       expect(key.name).toBeTruthy();
-      expect(key.publicKey).toEqual(PUBLIC_KEY_1);
+      expect(key.publicKey).toEqual(PUBLIC_KEY_3);
       expect(key.labels).toEqual({ env: "test" });
       expect(key.created).toBeTruthy();
 
@@ -42,7 +50,7 @@ describe("Hetzner SSHKey", () => {
 
       // Update labels
       const updatedKey = await SSHKey(id, {
-        publicKey: PUBLIC_KEY_1,
+        publicKey: PUBLIC_KEY_3,
         labels: { env: "test", updated: "true" },
       });
 
@@ -70,19 +78,19 @@ describe("Hetzner SSHKey", () => {
     let key: SSHKey | undefined;
     try {
       key = await SSHKey(id, {
-        publicKey: PUBLIC_KEY_1,
+        publicKey: PUBLIC_KEY_4,
       });
       expect(key.id).toBeTruthy();
       const originalId = key.id;
 
       // Change publicKey — should trigger replacement (new resource)
       key = await SSHKey(id, {
-        publicKey: PUBLIC_KEY_2,
+        publicKey: PUBLIC_KEY_5,
       });
 
       expect(key.id).toBeTruthy();
       expect(key.id).not.toEqual(originalId);
-      expect(key.publicKey).toEqual(PUBLIC_KEY_2);
+      expect(key.publicKey).toEqual(PUBLIC_KEY_5);
 
       // Old key should no longer exist
       const resolvedApi = createHetznerApi({});

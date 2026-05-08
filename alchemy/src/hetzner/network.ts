@@ -134,7 +134,7 @@ export const Network = Resource(
 
     if (this.phase === "update") {
       if (this.output.ipRange !== props.ipRange) {
-        return this.replace();
+        return this.replace(true);
       }
 
       const networkId = this.output.id;
