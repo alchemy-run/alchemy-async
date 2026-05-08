@@ -116,6 +116,10 @@
       "bun": "./src/github/index.ts",
       "import": "./lib/github/index.js"
     },
+    "./hetzner": {
+      "bun": "./src/hetzner/index.ts",
+      "import": "./lib/hetzner/index.js"
+    },
     "./neon": {
       "bun": "./src/neon/index.ts",
       "import": "./lib/neon/index.js"

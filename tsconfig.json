@@ -18,6 +18,7 @@
     { "path": "./examples/cloudflare-vite/tsconfig.json" },
     { "path": "./examples/cloudflare-worker-simple/tsconfig.json" },
     { "path": "./examples/cloudflare-worker/tsconfig.json" },
-    { "path": "./examples/docker/tsconfig.json" }
+    { "path": "./examples/docker/tsconfig.json" },
+    { "path": "./examples/hetzner/tsconfig.json" }
   ]
 }

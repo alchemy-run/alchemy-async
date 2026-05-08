@@ -1,0 +1,11 @@
+{
+  "name": "hetzner-example",
+  "private": true,
+  "scripts": {
+    "deploy": "bun ./alchemy.run.ts",
+    "destroy": "bun ./alchemy.run.ts --destroy"
+  },
+  "dependencies": {
+    "alchemy": "workspace:*"
+  }
+}

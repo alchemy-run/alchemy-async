@@ -1,0 +1,203 @@
+---
+title: Hetzner
+description: Provision a Hetzner Cloud server with SSH key, network, and firewall using Alchemy.
+sidebar:
+  order: 22
+---
+
+import { Tabs, TabItem, Steps } from "@astrojs/starlight/components";
+
+This guide shows how to provision a Hetzner Cloud server — including an SSH key, private network, and firewall — using Alchemy.
+
+<Steps>
+
+1. **Install Alchemy**
+
+   Add Alchemy to your project:
+
+   <Tabs syncKey="pkgManager">
+     <TabItem label="bun">
+       ```sh
+       bun add alchemy
+       ```
+     </TabItem>
+     <TabItem label="npm">
+       ```sh
+       npm install alchemy
+       ```
+     </TabItem>
+     <TabItem label="pnpm">
+       ```sh
+       pnpm add alchemy
+       ```
+     </TabItem>
+     <TabItem label="yarn">
+       ```sh
+       yarn add alchemy
+       ```
+     </TabItem>
+   </Tabs>
+
+   :::tip
+   If you're new to Alchemy, see the [Getting Started](/getting-started/) guide.
+   :::
+
+2. **Get your Hetzner API token**
+
+   1. Log in to the [Hetzner Cloud Console](https://console.hetzner.cloud/).
+   2. Select your project (or create one).
+   3. Go to **Security → API Tokens** and click **Generate API Token**.
+   4. Give it a name, select **Read & Write**, and copy the token.
+
+   Add it to your `.env` file:
+
+   ```properties
+   HCLOUD_TOKEN=your_hetzner_api_token
+   ```
+
+   :::tip
+   Add `.env` to `.gitignore` so your token is never committed to source control.
+   :::
+
+3. **Add your SSH public key**
+
+   Alchemy uploads your SSH public key to Hetzner so you can log in to your server. Add it to `.env`:
+
+   ```properties
+   HCLOUD_TOKEN=your_hetzner_api_token
+   SSH_PUBLIC_KEY=ssh-ed25519 AAAA...your-public-key
+   ```
+
+   :::tip
+   Run `cat ~/.ssh/id_ed25519.pub` (or `id_rsa.pub`) to print your public key.
+   :::
+
+4. **Create `alchemy.run.ts`**
+
+   Create a file named `alchemy.run.ts` at the root of your project:
+
+   ```ts title="alchemy.run.ts"
+   import alchemy from "alchemy";
+   import { SSHKey, Network, Firewall, Server } from "alchemy/hetzner";
+
+   const app = await alchemy("my-hetzner-app");
+
+   const sshKey = await SSHKey("my-key", {
+     publicKey: process.env.SSH_PUBLIC_KEY!,
+   });
+
+   const network = await Network("main-network", {
+     ipRange: "10.0.0.0/16",
+     subnets: [
+       {
+         type: "cloud",
+         networkZone: "eu-central",
+         ipRange: "10.0.1.0/24",
+       },
+     ],
+   });
+
+   const firewall = await Firewall("web-firewall", {
+     rules: [
+       {
+         direction: "in",
+         protocol: "tcp",
+         port: "80",
+         sourceIps: ["0.0.0.0/0", "::/0"],
+       },
+       {
+         direction: "in",
+         protocol: "tcp",
+         port: "443",
+         sourceIps: ["0.0.0.0/0", "::/0"],
+       },
+       {
+         direction: "in",
+         protocol: "tcp",
+         port: "22",
+         sourceIps: ["0.0.0.0/0", "::/0"],
+       },
+     ],
+   });
+
+   const server = await Server("web-server", {
+     serverType: "cx22",
+     image: "ubuntu-24.04",
+     location: "fsn1",
+     sshKeys: [sshKey],
+     networks: [network],
+     firewalls: [firewall],
+   });
+
+   console.log(`Server IP: ${server.publicNet.ipv4?.ip}`);
+
+   await app.finalize();
+   ```
+
+5. **Deploy**
+
+   Run the script to provision your Hetzner infrastructure:
+
+   <Tabs syncKey="pkgManager">
+     <TabItem label="bun">
+       ```sh
+       bun ./alchemy.run.ts
+       ```
+     </TabItem>
+     <TabItem label="npm">
+       ```sh
+       npx tsx ./alchemy.run.ts
+       ```
+     </TabItem>
+     <TabItem label="pnpm">
+       ```sh
+       pnpm tsx ./alchemy.run.ts
+       ```
+     </TabItem>
+     <TabItem label="yarn">
+       ```sh
+       yarn tsx ./alchemy.run.ts
+       ```
+     </TabItem>
+   </Tabs>
+
+   Alchemy creates all resources in order and prints your server's public IP:
+
+   ```sh
+   Server IP: 1.2.3.4
+   ```
+
+   You can now SSH into the server:
+
+   ```sh
+   ssh root@1.2.3.4
+   ```
+
+6. **(Optional) Tear down**
+
+   When you're done, destroy all resources created by this stack:
+
+   <Tabs syncKey="pkgManager">
+     <TabItem label="bun">
+       ```sh
+       bun ./alchemy.run.ts --destroy
+       ```
+     </TabItem>
+     <TabItem label="npm">
+       ```sh
+       npx tsx ./alchemy.run.ts --destroy
+       ```
+     </TabItem>
+     <TabItem label="pnpm">
+       ```sh
+       pnpm tsx ./alchemy.run.ts --destroy
+       ```
+     </TabItem>
+     <TabItem label="yarn">
+       ```sh
+       yarn tsx ./alchemy.run.ts --destroy
+       ```
+     </TabItem>
+   </Tabs>
+
+</Steps>
