@@ -16,7 +16,6 @@ export async function safeFetch(
         dispatcher: await dispatcher(),
       } as RequestInit);
     } catch (err: any) {
-      console.log("err", err);
       latestErr = err;
       const shouldRetry =
         isTransientNetworkError(err) || isTransientNetworkError(err.cause);

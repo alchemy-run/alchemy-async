@@ -35,7 +35,7 @@ export interface SSHKeyProps extends HetznerApiOptions {
 /**
  * A Hetzner Cloud SSH Key resource
  */
-export type SSHKey = Omit<SSHKeyProps, "adopt"> & {
+export type SSHKey = Omit<SSHKeyProps, "adopt" | "apiToken" | "baseUrl"> & {
   /**
    * The Hetzner-assigned numeric ID of the SSH key
    */
@@ -104,12 +104,27 @@ export const SSHKey = Resource(
 
     if (this.scope.local) {
       return {
-        ...props,
+        publicKey: props.publicKey,
+        labels: props.labels,
         id: 0,
         name,
         fingerprint: "00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00",
         created: new Date().toISOString(),
       };
+    }
+
+    const VALID_KEY_PREFIXES = [
+      "ssh-rsa",
+      "ssh-ed25519",
+      "ecdsa-sha2-nistp256",
+      "ecdsa-sha2-nistp384",
+      "ecdsa-sha2-nistp521",
+      "sk-ssh-ed25519@openssh.com",
+    ];
+    if (!VALID_KEY_PREFIXES.some((p) => props.publicKey.startsWith(p))) {
+      throw new Error(
+        `Invalid SSH public key format for '${name}'. Key must start with one of: ${VALID_KEY_PREFIXES.join(", ")}.`,
+      );
     }
 
     const api = await createHetznerApi(props);
@@ -188,12 +203,11 @@ export const SSHKey = Resource(
 
 function toOutput(props: SSHKeyProps, key: HetznerSSHKeyResponse): SSHKey {
   return {
-    ...props,
+    publicKey: key.public_key,
+    labels: key.labels,
     id: key.id,
     name: key.name,
     fingerprint: key.fingerprint,
-    publicKey: key.public_key,
-    labels: key.labels,
     created: key.created,
   };
 }

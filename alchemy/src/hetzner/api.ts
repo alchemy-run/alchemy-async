@@ -66,9 +66,9 @@ export class HetznerApi {
   ): Promise<Response> {
     let delay = 500;
     const headers: Record<string, string> = {
-      Authorization: `Bearer ${this.apiToken}`,
-      "Content-Type": "application/json",
       ...((init.headers as Record<string, string>) ?? {}),
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${this.apiToken}`,
     };
     for (let attempt = 0; attempt < 4; attempt++) {
       const res = await fetch(`${this.baseUrl}${path}`, { ...init, headers });

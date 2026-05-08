@@ -140,6 +140,12 @@ export const Bucket = Resource(
       Secret.unwrap(props.secretAccessKey) ??
       process.env.HETZNER_SECRET_ACCESS_KEY;
 
+    if (!accessKeyId || !secretAccessKey) {
+      throw new Error(
+        "Hetzner credentials missing. Provide accessKeyId / secretAccessKey props or set HETZNER_ACCESS_KEY_ID and HETZNER_SECRET_ACCESS_KEY environment variables.",
+      );
+    }
+
     const client = new S3Client({
       region: props.region,
       endpoint,
@@ -160,7 +166,7 @@ export const Bucket = Resource(
     }
 
     if (this.phase === "create") {
-      await client.send(new CreateBucketCommand({ Bucket: name }));
+      await client.send(new CreateBucketCommand({ Bucket: name, ACL: "private" }));
     }
     // update is a no-op — buckets have no mutable configuration
 

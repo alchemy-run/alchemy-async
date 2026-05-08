@@ -40,9 +40,9 @@ class HetznerDnsApi {
 
   private async fetch(path: string, init: RequestInit = {}): Promise<Response> {
     const headers: Record<string, string> = {
+      ...((init.headers as Record<string, string>) ?? {}),
       "Content-Type": "application/json",
       "Auth-API-Token": this.token,
-      ...((init.headers as Record<string, string>) ?? {}),
     };
 
     return withExponentialBackoff(
