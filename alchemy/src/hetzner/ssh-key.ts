@@ -143,7 +143,7 @@ export const SSHKey = Resource(
     if (this.phase === "update" && this.output?.id) {
       // publicKey is immutable in Hetzner — trigger replacement if it changed
       if (props.publicKey !== this.output.publicKey) {
-        return this.replace();
+        return this.replace(true);
       }
 
       const { ssh_key }: { ssh_key: HetznerSSHKeyResponse } = (await api.put(

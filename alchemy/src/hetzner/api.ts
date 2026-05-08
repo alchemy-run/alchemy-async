@@ -133,6 +133,22 @@ export class HetznerApi {
     }
   }
 
+  async deleteAndWait(path: string, timeoutMs = 120_000): Promise<void> {
+    const res = await this._fetch(path, { method: "DELETE" });
+    if (res.status === 404) return;
+    if (!res.ok) {
+      const data = await res.json().catch(() => ({}));
+      const err = (data as any)?.error;
+      throw new HetznerApiError(res.status, err?.message ?? res.statusText, err?.code);
+    }
+    if (res.status === 204) return;
+    const data = await res.json().catch(() => ({}));
+    const actionId = (data as any)?.action?.id;
+    if (actionId) {
+      await this.waitForAction(actionId, timeoutMs);
+    }
+  }
+
   /**
    * Poll a Hetzner action until it succeeds or errors out.
    */

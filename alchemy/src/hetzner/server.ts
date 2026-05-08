@@ -157,7 +157,7 @@ export const Server = Resource(
 
     if (this.phase === "delete") {
       if (this.output?.id) {
-        await api.delete(`/servers/${this.output.id}`);
+        await api.deleteAndWait(`/servers/${this.output.id}`);
       }
       return this.destroy();
     }
