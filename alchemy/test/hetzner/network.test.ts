@@ -12,7 +12,7 @@ const test = alchemy.test(import.meta, {
 
 async function assertNetworkDeleted(id: number) {
   const res = await fetch(`https://api.hetzner.cloud/v1/networks/${id}`, {
-    headers: { Authorization: `Bearer ${process.env.HETZNER_API_TOKEN}` },
+    headers: { Authorization: `Bearer ${process.env.HCLOUD_TOKEN}` },
   });
   expect(res.status).toBe(404);
 }

@@ -31,7 +31,7 @@ describe("Hetzner Server Resource", () => {
     try {
       // Create a minimal server
       server = await Server(testId, {
-        serverType: "cx22",
+        serverType: "cx23",
         image: "ubuntu-24.04",
         location: "fsn1",
         labels: { env: "test" },
@@ -40,7 +40,7 @@ describe("Hetzner Server Resource", () => {
       expect(server.id).toBeGreaterThan(0);
       expect(server.name).toBeTruthy();
       expect(server.status).toEqual("running");
-      expect(server.serverType).toEqual("cx22");
+      expect(server.serverType).toEqual("cx23");
       expect(server.image).toEqual("ubuntu-24.04");
       expect(server.location).toEqual("fsn1");
       expect(server.created).toBeTruthy();
@@ -58,7 +58,7 @@ describe("Hetzner Server Resource", () => {
 
       // Update: change labels (mutable property)
       server = await Server(testId, {
-        serverType: "cx22",
+        serverType: "cx23",
         image: "ubuntu-24.04",
         location: "fsn1",
         labels: { env: "test", updated: "true" },
@@ -88,17 +88,17 @@ describe("Hetzner Server Resource", () => {
     let server: Server | undefined;
     try {
       server = await Server(`${testId}-replace`, {
-        serverType: "cx22",
+        serverType: "cx23",
         image: "ubuntu-24.04",
         location: "fsn1",
       });
 
       const originalId = server.id;
-      expect(server.serverType).toEqual("cx22");
+      expect(server.serverType).toEqual("cx23");
 
       // Change serverType — must trigger replacement (new server created)
       server = await Server(`${testId}-replace`, {
-        serverType: "cx32",
+        serverType: "cx33",
         image: "ubuntu-24.04",
         location: "fsn1",
       });
@@ -120,7 +120,7 @@ describe("Hetzner Server Resource", () => {
     let server: Server | undefined;
     try {
       server = await Server(`${testId}-img-replace`, {
-        serverType: "cx22",
+        serverType: "cx23",
         image: "ubuntu-24.04",
         location: "fsn1",
       });
@@ -130,7 +130,7 @@ describe("Hetzner Server Resource", () => {
 
       // Change image — must trigger replacement
       server = await Server(`${testId}-img-replace`, {
-        serverType: "cx22",
+        serverType: "cx23",
         image: "debian-12",
         location: "fsn1",
       });
