@@ -329,7 +329,23 @@ export const LoadBalancer = Resource(
     }
 
     logger.log(`🚀 Creating LoadBalancer: ${name}`);
-    const createData: any = await api.post("/load_balancers", createBody);
+    // Retry on 409 name-conflict: Hetzner reserves names briefly after deletion.
+    let createData: any;
+    {
+      const deadline = Date.now() + 60_000;
+      while (true) {
+        try {
+          createData = await api.post("/load_balancers", createBody);
+          break;
+        } catch (err: any) {
+          if (err?.status === 409 && Date.now() < deadline) {
+            await new Promise((r) => setTimeout(r, 2_000));
+            continue;
+          }
+          throw err;
+        }
+      }
+    }
     const lbId: number = createData.load_balancer.id;
 
     await waitForAction(api, createData.action.id);
