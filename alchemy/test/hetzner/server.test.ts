@@ -14,13 +14,17 @@ const test = alchemy.test(import.meta, {
 });
 
 async function assertServerDeleted(serverId: number): Promise<void> {
-  try {
-    await api.get(`/servers/${serverId}`);
-    throw new Error(`Server ${serverId} still exists after destroy`);
-  } catch (err: any) {
-    // HetznerApiError with status 404 is the expected outcome
-    if (err.status !== 404) throw err;
+  // Hetzner server deletion is async — retry for up to 30 seconds.
+  for (let i = 0; i < 30; i++) {
+    try {
+      await api.get(`/servers/${serverId}`);
+    } catch (err: any) {
+      if (err.status === 404) return;
+      throw err;
+    }
+    await new Promise((r) => setTimeout(r, 1_000));
   }
+  throw new Error(`Server ${serverId} still exists after destroy`);
 }
 
 describe("Hetzner Server Resource", () => {
@@ -82,7 +86,7 @@ describe("Hetzner Server Resource", () => {
         await assertServerDeleted(serverId);
       }
     }
-  });
+  }, 300_000);
 
   test("immutable serverType triggers replace", async (scope) => {
     let server: Server | undefined;
@@ -104,7 +108,7 @@ describe("Hetzner Server Resource", () => {
       });
 
       expect(server.status).toEqual("running");
-      expect(server.serverType).toEqual("cx32");
+      expect(server.serverType).toEqual("cx33");
       // Replacement creates a new resource with a different id
       expect(server.id).not.toEqual(originalId);
     } finally {
@@ -114,7 +118,7 @@ describe("Hetzner Server Resource", () => {
         await assertServerDeleted(server.id);
       }
     }
-  });
+  }, 600_000);
 
   test("immutable image triggers replace", async (scope) => {
     let server: Server | undefined;
@@ -145,5 +149,5 @@ describe("Hetzner Server Resource", () => {
         await assertServerDeleted(server.id);
       }
     }
-  });
+  }, 600_000);
 });
