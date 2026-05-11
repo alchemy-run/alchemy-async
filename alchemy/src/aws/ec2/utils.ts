@@ -6,7 +6,7 @@ import { logger } from "../../util/logger.ts";
 import { flattenParams } from "../../util/params.ts";
 import type { AwsClientProps } from "../client-props.ts";
 import { resolveAwsCredentials } from "../credentials.ts";
-import { getRegion } from "../utils.ts";
+import { awsEndpoint, getRegion } from "../utils.ts";
 
 /**
  * Shared EC2 utilities for all EC2 resources
@@ -100,8 +100,10 @@ export async function callEC2Api<T>(
   // Try the API call, and retry once with fresh credentials on auth failure
   for (let attempt = 1; attempt <= 2; attempt++) {
     try {
-      // Use the client's region instead of the global region
-      const url = `https://ec2.${client.region}.amazonaws.com/`;
+      // Use the client's region instead of the global region.
+      // Honour AWS_ENDPOINT_URL / AWS_ENDPOINT_URL_EC2 for emulators
+      // (LocalStack, moto, etc.) — matches AWS SDK v3 behaviour.
+      const url = `${awsEndpoint("ec2", client.region ?? "us-east-1")}/`;
 
       const body = new URLSearchParams({
         Action: action,

@@ -13,6 +13,7 @@ import { deserialize, serialize } from "../serde.ts";
 import type { State, StateStore } from "../state.ts";
 import { ignore } from "../util/ignore.ts";
 import { retry } from "./retry.ts";
+import { hasAwsEndpointOverride } from "./utils.ts";
 
 /**
  * Options for S3StateStore
@@ -67,6 +68,9 @@ export class S3StateStore implements StateStore {
 
     this.client = new S3Client({
       region: options.region,
+      // When AWS_ENDPOINT_URL / AWS_ENDPOINT_URL_S3 is set, force path-style
+      // addressing for emulator compatibility (LocalStack, moto, …).
+      ...(hasAwsEndpointOverride("s3") && { forcePathStyle: true }),
     });
   }
 

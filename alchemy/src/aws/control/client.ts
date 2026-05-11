@@ -3,6 +3,7 @@ import { loadConfig } from "@smithy/node-config-provider";
 import { AwsClient } from "aws4fetch";
 import { logger } from "../../util/logger.ts";
 import { safeFetch } from "../../util/safe-fetch.ts";
+import { awsEndpoint } from "../utils.ts";
 import {
   AlreadyExistsError,
   CloudControlError,
@@ -355,7 +356,7 @@ export class CloudControlClient {
     while (true) {
       try {
         const args = [
-          `https://cloudcontrolapi.${this.region}.amazonaws.com/?Action=${action}&Version=2021-09-30`,
+          `${awsEndpoint("cloudcontrolapi", this.region)}/?Action=${action}&Version=2021-09-30`,
           {
             method: "POST",
             headers: {
