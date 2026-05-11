@@ -144,7 +144,8 @@ describe.skipIf(!process.env.HCLOUD_TOKEN)("Hetzner LoadBalancer", () => {
       expect(lb.id).toBeGreaterThan(0);
       expect(lb.targets).toHaveLength(0);
 
-      // Add an IP target (add_target action)
+      // Add a label_selector target (add_target action).
+      // label_selector doesn't require an owned IP or attached network.
       lb = await LoadBalancerResource(lbName, {
         name: lbName,
         loadBalancerType: "lb11",
@@ -162,13 +163,13 @@ describe.skipIf(!process.env.HCLOUD_TOKEN)("Hetzner LoadBalancer", () => {
             },
           },
         ],
-        targets: [{ type: "ip", ip: "203.0.113.1" }],
+        targets: [{ type: "label_selector", labelSelector: "env=cod370-test" }],
         labels: { env: "test" },
       });
 
       expect(lb.targets).toHaveLength(1);
-      expect(lb.targets[0].type).toBe("ip");
-      expect(lb.targets[0].ip).toBe("203.0.113.1");
+      expect(lb.targets[0].type).toBe("label_selector");
+      expect(lb.targets[0].labelSelector).toBe("env=cod370-test");
 
       // Remove the target (remove_target action)
       lb = await LoadBalancerResource(lbName, {
