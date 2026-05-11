@@ -106,13 +106,22 @@ function buildServicePayload(svc: LBService): Record<string, unknown> {
   };
 
   if (svc.http) {
-    payload.http = {
+    const http: Record<string, unknown> = {
       redirect_http: svc.http.redirectHttp ?? false,
-      sticky_sessions: svc.http.stickySessionsCookieName
-        ? { enabled: true, cookie_name: svc.http.stickySessionsCookieName }
-        : { enabled: false },
-      certificates: svc.http.certificates ?? [],
     };
+    // sticky_sessions must only be sent when enabled — the Hetzner API rejects
+    // the field entirely when it contains {"enabled": false}.
+    if (svc.http.stickySessionsCookieName) {
+      http.sticky_sessions = {
+        enabled: true,
+        cookie_name: svc.http.stickySessionsCookieName,
+      };
+    }
+    // Omit certificates when empty — some API versions reject [].
+    if (svc.http.certificates?.length) {
+      http.certificates = svc.http.certificates;
+    }
+    payload.http = http;
   }
 
   if (svc.healthCheck) {
