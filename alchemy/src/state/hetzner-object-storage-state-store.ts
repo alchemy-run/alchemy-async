@@ -1,17 +1,10 @@
-import {
-  DeleteObjectCommand,
-  GetObjectCommand,
-  ListObjectsV2Command,
-  NoSuchKey,
-  PutObjectCommand,
-  S3Client,
-} from "@aws-sdk/client-s3";
+import { AwsClient } from "aws4fetch";
+import { XMLParser } from "fast-xml-parser";
 import { ResourceScope } from "../resource.ts";
 import type { Scope } from "../scope.ts";
 import { deserialize, serialize } from "../serde.ts";
 import { Secret } from "../secret.ts";
 import type { State, StateStore } from "../state.ts";
-import { ignore } from "../util/ignore.ts";
 import { withExponentialBackoff } from "../util/retry.ts";
 
 /**
@@ -57,6 +50,9 @@ export interface HetznerObjectStorageStateStoreOptions {
  * State store backed by Hetzner Object Storage (S3-compatible).
  * Suitable for CI/CD pipelines and team deployments.
  *
+ * Uses `aws4fetch` (already bundled with Alchemy) to make signed S3 requests
+ * directly to Hetzner's Object Storage endpoint — no peer dependencies required.
+ *
  * @example
  * ```ts
  * const app = await alchemy("my-app", {
@@ -71,7 +67,8 @@ export interface HetznerObjectStorageStateStoreOptions {
  * ```
  */
 export class HetznerObjectStorageStateStore implements StateStore {
-  private client: S3Client;
+  private client: AwsClient;
+  private endpoint: string;
   private prefix: string;
   private bucketName: string;
   private initialized = false;
@@ -86,34 +83,34 @@ export class HetznerObjectStorageStateStore implements StateStore {
       : `alchemy/${scopePath}/`;
 
     this.bucketName = options.bucket;
+    this.endpoint = `https://${options.region}.your-objectstorage.com`;
 
-    this.client = new S3Client({
+    const accessKeyId =
+      Secret.unwrap(options.accessKeyId) ??
+      process.env.HETZNER_ACCESS_KEY_ID;
+    const secretAccessKey =
+      Secret.unwrap(options.secretAccessKey) ??
+      process.env.HETZNER_SECRET_ACCESS_KEY;
+
+    if (!accessKeyId || !secretAccessKey) {
+      throw new Error(
+        "Hetzner credentials missing. Set HETZNER_ACCESS_KEY_ID and HETZNER_SECRET_ACCESS_KEY environment variables or provide accessKeyId/secretAccessKey options.",
+      );
+    }
+
+    this.client = new AwsClient({
+      accessKeyId,
+      secretAccessKey,
+      service: "s3",
       region: options.region,
-      endpoint: `https://${options.region}.your-objectstorage.com`,
-      credentials: {
-        accessKeyId:
-          Secret.unwrap(options.accessKeyId) ??
-          process.env.HETZNER_ACCESS_KEY_ID!,
-        secretAccessKey:
-          Secret.unwrap(options.secretAccessKey) ??
-          process.env.HETZNER_SECRET_ACCESS_KEY!,
-      },
-      forcePathStyle: true,
     });
   }
 
   async init(): Promise<void> {
     if (this.initialized) return;
 
-    await retry(() =>
-      this.client.send(
-        new ListObjectsV2Command({
-          Bucket: this.bucketName,
-          MaxKeys: 1,
-        }),
-      ),
-    );
-
+    // Verify bucket access by listing with MaxKeys=1
+    await retry(() => this.listObjects({ maxKeys: 1 }));
     this.initialized = true;
   }
 
@@ -128,26 +125,17 @@ export class HetznerObjectStorageStateStore implements StateStore {
     let continuationToken: string | undefined;
 
     do {
-      const response = await retry(() =>
-        this.client.send(
-          new ListObjectsV2Command({
-            Bucket: this.bucketName,
-            Prefix: this.prefix,
-            ContinuationToken: continuationToken,
-          }),
-        ),
+      const page = await retry(() =>
+        this.listObjects({
+          prefix: this.prefix,
+          continuationToken,
+        }),
       );
 
-      if (response.Contents) {
-        keys.push(
-          ...response.Contents.map((obj) => {
-            const key = obj.Key!.slice(this.prefix.length);
-            return this.convertKeyFromStorage(key);
-          }),
-        );
+      if (page.keys) {
+        keys.push(...page.keys.map((k) => this.convertKeyFromStorage(k.slice(this.prefix.length))));
       }
-
-      continuationToken = response.NextContinuationToken;
+      continuationToken = page.nextToken;
     } while (continuationToken);
 
     return keys;
@@ -161,53 +149,34 @@ export class HetznerObjectStorageStateStore implements StateStore {
   async get(key: string): Promise<State | undefined> {
     await this.ensureInitialized();
 
-    try {
-      const response = await retry(() =>
-        this.client.send(
-          new GetObjectCommand({
-            Bucket: this.bucketName,
-            Key: this.getObjectKey(key),
-          }),
-        ),
-      );
+    const url = `${this.endpoint}/${this.bucketName}/${this.getObjectKey(key)}`;
+    const res = await retry(() => this.client.fetch(url, { method: "GET" }));
 
-      if (!response.Body) {
-        return undefined;
-      }
-
-      const content = await response.Body.transformToString();
-      const state = (await deserialize(
-        this.scope,
-        JSON.parse(content),
-      )) as State;
-
-      return {
-        ...state,
-        output: {
-          ...(state.output || {}),
-          [ResourceScope]: this.scope,
-        },
-      };
-    } catch (error: any) {
-      if (error.name === NoSuchKey.name) {
-        return undefined;
-      }
-      throw error;
+    if (res.status === 404) return undefined;
+    if (!res.ok) {
+      throw new Error(`Failed to get state key "${key}": ${res.status} ${res.statusText}`);
     }
+
+    const content = await res.text();
+    const state = (await deserialize(this.scope, JSON.parse(content))) as State;
+
+    return {
+      ...state,
+      output: {
+        ...(state.output || {}),
+        [ResourceScope]: this.scope,
+      },
+    };
   }
 
   async getBatch(ids: string[]): Promise<Record<string, State>> {
     const result: Record<string, State> = {};
-
     await Promise.all(
       ids.map(async (id) => {
         const state = await this.get(id);
-        if (state) {
-          result[id] = state;
-        }
+        if (state) result[id] = state;
       }),
     );
-
     return result;
   }
 
@@ -219,38 +188,65 @@ export class HetznerObjectStorageStateStore implements StateStore {
   async set(key: string, value: State): Promise<void> {
     await this.ensureInitialized();
 
-    const objectKey = this.getObjectKey(key);
-    const serializedData = JSON.stringify(
-      await serialize(this.scope, value),
-      null,
-      2,
+    const url = `${this.endpoint}/${this.bucketName}/${this.getObjectKey(key)}`;
+    const body = JSON.stringify(await serialize(this.scope, value), null, 2);
+
+    const res = await retry(() =>
+      this.client.fetch(url, {
+        method: "PUT",
+        body,
+        headers: { "Content-Type": "application/json" },
+      }),
     );
 
-    await retry(() =>
-      this.client.send(
-        new PutObjectCommand({
-          Bucket: this.bucketName,
-          Key: objectKey,
-          Body: serializedData,
-          ContentType: "application/json",
-        }),
-      ),
-    );
+    if (!res.ok) {
+      throw new Error(`Failed to set state key "${key}": ${res.status} ${res.statusText}`);
+    }
   }
 
   async delete(key: string): Promise<void> {
     await this.ensureInitialized();
 
-    await ignore(NoSuchKey.name, () =>
-      retry(() =>
-        this.client.send(
-          new DeleteObjectCommand({
-            Bucket: this.bucketName,
-            Key: this.getObjectKey(key),
-          }),
-        ),
-      ),
-    );
+    const url = `${this.endpoint}/${this.bucketName}/${this.getObjectKey(key)}`;
+    const res = await retry(() => this.client.fetch(url, { method: "DELETE" }));
+
+    if (!res.ok && res.status !== 404) {
+      throw new Error(`Failed to delete state key "${key}": ${res.status} ${res.statusText}`);
+    }
+  }
+
+  private async listObjects(opts: {
+    prefix?: string;
+    maxKeys?: number;
+    continuationToken?: string;
+  }): Promise<{ keys?: string[]; nextToken?: string }> {
+    const params = new URLSearchParams({ "list-type": "2" });
+    if (opts.prefix) params.set("prefix", opts.prefix);
+    if (opts.maxKeys) params.set("max-keys", String(opts.maxKeys));
+    if (opts.continuationToken) params.set("continuation-token", opts.continuationToken);
+
+    const url = `${this.endpoint}/${this.bucketName}?${params}`;
+    const res = await this.client.fetch(url, { method: "GET" });
+
+    if (!res.ok) {
+      throw new Error(`Failed to list objects: ${res.status} ${res.statusText}`);
+    }
+
+    const xml = await res.text();
+    const parser = new XMLParser({ ignoreAttributes: false });
+    const parsed = parser.parse(xml);
+    const result = parsed.ListBucketResult;
+
+    if (!result) return {};
+
+    const contents = result.Contents
+      ? (Array.isArray(result.Contents) ? result.Contents : [result.Contents])
+      : [];
+
+    return {
+      keys: contents.map((c: any) => c.Key as string),
+      nextToken: result.NextContinuationToken,
+    };
   }
 
   private convertKeyForStorage(key: string): string {

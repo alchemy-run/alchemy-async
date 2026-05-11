@@ -1,8 +1,4 @@
-import {
-  HeadBucketCommand,
-  ListBucketsCommand,
-  S3Client,
-} from "@aws-sdk/client-s3";
+import { AwsClient } from "aws4fetch";
 import { describe, expect } from "vitest";
 import { alchemy } from "../../src/alchemy.ts";
 import { destroy } from "../../src/destroy.ts";
@@ -17,62 +13,60 @@ const test = alchemy.test(import.meta, {
   prefix: BRANCH_PREFIX,
 });
 
-/**
- * Creates an S3 client pointed at Hetzner Object Storage for the given region.
- * Reads credentials from environment variables.
- */
-function createHetznerS3Client(region: string): S3Client {
-  return new S3Client({
+function createHetznerClient(region: string): AwsClient {
+  return new AwsClient({
+    accessKeyId: process.env.HETZNER_ACCESS_KEY_ID!,
+    secretAccessKey: process.env.HETZNER_SECRET_ACCESS_KEY!,
+    service: "s3",
     region,
-    endpoint: `https://${region}.your-objectstorage.com`,
-    credentials: {
-      accessKeyId: process.env.HETZNER_ACCESS_KEY_ID!,
-      secretAccessKey: process.env.HETZNER_SECRET_ACCESS_KEY!,
-    },
-    forcePathStyle: true,
   });
 }
 
-/**
- * Verify that a bucket does NOT exist via the S3 API.
- * Uses HeadBucket — expects a 404 / NotFound error.
- */
 async function assertBucketDeleted(
   bucketName: string,
   region: string,
 ): Promise<void> {
-  const client = createHetznerS3Client(region);
-  try {
-    await client.send(new HeadBucketCommand({ Bucket: bucketName }));
-    throw new Error(`Bucket "${bucketName}" still exists after destroy`);
-  } catch (error: any) {
-    // S3 SDK throws with $metadata.httpStatusCode 404 or name NotFound / NoSuchBucket
-    const status = error?.$metadata?.httpStatusCode;
-    const name = error?.name;
-    if (
-      status === 404 ||
-      name === "NotFound" ||
-      name === "NoSuchBucket" ||
-      name === "404"
-    ) {
-      return; // expected — bucket is gone
-    }
-    throw error;
+  const client = createHetznerClient(region);
+  const res = await client.fetch(
+    `https://${region}.your-objectstorage.com/${bucketName}`,
+    { method: "HEAD" },
+  );
+  if (res.status !== 404) {
+    throw new Error(
+      `Bucket "${bucketName}" still exists after destroy (status ${res.status})`,
+    );
   }
 }
 
-/**
- * Verify that a bucket exists via the S3 API using ListBuckets.
- */
 async function assertBucketExists(
   bucketName: string,
   region: string,
 ): Promise<void> {
-  const client = createHetznerS3Client(region);
-  const { Buckets } = await client.send(new ListBucketsCommand({}));
-  const found = (Buckets ?? []).some((b) => b.Name === bucketName);
-  if (!found) {
+  const client = createHetznerClient(region);
+  const res = await client.fetch(
+    `https://${region}.your-objectstorage.com/${bucketName}`,
+    { method: "HEAD" },
+  );
+  if (res.status === 404) {
     throw new Error(`Bucket "${bucketName}" not found in region ${region}`);
+  }
+  if (!res.ok) {
+    throw new Error(
+      `Unexpected status checking bucket "${bucketName}": ${res.status}`,
+    );
+  }
+}
+
+async function deleteBucket(bucketName: string, region: string): Promise<void> {
+  const client = createHetznerClient(region);
+  const res = await client.fetch(
+    `https://${region}.your-objectstorage.com/${bucketName}`,
+    { method: "DELETE" },
+  );
+  if (!res.ok && res.status !== 404) {
+    throw new Error(
+      `Failed to delete bucket "${bucketName}": ${res.status}`,
+    );
   }
 }
 
@@ -163,7 +157,6 @@ describe("Hetzner Bucket Resource", () => {
   test("delete=false retains bucket on destroy", async (scope) => {
     const retainId = `${testId}-retain`;
     let bucket: Bucket | undefined;
-    const s3Client = createHetznerS3Client("hel1");
 
     try {
       bucket = await Bucket(retainId, {
@@ -180,7 +173,7 @@ describe("Hetzner Bucket Resource", () => {
 
       await assertBucketExists(bucket.name, "hel1");
     } finally {
-      // Alchemy destroy should NOT delete the S3 bucket when delete: false
+      // Alchemy destroy should NOT delete the bucket when delete: false
       await destroy(scope);
 
       if (bucket) {
@@ -188,8 +181,7 @@ describe("Hetzner Bucket Resource", () => {
         await assertBucketExists(bucket.name, "hel1");
 
         // Clean up manually so we don't litter test buckets
-        const { DeleteBucketCommand } = await import("@aws-sdk/client-s3");
-        await s3Client.send(new DeleteBucketCommand({ Bucket: bucket.name }));
+        await deleteBucket(bucket.name, "hel1");
 
         // Now it should be gone
         await assertBucketDeleted(bucket.name, "hel1");

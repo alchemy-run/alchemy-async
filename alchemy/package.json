@@ -271,7 +271,6 @@
     "@aws-sdk/client-dynamodb": "^3.0.0",
     "@aws-sdk/client-iam": "^3.0.0",
     "@aws-sdk/client-lambda": "^3.0.0",
-    "@aws-sdk/client-s3": "^3.0.0",
     "@aws-sdk/client-sesv2": "^3.0.0",
     "@aws-sdk/client-sqs": "^3.0.0",
     "@aws-sdk/client-ssm": "^3.0.0",
@@ -299,9 +298,6 @@
       "optional": true
     },
     "@aws-sdk/client-lambda": {
-      "optional": true
-    },
-    "@aws-sdk/client-s3": {
       "optional": true
     },
     "@aws-sdk/client-sesv2": {

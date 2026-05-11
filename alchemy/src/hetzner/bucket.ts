@@ -1,8 +1,7 @@
+import { AwsClient } from "aws4fetch";
 import type { Context } from "../context.ts";
 import { Resource } from "../resource.ts";
 import { Secret } from "../secret.ts";
-import { ignore } from "../util/ignore.ts";
-import { importPeer } from "../util/peer.ts";
 
 export type HetznerObjectStorageRegion = "fsn1" | "nbg1" | "hel1";
 
@@ -66,7 +65,8 @@ export type Bucket = Omit<BucketProps, "accessKeyId" | "secretAccessKey"> & {
  * Hetzner Object Storage Bucket
  *
  * Creates and manages Hetzner Object Storage buckets using the S3-compatible API.
- * Uses `@aws-sdk/client-s3` with a custom endpoint pointing to Hetzner's Object Storage.
+ * Uses `aws4fetch` (already bundled with Alchemy) to make signed S3 requests
+ * directly to Hetzner's Object Storage endpoint — no peer dependencies required.
  *
  * @example
  * ## Create a bucket in Frankfurt
@@ -131,9 +131,6 @@ export const Bucket = Resource(
       };
     }
 
-    const { CreateBucketCommand, DeleteBucketCommand, NoSuchBucket, S3Client } =
-      await importPeer(import("@aws-sdk/client-s3"), "hetzner::Bucket");
-
     const accessKeyId =
       Secret.unwrap(props.accessKeyId) ?? process.env.HETZNER_ACCESS_KEY_ID;
     const secretAccessKey =
@@ -146,27 +143,34 @@ export const Bucket = Resource(
       );
     }
 
-    const client = new S3Client({
+    const client = new AwsClient({
+      accessKeyId,
+      secretAccessKey,
+      service: "s3",
       region: props.region,
-      endpoint,
-      credentials: {
-        accessKeyId: accessKeyId!,
-        secretAccessKey: secretAccessKey!,
-      },
-      forcePathStyle: true,
     });
+
+    const bucketUrl = `${endpoint}/${name}`;
 
     if (this.phase === "delete") {
       if (props.delete !== false) {
-        await ignore(NoSuchBucket.name, () =>
-          client.send(new DeleteBucketCommand({ Bucket: name })),
-        );
+        const res = await client.fetch(bucketUrl, { method: "DELETE" });
+        if (!res.ok && res.status !== 404) {
+          throw new Error(
+            `Failed to delete bucket "${name}": ${res.status} ${res.statusText}`,
+          );
+        }
       }
       return this.destroy();
     }
 
     if (this.phase === "create") {
-      await client.send(new CreateBucketCommand({ Bucket: name, ACL: "private" }));
+      const res = await client.fetch(bucketUrl, { method: "PUT" });
+      if (!res.ok) {
+        throw new Error(
+          `Failed to create bucket "${name}": ${res.status} ${res.statusText}`,
+        );
+      }
     }
     // update is a no-op — buckets have no mutable configuration
 
