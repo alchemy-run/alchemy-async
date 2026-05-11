@@ -3,7 +3,6 @@ import { Resource } from "../resource.ts";
 import { ignore } from "../util/ignore.ts";
 import { importPeer } from "../util/peer.ts";
 import { retry } from "./retry.ts";
-import { hasAwsEndpointOverride } from "./utils.ts";
 
 /**
  * Properties for creating or updating an S3 bucket
@@ -139,12 +138,7 @@ export const Bucket = Resource(
       PutBucketTaggingCommand,
       S3Client,
     } = await importPeer(import("@aws-sdk/client-s3"), "s3::Bucket");
-    // When AWS_ENDPOINT_URL / AWS_ENDPOINT_URL_S3 is set (LocalStack, moto, …),
-    // force path-style addressing — most emulators don't resolve
-    // virtual-hosted-style hostnames like `<bucket>.localhost:4566`.
-    const client = new S3Client({
-      ...(hasAwsEndpointOverride("s3") && { forcePathStyle: true }),
-    });
+    const client = new S3Client({});
 
     const bucketName =
       props.bucketName ??

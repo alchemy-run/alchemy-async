@@ -15,60 +15,19 @@ export const getRegion: Provider<string> = loadConfig({
 });
 
 /**
- * Resolve the endpoint URL for an AWS service, honouring the standard
- * `AWS_ENDPOINT_URL` and `AWS_ENDPOINT_URL_<SERVICE>` environment variables.
- *
- * This mirrors the resolution behaviour of AWS SDK v3 so users can point
- * `aws4fetch`-based resources at LocalStack, moto, or any other AWS emulator
- * without learning a new variable.
- *
- * Resolution order (first match wins):
- * 1. `AWS_ENDPOINT_URL_<SERVICE>` (e.g. `AWS_ENDPOINT_URL_EC2`) — uppercased,
- *    `-` is replaced with `_` to match the SDK convention.
- * 2. `AWS_ENDPOINT_URL` — global override applied to every service.
- * 3. `https://<service>.<region>.amazonaws.com` — the default AWS endpoint.
- *
- * Any trailing slash on an override is stripped so callers can append paths
- * deterministically.
- *
- * @param service - AWS service id (e.g. `"ec2"`, `"s3"`, `"cloudcontrolapi"`).
- * @param region  - AWS region (e.g. `"us-east-1"`).
- * @returns Endpoint URL without a trailing slash.
- *
- * @example
- * // With AWS_ENDPOINT_URL=http://localhost:4566
- * awsEndpoint("ec2", "us-east-1");
- * // → "http://localhost:4566"
- *
- * @example
- * // With AWS_ENDPOINT_URL_EC2=http://localhost:5000 (takes precedence)
- * awsEndpoint("ec2", "us-east-1");
- * // → "http://localhost:5000"
- *
- * @example
- * // No overrides — defaults to the real AWS endpoint
- * awsEndpoint("ec2", "us-east-1");
- * // → "https://ec2.us-east-1.amazonaws.com"
+ * Resolve the endpoint URL for an aws4fetch service request, honouring the
+ * same `AWS_ENDPOINT_URL_<SERVICE>` / `AWS_ENDPOINT_URL` env vars as the AWS
+ * SDK / CLI so aws4fetch-based resources can be pointed at LocalStack, moto,
+ * or any other emulator.
  */
 export function awsEndpoint(service: string, region: string): string {
-  const serviceVar = `AWS_ENDPOINT_URL_${service.toUpperCase().replace(/-/g, "_")}`;
-  const override = process.env[serviceVar] ?? process.env.AWS_ENDPOINT_URL;
-  if (override) {
-    return override.replace(/\/+$/, "");
-  }
-  return `https://${service}.${region}.amazonaws.com`;
-}
-
-/**
- * Whether the user has configured an endpoint override for a specific service
- * (or globally via `AWS_ENDPOINT_URL`). Useful for emulator-specific tweaks
- * such as forcing path-style addressing on S3.
- *
- * @internal
- */
-export function hasAwsEndpointOverride(service: string): boolean {
-  const serviceVar = `AWS_ENDPOINT_URL_${service.toUpperCase().replace(/-/g, "_")}`;
-  return Boolean(process.env[serviceVar] ?? process.env.AWS_ENDPOINT_URL);
+  return (
+    process.env[
+      `AWS_ENDPOINT_URL_${service.toUpperCase().replace(/-/g, "_")}`
+    ] ??
+    process.env.AWS_ENDPOINT_URL ??
+    `https://${service}.${region}.amazonaws.com`
+  ).replace(/\/+$/, "");
 }
 
 /**
@@ -77,11 +36,6 @@ export function hasAwsEndpointOverride(service: string): boolean {
 export interface AwsServiceConfig {
   service: string;
   version: string;
-  /**
-   * Optional endpoint resolver. When omitted, the endpoint is resolved via
-   * {@link awsEndpoint}, which honours `AWS_ENDPOINT_URL` /
-   * `AWS_ENDPOINT_URL_<SERVICE>` for emulator support.
-   */
   endpoint?: (region: string) => string;
 }
 
