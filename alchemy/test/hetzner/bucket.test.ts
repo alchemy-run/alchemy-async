@@ -22,38 +22,41 @@ function createHetznerClient(region: string): AwsClient {
   });
 }
 
+async function listBucketNames(region: string): Promise<string[]> {
+  const client = createHetznerClient(region);
+  const res = await client.fetch(
+    `https://${region}.your-objectstorage.com/`,
+    { method: "GET" },
+  );
+  if (!res.ok) {
+    throw new Error(`Failed to list buckets: ${res.status} ${res.statusText}`);
+  }
+  const xml = await res.text();
+  const matches = xml.matchAll(/<Name>([^<]+)<\/Name>/g);
+  return [...matches].map((m) => m[1]);
+}
+
 async function assertBucketDeleted(
   bucketName: string,
   region: string,
 ): Promise<void> {
-  const client = createHetznerClient(region);
-  const res = await client.fetch(
-    `https://${region}.your-objectstorage.com/${bucketName}`,
-    { method: "HEAD" },
-  );
-  if (res.status !== 404) {
-    throw new Error(
-      `Bucket "${bucketName}" still exists after destroy (status ${res.status})`,
-    );
+  // Hetzner Object Storage has eventual consistency for bucket deletion —
+  // retry for up to 10 seconds before declaring failure.
+  for (let i = 0; i < 20; i++) {
+    const names = await listBucketNames(region);
+    if (!names.includes(bucketName)) return;
+    await new Promise((r) => setTimeout(r, 500));
   }
+  throw new Error(`Bucket "${bucketName}" still exists after destroy`);
 }
 
 async function assertBucketExists(
   bucketName: string,
   region: string,
 ): Promise<void> {
-  const client = createHetznerClient(region);
-  const res = await client.fetch(
-    `https://${region}.your-objectstorage.com/${bucketName}`,
-    { method: "HEAD" },
-  );
-  if (res.status === 404) {
+  const names = await listBucketNames(region);
+  if (!names.includes(bucketName)) {
     throw new Error(`Bucket "${bucketName}" not found in region ${region}`);
-  }
-  if (!res.ok) {
-    throw new Error(
-      `Unexpected status checking bucket "${bucketName}": ${res.status}`,
-    );
   }
 }
 
@@ -63,7 +66,7 @@ async function deleteBucket(bucketName: string, region: string): Promise<void> {
     `https://${region}.your-objectstorage.com/${bucketName}`,
     { method: "DELETE" },
   );
-  if (!res.ok && res.status !== 404) {
+  if (!res.ok && res.status !== 204 && res.status !== 404) {
     throw new Error(
       `Failed to delete bucket "${bucketName}": ${res.status}`,
     );
