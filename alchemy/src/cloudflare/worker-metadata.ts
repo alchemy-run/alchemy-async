@@ -725,11 +725,20 @@ export async function prepareWorkerMetadata(
   // TODO(sam): remove Worker.env in favor of always bindings
   if (props.env) {
     for (const [key, value] of Object.entries(props.env)) {
-      meta.bindings.push({
-        name: key,
-        type: "plain_text",
-        text: value,
-      });
+      if (value === undefined) continue;
+      if (typeof value === "string") {
+        meta.bindings.push({
+          name: key,
+          type: "plain_text",
+          text: value,
+        });
+      } else {
+        meta.bindings.push({
+          name: key,
+          type: "json",
+          json: JSON.stringify(value),
+        });
+      }
     }
   }
 

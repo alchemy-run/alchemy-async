@@ -50,6 +50,28 @@ export function extractStringAndSecretBindings(
  * // Returns: { API_KEY: "abc123", DEBUG: "true" }
  * ```
  */
+/**
+ * Coerce non-string env values to JSON strings for child-process env vars.
+ *
+ * Child-process env vars must be strings. String and Secret values pass
+ * through unchanged; numbers, booleans, arrays, and objects are
+ * JSON-stringified. Undefined values are dropped.
+ */
+export function stringifyEnvValues<
+  T extends Record<string, unknown> | undefined,
+>(env: T): Record<string, string | Secret> {
+  if (!env) return {};
+  return Object.fromEntries(
+    Object.entries(env).flatMap(([key, value]) => {
+      if (value === undefined) return [];
+      if (typeof value === "string" || isSecret(value)) {
+        return [[key, value as string | Secret]];
+      }
+      return [[key, JSON.stringify(value)]];
+    }),
+  );
+}
+
 export function unencryptSecrets(
   env: Record<string, string | Secret | undefined>,
 ): Record<string, string> {

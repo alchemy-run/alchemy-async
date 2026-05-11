@@ -190,7 +190,7 @@ export async function WranglerJson(
 
   // Add environment variables as vars
   if (worker.env) {
-    spec.vars = { ...worker.env };
+    spec.vars = { ...worker.env } as Record<string, any>;
   }
 
   if (worker.tailConsumers && worker.tailConsumers.length > 0) {

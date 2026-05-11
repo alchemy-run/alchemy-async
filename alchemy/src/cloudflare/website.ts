@@ -13,6 +13,7 @@ import { unionCompatibilityFlags } from "./compatibility-presets.ts";
 import { quickTunnel } from "./quick-tunnel.ts";
 import {
   extractStringAndSecretBindings,
+  stringifyEnvValues,
   unencryptSecrets,
 } from "./util/filter-env-bindings.ts";
 import { computeWorkerDevDomain } from "./worker-subdomain.ts";
@@ -242,7 +243,7 @@ export async function Website<
 
   const env = {
     ...process.env,
-    ...props.env,
+    ...stringifyEnvValues(props.env),
     ...extractStringAndSecretBindings(props.bindings ?? {}, secrets),
   };
   if (props.bindings) {

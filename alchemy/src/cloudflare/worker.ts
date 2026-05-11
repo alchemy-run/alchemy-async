@@ -168,12 +168,20 @@ export interface BaseWorkerProps<
   /**
    * Environment variables to attach to the worker
    *
-   * These will be converted to plain_text bindings
+   * String values are emitted as `plain_text` bindings; non-string
+   * values (number, boolean, null, array, object) are emitted as
+   * `json` bindings and arrive in the worker as the parsed value.
    *
    * @deprecated - use `bindings` instead
    */
   env?: {
-    [key: string]: string;
+    [key: string]:
+      | string
+      | number
+      | boolean
+      | null
+      | unknown[]
+      | { [key: string]: unknown };
   };
 
   /**

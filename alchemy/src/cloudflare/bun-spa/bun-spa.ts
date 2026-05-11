@@ -5,6 +5,7 @@ import { exists } from "../../util/exists.ts";
 import type { Bindings } from "../bindings.ts";
 import {
   extractStringAndSecretBindings,
+  stringifyEnvValues,
   unencryptSecrets,
 } from "../util/filter-env-bindings.ts";
 import {
@@ -114,7 +115,7 @@ export async function BunSPA<
     const secrets = props.wrangler?.secrets ?? !props.wrangler?.path;
     const env = {
       ...(process.env ?? {}),
-      ...(props.env ?? {}),
+      ...stringifyEnvValues(props.env),
       ...extractStringAndSecretBindings(props.bindings ?? {}, secrets),
     };
     website.url = await scope.spawn(website.name, {
