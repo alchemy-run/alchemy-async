@@ -103,7 +103,7 @@ function mapServer(
       ipv6: raw.public_net.ipv6
         ? {
             ip: raw.public_net.ipv6.ip,
-            dnsPtr: raw.public_net.ipv6.dns_ptr_entries.map((e) => e.dns_ptr),
+            dnsPtr: (raw.public_net.ipv6.dns_ptr_entries ?? []).map((e) => e.dns_ptr),
             id: raw.public_net.ipv6.id,
           }
         : null,
