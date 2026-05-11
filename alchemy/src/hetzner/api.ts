@@ -139,7 +139,11 @@ export class HetznerApi {
     if (!res.ok) {
       const data = await res.json().catch(() => ({}));
       const err = (data as any)?.error;
-      throw new HetznerApiError(res.status, err?.message ?? res.statusText, err?.code);
+      throw new HetznerApiError(
+        res.status,
+        err?.message ?? res.statusText,
+        err?.code,
+      );
     }
     if (res.status === 204) return;
     const data = await res.json().catch(() => ({}));

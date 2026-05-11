@@ -24,10 +24,9 @@ function createHetznerClient(region: string): AwsClient {
 
 async function listBucketNames(region: string): Promise<string[]> {
   const client = createHetznerClient(region);
-  const res = await client.fetch(
-    `https://${region}.your-objectstorage.com/`,
-    { method: "GET" },
-  );
+  const res = await client.fetch(`https://${region}.your-objectstorage.com/`, {
+    method: "GET",
+  });
   if (!res.ok) {
     throw new Error(`Failed to list buckets: ${res.status} ${res.statusText}`);
   }
@@ -67,9 +66,7 @@ async function deleteBucket(bucketName: string, region: string): Promise<void> {
     { method: "DELETE" },
   );
   if (!res.ok && res.status !== 204 && res.status !== 404) {
-    throw new Error(
-      `Failed to delete bucket "${bucketName}": ${res.status}`,
-    );
+    throw new Error(`Failed to delete bucket "${bucketName}": ${res.status}`);
   }
 }
 

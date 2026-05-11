@@ -114,7 +114,9 @@ export const Bucket = Resource(
     props: BucketProps,
   ): Promise<Bucket> {
     const name =
-      props.name ?? this.output?.name ?? this.scope.createPhysicalName(id, "-", 63);
+      props.name ??
+      this.output?.name ??
+      this.scope.createPhysicalName(id, "-", 63);
     const endpoint = `https://${props.region}.your-objectstorage.com`;
 
     if (this.phase === "update" && this.output.name !== name) {

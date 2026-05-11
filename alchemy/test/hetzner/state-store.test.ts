@@ -92,7 +92,11 @@ describe("HetznerObjectStorageStateStore", () => {
 
       try {
         // Write a value directly via the raw client
-        await putTestObject(client, testKey, JSON.stringify({ hello: "world" }));
+        await putTestObject(
+          client,
+          testKey,
+          JSON.stringify({ hello: "world" }),
+        );
 
         // Verify the object is visible in the bucket
         expect(await objectExists(client, testKey)).toBe(true);

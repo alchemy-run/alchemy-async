@@ -86,8 +86,7 @@ export class HetznerObjectStorageStateStore implements StateStore {
     this.endpoint = `https://${options.region}.your-objectstorage.com`;
 
     const accessKeyId =
-      Secret.unwrap(options.accessKeyId) ??
-      process.env.HETZNER_ACCESS_KEY_ID;
+      Secret.unwrap(options.accessKeyId) ?? process.env.HETZNER_ACCESS_KEY_ID;
     const secretAccessKey =
       Secret.unwrap(options.secretAccessKey) ??
       process.env.HETZNER_SECRET_ACCESS_KEY;
@@ -133,7 +132,11 @@ export class HetznerObjectStorageStateStore implements StateStore {
       );
 
       if (page.keys) {
-        keys.push(...page.keys.map((k) => this.convertKeyFromStorage(k.slice(this.prefix.length))));
+        keys.push(
+          ...page.keys.map((k) =>
+            this.convertKeyFromStorage(k.slice(this.prefix.length)),
+          ),
+        );
       }
       continuationToken = page.nextToken;
     } while (continuationToken);
@@ -154,7 +157,9 @@ export class HetznerObjectStorageStateStore implements StateStore {
 
     if (res.status === 404) return undefined;
     if (!res.ok) {
-      throw new Error(`Failed to get state key "${key}": ${res.status} ${res.statusText}`);
+      throw new Error(
+        `Failed to get state key "${key}": ${res.status} ${res.statusText}`,
+      );
     }
 
     const content = await res.text();
@@ -200,7 +205,9 @@ export class HetznerObjectStorageStateStore implements StateStore {
     );
 
     if (!res.ok) {
-      throw new Error(`Failed to set state key "${key}": ${res.status} ${res.statusText}`);
+      throw new Error(
+        `Failed to set state key "${key}": ${res.status} ${res.statusText}`,
+      );
     }
   }
 
@@ -211,7 +218,9 @@ export class HetznerObjectStorageStateStore implements StateStore {
     const res = await retry(() => this.client.fetch(url, { method: "DELETE" }));
 
     if (!res.ok && res.status !== 404) {
-      throw new Error(`Failed to delete state key "${key}": ${res.status} ${res.statusText}`);
+      throw new Error(
+        `Failed to delete state key "${key}": ${res.status} ${res.statusText}`,
+      );
     }
   }
 
@@ -223,13 +232,16 @@ export class HetznerObjectStorageStateStore implements StateStore {
     const params = new URLSearchParams({ "list-type": "2" });
     if (opts.prefix) params.set("prefix", opts.prefix);
     if (opts.maxKeys) params.set("max-keys", String(opts.maxKeys));
-    if (opts.continuationToken) params.set("continuation-token", opts.continuationToken);
+    if (opts.continuationToken)
+      params.set("continuation-token", opts.continuationToken);
 
     const url = `${this.endpoint}/${this.bucketName}?${params}`;
     const res = await this.client.fetch(url, { method: "GET" });
 
     if (!res.ok) {
-      throw new Error(`Failed to list objects: ${res.status} ${res.statusText}`);
+      throw new Error(
+        `Failed to list objects: ${res.status} ${res.statusText}`,
+      );
     }
 
     const xml = await res.text();
@@ -240,7 +252,9 @@ export class HetznerObjectStorageStateStore implements StateStore {
     if (!result) return {};
 
     const contents = result.Contents
-      ? (Array.isArray(result.Contents) ? result.Contents : [result.Contents])
+      ? Array.isArray(result.Contents)
+        ? result.Contents
+        : [result.Contents]
       : [];
 
     return {
