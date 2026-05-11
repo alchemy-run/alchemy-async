@@ -137,13 +137,11 @@ function buildServicePayload(svc: LBService): Record<string, unknown> {
 }
 
 function buildTargetPayload(t: LBTarget): Record<string, unknown> {
-  const payload: Record<string, unknown> = {
-    type: t.type,
-    use_private_ip: t.usePrivateIp ?? false,
-  };
+  const payload: Record<string, unknown> = { type: t.type };
 
   if (t.type === "server") {
     payload.server = { id: resolveServerId(t.server) };
+    payload.use_private_ip = t.usePrivateIp ?? false;
   } else if (t.type === "label_selector") {
     payload.label_selector = { selector: t.labelSelector };
   } else if (t.type === "ip") {
