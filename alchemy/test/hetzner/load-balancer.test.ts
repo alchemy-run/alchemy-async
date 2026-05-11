@@ -162,13 +162,13 @@ describe.skipIf(!process.env.HCLOUD_TOKEN)("Hetzner LoadBalancer", () => {
             },
           },
         ],
-        targets: [{ type: "ip", ip: "10.0.0.2" }],
+        targets: [{ type: "ip", ip: "203.0.113.1" }],
         labels: { env: "test" },
       });
 
       expect(lb.targets).toHaveLength(1);
       expect(lb.targets[0].type).toBe("ip");
-      expect(lb.targets[0].ip).toBe("10.0.0.2");
+      expect(lb.targets[0].ip).toBe("203.0.113.1");
 
       // Remove the target (remove_target action)
       lb = await LoadBalancerResource(lbName, {
