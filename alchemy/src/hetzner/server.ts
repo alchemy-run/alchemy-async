@@ -200,10 +200,27 @@ export const Server = Resource(
       };
     }
 
-    const { server: raw } = await api.post<HetznerServerResponse>(
-      "/servers",
-      body,
-    );
+    // Retry on 409 name-conflict: after a force-replace, Hetzner may not
+    // immediately free the name even once the delete action completes.
+    let raw: HetznerServerResponse["server"];
+    {
+      const deadline = Date.now() + 60_000;
+      while (true) {
+        try {
+          ({ server: raw } = await api.post<HetznerServerResponse>(
+            "/servers",
+            body,
+          ));
+          break;
+        } catch (err: any) {
+          if (err?.status === 409 && Date.now() < deadline) {
+            await new Promise((r) => setTimeout(r, 2_000));
+            continue;
+          }
+          throw err;
+        }
+      }
+    }
 
     // poll until running
     await pollUntil(
