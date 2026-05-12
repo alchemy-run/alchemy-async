@@ -678,4 +678,8 @@ async function processBindings(
   if (aiSearchNamespaces.length > 0) {
     spec.ai_search_namespaces = aiSearchNamespaces;
   }
+
+  if (vpcServices.length > 0) {
+    spec.vpc_services = vpcServices;
+  }
 }
