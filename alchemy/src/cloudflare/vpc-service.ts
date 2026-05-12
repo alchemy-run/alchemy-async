@@ -108,12 +108,28 @@ export declare namespace VpcService {
 /**
  * A VPC service instance. Bind to a Worker to allow the Worker to fetch from
  * the private host (hostname or IP) over the configured tunnel.
+ *
+ * `host.network` / `host.resolverNetwork` are optional in the returned shape
+ * because the Cloudflare API may omit them (e.g. when the underlying tunnel
+ * is deleted). When creating/updating via {@link VpcServiceProps}, the network
+ * is still required.
  */
-export type VpcService = Omit<VpcServiceProps, "name" | "adopt"> & {
+export type VpcService = Omit<VpcServiceProps, "name" | "adopt" | "host"> & {
   /** Display name of the service. */
   name: string;
   /** Cloudflare-assigned service ID. */
   serviceId: string;
+  /**
+   * Host returned by the API. `network` / `resolverNetwork` may be absent if
+   * the associated tunnel has been deleted or never bound.
+   */
+  host:
+    | ({ ipv4: string } & { network?: VpcService.Network })
+    | ({ ipv6: string } & { network?: VpcService.Network })
+    | ({ ipv4: string; ipv6: string } & { network?: VpcService.Network })
+    | ({ hostname: string } & {
+        resolverNetwork?: VpcService.Network & { resolverIps?: string[] };
+      });
   /** Creation time (Unix ms). */
   createdAt: number;
   /** Last update time (Unix ms). */
@@ -393,9 +409,38 @@ export async function updateService(
 
 /**
  * Format an API response into a VpcService resource.
+ *
+ * The Cloudflare Connectivity API can return `host.network` or
+ * `host.resolver_network` as `null` for some service configurations (e.g. VPC
+ * services whose tunnel was deleted, or services created without an explicit
+ * tunnel binding). The previous implementation read `.tunnel_id` unconditionally
+ * which crashed with `Cannot read properties of null (reading 'tunnel_id')`.
+ *
+ * This version defensively omits the network field when it (or its tunnel_id)
+ * is missing so consumers receive a valid `VpcService` shape instead of throwing.
+ *
  * @internal
  */
 function formatVpcService(service: ConnectivityService): VpcService {
+  const host: VpcService["host"] =
+    "hostname" in service.host
+      ? {
+          hostname: service.host.hostname,
+          ...(service.host.resolver_network?.tunnel_id
+            ? {
+                resolverNetwork: {
+                  tunnelId: service.host.resolver_network.tunnel_id,
+                  resolverIps: service.host.resolver_network.resolver_ips,
+                },
+              }
+            : {}),
+        }
+      : {
+          ...service.host,
+          ...(service.host.network?.tunnel_id
+            ? { network: { tunnelId: service.host.network.tunnel_id } }
+            : {}),
+        };
   return {
     name: service.name,
     serviceId: service.service_id,
@@ -404,19 +449,7 @@ function formatVpcService(service: ConnectivityService): VpcService {
     appProtocol: service.app_protocol,
     httpPort: service.http_port,
     httpsPort: service.https_port,
-    host:
-      "hostname" in service.host
-        ? {
-            hostname: service.host.hostname,
-            resolverNetwork: {
-              tunnelId: service.host.resolver_network.tunnel_id,
-              resolverIps: service.host.resolver_network.resolver_ips,
-            },
-          }
-        : {
-            ...service.host,
-            network: { tunnelId: service.host.network.tunnel_id },
-          },
+    host,
     createdAt: new Date(service.created_at).getTime(),
     updatedAt: new Date(service.updated_at).getTime(),
     type: "vpc_service",
@@ -444,18 +477,21 @@ declare namespace ConnectivityService {
 
   export interface IPv4Host {
     ipv4: string;
-    network: Network;
+    /** May be `null` in API responses when the tunnel has been deleted. */
+    network: Network | null;
   }
 
   export interface IPv6Host {
     ipv6: string;
-    network: Network;
+    /** May be `null` in API responses when the tunnel has been deleted. */
+    network: Network | null;
   }
 
   export interface DualStackHost {
     ipv4: string;
     ipv6: string;
-    network: Network;
+    /** May be `null` in API responses when the tunnel has been deleted. */
+    network: Network | null;
   }
 
   export interface Network {
@@ -464,7 +500,8 @@ declare namespace ConnectivityService {
 
   export interface HostnameHost {
     hostname: string;
-    resolver_network: ResolverNetwork;
+    /** May be `null` in API responses when the tunnel has been deleted. */
+    resolver_network: ResolverNetwork | null;
   }
 
   export interface ResolverNetwork extends Network {
