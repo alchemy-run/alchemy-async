@@ -9,10 +9,12 @@ declare const ALCHEMY_VERSION: string; // injected during build
 
 export default {
   async fetch(request: Request, env: Env) {
+    const originalUrl = request.url;
     const url = new URL(request.url);
     url.host = env.TUNNEL_HOST;
     const headers = new Headers(request.headers);
     headers.set("alchemy-worker-name", env.WORKER_NAME);
+    headers.set("alchemy-original-url", originalUrl);
     const response = await fetch(url, {
       method: request.method,
       headers,

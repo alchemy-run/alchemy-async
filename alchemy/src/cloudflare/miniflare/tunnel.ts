@@ -38,11 +38,16 @@ export async function createTunnel(
     getMiniflare,
     mode: "remote",
     transformRequest: (request) => {
-      if (request.url.origin === remote.origin) {
-        request.url.protocol = proxy.url.protocol;
-        request.url.host = proxy.url.host;
-        request.url.port = proxy.url.port;
-        request.headers.set("host", proxy.url.host);
+      const originalUrl = request.headers.get("alchemy-original-url");
+      if (originalUrl) {
+        const parsed = new URL(originalUrl);
+        request.url.protocol = parsed.protocol;
+        request.url.host = parsed.host;
+        request.url.port = parsed.port;
+        request.url.pathname = parsed.pathname;
+        request.url.search = parsed.search;
+        request.headers.set("host", parsed.host);
+        request.headers.delete("alchemy-original-url");
       }
     },
     getWorkerName: (request) => {
