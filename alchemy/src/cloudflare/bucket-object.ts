@@ -104,6 +104,7 @@ export const R2Object = Resource(
       await deleteObject(api, {
         bucketName: props.bucket.name,
         key: props.key,
+        jurisdiction: props.bucket.jurisdiction,
       });
       return this.destroy();
     } else {

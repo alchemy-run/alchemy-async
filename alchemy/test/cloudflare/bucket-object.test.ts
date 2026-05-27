@@ -96,6 +96,47 @@ describe("R2Object Resource", async () => {
     }
   });
 
+  test("object in eu jurisdiction bucket", async (scope) => {
+    let bucket: R2Bucket | undefined;
+
+    try {
+      bucket = await R2Bucket("eu-bucket", {
+        name: `${testBucketName}-eu`,
+        jurisdiction: "eu",
+        adopt: true,
+        empty: true,
+      });
+      expect(bucket.jurisdiction).toEqual("eu");
+
+      const key = "eu/hello.txt";
+      const content = "Bonjour from the EU jurisdiction!";
+
+      const object = await R2Object("eu-object", {
+        bucket,
+        key,
+        content,
+      });
+      expect(object.key).toEqual(key);
+
+      const headResult = await bucket.head(key);
+      expect(headResult).toBeDefined();
+      expect(headResult?.size).toBeGreaterThan(0);
+
+      const getResult = await bucket.get(key);
+      expect(await getResult?.text()).toEqual(content);
+    } catch (err) {
+      console.log(err);
+      throw err;
+    } finally {
+      await alchemy.destroy(scope);
+
+      if (bucket) {
+        const deletedResult = await bucket.head("eu/hello.txt");
+        expect(deletedResult).toBeNull();
+      }
+    }
+  });
+
   test("object with binary content", async (scope) => {
     let bucket: R2Bucket | undefined;
 
