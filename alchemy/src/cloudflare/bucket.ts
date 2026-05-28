@@ -320,7 +320,7 @@ export type R2Bucket = _R2Bucket & {
       | Blob,
     options?: Pick<R2PutOptions, "httpMetadata">,
   ): Promise<PutR2ObjectResponse>;
-  delete(key: string): Promise<Response>;
+  delete(key: string): Promise<Response | void>;
   list(options?: R2ListOptions): Promise<R2Objects>;
 };
 
@@ -463,7 +463,6 @@ export async function R2Bucket(
 ): Promise<R2Bucket> {
   const scope = Scope.current;
   const isLocal = scope.local && props.dev?.remote !== true;
-  const api = await createCloudflareApi(props);
   const bucket = await _R2Bucket(id, {
     ...props,
     dev: {
@@ -471,6 +470,9 @@ export async function R2Bucket(
       force: Scope.current.local,
     },
   });
+
+  let _api: CloudflareApi | undefined;
+  const api = async () => (_api ??= await createCloudflareApi(props));
 
   let _miniflare: mf.Miniflare | undefined;
   const miniflare = () => {
@@ -505,7 +507,7 @@ export async function R2Bucket(
         }
         return null;
       }
-      return headObject(api, {
+      return headObject(await api(), {
         bucketName: bucket.name,
         key,
       });
@@ -519,7 +521,7 @@ export async function R2Bucket(
         }
         return null;
       }
-      const response = await getObject(api, {
+      const response = await getObject(await api(), {
         bucketName: bucket.name,
         key,
       });
@@ -535,7 +537,7 @@ export async function R2Bucket(
       if (isLocal) {
         return (await localBucket()).list(options);
       }
-      return listObjects(api, bucket.name, {
+      return listObjects(await api(), bucket.name, {
         ...options,
         jurisdiction: bucket.jurisdiction,
       });
@@ -565,7 +567,7 @@ export async function R2Bucket(
           options,
         );
       }
-      const response = await putObject(api, {
+      const response = await putObject(await api(), {
         bucketName: bucket.name,
         key: key,
         object: value,
@@ -591,8 +593,9 @@ export async function R2Bucket(
     delete: async (key: string) => {
       if (isLocal) {
         await (await localBucket()).delete(key);
+        return;
       }
-      return deleteObject(api, {
+      return deleteObject(await api(), {
         bucketName: bucket.name,
         key: key,
       });
