@@ -49,7 +49,6 @@
     "test:init": "bun test:smoke -t init",
     "test:monorepo": "./scripts/test-monorepo.sh",
     "types:generate": "bun run --filter cloudflare-react-router types",
-    "bump": "bun ./scripts/bump.ts",
     "claude:yolo": "claude --dangerously-skip-permissions",
     "gh": "./scripts/gh",
     "feat": "./scripts/feat",

@@ -3,136 +3,35 @@ name: Release NPM Package
 on:
   workflow_dispatch:
     inputs:
-      bump:
-        description: "Bump type"
-        required: true
-        type: choice
-        options:
-          - patch
-          - minor
-      version-override:
-        description: "Exact version override (e.g. 0.89.0). Leave empty to use bump type."
+      version:
+        description: >-
+          Release spec. Empty = next beta. `patch|minor|major` or `x.y.z`
+          for a stable release. `beta` / `beta.N` / `alpha` / `alpha.N`
+          for a prerelease. Anything else = tag release on
+          `0.0.0-<name>`.
         required: false
         type: string
-      skip-github-release:
-        description: "Skip creating git tag and GitHub release"
-        required: false
-        type: boolean
-        default: false
+        default: ""
 
+# Reusable workflows can't widen permissions — the caller must grant
+# `contents: write` (commit + tag) and `id-token: write` (npm OIDC).
 permissions:
   contents: write
   id-token: write
 
 jobs:
   release:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          filter: blob:none
-          fetch-depth: 0
-          fetch-tags: true
-
-      - name: Setup Node
-        uses: actions/setup-node@v4
-        with:
-          registry-url: https://registry.npmjs.org/
-          node-version: 24
-
-      - name: Setup Bun
-        uses: oven-sh/setup-bun@v1
-        with:
-          bun-version: latest
-
-      - name: Install dependencies
-        shell: bash
-        run: |
-          bun install
-
-      - name: Upgrade npm for OIDC trusted publishing
-        run: |
-          npm install -g npm@latest && npm --version
-          sed -i '/always-auth/d' ~/.npmrc 2>/dev/null || true
-
-      - name: Setup Bun
-        uses: oven-sh/setup-bun@v2
-        with:
-          bun-version: latest
-
-      - name: Install dependencies
-        run: bun install
-
-      - name: Configure git identity
-        run: |
-          git config --local user.email "github-actions[bot]@users.noreply.github.com"
-          git config --local user.name "github-actions[bot]"
-
-      - name: Bump version
-        id: bump
-        run: |
-          if [ -n "${{ inputs.version-override }}" ]; then
-            bun ./scripts/bump.ts "${{ inputs.version-override }}"
-            VERSION="${{ inputs.version-override }}"
-          else
-            bun ./scripts/bump.ts "${{ inputs.bump }}"
-            VERSION=$(node -p "require('./alchemy/package.json').version")
-          fi
-          echo "version=$VERSION" >> $GITHUB_OUTPUT
-
-      - name: Push version commit
-        run: git push
-
-      - name: Capture commit SHA
-        id: sha
-        run: echo "sha=$(git rev-parse HEAD)" >> $GITHUB_OUTPUT
-
-      - name: Create and push tag
-        if: ${{ !inputs.skip-github-release }}
-        run: |
-          git tag -a "v${{ steps.bump.outputs.version }}" -m "Release v${{ steps.bump.outputs.version }}"
-          git push --tags
-
-      - name: Create GitHub Release
-        if: ${{ !inputs.skip-github-release }}
-        run: |
-          if ! gh release view "v${{ steps.bump.outputs.version }}" >/dev/null 2>&1; then
-            PREV_TAG=$(git describe --tags --abbrev=0 HEAD~1 2>/dev/null || echo "")
-            if [ -n "$PREV_TAG" ]; then
-              bunx changelogithub --from "$PREV_TAG"
-            else
-              bunx changelogithub --from "v${{ steps.bump.outputs.version }}"
-            fi
-          else
-            echo "Release v${{ steps.bump.outputs.version }} already exists, skipping"
-          fi
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Build
-        run: bun run build
-        working-directory: alchemy
-
-      - name: Publish to NPM
-        run: |
-          VERSION="${{ steps.bump.outputs.version }}"
-          PKG_NAME=$(node -p "require('./alchemy/package.json').name")
-          echo "--- Publishing ${PKG_NAME}@${VERSION} ---"
-
-          if npm view "${PKG_NAME}@${VERSION}" version >/dev/null 2>&1; then
-            echo "${PKG_NAME}@${VERSION} already published, skipping"
-            exit 0
-          fi
-
-          cd alchemy
-          cp ../README.md .
-          bun pm pack --destination .
-          TARBALL=$(ls *.tgz 2>/dev/null | head -1)
-          echo "Publishing tarball: ${TARBALL}"
-          TAG="latest"
-          if echo "${VERSION}" | grep -q '-'; then
-            TAG="next"
-          fi
-          npm publish "${TARBALL}" --access public --tag "${TAG}"
-          rm -f *.tgz README.md
-          echo "--- Published ${PKG_NAME}@${VERSION} ---"
+    uses: alchemy-run/actions/.github/workflows/release.yml@main
+    with:
+      version: ${{ inputs.version }}
+      repo: alchemy-run/alchemy
+      current-version: "0.94.0"
+      # The alchemy package ships the repo-root README.md; copy it in
+      # before the build so `bun pm pack` picks it up. Same trick the
+      # legacy `publish:npm` script used.
+      build-command: "cp README.md alchemy/ && bun run --filter alchemy build"
+      packages: |
+        [
+          { "dir": "alchemy", "name": "alchemy" }
+        ]
+    secrets: inherit
