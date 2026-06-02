@@ -98,7 +98,7 @@ export type Bound<T extends Binding> = T extends _AiSearch
                                               : T extends string
                                                 ? T
                                                 : T extends BrowserRendering
-                                                  ? Fetcher
+                                                  ? BrowserRun
                                                   : T extends _Ai<infer M>
                                                     ? Ai<M>
                                                     : T extends _Images
