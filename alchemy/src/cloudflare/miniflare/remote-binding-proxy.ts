@@ -21,12 +21,6 @@ type WranglerSessionConfig =
       minimal_mode: boolean;
     };
 
-interface WorkersPreviewSession {
-  inspector_websocket: string;
-  prewarm: string;
-  token: string;
-}
-
 export interface RemoteBindingProxy {
   server: HTTPServer;
   bindings: WorkerBindingSpec[];
@@ -135,7 +129,7 @@ async function createWorkersPreviewToken(
     session: WranglerSessionConfig;
   },
 ) {
-  const session = await createWorkersPreviewSession(api);
+  const previewUploadToken = await createPreviewUploadToken(api);
   const formData = await WorkerBundle.toFormData(input.bundle);
   formData.append("metadata", JSON.stringify(input.metadata));
   formData.append("wrangler-session-config", JSON.stringify(input.session));
@@ -146,59 +140,42 @@ async function createWorkersPreviewToken(
       formData,
       {
         headers: {
-          "cf-preview-upload-config-token": session.token,
+          "cf-preview-upload-config-token": previewUploadToken,
         },
       },
     ),
   );
-  // Fire and forget prewarm call
-  // (see https://github.com/cloudflare/workers-sdk/blob/6c6afbd6072b96e78e67d3a863ed849c6aa49472/packages/wrangler/src/dev/create-worker-preview.ts#L338)
-  void prewarm(session.prewarm, res.preview_token);
   return res.preview_token;
 }
 
-async function prewarm(url: string, previewToken: string) {
-  try {
-    // Pass the preview token to the Access probe — prewarm targets a preview
-    // worker URL, which only surfaces an Access 302 when the request carries
-    // the preview token.
-    const accessToken = await getAccessToken(
-      new URL(url).hostname,
-      previewToken,
-    );
-    await fetch(url, {
-      method: "POST",
-      headers: {
-        "cf-workers-preview-token": previewToken,
-        ...(accessToken ? { cookie: `CF_Authorization=${accessToken}` } : {}),
-      },
-    });
-  } catch {
-    // Ignore prewarm errors
-  }
-}
-
-async function createWorkersPreviewSession(api: CloudflareApi) {
-  const { exchange_url } = await extractCloudflareResult<{
-    exchange_url: string;
+async function createPreviewUploadToken(api: CloudflareApi) {
+  const { token, exchange_url } = await extractCloudflareResult<{
+    exchange_url: string | null | undefined;
     token: string;
   }>(
     "create workers preview session",
     api.get(`/accounts/${api.accountId}/workers/subdomain/edge-preview`),
   );
+  if (!exchange_url) {
+    return token;
+  }
   const accessToken = await getAccessToken(new URL(exchange_url).hostname);
-  const res = await fetch(exchange_url, {
+  const json = await fetch(exchange_url, {
     headers: {
       ...(accessToken ? { cookie: `CF_Authorization=${accessToken}` } : {}),
     },
-  });
-  if (!res.ok) {
-    throw new Error(
-      `Failed to create workers preview session: ${res.status} ${res.statusText}`,
-    );
+  })
+    .then((res) => res.json())
+    .catch(() => undefined);
+  if (
+    typeof json === "object" &&
+    json !== null &&
+    "token" in json &&
+    typeof json.token === "string"
+  ) {
+    return json.token;
   }
-  const json: WorkersPreviewSession = await res.json();
-  return json;
+  return token;
 }
 
 /**
