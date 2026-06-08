@@ -142,17 +142,24 @@ export const R2BucketCustomDomain = Resource(
           props.jurisdiction,
           payload,
         ).catch(async (error) => {
-          if (
-            error instanceof CloudflareApiError &&
-            error.status === 409 &&
-            adopt
-          ) {
-            return await updateBucketCustomDomain(
+          if (error instanceof CloudflareApiError && error.status === 409) {
+            const existing = await getBucketCustomDomain(
               api,
               props.bucketName,
+              payload.domain,
               props.jurisdiction,
-              payload,
             );
+            if (existing && customDomainMatches(existing, payload)) {
+              return;
+            }
+            if (adopt) {
+              return await updateBucketCustomDomain(
+                api,
+                props.bucketName,
+                props.jurisdiction,
+                payload,
+              );
+            }
           }
           throw error;
         });
@@ -189,6 +196,25 @@ export const R2BucketCustomDomain = Resource(
     }
   },
 );
+
+function customDomainMatches(
+  existing: R2BucketCustomDomain,
+  payload: R2BucketCustomDomain,
+) {
+  return (
+    existing.domain === payload.domain &&
+    existing.zoneId === payload.zoneId &&
+    existing.enabled === payload.enabled &&
+    (existing.minTLS ?? undefined) === (payload.minTLS ?? undefined) &&
+    arraysEqual(existing.ciphers, payload.ciphers)
+  );
+}
+
+function arraysEqual(a: string[] | undefined, b: string[] | undefined) {
+  if (a === b) return true;
+  if (!a || !b || a.length !== b.length) return false;
+  return a.every((v, i) => v === b[i]);
+}
 
 async function createBucketCustomDomain(
   api: CloudflareApi,
