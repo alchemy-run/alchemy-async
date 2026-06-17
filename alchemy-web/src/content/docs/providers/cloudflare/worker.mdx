@@ -69,7 +69,8 @@ export const worker = await Worker("api", {
     // Other binding types include: DurableObjectNamespace, Queue, Secret, Assets, Container, Workflow
   },
   observability: {
-    enabled: true                         // Enable worker logs / observability (default: true)
+    enabled: true,                        // Enable worker logs / observability (default: true)
+    traces: { enabled: true, headSamplingRate: 0.1 }, // Enable Workers Tracing — see "Observability" below
   },
   // Upload source maps to improve stack traces (set to false to disable)
   sourceMap: true,
@@ -109,6 +110,62 @@ This reduces cold start times because the Worker isolate is pre-warmed during th
 
 :::caution
 I/O is not allowed at top-level in Cloudflare Workers.
+:::
+
+## Observability
+
+Workers Observability captures **logs** and **traces** for your Worker and makes them queryable in the Cloudflare dashboard. Observability is enabled by default — passing `observability: { enabled: true }` is equivalent to the default behavior.
+
+The `observability` prop accepts a top-level toggle plus independent `logs` and `traces` sub-configurations:
+
+```ts
+// alchemy.run.ts
+import alchemy from "alchemy";
+import { Worker } from "alchemy/cloudflare";
+
+export const worker = await Worker("api", {
+  entrypoint: "./src/worker.ts",
+  observability: {
+    enabled: true,
+    // A number between 0 and 1 — the default head-based sampling rate
+    // applied to both logs and traces unless overridden below.
+    headSamplingRate: 1,
+    logs: {
+      enabled: true,
+      invocationLogs: true,   // Emit a log for every invocation (default: true)
+      headSamplingRate: 1,    // Override the top-level sampling rate for logs
+      persist: true,          // Persist to the dashboard for querying (default: true)
+    },
+    traces: {
+      enabled: true,
+      headSamplingRate: 0.1,  // Sample 10% of requests in production (use 1 for dev)
+      persist: true,          // Persist to the dashboard for querying (default: true)
+    },
+  },
+});
+```
+
+### Traces
+
+Enabling `traces` turns on [Workers Tracing](https://developers.cloudflare.com/workers/observability/traces/). Once enabled, Cloudflare automatically produces spans for platform bindings (D1 queries, KV operations, R2, outbound `fetch`, etc.), and you can add your own [Custom Spans](https://developers.cloudflare.com/changelog/post/2026-06-16-custom-spans/) from your Worker code:
+
+```ts
+// src/worker.ts
+import { trace } from "cloudflare:workers";
+
+export default {
+  async fetch(request, env, ctx) {
+    return trace.enterSpan("handle-request", async (span) => {
+      span.setAttribute("route", new URL(request.url).pathname);
+      const user = await env.DB.prepare("SELECT * FROM users LIMIT 1").first();
+      return Response.json(user);
+    });
+  },
+};
+```
+
+:::tip
+Use a low `headSamplingRate` (e.g. `0.1`) in production to control cost, and `1` in development so every request is traced.
 :::
 
 ## Custom Domains

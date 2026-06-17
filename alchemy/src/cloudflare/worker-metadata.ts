@@ -197,6 +197,8 @@ export interface WorkerMetadata {
       enabled?: boolean;
       head_sampling_rate?: number;
       invocation_logs?: boolean;
+      persist?: boolean;
+      destinations?: string[];
     };
     traces?: {
       enabled?: boolean;
