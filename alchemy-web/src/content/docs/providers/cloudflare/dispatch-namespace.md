@@ -76,6 +76,55 @@ export default {
 };
 ```
 
+## Outbound Worker
+
+Attach an [outbound Worker](https://developers.cloudflare.com/cloudflare-for-platforms/workers-for-platforms/configuration/outbound-workers/) to the dispatch namespace *binding* to intercept every subrequest the dispatched user Workers make — e.g. to enforce an egress policy or inject platform credentials the untrusted user Worker must never hold:
+
+```ts
+import { Worker, DispatchNamespace } from "alchemy/cloudflare";
+
+const egress = await Worker("egress-policy", {
+  name: "egress-policy",
+  entrypoint: "./src/egress.ts",
+});
+
+const namespace = await DispatchNamespace("tenant-workers", {
+  namespace: "production-tenants",
+});
+
+const router = await Worker("router", {
+  name: "main-router",
+  entrypoint: "./src/router.ts",
+  bindings: {
+    TENANTS: {
+      ...namespace,
+      outbound: {
+        service: "egress-policy",
+        // Names of the per-dispatch parameters the router supplies below.
+        parameters: ["TENANT_ID"],
+      },
+    },
+  },
+});
+```
+
+The router supplies the declared parameters per dispatch; they surface on the outbound Worker's `env`:
+
+```ts
+// src/router.ts
+const tenantWorker = env.TENANTS.get(tenantId, {}, {
+  outbound: { TENANT_ID: tenantId },
+});
+
+// src/egress.ts — runs for every subrequest the user worker makes
+export default {
+  async fetch(request: Request, env: { TENANT_ID?: string }) {
+    // enforce policy / inject credentials based on env.TENANT_ID, then:
+    return fetch(request);
+  },
+};
+```
+
 ## Multi-Tenant Architecture Example
 
 Create a complete multi-tenant setup with customer-specific workers:

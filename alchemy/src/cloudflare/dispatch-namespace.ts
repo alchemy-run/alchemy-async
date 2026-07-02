@@ -43,6 +43,33 @@ export function isDispatchNamespace(
 }
 
 /**
+ * Workers-for-Platforms outbound Worker attachment for a dispatch namespace *binding*
+ * (not the namespace resource itself): every subrequest a dispatched user Worker makes
+ * is routed through the given service. The named parameters are supplied per dispatch
+ * via `dispatcher.get(name, args, { outbound: { PARAM: value } })` and surface on the
+ * outbound Worker's env.
+ *
+ * @see https://developers.cloudflare.com/cloudflare-for-platforms/workers-for-platforms/configuration/outbound-workers/
+ */
+export interface DispatchNamespaceOutbound {
+  /**
+   * Name of the Worker service handling the outbound requests
+   */
+  service: string;
+
+  /**
+   * (Optional) Name of the environment handling the outbound requests
+   */
+  environment?: string;
+
+  /**
+   * (Optional) Names of the per-dispatch parameters the dispatcher supplies via
+   * `dispatcher.get(..., { outbound: { PARAM: value } })`
+   */
+  parameters?: string[];
+}
+
+/**
  * Output returned after Dispatch Namespace creation/update
  */
 export interface DispatchNamespace extends Omit<
@@ -74,6 +101,13 @@ export interface DispatchNamespace extends Omit<
    * Time at which the namespace was last modified
    */
   modifiedAt: number;
+
+  /**
+   * Optional outbound Worker attachment for this *binding*. Attach it by spreading
+   * the namespace into the binding value:
+   * `{ DISPATCHER: { ...namespace, outbound: { service: "egress-worker", parameters: ["SHOP_ID"] } } }`
+   */
+  outbound?: DispatchNamespaceOutbound;
 }
 
 /**

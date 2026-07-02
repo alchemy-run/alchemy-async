@@ -620,6 +620,28 @@ export async function prepareWorkerMetadata(
         type: "dispatch_namespace",
         name: bindingName,
         namespace: binding.namespaceName,
+        // Workers-for-Platforms outbound Worker attachment (same upload shape wrangler emits):
+        // params declares the outbound arg names supplied per dispatch via
+        // `dispatcher.get(name, args, { outbound: {...} })`.
+        ...(binding.outbound
+          ? {
+              outbound: {
+                worker: {
+                  service: binding.outbound.service,
+                  ...(binding.outbound.environment
+                    ? { environment: binding.outbound.environment }
+                    : {}),
+                },
+                ...(binding.outbound.parameters
+                  ? {
+                      params: binding.outbound.parameters.map((name) => ({
+                        name,
+                      })),
+                    }
+                  : {}),
+              },
+            }
+          : {}),
       });
     } else if (binding.type === "worker_loader") {
       meta.bindings.push({
