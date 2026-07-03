@@ -307,11 +307,15 @@ const _D1Database = Resource(
 
     if (local) {
       if (props.migrationsFiles?.length || props.importFiles?.length) {
+        const localMigrationsFiles = props.migrationsDir ? await listSqlFiles(props.migrationsDir) : [];
+        const localImportFiles = props.importFiles?.length ? await Promise.all(
+          props.importFiles.map((file) => readSqlFile(this.scope.rootDir, file.id))
+        ) : [];
         await applyLocalD1Migrations({
           databaseId: dev.id,
           migrationsTable: props.migrationsTable ?? DEFAULT_MIGRATIONS_TABLE,
-          migrations: props.migrationsFiles ?? [],
-          imports: props.importFiles ?? [],
+          migrations: localMigrationsFiles,
+          imports: localImportFiles,
           rootDir: this.scope.rootDir,
         });
       }
