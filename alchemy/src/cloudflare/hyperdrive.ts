@@ -48,6 +48,11 @@ export interface HyperdrivePublicOrigin {
   scheme?: "postgres" | "mysql";
 
   /**
+   * Connection query string, without the leading "?"
+   */
+  query?: string;
+
+  /**
    * Database user
    */
   user: string;
@@ -89,6 +94,11 @@ export interface HyperdriveOriginWithAccess {
    * @default "postgres"
    */
   scheme?: "postgres" | "mysql";
+
+  /**
+   * Connection query string, without the leading "?"
+   */
+  query?: string;
 
   /**
    * Database user
@@ -610,6 +620,7 @@ export const normalizeHyperdriveOrigin = (
       host: url.hostname,
       port: normalizePort(scheme, url.port),
       database: url.pathname.slice(1),
+      query: url.search?.slice(1) ?? "",
     };
   }
   const scheme = normalizeScheme(origin.scheme);
@@ -623,6 +634,7 @@ export const normalizeHyperdriveOrigin = (
     }),
     scheme,
     port: normalizePort(scheme, origin.port),
+    query: origin.query ?? "",
   };
 };
 
@@ -660,6 +672,6 @@ const toConnectionString = (
     "password" in origin ? origin.password : origin.access_client_secret,
   );
   return new Secret(
-    `${origin.scheme}://${origin.user}:${password}@${origin.host}:${origin.port}/${origin.database}`,
+    `${origin.scheme}://${origin.user}:${password}@${origin.host}:${origin.port}/${origin.database}${origin.query ? `?${origin.query}` : ""}`,
   );
 };

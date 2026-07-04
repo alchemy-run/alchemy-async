@@ -227,6 +227,7 @@ describe.concurrent("Hyperdrive Resource", () => {
       );
       expect(origin.port).toEqual(5432);
       expect(origin.database).toEqual("mydb");
+      expect(origin.query).toEqual("sslmode=require");
     });
 
     it("normalizes mysql string origin", () => {
@@ -239,6 +240,7 @@ describe.concurrent("Hyperdrive Resource", () => {
       expect(origin.host).toEqual("aws-us-east-2.connect.psdb.cloud");
       expect(origin.port).toEqual(3306);
       expect(origin.database).toEqual("mydb");
+      expect(origin.query).toEqual("sslaccept=strict");
     });
 
     it("normalizes cloudflare access origin", () => {
@@ -266,6 +268,7 @@ describe.concurrent("Hyperdrive Resource", () => {
         password: "password",
         host: "localhost",
         database: "mydb",
+        query: "sslmode=require",
       });
       expect(origin.scheme).toEqual("postgres");
       expect(origin.user).toEqual("user");
@@ -273,6 +276,7 @@ describe.concurrent("Hyperdrive Resource", () => {
       expect(origin.host).toEqual("localhost");
       expect(origin.port).toEqual(5432);
       expect(origin.database).toEqual("mydb");
+      expect(origin.query).toEqual("sslmode=require");
     });
 
     it("normalizes mysql object origin", () => {
@@ -282,6 +286,7 @@ describe.concurrent("Hyperdrive Resource", () => {
         host: "localhost",
         database: "mydb",
         scheme: "mysql",
+        query: "sslaccept=strict",
       });
       expect(origin.scheme).toEqual("mysql");
       expect(origin.user).toEqual("user");
@@ -289,6 +294,7 @@ describe.concurrent("Hyperdrive Resource", () => {
       expect(origin.host).toEqual("localhost");
       expect(origin.port).toEqual(3306);
       expect(origin.database).toEqual("mydb");
+      expect(origin.query).toEqual("sslaccept=strict");
     });
 
     it("respects port in object origin", () => {
