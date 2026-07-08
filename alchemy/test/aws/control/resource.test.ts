@@ -216,6 +216,63 @@ describe("CloudControlResource", () => {
     }
   });
 
+  test("replace resource when it no longer exists on update", async (scope) => {
+    const testBucketName = `${testId}-gone-test`;
+    let resource: CloudControlResource | undefined;
+
+    try {
+      // Create a test S3 bucket
+      resource = await CloudControlResource(testBucketName, {
+        typeName: "AWS::S3::Bucket",
+        desiredState: {
+          BucketName: testBucketName,
+          VersioningConfiguration: {
+            Status: "Enabled",
+          },
+        },
+        adopt: true,
+      });
+
+      expect(resource.id).toBeTruthy();
+
+      // Delete the bucket out-of-band (outside of alchemy)
+      await client.deleteResource("AWS::S3::Bucket", resource.id);
+      await waitForStableDeletion("AWS::S3::Bucket", resource.id);
+
+      // Update the resource - the empty read-back should trigger a replacement
+      // instead of falling through to UpdateResource against a missing resource
+      resource = await CloudControlResource(testBucketName, {
+        typeName: "AWS::S3::Bucket",
+        desiredState: {
+          BucketName: testBucketName,
+          VersioningConfiguration: {
+            Status: "Suspended",
+          },
+        },
+      });
+
+      expect(resource.id).toBeTruthy();
+
+      // Verify the bucket was recreated with the new configuration.
+      // The replacement is forced (delete-before-create), so the recreated
+      // bucket must still exist even though it reuses the same identifier.
+      const getResponse = (await client.getResource(
+        "AWS::S3::Bucket",
+        resource.id,
+      ))!;
+      expect(getResponse.BucketName).toEqual(testBucketName);
+      expect(getResponse.VersioningConfiguration.Status).toEqual("Suspended");
+    } finally {
+      // Always clean up
+      await destroy(scope);
+
+      // Verify bucket was deleted
+      if (resource?.id) {
+        await waitForStableDeletion("AWS::S3::Bucket", resource.id);
+      }
+    }
+  });
+
   test("wildcard deletion handler", async (scope) => {
     const bucketIds = [`${testId}-wildcard-1`, `${testId}-wildcard-2`];
     const resources: CloudControlResource[] = [];

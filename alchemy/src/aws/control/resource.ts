@@ -297,8 +297,20 @@ async function CloudControlLifecycle(
       props.typeName,
       this.output.id,
     );
+    if (!currentResource) {
+      // The physical resource no longer exists (deleted or detached out-of-band),
+      // so there is nothing to patch. Falling through to UpdateResource would fail
+      // on types with no update support (e.g. AWS::EC2::VolumeAttachment, whose
+      // properties are all Immutable). Recreate via replacement instead. Force the
+      // replacement (delete-before-create) because the old resource is already gone
+      // (delete tolerates NotFoundError) and a deferred delete would destroy the
+      // new resource if it reuses the same identifier (e.g. an unchanged BucketName).
+      logger.log(
+        `Resource ${id} no longer exists (empty read-back on update), requiring replacement`,
+      );
+      return this.replace(true);
+    }
     if (
-      currentResource &&
       hasImmutablePropertyChanges(
         props.typeName,
         currentResource,
