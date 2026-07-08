@@ -16,7 +16,11 @@ const test = alchemy.test(import.meta, {
 });
 
 describe("CloudControlResource", () => {
-  const testId = `${BRANCH_PREFIX}-test-bucket-resource`;
+  // note: this base name (and every name derived from it) must never have been
+  // used by another AWS account — S3 bucket names are globally unique, and a
+  // name owned elsewhere fails creation here with AlreadyExists while being
+  // invisible to this account (see getResourceForAdoption).
+  const testId = `${BRANCH_PREFIX}-cc-resource-test`;
 
   test("create, update, and delete S3 bucket", async (scope) => {
     let resource: CloudControlResource | undefined;
@@ -147,7 +151,7 @@ describe("CloudControlResource", () => {
   });
 
   test("replace resource when immutable property changes", async (scope) => {
-    const testBucketName = `${testId}-immutable-props-test`;
+    const testBucketName = `${testId}-immutable-test`;
     let resource: CloudControlResource | undefined;
 
     try {

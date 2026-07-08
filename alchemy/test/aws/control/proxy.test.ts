@@ -15,7 +15,9 @@ const test = alchemy.test(import.meta, {
 const FIVE_MINUTES = 5 * 60 * 1000;
 
 describe("AWS Cloud Control Proxy", () => {
-  const testId = `${BRANCH_PREFIX}-test-bucket-proxy`;
+  // see the note on testId in resource.test.ts: this base name must never
+  // collide with a bucket name owned by another AWS account
+  const testId = `${BRANCH_PREFIX}-cc-proxy-test`;
 
   test(
     "create, update, and delete S3 bucket using proxy interface",
