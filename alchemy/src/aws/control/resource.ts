@@ -6,7 +6,11 @@ import {
   type Provider,
 } from "../../resource.ts";
 import { logger } from "../../util/logger.ts";
-import { createCloudControlClient, type ProgressEvent } from "./client.ts";
+import {
+  createCloudControlClient,
+  type CloudControlClient,
+  type ProgressEvent,
+} from "./client.ts";
 import {
   AlreadyExistsError,
   ConcurrentOperationError,
@@ -328,10 +332,12 @@ async function CloudControlLifecycle(
       );
     } catch (error) {
       if (error instanceof AlreadyExistsError && props.adopt) {
-        const resource = (await client.getResource(
+        const resource = await getResourceForAdoption(
+          client,
           props.typeName,
-          error.progressEvent.Identifier!,
-        ))!;
+          error.progressEvent.Identifier,
+          error,
+        );
 
         response = await updateResourceWithPatch(
           client,
@@ -357,10 +363,11 @@ async function CloudControlLifecycle(
           const concurrentResult = await client.poll(error.requestToken);
 
           // The concurrent operation succeeded, now adopt the resource
-          const resource = (await client.getResource(
+          const resource = await getResourceForAdoption(
+            client,
             props.typeName,
-            concurrentResult.Identifier!,
-          ))!;
+            concurrentResult.Identifier,
+          );
 
           // Apply our desired state as a patch to the existing resource
           response = await updateResourceWithPatch(
@@ -399,6 +406,46 @@ async function CloudControlLifecycle(
     createdAt: Date.now(),
     ...(await client.getResource(props.typeName, response.Identifier!)),
   };
+}
+
+/**
+ * Read back a resource that Cloud Control reported as already existing so it
+ * can be adopted. The read-back is retried briefly because some services are
+ * eventually consistent between the create conflict and GetResource.
+ *
+ * If the resource still cannot be read back, adoption is impossible — most
+ * commonly the name is taken in a globally shared namespace but not visible
+ * in this account (e.g. an S3 bucket owned by another AWS account, or a
+ * recently deleted name still held by the service). Cloud Control reports
+ * both as AlreadyExists, so fail with an actionable error instead of letting
+ * `undefined` flow into the patch computation.
+ */
+async function getResourceForAdoption(
+  client: CloudControlClient,
+  typeName: string,
+  identifier: string | undefined,
+  cause?: Error,
+): Promise<Record<string, any>> {
+  if (identifier) {
+    let delay = 500;
+    for (let attempt = 0; attempt < 5; attempt++) {
+      if (attempt > 0) {
+        await new Promise((resolve) => setTimeout(resolve, delay));
+        delay *= 2;
+      }
+      const resource = await client.getResource(typeName, identifier);
+      if (resource !== undefined) {
+        return resource;
+      }
+    }
+  }
+  throw new Error(
+    `Resource ${typeName} "${identifier}" already exists but could not be read back for adoption. ` +
+      "It may belong to a different AWS account (e.g. S3 bucket names are globally unique), " +
+      "exist in a different region, or its name may still be reserved by a recent deletion. " +
+      "Choose a different name or wait for the name to become available.",
+    { cause },
+  );
 }
 
 async function updateResourceWithPatch(

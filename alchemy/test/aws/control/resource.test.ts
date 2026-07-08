@@ -147,7 +147,7 @@ describe("CloudControlResource", () => {
   });
 
   test("replace resource when immutable property changes", async (scope) => {
-    const testBucketName = `${testId}-immutable-test`;
+    const testBucketName = `${testId}-immutable-props-test`;
     let resource: CloudControlResource | undefined;
 
     try {
