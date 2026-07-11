@@ -14,7 +14,7 @@ export const onRequest = defineRouteMiddleware((context) => {
   }
 
   // Get the site URL from the request or use the configured site
-  const siteUrl = context.url.origin || "https://alchemy.run";
+  const siteUrl = context.url.origin || "https://v1.alchemy.run";
 
   // Base OG image URL - needs to be absolute for Twitter
   const baseImageUrl = `${siteUrl}/og/${route.id ?? "index"}.png`;

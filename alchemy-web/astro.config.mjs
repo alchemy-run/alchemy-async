@@ -13,7 +13,7 @@ import postHogScript from "./src/scripts/posthog.js?raw";
 
 // https://astro.build/config
 export default defineConfig({
-  site: "https://alchemy.run",
+  site: "https://v1.alchemy.run",
   prefetch: true,
   trailingSlash: "ignore",
   integrations: [

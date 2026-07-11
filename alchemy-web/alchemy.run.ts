@@ -17,8 +17,12 @@ const app = await alchemy("alchemy:website", {
   stage,
 });
 
+// The v1 docs moved to `v1.alchemy.run`; the apex `alchemy.run` is now
+// served by the alchemy-effect (v2) website. This deploy must run before
+// the v2 prod deploy — it detaches `alchemy.run` from the router Worker so
+// the v2 Worker can claim it.
 const domain =
-  stage === "prod" ? ZONE : stage === "dev" ? `dev.${ZONE}` : undefined;
+  stage === "prod" ? `v1.${ZONE}` : stage === "dev" ? `dev.${ZONE}` : undefined;
 
 if (stage === "prod") {
   await Zone("alchemy-run", {
