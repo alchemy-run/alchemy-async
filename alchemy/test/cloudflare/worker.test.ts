@@ -1490,7 +1490,10 @@ describe("Worker Resource", () => {
                   const created = await env.ARTIFACTS.create(repoName, {
                     description: "Alchemy Artifacts binding test"
                   });
+                  // ARTIFACTS.get() returns a JS-RPC repo handle; repo metadata
+                  // is exposed via its info() method
                   const repo = await env.ARTIFACTS.get(repoName);
+                  const repoInfo = await repo.info();
                   const deleted = await env.ARTIFACTS.delete(repoName);
 
                   return Response.json({
@@ -1503,10 +1506,10 @@ describe("Worker Resource", () => {
                       hasToken: typeof created.token === "string" && created.token.length > 0
                     },
                     info: {
-                      name: repo.name,
-                      remote: repo.remote,
-                      defaultBranch: repo.defaultBranch,
-                      readOnly: repo.readOnly
+                      name: repoInfo.name,
+                      remote: repoInfo.remote,
+                      defaultBranch: repoInfo.defaultBranch,
+                      readOnly: repoInfo.readOnly
                     },
                     deleted
                   });
@@ -1584,16 +1587,19 @@ describe("Worker Resource", () => {
         expect(data.hasBinding).toEqual(true);
         expect(data.bindingType).toEqual("object");
         expect(data.created.name).toEqual(repoName);
-        expect(data.created.remote).toContain(
-          `artifacts.cloudflare.net/${namespace}/${repoName}.git`,
+        // e.g. https://<account-hash>.artifacts.cloudflare.net/git/<namespace>/<repo>.git
+        expect(data.created.remote).toContain("artifacts.cloudflare.net");
+        expect(data.created.remote).toMatch(
+          new RegExp(`/${namespace}/${repoName}\\.git$`),
         );
         expect(data.created.hasToken).toEqual(true);
         expect(data.info).toMatchObject({
           name: repoName,
           readOnly: false,
         });
-        expect(data.info.remote).toContain(
-          `artifacts.cloudflare.net/${namespace}/${repoName}.git`,
+        expect(data.info.remote).toContain("artifacts.cloudflare.net");
+        expect(data.info.remote).toMatch(
+          new RegExp(`/${namespace}/${repoName}\\.git$`),
         );
         expect(data.deleted).toEqual(true);
       } finally {
