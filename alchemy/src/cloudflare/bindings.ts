@@ -310,8 +310,8 @@ export interface WorkerBindingJson {
   name: string;
   /** Type identifier for JSON binding */
   type: "json";
-  /** JSON value */
-  json: string;
+  /** JSON value, sent raw (not stringified) so the runtime injects native types */
+  json: unknown;
 }
 
 /**

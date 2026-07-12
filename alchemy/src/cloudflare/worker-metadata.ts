@@ -603,7 +603,9 @@ export async function prepareWorkerMetadata(
       meta.bindings.push({
         type: "json",
         name: bindingName,
-        json: JSON.stringify(binding.json),
+        // send the raw value (like wrangler does) so the runtime injects the
+        // native type; stringifying here would inject a string instead
+        json: binding.json,
       });
     } else if (binding.type === "analytics_engine") {
       meta.bindings.push({

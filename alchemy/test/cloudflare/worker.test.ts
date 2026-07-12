@@ -6,7 +6,7 @@ import { AnalyticsEngineDataset } from "../../src/cloudflare/analytics-engine.ts
 import { createCloudflareApi } from "../../src/cloudflare/api.ts";
 import { Artifacts } from "../../src/cloudflare/artifacts.ts";
 import { Assets } from "../../src/cloudflare/assets.ts";
-import { Self } from "../../src/cloudflare/bindings.ts";
+import { Json, Self } from "../../src/cloudflare/bindings.ts";
 import { DurableObjectNamespace } from "../../src/cloudflare/durable-object-namespace.ts";
 import { KVNamespace } from "../../src/cloudflare/kv-namespace.ts";
 import type { SingleStepMigration } from "../../src/cloudflare/worker-migration.ts";
@@ -500,6 +500,51 @@ describe("Worker Resource", () => {
     } finally {
       await destroy(scope);
       // Verify the worker was deleted
+      await assertWorkerDoesNotExist(api, workerName);
+    }
+  });
+
+  test("json bindings are injected as native types", async (scope) => {
+    const workerName = `${BRANCH_PREFIX}-test-worker-json-binding`;
+    const jsonBindingWorkerScript = `
+      export default {
+        async fetch(request, env, ctx) {
+          return Response.json({
+            isDev: env.IS_DEV,
+            isDevType: typeof env.IS_DEV,
+            count: env.COUNT,
+            countType: typeof env.COUNT,
+            config: env.CONFIG,
+          });
+        }
+      };
+    `;
+    try {
+      const worker = await Worker(workerName, {
+        name: workerName,
+        script: jsonBindingWorkerScript,
+        format: "esm",
+        bindings: {
+          IS_DEV: Json(false),
+          COUNT: Json(42),
+          CONFIG: Json({ nested: ["a", "b"] }),
+        },
+        url: true,
+        adopt: true,
+      });
+
+      expect(worker.url).toBeTruthy();
+
+      const response = await fetchAndExpectOK(worker.url!);
+      expect(await response.json()).toEqual({
+        isDev: false,
+        isDevType: "boolean",
+        count: 42,
+        countType: "number",
+        config: { nested: ["a", "b"] },
+      });
+    } finally {
+      await destroy(scope);
       await assertWorkerDoesNotExist(api, workerName);
     }
   });
