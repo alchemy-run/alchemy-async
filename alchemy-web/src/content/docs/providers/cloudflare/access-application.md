@@ -7,7 +7,7 @@ A [Cloudflare Access application](https://developers.cloudflare.com/cloudflare-o
 
 ## Self-Hosted Application
 
-Protect a hostname with one or more reusable [AccessPolicy](./access-policy) resources.
+Protect a hostname with one or more reusable [AccessPolicy](/providers/cloudflare/access-policy) resources.
 
 ```ts
 import { AccessApplication, AccessPolicy } from "alchemy/cloudflare";

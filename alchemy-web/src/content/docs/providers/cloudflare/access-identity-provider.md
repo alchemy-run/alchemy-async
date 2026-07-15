@@ -49,4 +49,4 @@ const oidc = await AccessIdentityProvider("idp", {
 
 - The `type` field is **immutable** — changing it forces replacement of the underlying Cloudflare resource.
 - `clientSecret` is re-sent on every update; Cloudflare clears it if the field is omitted.
-- Deleting an identity provider fails if any [AccessApplication](./access-application) references it via `allowedIdps`.
+- Deleting an identity provider fails if any [AccessApplication](/providers/cloudflare/access-application) references it via `allowedIdps`.

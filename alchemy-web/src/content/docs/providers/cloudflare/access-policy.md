@@ -3,7 +3,7 @@ title: AccessPolicy
 description: Reusable allow / deny / bypass rules attached to Cloudflare Zero Trust Access applications.
 ---
 
-A reusable [Cloudflare Access policy](https://developers.cloudflare.com/cloudflare-one/policies/access/) defines who can reach an [AccessApplication](./access-application). Attach the same policy to multiple applications via their `policies` array.
+A reusable [Cloudflare Access policy](https://developers.cloudflare.com/cloudflare-one/policies/access/) defines who can reach an [AccessApplication](/providers/cloudflare/access-application). Attach the same policy to multiple applications via their `policies` array.
 
 ## Simple Allow Policy
 

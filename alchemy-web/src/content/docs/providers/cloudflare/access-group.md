@@ -3,7 +3,7 @@ title: AccessGroup
 description: Define reusable rule sets for Cloudflare Zero Trust Access policies.
 ---
 
-A [Cloudflare Access group](https://developers.cloudflare.com/cloudflare-one/identity/users/groups/) is a reusable bundle of `include` / `exclude` / `require` rules that can be referenced by [AccessPolicy](./access-policy) resources.
+A [Cloudflare Access group](https://developers.cloudflare.com/cloudflare-one/identity/users/groups/) is a reusable bundle of `include` / `exclude` / `require` rules that can be referenced by [AccessPolicy](/providers/cloudflare/access-policy) resources.
 
 ## Email Domain Allowlist
 
@@ -49,4 +49,4 @@ const defaultEmployees = await AccessGroup("default-employees", {
 
 ## Rule Reference
 
-The `include`, `exclude`, and `require` arrays accept any [AccessRule](./access-policy#rule-reference) — see the AccessPolicy page for the full catalog.
+The `include`, `exclude`, and `require` arrays accept any [AccessRule](/providers/cloudflare/access-policy#rule-reference) — see the AccessPolicy page for the full catalog.
