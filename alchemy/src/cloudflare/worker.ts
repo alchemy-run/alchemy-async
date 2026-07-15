@@ -1601,7 +1601,7 @@ async function provisionResources<B extends Bindings>(
             // In local dev mode, queue.id is "" (no Cloudflare API call).
             // Use queue.dev.id (resource ID, e.g. "email-queue") to avoid
             // all consumers colliding on the same "-consumer" resource ID.
-            // See: https://github.com/alchemy-run/alchemy/issues/1363
+            // See: https://github.com/alchemy-run/alchemy-async/issues/1363
             const queueConsumerId = options.local
               ? eventSource.queue.dev?.id || eventSource.queue.id
               : eventSource.queue.id;

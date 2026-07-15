@@ -5,7 +5,7 @@
   "license": "Apache-2.0",
   "repository": {
     "type": "git",
-    "url": "https://github.com/alchemy-run/alchemy"
+    "url": "https://github.com/alchemy-run/alchemy-async"
   },
   "workspaces": {
     "catalog": {

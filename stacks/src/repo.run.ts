@@ -41,7 +41,7 @@ const githubRole = await Role("github-oidc-role", {
           },
           StringLike: {
             "token.actions.githubusercontent.com:sub":
-              "repo:alchemy-run/alchemy:*",
+              "repo:alchemy-run/alchemy-async:*",
           },
         },
       },

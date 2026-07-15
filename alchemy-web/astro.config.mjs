@@ -55,7 +55,7 @@ export default defineConfig({
         {
           icon: "github",
           label: "GitHub",
-          href: "https://github.com/alchemy-run/alchemy",
+          href: "https://github.com/alchemy-run/alchemy-async",
         },
         {
           icon: "x.com",
@@ -69,7 +69,7 @@ export default defineConfig({
         },
       ],
       editLink: {
-        baseUrl: "https://github.com/alchemy-run/alchemy/edit/main/alchemy-web",
+        baseUrl: "https://github.com/alchemy-run/alchemy-async/edit/main/alchemy-web",
       },
       components: {
         Hero: "./src/components/Hero.astro",

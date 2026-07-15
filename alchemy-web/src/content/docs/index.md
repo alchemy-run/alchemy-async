@@ -9,6 +9,6 @@ hero:
       link: /getting-started
       variant: primary
     - text: ⭐ Star on GitHub
-      link: https://github.com/alchemy-run/alchemy
+      link: https://github.com/alchemy-run/alchemy-async
       variant: secondary
 ---
