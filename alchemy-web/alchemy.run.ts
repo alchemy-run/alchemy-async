@@ -74,7 +74,7 @@ console.log(url);
 if (process.env.PULL_REQUEST) {
   await GitHubComment("comment", {
     owner: "alchemy-run",
-    repository: "alchemy",
+    repository: "alchemy-async",
     issueNumber: Number(process.env.PULL_REQUEST),
     body: `
 ## 🚀 Website Preview Deployed

@@ -58,7 +58,7 @@ const stateStore = await R2Bucket("state-store", {
 
 const testEnvironment = await RepositoryEnvironment("test environment", {
   owner: "alchemy-run",
-  repository: "alchemy",
+  repository: "alchemy-async",
   name: "test",
   reviewers: {
     users: ["alchemy-run"],
@@ -107,7 +107,7 @@ const secrets = {
 await Promise.all([
   GitHubOIDCProvider("github-oidc", {
     owner: "alchemy-run",
-    repository: "alchemy",
+    repository: "alchemy-async",
     roleArn: githubRole.arn,
   }),
   SSMParameter("github-ci-secrets", {
@@ -127,7 +127,7 @@ await Promise.all([
   ...Object.entries(secrets).flatMap(async ([name, value]) => {
     const props = {
       owner: "alchemy-run",
-      repository: "alchemy",
+      repository: "alchemy-async",
       name,
       value: typeof value === "string" ? alchemy.secret(value) : value!,
     };

@@ -69,7 +69,8 @@ export default defineConfig({
         },
       ],
       editLink: {
-        baseUrl: "https://github.com/alchemy-run/alchemy-async/edit/main/alchemy-web",
+        baseUrl:
+          "https://github.com/alchemy-run/alchemy-async/edit/main/alchemy-web",
       },
       components: {
         Hero: "./src/components/Hero.astro",
