@@ -64,69 +64,69 @@ export type Bound<T extends Binding> = T extends _AiSearch
             ? BoundWorker<RPC>
             : T extends _Artifacts
               ? Artifacts
-            : T extends { type: "service" }
-              ? Service
-              : T extends _R2Bucket
-                ? R2Bucket
-                : T extends _Hyperdrive | HyperdriveRef
-                  ? Hyperdrive
-                  : T extends Secret
-                    ? string
-                    : T extends CloudflareSecret | CloudflareSecretRef
-                      ? SecretsStoreSecret
-                      : T extends _EmailSender
-                        ? SendEmail
-                        : T extends SecretKey
-                          ? CryptoKey
-                          : T extends Assets
-                            ? Service
-                            : T extends _Workflow<infer P>
-                              ? Workflow<P>
-                              : T extends _D1Database
-                                ? D1Database
-                                : T extends DispatchNamespace
-                                  ? DispatchNamespace
-                                  : T extends _WorkerLoader
-                                    ? WorkerLoader
-                                    : T extends _VectorizeIndex
-                                      ? VectorizeIndex
-                                      : T extends _Queue<infer Body>
-                                        ? Queue<Body>
-                                        : T extends _AnalyticsEngineDataset
-                                          ? AnalyticsEngineDataset
-                                          : T extends _Pipeline<infer R>
-                                            ? Pipeline<R>
-                                            : T extends _RateLimit
-                                              ? RateLimit
-                                              : T extends string
-                                                ? T
-                                                : T extends BrowserRendering
-                                                  ? BrowserRun
-                                                  : T extends _Ai<infer M>
-                                                    ? Ai<M>
-                                                    : T extends _Images
-                                                      ? ImagesBinding
-                                                      : T extends _VersionMetadata
-                                                        ? WorkerVersionMetadata
-                                                        : T extends
-                                                              | _Worker.DevDomain
-                                                              | _Worker.DevUrl
-                                                          ? string
-                                                          : T extends Self
-                                                            ? Service
-                                                            : T extends Json<
-                                                                  infer T
-                                                                >
-                                                              ? T
-                                                              : T extends _Container<
-                                                                    infer Obj
+              : T extends { type: "service" }
+                ? Service
+                : T extends _R2Bucket
+                  ? R2Bucket
+                  : T extends _Hyperdrive | HyperdriveRef
+                    ? Hyperdrive
+                    : T extends Secret
+                      ? string
+                      : T extends CloudflareSecret | CloudflareSecretRef
+                        ? SecretsStoreSecret
+                        : T extends _EmailSender
+                          ? SendEmail
+                          : T extends SecretKey
+                            ? CryptoKey
+                            : T extends Assets
+                              ? Service
+                              : T extends _Workflow<infer P>
+                                ? Workflow<P>
+                                : T extends _D1Database
+                                  ? D1Database
+                                  : T extends DispatchNamespace
+                                    ? DispatchNamespace
+                                    : T extends _WorkerLoader
+                                      ? WorkerLoader
+                                      : T extends _VectorizeIndex
+                                        ? VectorizeIndex
+                                        : T extends _Queue<infer Body>
+                                          ? Queue<Body>
+                                          : T extends _AnalyticsEngineDataset
+                                            ? AnalyticsEngineDataset
+                                            : T extends _Pipeline<infer R>
+                                              ? Pipeline<R>
+                                              : T extends _RateLimit
+                                                ? RateLimit
+                                                : T extends string
+                                                  ? T
+                                                  : T extends BrowserRendering
+                                                    ? BrowserRun
+                                                    : T extends _Ai<infer M>
+                                                      ? Ai<M>
+                                                      : T extends _Images
+                                                        ? ImagesBinding
+                                                        : T extends _VersionMetadata
+                                                          ? WorkerVersionMetadata
+                                                          : T extends
+                                                                | _Worker.DevDomain
+                                                                | _Worker.DevUrl
+                                                            ? string
+                                                            : T extends Self
+                                                              ? Service
+                                                              : T extends Json<
+                                                                    infer T
                                                                   >
-                                                                ? DurableObjectNamespace<
-                                                                    Obj &
-                                                                      Rpc.DurableObjectBranded
-                                                                  >
-                                                                : T extends _VpcService
-                                                                  ? Fetcher
-                                                                  : T extends undefined
-                                                                    ? undefined
-                                                                    : Service;
+                                                                ? T
+                                                                : T extends _Container<
+                                                                      infer Obj
+                                                                    >
+                                                                  ? DurableObjectNamespace<
+                                                                      Obj &
+                                                                        Rpc.DurableObjectBranded
+                                                                    >
+                                                                  : T extends _VpcService
+                                                                    ? Fetcher
+                                                                    : T extends undefined
+                                                                      ? undefined
+                                                                      : Service;
