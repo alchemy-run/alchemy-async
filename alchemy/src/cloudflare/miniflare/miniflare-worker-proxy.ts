@@ -249,7 +249,9 @@ const writeMiniflareResponseToNode = (
   });
 
   if (res.body) {
-    Readable.fromWeb(res.body).pipe(out, { end: true });
+    const body = Readable.fromWeb(res.body);
+    body.on("error", () => out.destroy());
+    body.pipe(out, { end: true });
   } else {
     out.end();
   }
