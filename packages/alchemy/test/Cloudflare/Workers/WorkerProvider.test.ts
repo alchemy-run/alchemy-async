@@ -1,15 +1,19 @@
 import {
+  buildWorkerAffinityRules,
   encodeDurableObjectTags,
   getDurableObjectTagMap,
   normalizeStateDomains,
   resolveWorkerDomain,
   resolveWorkersDev,
+  resolveWorkerVersionAffinity,
   shouldObserveWorkerCrons,
   shouldObserveWorkerDomains,
   shouldObserveWorkerRoutes,
   stateCustomDomains,
   stateWorkerDomain,
+  workerAffinityRulePrefix,
 } from "@/Cloudflare/Workers/WorkerProvider";
+import type { WorkerVersionOptions } from "@/Cloudflare/Workers/Worker";
 import { describe, expect, test } from "alchemy-test";
 import * as Effect from "effect/Effect";
 import * as Result from "effect/Result";
@@ -451,6 +455,156 @@ describe("WorkerProvider", () => {
 
     test("observes when prior state has crons (e.g. Effect-native cron())", () => {
       expect(shouldObserveWorkerCrons({}, { crons: ["0 * * * *"] })).toBe(true);
+    });
+  });
+
+  describe("resolveWorkerVersionAffinity", () => {
+    const resolve = (affinity: WorkerVersionOptions["affinity"]) =>
+      Effect.runSync(resolveWorkerVersionAffinity({ affinity }));
+    const resolveFailure = (affinity: WorkerVersionOptions["affinity"]) => {
+      const result = Effect.runSync(
+        Effect.result(resolveWorkerVersionAffinity({ affinity })),
+      );
+      expect(Result.isFailure(result)).toBe(true);
+      return Result.isFailure(result) ? result.failure : undefined;
+    };
+
+    test("absent version/affinity resolves to undefined", () => {
+      expect(
+        Effect.runSync(resolveWorkerVersionAffinity(undefined)),
+      ).toBeUndefined();
+      expect(resolve(undefined)).toBeUndefined();
+    });
+
+    test('the "ip" shorthand resolves to the ip source', () => {
+      expect(resolve("ip")).toEqual({ source: "ip" });
+    });
+
+    test("cookie source keeps its name and fallback", () => {
+      expect(resolve({ cookie: "session_id" })).toEqual({
+        source: "cookie",
+        name: "session_id",
+        fallback: undefined,
+      });
+      expect(resolve({ cookie: "session_id", fallback: "ip" })).toEqual({
+        source: "cookie",
+        name: "session_id",
+        fallback: "ip",
+      });
+    });
+
+    test("header names are lowercased (Rules-language lookups key on lowercase)", () => {
+      expect(resolve({ header: "X-Session-Id" })).toEqual({
+        source: "header",
+        name: "x-session-id",
+        fallback: undefined,
+      });
+    });
+
+    test("raw expressions are trimmed and passed through", () => {
+      expect(resolve({ expression: " ip.src.country " })).toEqual({
+        source: "expression",
+        expression: "ip.src.country",
+      });
+    });
+
+    test("zero or multiple sources are typed errors", () => {
+      expect(resolveFailure({})?._tag).toEqual("WorkerVersionConfigError");
+      expect(
+        resolveFailure({ cookie: "session_id", header: "x-user" })?._tag,
+      ).toEqual("WorkerVersionConfigError");
+    });
+
+    test("fallback does not compose with a raw expression", () => {
+      expect(
+        resolveFailure({ expression: "ip.src.country", fallback: "ip" })?._tag,
+      ).toEqual("WorkerVersionConfigError");
+    });
+
+    test("names that can't be safely quoted are typed errors", () => {
+      expect(resolveFailure({ cookie: 'bad"name' })?._tag).toEqual(
+        "WorkerVersionConfigError",
+      );
+      expect(resolveFailure({ header: "bad name" })?._tag).toEqual(
+        "WorkerVersionConfigError",
+      );
+      expect(resolveFailure({ expression: "  " })?._tag).toEqual(
+        "WorkerVersionConfigError",
+      );
+    });
+  });
+
+  describe("buildWorkerAffinityRules", () => {
+    const versionKeyExpression = (rule: {
+      actionParameters?: { headers?: Record<string, unknown> };
+    }) =>
+      (
+        rule.actionParameters?.headers?.["Cloudflare-Workers-Version-Key"] as
+          | { operation: string; expression: string }
+          | undefined
+      )?.expression;
+
+    test("ip source emits a single host-scoped rule", () => {
+      const rules = buildWorkerAffinityRules("my-api", { source: "ip" }, [
+        "api.example.com",
+      ]);
+      expect(rules).toHaveLength(1);
+      expect(rules[0].description).toEqual(workerAffinityRulePrefix("my-api"));
+      expect(rules[0].action).toEqual("rewrite");
+      expect(rules[0].expression).toEqual('http.host eq "api.example.com"');
+      expect(versionKeyExpression(rules[0])).toEqual("to_string(ip.src)");
+    });
+
+    test("cookie source gates on presence and reads the cookie value", () => {
+      const rules = buildWorkerAffinityRules(
+        "my-api",
+        { source: "cookie", name: "session_id", fallback: undefined },
+        ["api.example.com"],
+      );
+      expect(rules).toHaveLength(1);
+      expect(rules[0].expression).toEqual(
+        'http.host eq "api.example.com" and len(http.request.cookies["session_id"]) > 0',
+      );
+      expect(versionKeyExpression(rules[0])).toEqual(
+        'http.request.cookies["session_id"][0]',
+      );
+    });
+
+    test("fallback: ip adds a second rule for requests missing the identifier", () => {
+      const rules = buildWorkerAffinityRules(
+        "my-api",
+        { source: "header", name: "x-user-id", fallback: "ip" },
+        ["api.example.com"],
+      );
+      expect(rules).toHaveLength(2);
+      expect(rules[1].description).toEqual(
+        `${workerAffinityRulePrefix("my-api")}:fallback`,
+      );
+      expect(rules[1].expression).toEqual(
+        'http.host eq "api.example.com" and len(http.request.headers["x-user-id"]) == 0',
+      );
+      expect(versionKeyExpression(rules[1])).toEqual("to_string(ip.src)");
+    });
+
+    test("multiple and wildcard hosts combine into one scope group", () => {
+      const rules = buildWorkerAffinityRules("my-api", { source: "ip" }, [
+        "api.example.com",
+        "www.example.com",
+        "*.preview.example.com",
+      ]);
+      expect(rules[0].expression).toEqual(
+        '(http.host in {"api.example.com" "www.example.com"} or http.host wildcard "*.preview.example.com")',
+      );
+    });
+
+    test("raw expressions pass through as the header value", () => {
+      const rules = buildWorkerAffinityRules(
+        "my-api",
+        { source: "expression", expression: "ip.src.country" },
+        [],
+      );
+      expect(rules[0].expression).toEqual("true");
+      expect(versionKeyExpression(rules[0])).toEqual("ip.src.country");
     });
   });
 });

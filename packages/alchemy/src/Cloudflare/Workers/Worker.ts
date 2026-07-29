@@ -400,6 +400,52 @@ export interface WorkerRouteConfig {
  *   and the currently-live version keeps the remainder, instead of the
  *   default 100% cutover.
  */
+/**
+ * Where the per-user affinity key comes from — see
+ * {@link WorkerVersionOptions.affinity}. Exactly one of {@link cookie},
+ * {@link header}, or {@link expression} must be set (or use the `"ip"`
+ * shorthand instead of this object).
+ */
+export interface WorkerVersionAffinityConfig {
+  /**
+   * Pin by the value of this cookie (e.g. a session id). Requests without
+   * the cookie are not pinned unless {@link fallback} is set.
+   */
+  cookie?: string;
+  /**
+   * Pin by the value of this request header — e.g. an API token or an
+   * identity header your auth layer already injects
+   * (`Cf-Access-Jwt-Assertion` carries the whole Cloudflare Access JWT,
+   * which pins per user without parsing any claims). Header names are
+   * case-insensitive.
+   */
+  header?: string;
+  /**
+   * Raw [Rules-language](https://developers.cloudflare.com/ruleset-engine/rules-language/)
+   * expression producing the affinity key string — the escape hatch when
+   * neither a cookie nor a whole header is the right identifier, e.g. a
+   * single JWT claim via API Shield's token configurations:
+   * `lookup_json_string(http.request.jwt.claims["<config-id>"][0], "sub")`.
+   * Mutually exclusive with {@link cookie} / {@link header} /
+   * {@link fallback}.
+   */
+  expression?: string;
+  /**
+   * What to do when the {@link cookie} / {@link header} is absent from a
+   * request: `"ip"` pins by client IP instead, so anonymous users are
+   * sticky too. Omitted, unmatched requests are routed by the deployment
+   * percentages independently.
+   */
+  fallback?: "ip";
+}
+
+/**
+ * Affinity source for {@link WorkerVersionOptions.affinity}: a
+ * {@link WorkerVersionAffinityConfig}, or `"ip"` to pin every request by
+ * client IP.
+ */
+export type WorkerVersionAffinity = "ip" | WorkerVersionAffinityConfig;
+
 export interface WorkerVersionOptions {
   /**
    * The Worker that owns the script this version is uploaded to. Accepts a
@@ -452,6 +498,37 @@ export interface WorkerVersionOptions {
    * 63 characters (a DNS label).
    */
   alias?: string;
+  /**
+   * Keep each user on one version for the duration of a rollout. Gradual
+   * deployments route every request independently by percentage, so
+   * consecutive requests from the same user can bounce between versions;
+   * affinity pins them by setting the `Cloudflare-Workers-Version-Key`
+   * request header — which Cloudflare hashes into a deterministic version
+   * assignment — from a stable per-user identifier, via a zone
+   * [Transform Rule](https://developers.cloudflare.com/rules/transform/request-header-modification/)
+   * Alchemy manages for you.
+   *
+   * Sources: `{ cookie: "session_id" }`, `{ header: "authorization" }`,
+   * `"ip"` (client IP), or a raw Rules-language `{ expression }` (e.g. a
+   * JWT claim). Cookie/header sources accept `fallback: "ip"` so requests
+   * missing the identifier still stick. See {@link WorkerVersionAffinity}.
+   *
+   * The rule lives on the Cloudflare zone(s) the Worker's traffic flows
+   * through — its `domain` and/or `routes`, or the *parent's* when
+   * {@link parent} is set — scoped to the hostnames serving the Worker.
+   * It requires zone traffic: a workers.dev-only Worker fails the deploy
+   * with a config error (set the header from your client instead).
+   * Alchemy owns only its tagged rules in the shared
+   * `http_request_late_transform` phase entrypoint (other rules pass
+   * through untouched) and removes them when `affinity` is removed or the
+   * resource is destroyed. Define affinity at most once per script — the
+   * version key is script-wide, so a parent and its canary should not
+   * both declare one.
+   *
+   * As a rollout ramps, pinned users only ever move forward to the new
+   * version, never back — unless you roll back.
+   */
+  affinity?: WorkerVersionAffinity;
   /**
    * Human-readable annotation attached to the uploaded version, shown in
    * the Cloudflare dashboard and `wrangler versions list`.
@@ -886,6 +963,16 @@ export type Worker<Bindings extends WorkerBindings = any> = Resource<
      * deployment.
      */
     deploymentId?: string | undefined;
+    /**
+     * The Cloudflare zone ids currently holding this resource's
+     * `version.affinity` transform rules (tagged
+     * `alchemy:worker:<script>:affinity` in the shared
+     * `http_request_late_transform` phase entrypoint). Tracked so removing
+     * the `affinity` prop — or destroying the resource — cleans the rules
+     * out of exactly those zones. Empty/absent when no affinity is
+     * configured.
+     */
+    affinityZoneIds?: string[] | undefined;
     hash?: {
       assets: string | undefined;
       bundle: string | undefined;

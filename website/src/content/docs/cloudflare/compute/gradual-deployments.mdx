@@ -173,21 +173,100 @@ keep cooperating Workers on matching versions during a rollout.
 ## Keep users on one version
 
 Percentages route each request independently, so consecutive requests
-from the same user can land on different versions mid-rollout. To pin
-a user for the duration, set the
-`Cloudflare-Workers-Version-Key` request header to a stable identifier
-for that user — Cloudflare hashes the key and assigns a version
-deterministically from the configured percentages:
+from the same user can land on different versions mid-rollout.
+Cloudflare pins a request to a deterministic version when the
+`Cloudflare-Workers-Version-Key` request header carries a stable
+identifier for the user. `version.affinity` provisions the zone
+[Transform Rule](https://developers.cloudflare.com/rules/transform/request-header-modification/)
+that sets it for you:
+
+```typescript
+yield* Cloudflare.Worker("Api", {
+  main: "./src/api.ts",
+  domain: "api.example.com",
+  version: {
+    traffic: 10,
+    affinity: { cookie: "session_id", fallback: "ip" },
+  },
+});
+```
+
+Users with a `session_id` cookie stick by session; anonymous requests
+fall back to sticking by client IP. The other sources:
+`header: "..."` pins by a request header — behind Cloudflare Access,
+`header: "Cf-Access-Jwt-Assertion"` pins per identity without parsing
+any claims — `"ip"` pins everyone by client IP, and `expression` takes
+a raw
+[Rules-language](https://developers.cloudflare.com/ruleset-engine/rules-language/)
+expression for anything else, such as a single JWT claim through an
+API Shield token configuration:
+
+```typescript
+yield* Cloudflare.Worker("Api", {
+  main: "./src/api.ts",
+  domain: "api.example.com",
+  version: {
+    traffic: 10,
+    affinity: {
+      expression: `lookup_json_string(http.request.jwt.claims["<token-config-id>"][0], "sub")`,
+    },
+  },
+});
+```
+
+The rule needs a zone to live on: the Worker — or, for a canary, its
+`version.parent` — must serve zone traffic through `domain` or
+`routes`. A workers.dev-only Worker fails the deploy with a config
+error, since workers.dev requests never pass through your zone's
+rules (set the header from your client instead). Alchemy scopes the
+rule to the hostnames serving the Worker, owns only its own tagged
+rules in the shared `http_request_late_transform` phase — rules
+managed elsewhere pass through untouched — and removes them when you
+drop `affinity` or destroy the resource. Declare affinity at most once
+per script: the version key is script-wide, so a parent and its canary
+should not both set one.
+
+As the rollout ramps up, pinned users only ever move forward to the
+new version, never back — unless you roll back.
+
+### Bring your own version key
+
+The sugar covers the common identifiers; for full control over the
+expression and its scope, write the Transform Rule yourself with
+`Cloudflare.Ruleset.Ruleset` on the same phase:
+
+```typescript
+const zone = yield* Cloudflare.Zone.Zone("Zone", { name: "example.com" });
+
+yield* Cloudflare.Ruleset.Ruleset("VersionKey", {
+  zone,
+  phase: "http_request_late_transform",
+  rules: [
+    {
+      description: "pin api.example.com users to a Worker version",
+      expression: `http.host eq "api.example.com"`,
+      action: "rewrite",
+      actionParameters: {
+        headers: {
+          "Cloudflare-Workers-Version-Key": {
+            operation: "set",
+            expression: `http.request.cookies["session_id"][0]`,
+          },
+        },
+      },
+    },
+  ],
+});
+```
+
+Note that `Ruleset` owns the phase's *entire* entrypoint for the zone,
+so don't combine it with `version.affinity` on the same zone — pick
+one. Clients can also pin themselves by sending the header directly,
+no zone required:
 
 ```sh
 curl -s https://api.example.com -H 'Cloudflare-Workers-Version-Key: user-123'
 ```
-
-On a zone you control, a
-[Transform Rule](https://developers.cloudflare.com/rules/transform/request-header-modification/)
-can populate the header from an existing cookie or claim, with no code
-changes. As the rollout ramps up, pinned users only ever move forward
-to the new version, never back — unless you roll back.
 
 ## Verify which version served a request
 
