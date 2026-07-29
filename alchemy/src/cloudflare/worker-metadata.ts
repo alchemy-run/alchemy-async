@@ -206,6 +206,17 @@ export interface WorkerMetadata {
     };
   };
   logpush?: boolean;
+  /**
+   * Workers Cache configuration.
+   *
+   * The wire shape matches what wrangler (>= 4.69) uploads.
+   *
+   * @see https://developers.cloudflare.com/workers/cache/configuration/
+   */
+  cache_options?: {
+    enabled: boolean;
+    cross_version_cache?: boolean;
+  };
   migrations?: SingleStepMigration;
   main_module?: string;
   body_part?: string;
@@ -355,6 +366,19 @@ export async function prepareWorkerMetadata(
       enabled: observability?.enabled !== false,
     },
     logpush: props.logpush ?? false,
+    cache_options:
+      props.cache != null
+        ? {
+            enabled:
+              typeof props.cache === "boolean"
+                ? props.cache
+                : (props.cache.enabled ?? true),
+            cross_version_cache:
+              typeof props.cache === "object"
+                ? props.cache.crossVersionCache
+                : undefined,
+          }
+        : undefined,
     // TODO(sam): base64 encode instead? 0 collision risk vs readability.
     tags: [
       // encode a mapping table of Durable Object stable ID -> binding name

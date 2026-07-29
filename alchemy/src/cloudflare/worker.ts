@@ -250,6 +250,21 @@ export interface BaseWorkerProps<
   assets?: AssetsConfig;
 
   /**
+   * Enable Workers Cache — a Worker-owned edge cache in front of this Worker.
+   *
+   * When enabled, Cloudflare checks the cache before invoking the Worker and
+   * serves matching responses directly from the edge. Caching is controlled
+   * with standard response headers (`Cache-Control`, `Cache-Tag`, `Vary`) and
+   * entries can be purged at runtime with `ctx.cache.purge()`.
+   *
+   * Pass `true` as shorthand for `{ enabled: true }`.
+   *
+   * @see https://developers.cloudflare.com/workers/cache/
+   * @default undefined - Workers Cache is disabled
+   */
+  cache?: boolean | WorkerCacheOptions;
+
+  /**
    * Cron expressions for the trigger.
    *
    * Uses standard cron syntax (e.g. "0 0 * * *" for daily at midnight)
@@ -429,6 +444,31 @@ export interface BaseWorkerProps<
    * Tail consumers that will receive execution logs from this worker
    */
   tailConsumers?: Array<Worker | { service: string }>;
+}
+
+/**
+ * Configuration for Workers Cache — the edge cache that sits in front of a
+ * Worker's `fetch()` invocations.
+ *
+ * @see https://developers.cloudflare.com/workers/cache/configuration/
+ */
+export interface WorkerCacheOptions {
+  /**
+   * If Workers Cache is enabled for this Worker
+   *
+   * @default true
+   */
+  enabled?: boolean;
+
+  /**
+   * Whether cached responses may be reused across Worker versions.
+   *
+   * By default the cache is scoped to a single Worker version, so every
+   * deployment starts cold. Enable this when responses are version-agnostic.
+   *
+   * @default false
+   */
+  crossVersionCache?: boolean;
 }
 
 export interface WorkerObservability {
