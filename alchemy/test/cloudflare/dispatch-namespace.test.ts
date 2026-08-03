@@ -147,6 +147,109 @@ describe("Dispatch Namespace Resource", () => {
     }
   });
 
+  test("dispatch namespace binding with outbound worker", async (scope) => {
+    const outboundWorkerName = `${BRANCH_PREFIX}-outbound-worker`;
+    const targetWorkerName = `${BRANCH_PREFIX}-outbound-target-worker`;
+    const dispatcherWorkerName = `${BRANCH_PREFIX}-outbound-dispatcher`;
+    const namespaceName = `${BRANCH_PREFIX}-outbound-namespace`;
+
+    let outboundWorker: Worker | undefined;
+    let targetWorker: Worker | undefined;
+    let dispatcherWorker: Worker | undefined;
+    let dispatchNamespace: DispatchNamespace | undefined;
+
+    try {
+      // 1. The outbound worker intercepts every subrequest a dispatched user worker makes.
+      // It answers directly with the per-dispatch parameter it received on its env, which
+      // proves both the attachment AND the parameter plumbing end-to-end.
+      outboundWorker = await Worker(outboundWorkerName, {
+        name: outboundWorkerName,
+        adopt: true,
+        script: `
+          export default {
+            async fetch(request, env, ctx) {
+              return new Response('outbound saw customer: ' + (env.CUSTOMER ?? 'none'), { status: 200 });
+            }
+          }
+        `,
+      });
+
+      dispatchNamespace = await DispatchNamespace(
+        "outbound-dispatch-namespace",
+        {
+          namespace: namespaceName,
+          adopt: true,
+        },
+      );
+
+      // 2. The user worker makes an arbitrary subrequest — it never reaches the real
+      // origin because the outbound worker intercepts it.
+      targetWorker = await Worker(targetWorkerName, {
+        name: targetWorkerName,
+        adopt: true,
+        script: `
+          export default {
+            async fetch(request, env, ctx) {
+              const intercepted = await fetch('https://example.com/');
+              return new Response(await intercepted.text(), { status: 200 });
+            }
+          }
+        `,
+        namespace: dispatchNamespace,
+      });
+
+      // 3. The dispatcher attaches the outbound worker on the BINDING and supplies the
+      // declared parameter per dispatch.
+      dispatcherWorker = await Worker(dispatcherWorkerName, {
+        name: dispatcherWorkerName,
+        adopt: true,
+        script: `
+          export default {
+            async fetch(request, env, ctx) {
+              const worker = env.NAMESPACE.get('${targetWorkerName}', {}, {
+                outbound: { CUSTOMER: 'tenant-42' },
+              });
+              return worker.fetch(request);
+            }
+          }
+        `,
+        bindings: {
+          NAMESPACE: {
+            ...dispatchNamespace,
+            outbound: {
+              service: outboundWorkerName,
+              parameters: ["CUSTOMER"],
+            },
+          },
+        },
+        url: true,
+      });
+
+      // 4. The user worker's subrequest is answered by the outbound worker, carrying the
+      // per-dispatch parameter value.
+      const response = await fetchAndExpectOK(dispatcherWorker.url!);
+      const text = await response.text();
+      expect(text).toEqual("outbound saw customer: tenant-42");
+    } finally {
+      await alchemy.destroy(scope);
+      if (targetWorker && dispatchNamespace) {
+        await assertWorkerInNamespaceDoesNotExist(
+          targetWorker.name,
+          dispatchNamespace.namespace,
+        );
+      }
+      if (dispatcherWorker) {
+        await assertWorkerDoesNotExist(dispatcherWorker.name);
+      }
+      if (outboundWorker) {
+        await assertWorkerDoesNotExist(outboundWorker.name);
+      }
+      if (dispatchNamespace) {
+        await assertDispatchNamespaceNotExists(dispatchNamespace.namespace);
+      }
+    }
+  });
+
   test("dispatch namespace with asset bindings", async (scope) => {
     const workerName = `${BRANCH_PREFIX}-asset-worker`;
     const dispatcherWorkerName = `${BRANCH_PREFIX}-asset-dispatcher`;

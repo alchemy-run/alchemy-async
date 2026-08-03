@@ -263,8 +263,14 @@ export interface WorkerBindingDispatchNamespace {
   type: "dispatch_namespace";
   /** Namespace identifier */
   namespace: string;
-  /** Optional outbound service */
-  outbound?: any; // Documentation doesn't specify the exact type
+  /** Optional Workers-for-Platforms outbound Worker attachment */
+  outbound?: {
+    worker: {
+      service: string;
+      environment?: string;
+    };
+    params?: { name: string }[];
+  };
 }
 
 /**

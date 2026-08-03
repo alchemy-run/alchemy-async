@@ -545,6 +545,20 @@ async function processBindings(
         binding: bindingName,
         namespace: binding.namespaceName,
         remote: true,
+        // Workers-for-Platforms outbound Worker attachment (wrangler-native config shape).
+        ...(binding.outbound
+          ? {
+              outbound: {
+                service: binding.outbound.service,
+                ...(binding.outbound.environment
+                  ? { environment: binding.outbound.environment }
+                  : {}),
+                ...(binding.outbound.parameters
+                  ? { parameters: binding.outbound.parameters }
+                  : {}),
+              },
+            }
+          : {}),
       });
     } else if (binding.type === "ratelimit") {
       ratelimits.push({
