@@ -18,6 +18,7 @@ export const quickTunnel = async (
    */
   tunnelUrl: await scope.spawn("tunnel", {
     cmd: `cloudflared tunnel --url ${localUrl}`,
+    shell: false,
     // used to check if a PID is a cloudflared process when the parent exits, for resumability
     processName: "cloudflared",
     extract: (line) => {

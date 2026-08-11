@@ -19,6 +19,19 @@ export interface IdempotentSpawnOptions {
    * If true, the child's stdout and stderr will not be mirrored to this process's console.
    */
   quiet?: boolean;
+  /**
+   * Whether to spawn the command through a shell.
+   *
+   * - `true` (default): the command is run via `cmd.exe /c` on Windows or `/bin/sh -c` on POSIX.
+   *   This lets the cmd resolve `.cmd`/`.bat` files and use shell features (env expansion, `&&`, pipes).
+   *   The stored PID is the SHELL's, not the underlying program's, so on cleanup the shell is killed
+   *   but its children may be orphaned. We compensate on Windows by tree-killing via `taskkill /T /F`.
+   *
+   * - `false`: the cmd is parsed as a whitespace-separated argv and the program is spawned directly.
+   *   The stored PID is the program's actual PID, so kill is reliable across platforms.
+   *   Use this for direct executables (e.g. `cloudflared ...`) where shell features aren't needed.
+   */
+  shell?: boolean;
 }
 
 /**
@@ -39,6 +52,7 @@ export async function idempotentSpawn({
   extract,
   isSameProcess,
   quiet = false,
+  shell = true,
 }: IdempotentSpawnOptions): Promise<{
   extracted: Promise<string | undefined>;
   stop: () => Promise<void>;
@@ -108,14 +122,29 @@ export async function idempotentSpawn({
   async function spawnLoggedChild() {
     const out = await fsp.open(outPath, "a");
 
-    // shell:true, NO args — pass a single command string
-    const child = spawn(cmd, {
-      shell: true,
-      cwd,
-      stdio: ["inherit", out.fd, out.fd], // stdout/stderr -> files (OS-level)
-      env,
-      detached: false,
-    });
+    const child = shell
+      ? // shell:true, NO args — pass a single command string
+        spawn(cmd, {
+          shell: true,
+          cwd,
+          stdio: ["inherit", out.fd, out.fd], // stdout/stderr -> files (OS-level)
+          env,
+          detached: false,
+        })
+      : (() => {
+          // shell:false — parse cmd into argv so the stored PID is the program's, not a shell wrapper.
+          // We split on whitespace; callers using shell:false must not rely on shell features.
+          const [bin, ...args] = cmd.split(/\s+/).filter(Boolean);
+          if (!bin) {
+            throw new Error(`Empty command passed to idempotentSpawn: ${cmd}`);
+          }
+          return spawn(bin, args, {
+            cwd,
+            stdio: ["inherit", out.fd, out.fd],
+            env,
+            detached: false,
+          });
+        })();
 
     // Child now owns dup'd fds; close our handles.
     await out.close();
@@ -306,6 +335,25 @@ export async function idempotentSpawn({
   }
 
   async function kill(pid: number) {
+    // On Windows, killing a shell wrapper (cmd.exe) does NOT kill its children — they orphan.
+    // Use taskkill /T to terminate the full process tree. This is a no-op for shell:false callers
+    // (where pid IS the program), but matters for shell:true callers like website dev commands.
+    if (process.platform === "win32") {
+      try {
+        const { spawn: cpSpawn } = await import("node:child_process");
+        await new Promise<void>((resolve) => {
+          const tk = cpSpawn("taskkill", ["/T", "/F", "/PID", String(pid)], {
+            stdio: "ignore",
+            windowsHide: true,
+          });
+          tk.on("exit", () => resolve());
+          tk.on("error", () => resolve());
+        });
+        return;
+      } catch {
+        // fall through to signal-based kill
+      }
+    }
     // 1. Kill with SIGTERM
     try {
       process.kill(pid, "SIGTERM");

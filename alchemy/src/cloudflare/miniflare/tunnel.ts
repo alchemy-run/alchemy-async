@@ -70,6 +70,7 @@ export async function createTunnel(
   const remoteUrlString = await Scope.current.spawn("tunnel", {
     processName: `cloudflared-${proxy.url.port}`,
     cmd: `cloudflared tunnel --url ${proxy.url.toString()}`,
+    shell: false,
     quiet: !process.env.DEBUG,
     extract: (line) => {
       const match = line.match(/https:\/\/([^\s]+)\.trycloudflare\.com/);
