@@ -3,8 +3,7 @@ import { Resource } from "../resource.ts";
 import { isSecret, type Secret } from "../secret.ts";
 import { logger } from "../util/logger.ts";
 import { createVercelApi, type VercelApi } from "./api.ts";
-
-type TargetEnvironment = "production" | "preview" | "development";
+import type { VercelEnvironments, VercelFrameworks } from "./vercel.types.ts";
 
 export type EnvironmentVariable = {
   /**
@@ -15,7 +14,7 @@ export type EnvironmentVariable = {
   /**
    * The target environment
    */
-  target: TargetEnvironment[];
+  target: VercelEnvironments;
 
   /**
    * The Git branch
@@ -82,54 +81,7 @@ export interface ProjectProps {
   /**
    * The framework that is being used for this project. When `null` is used no framework is selected
    */
-  framework?:
-    | "blitzjs"
-    | "nextjs"
-    | "gatsby"
-    | "remix"
-    | "react-router"
-    | "astro"
-    | "hexo"
-    | "eleventy"
-    | "docusaurus-2"
-    | "docusaurus"
-    | "preact"
-    | "solidstart-1"
-    | "solidstart"
-    | "dojo"
-    | "ember"
-    | "vue"
-    | "scully"
-    | "ionic-angular"
-    | "angular"
-    | "polymer"
-    | "svelte"
-    | "sveltekit"
-    | "sveltekit-1"
-    | "ionic-react"
-    | "create-react-app"
-    | "gridsome"
-    | "umijs"
-    | "sapper"
-    | "saber"
-    | "stencil"
-    | "nuxtjs"
-    | "redwoodjs"
-    | "hugo"
-    | "jekyll"
-    | "brunch"
-    | "middleman"
-    | "zola"
-    | "hydrogen"
-    | "vite"
-    | "vitepress"
-    | "vuepress"
-    | "parcel"
-    | "fasthtml"
-    | "sanity-v3"
-    | "sanity"
-    | "storybook"
-    | (string & {});
+  framework?: VercelFrameworks;
 
   /**
    * The Git Repository that will be connected to the project. When this is defined, any pushes to the specified connected Git Repository will be automatically deployed
