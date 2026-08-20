@@ -1,0 +1,145 @@
+---
+title: Railway
+description: Learn how to deploy services and infrastructure on Railway using Alchemy.
+sidebar:
+  order: 22
+---
+
+import { Steps } from '@astrojs/starlight/components';
+
+This guide walks you through deploying a service to Railway using Alchemy, including environment variables and a public domain.
+
+:::note
+For the full Railway API reference, see the [Railway Provider](/providers/railway/) documentation.
+:::
+
+<Steps>
+
+1. **Install Alchemy**
+
+   ::: code-group
+
+   ```sh [bun]
+   bun add alchemy
+   ```
+
+   ```sh [npm]
+   npm install alchemy
+   ```
+
+   ```sh [pnpm]
+   pnpm add alchemy
+   ```
+
+   ```sh [yarn]
+   yarn add alchemy
+   ```
+
+   :::
+
+2. **Get your Railway API token**
+
+   Create an API token from your [Railway account settings](https://railway.com/account/tokens) and add it to your `.env` file:
+
+   ```bash title=".env"
+   RAILWAY_API_TOKEN=your-token-here
+   ```
+
+3. **Create `alchemy.run.ts`**
+
+   ```ts title="alchemy.run.ts"
+   import alchemy from "alchemy";
+   import { Project, Service, Variable, Domain } from "alchemy/railway";
+
+   const app = await alchemy("railway-app", {
+     phase: process.argv.includes("--destroy") ? "destroy" : "up",
+   });
+
+   // Create a Railway project
+   const project = await Project("my-app", {
+     name: "my-app",
+     description: "Deployed with Alchemy",
+   });
+
+   // Deploy a service from a Docker image
+   const service = await Service("web", {
+     project,
+     name: "web-server",
+     source: { image: "nginx:latest" },
+   });
+
+   // Set environment variables
+   await Variable("web-vars", {
+     project,
+     environment: project.defaultEnvironmentId,
+     service,
+     variables: {
+       PORT: "80",
+     },
+   });
+
+   // Add a public domain
+   const domain = await Domain("web-domain", {
+     service,
+     environment: project.defaultEnvironmentId,
+   });
+
+   console.log(`Service URL: https://${domain.domain}`);
+
+   await app.finalize();
+   ```
+
+4. **Deploy**
+
+   Run `alchemy.run.ts` to deploy:
+
+   ::: code-group
+
+   ```sh [bun]
+   bun ./alchemy.run
+   ```
+
+   ```sh [npm]
+   npx tsx ./alchemy.run
+   ```
+
+   ```sh [pnpm]
+   pnpm tsx ./alchemy.run
+   ```
+
+   ```sh [yarn]
+   yarn tsx ./alchemy.run
+   ```
+
+   :::
+
+   It should log out the service URL:
+   ```
+   Service URL: https://web-server-production-xxxx.up.railway.app
+   ```
+
+5. **Tear Down**
+
+   That's it! You can now tear down the app (if you want to):
+
+   ::: code-group
+
+   ```sh [bun]
+   bun ./alchemy.run --destroy
+   ```
+
+   ```sh [npm]
+   npx tsx ./alchemy.run --destroy
+   ```
+
+   ```sh [pnpm]
+   pnpm tsx ./alchemy.run --destroy
+   ```
+
+   ```sh [yarn]
+   yarn tsx ./alchemy.run --destroy
+   ```
+
+   :::
+
+</Steps>
