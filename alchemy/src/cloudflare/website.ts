@@ -241,7 +241,6 @@ export async function Website<
   const secrets = props.wrangler?.secrets ?? !props.wrangler?.path;
 
   const env = {
-    ...process.env,
     ...props.env,
     ...extractStringAndSecretBindings(props.bindings ?? {}, secrets),
   };
@@ -363,7 +362,6 @@ export async function Website<
         ...unencryptSecrets(env ?? {}),
         ...(typeof dev === "object" ? dev.env : {}),
         FORCE_COLOR: "1",
-        ...process.env,
         // NOTE: we must set this to ensure the user does not accidentally set `NODE_ENV=production`
         // which breaks `vite dev` (it won't, for example, re-write `process.env.TSS_APP_BASE` in the `.js` client side bundle)
         NODE_ENV: "development",
