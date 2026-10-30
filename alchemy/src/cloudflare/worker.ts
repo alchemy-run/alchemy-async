@@ -1871,6 +1871,11 @@ interface PutWorkerResult {
   deployment_id: string;
 }
 
+// Cloudflare's startup CPU reading varies between uploads of one bundle, so a Worker near the limit passes on another upload.
+const isScriptStartupCpuLimit = (error: unknown) =>
+  isCloudflareApiError(error, { code: 10021 }) &&
+  error.message.includes("Script startup exceeded CPU time limit");
+
 export async function putWorker(
   api: CloudflareApi,
   props: PutWorkerOptions,
@@ -1926,6 +1931,11 @@ export async function putWorker(
           await deleteQueueConsumers(api, workerName);
           return await putWorker(api, props);
         }
+        if (isScriptStartupCpuLimit(error)) {
+          logger.warn(
+            `Cloudflare rejected worker "${workerName}": script startup exceeded CPU time limit`,
+          );
+        }
         throw error;
       }
     },
@@ -1936,7 +1946,8 @@ export async function putWorker(
       // this is a transient error that cloudflare throws randomly
       (err instanceof CloudflareApiError &&
         err.status === 400 &&
-        err.message.match(/binding.*failed to generate/)),
+        err.message.match(/binding.*failed to generate/)) ||
+      isScriptStartupCpuLimit(err),
     // (err.status === 400 &&
     //   err.message.includes("100331") &&
     //   err.message.includes("Cannot use Durable Objects with Preview URLs")),
