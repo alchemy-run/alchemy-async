@@ -70,7 +70,8 @@ export async function findHyperdriveIdByName(
   page = 1,
 ): Promise<string | undefined> {
   const response = await api.get(
-    `/accounts/${api.accountId}/hyperdrive/configs?page=${page}`,
+    // 100 is the documented maximum; the default of 20 costs one API call per 20 configs.
+    `/accounts/${api.accountId}/hyperdrive/configs?page=${page}&per_page=100`,
   );
 
   if (!response.ok) {
