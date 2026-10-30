@@ -22,6 +22,9 @@ export abstract class StateStoreProxy implements StateStore {
       const result = await withExponentialBackoff(
         () => dispatch(method, params),
         () => true,
+        // Same budget as CloudflareApi.fetch.
+        10,
+        1000,
       );
       return result;
     });
