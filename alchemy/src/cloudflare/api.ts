@@ -218,9 +218,10 @@ export class CloudflareApi {
           throw new ForbiddenError();
         }
         if (response.status === 429) {
-          const data: any = await response.json();
+          // Cloudflare sometimes answers 429 with a `null` or non-JSON body.
+          const data: any = await response.json().catch(() => null);
           throw new TooManyRequestsError(
-            data.errors[0].message ?? response.statusText,
+            data?.errors?.[0]?.message ?? response.statusText,
           );
         }
         return response;
